@@ -56,7 +56,7 @@ export const CharacterPracticePage: React.FC = () => {
       {/* Title */}
       <div className="text-center max-w-2xl mx-auto space-y-3">
         <span className="px-3.5 py-1 rounded-full bg-primary-50 text-primary-600 font-extrabold text-xs uppercase tracking-wider">
-          Tập Viết & Bút Thuận Chữ Hán (UC06)
+          Tập Viết & Bút Thuận Chữ Hán
         </span>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
           Luyện Viết Chữ Hán Chuẩn Nét

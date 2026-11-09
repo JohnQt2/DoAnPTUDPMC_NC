@@ -9,7 +9,7 @@ Dự án nền tảng học tiếng Trung sơ cấp HSK dành cho người Việ
 Hệ thống được tổ chức thành các phân hệ lõi độc lập với trách nhiệm rõ ràng:
 
 ```
-d:\KhoiNghiep\
+d:\ChinaEasy\
 ├── backend/
 │   ├── prisma/
 │   │   ├── schema.prisma              # 22 bảng CSDL quan hệ khớp 100% với ERD và dataset.sql
@@ -22,31 +22,38 @@ d:\KhoiNghiep\
 │       │   ├── middleware/            # Auth JWT, RBAC, Idempotency-Key, Rate Limiter, Error Handler
 │       │   └── utils/                 # SM-2 Spaced Repetition, Crypto (SHA-256 OTP & Token hashing)
 │       ├── modules/
-│       │   ├── auth/                  # UC01: Email OTP (300s, lockout 5 lần), Google OAuth, JWT RTR, Device Revocation
-│       │   ├── user/                  # UC02: Khảo sát mục tiêu Onboarding, UC03: Thông báo nhắc học, RBAC Admin
-│       │   ├── curriculum/            # M02 / UC10: Quản lý Khóa học, Chương, Bài học, Khối nội dung LessonBlocks
-│       │   ├── learning/              # UC04, UC05, UC06: Pinyin, Thanh điệu F0, Minimal Pairs, Chữ Hán SVG, Luyện tập
-│       │   ├── assessment/            # UC05, UC07, UC12: Ngân hàng câu hỏi, Snapshot, Idempotency-Key, Chấm điểm 80%
-│       │   └── srs/                   # UC08/UC09: Thuật toán SuperMemo-2 (SM-2), Hàng đợi ôn tập 25 từ/ngày
+│       │   ├── auth/                  # Email OTP (300s, lockout 5 lần), Google OAuth, JWT RTR, Device Revocation
+│       │   ├── user/                  # Khảo sát mục tiêu Onboarding, Thông báo nhắc học, RBAC Admin
+│       │   ├── curriculum/            # Quản lý Khóa học, Chương, Bài học, Khối nội dung LessonBlocks
+│       │   ├── learning/              # Pinyin, Thanh điệu F0, Minimal Pairs, Chữ Hán SVG, Luyện tập
+│       │   ├── assessment/            # Ngân hàng câu hỏi, Snapshot, Idempotency-Key, Chấm điểm 80%
+│       │   └── srs/                   # Thuật toán SuperMemo-2 (SM-2), Hàng đợi ôn tập 25 từ/ngày
 │       ├── app.ts                     # Express setup, mounting các phân hệ
 │       ├── server.ts                  # Server entry point
 │       └── test/                      # Bộ kiểm thử tích hợp tự động (Integration Test Suite)
-└── frontend/
-    ├── src/
-    │   ├── context/                   # AuthContext: Quản lý Access Token trong bộ nhớ tạm (In-Memory)
-    │   ├── lib/                       # API client (tự động đính kèm Bearer token & Silent Token Refresh)
-    │   ├── components/                # HanziCanvas (田字格, SVG nét viết), PitchVisualizer (F0 ngũ độ), Navbar
-    │   └── pages/
-    │       ├── auth/                  # Đăng nhập đa kênh (Google OAuth + Email OTP 300s countdown)
-    │       ├── profile/               # Hồ sơ cá nhân, Khảo sát lộ trình (UC02), Cài đặt nhắc học, Quản lý thiết bị
-    │       ├── courses/               # Danh sách khóa học, Cây bài học (Hiển thị điều kiện khóa/mở 80%)
-    │       ├── lessons/               # Màn hình học vi mô: Nghe, Xem khẩu hình, Viết chữ Hán, Hội thoại
-    │       ├── learning/              # Bảng chữ cái Pinyin, Thử thách phân biệt âm tương phản (Minimal Pairs)
-    │       ├── test/                  # Làm bài kiểm tra trắc nghiệm, Nộp bài Idempotency, Xem kết quả & giải thích
-    │       ├── srs/                   # Ôn tập Flashcard lặp lại ngắt quãng (Nút: Lại, Khó, Tốt, Dễ với khoảng cách SM-2)
-    │       └── admin/                 # Admin/Content Editor CMS: Quản trị khóa học, bài học, ngân hàng câu hỏi
-    └── vite.config.ts / tailwind.config.js
+├── frontend/
+│   ├── src/
+│   │   ├── context/                   # AuthContext: Quản lý Access Token trong bộ nhớ tạm (In-Memory)
+│   │   ├── lib/                       # API client (tự động đính kèm Bearer token & Silent Token Refresh)
+│   │   ├── components/                # HanziCanvas (田字格, SVG nét viết), PitchVisualizer (F0 ngũ độ), Navbar
+│   │   └── pages/
+│   │       ├── auth/                  # Đăng nhập đa kênh (Google OAuth + Email OTP 300s countdown)
+│   │       ├── profile/               # Hồ sơ cá nhân, Khảo sát lộ trình, Cài đặt nhắc học, Quản lý thiết bị
+│   │       ├── courses/               # Danh sách khóa học, Cây bài học (Hiển thị điều kiện khóa/mở 80%)
+│   │       ├── lessons/               # Màn hình học vi mô: Nghe, Xem khẩu hình, Viết chữ Hán, Hội thoại
+│   │       ├── learning/              # Bảng chữ cái Pinyin, Thử thách phân biệt âm tương phản (Minimal Pairs)
+│   │       ├── test/                  # Làm bài kiểm tra trắc nghiệm, Nộp bài Idempotency, Xem kết quả & giải thích
+│   │       ├── srs/                   # Ôn tập Flashcard lặp lại ngắt quãng (Nút: Lại, Khó, Tốt, Dễ với khoảng cách SM-2)
+│   │       └── admin/                 # Admin/Content Editor CMS: Quản trị khóa học, bài học, ngân hàng câu hỏi
+│   └── vite.config.ts / tailwind.config.js
+├── ERD.md                             # Tài liệu đặc tả ERD chi tiết & Từ điển dữ liệu 22 bảng (v3.0)
+└── ERD_VIEWER.html                    # Giao diện trực quan hóa ERD tương tác (Pan & Zoom)
 ```
+
+### 📊 Sơ Đồ Thực Thể Quan Hệ (ERD v3.0)
+Hệ thống CSDL bao gồm **22 bảng quan hệ** chuẩn hóa theo đúng mã nguồn `schema.prisma` và kiến trúc Modular Monolith:
+- 📖 **Chi tiết toàn bộ bảng & từ điển dữ liệu:** Xem tại [`ERD.md`](./ERD.md)
+- 🖥️ **Trình xem sơ đồ trực quan tương tác (Pan & Zoom):** Mở tệp [`ERD_VIEWER.html`](./ERD_VIEWER.html) trên trình duyệt web.
 
 ---
 
@@ -58,7 +65,7 @@ d:\KhoiNghiep\
 
 ### Bước 1: Khởi động Backend
 ```powershell
-cd D:\KhoiNghiep\backend
+cd d:\ChinaEasy\backend
 
 # Chạy seed dữ liệu sư phạm mẫu (Khóa HSK1, Pinyin, Chữ Hán SVG, Câu hỏi)
 npm run db:seed
@@ -70,10 +77,21 @@ npm run dev
 ```
 *API Backend chạy tại: `http://localhost:5000`*
 
+### 📧 Kiểm tra gửi email OTP (khi chạy trên máy khác)
+```powershell
+cd d:\ChinaEasy\backend
+npm run check:smtp                    # kiểm tra kết nối + đăng nhập Gmail SMTP
+npm run check:smtp -- ban@gmail.com   # gửi thử 1 email OTP
+```
+- Nếu copy `.env.example` → `.env`, hãy **để trống** `SMTP_USER`/`SMTP_PASS` để dùng tài khoản gửi mặc định, hoặc điền Gmail + App Password 16 ký tự của riêng bạn.
+- Hệ thống tự thử cổng **465 → 587** nếu mạng chặn một cổng.
+- Khi gửi thất bại, giao diện hiển thị nguyên nhân cụ thể (sai App Password, Google chặn đăng nhập, mạng chặn SMTP, phần mềm diệt virus...). Ở chế độ `development`, mã OTP được in ra **terminal backend** để vẫn đăng nhập thử được.
+- Không thấy thư? Kiểm tra thư mục **Spam**.
+
 ### Bước 2: Khởi động Frontend
 Mở cửa sổ PowerShell mới:
 ```powershell
-cd D:\KhoiNghiep\frontend
+cd d:\ChinaEasy\frontend
 
 # Chạy frontend Vite Dev Server
 npm run dev
@@ -82,7 +100,7 @@ npm run dev
 
 ### Bước 3: Chạy Kiểm Thử Tự Động (Integration Tests)
 ```powershell
-cd D:\KhoiNghiep\backend
+cd d:\ChinaEasy\backend
 node dist/test/integration.test.js
 ```
 
@@ -96,7 +114,7 @@ node dist/test/integration.test.js
 | **Content Editor** | `editor@chinaeasy.vn` | Soạn thảo khóa học, bài học, ngân hàng câu hỏi, Draft/Publish |
 | **Student** | `student@chinaeasy.vn` | Học bài, luyện viết chữ Hán, làm bài kiểm tra, ôn tập SRS |
 
-*Lưu ý khi đăng nhập bằng Email OTP ở môi trường Development: Khi bấm gửi OTP, mã xác thực 6 chữ số sẽ hiển thị trực tiếp trên giao diện để tiện thử nghiệm ngay lập tức.*
+*Lưu ý khi Đăng ký / Đăng nhập bằng Email OTP: Khi Guest nhập địa chỉ `@gmail.com` và mật khẩu trên giao diện web, hệ thống sử dụng tài khoản chính `ChinaEasy <hieuhoanghuu436@gmail.com>` gửi email HTML chứa mã xác thực 6 chữ số trực tiếp vào hộp thư Gmail thật của người nhận qua `smtp.gmail.com:465` (tuyệt đối không hiển thị mã OTP trên giao diện web).*
 
 ---
 

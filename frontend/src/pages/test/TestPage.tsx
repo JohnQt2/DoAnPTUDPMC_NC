@@ -106,7 +106,7 @@ export const TestPage: React.FC<{ testId: number }> = ({ testId }) => {
 
           <div className="space-y-2">
             <h1 className="text-2xl font-extrabold text-gray-900">
-              Bài Kiểm Tra Đánh Giá Năng Lực (UC05)
+              Bài Kiểm Tra Đánh Giá Năng Lực
             </h1>
             <p className="text-xs text-gray-500 leading-relaxed">
               Bài kiểm tra sẽ tạo phiên làm việc với cơ chế <strong>Snapshot câu hỏi</strong> nhằm bảo toàn nội dung tại thời điểm làm bài.

@@ -222,8 +222,51 @@ async function runTests() {
     assert(reviewRes.repetitions >= 1);
     console.log('  ✔ SRS SM-2 card review successfully updated next review date.');
 
+    // ─── TEST 6: Role-Based Access Control (RBAC) & Security Audit Logs ──
+    console.log('\n▶ Test 6: Role-Based Access Control (RBAC) & Admin Audit Logs');
+    const { authorize } = await import('../shared/middleware/rbac.middleware');
+    const { userService } = await import('../modules/user/user.service');
+
+    // Verify authorize('ADMIN') blocks STUDENT role with 403 FORBIDDEN_INSUFFICIENT_ROLE
+    let rbacError: any = null;
+    authorize('ADMIN')(
+      { user: { userId: authResult.user.userId, email: validEmail, role: 'STUDENT' } } as any,
+      {} as any,
+      (err?: any) => {
+        rbacError = err;
+      }
+    );
+    assert(rbacError, 'STUDENT should be blocked by authorize("ADMIN")');
+    assert.strictEqual(rbacError.code, 'FORBIDDEN_INSUFFICIENT_ROLE');
+
+    // Promote user to CONTENT_EDITOR via Admin RBAC and verify authorize('ADMIN', 'CONTENT_EDITOR') allows access
+    const adminAccount = await prisma.users.findFirst({ where: { role: 'ADMIN' } });
+    const adminId = adminAccount ? adminAccount.user_id : 999999;
+
+    const promoted = await userService.adminUpdateUser(adminId, authResult.user.userId, {
+      role: 'CONTENT_EDITOR',
+    });
+    assert.strictEqual(promoted.role, 'CONTENT_EDITOR');
+
+    let editorAllowed = false;
+    authorize('ADMIN', 'CONTENT_EDITOR')(
+      { user: { userId: authResult.user.userId, email: validEmail, role: 'CONTENT_EDITOR' } } as any,
+      {} as any,
+      (err?: any) => {
+        if (!err) editorAllowed = true;
+      }
+    );
+    assert.strictEqual(editorAllowed, true, 'CONTENT_EDITOR must be permitted by authorize("ADMIN", "CONTENT_EDITOR")');
+
+    // Verify Admin Audit Logs & User Summary KPI
+    const userSummaryRes = await userService.adminListUsers({ limit: 5 });
+    assert(userSummaryRes.summary.totalUsers >= 1);
+    const auditLogs = await userService.adminListAuditLogs(10);
+    assert(auditLogs.length > 0, 'Audit logs should record RBAC and Auth actions');
+    console.log('  ✔ RBAC role enforcement (403 Forbidden), role promotion, and Security Audit Logs verified.');
+
     console.log('\n======================================================');
-    console.log('✅ ALL INTEGRATION TESTS PASSED (5/5 MODULES VERIFIED)!');
+    console.log('✅ ALL INTEGRATION TESTS PASSED (6/6 MODULES VERIFIED)!');
     console.log('======================================================');
   } catch (error) {
     console.error('❌ Test failed with error:', error);

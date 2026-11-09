@@ -11,24 +11,34 @@ import {
   AlertTriangle,
   CheckCircle2,
   KeyRound,
-  Inbox,
-  X,
+  Languages,
 } from 'lucide-react';
 
-interface MailboxMessage {
-  messageId: string;
-  fromName: string;
-  fromAddress: string;
-  toAddress: string;
-  subject: string;
-  otp: string;
-  ttlSeconds: number;
-  htmlBody: string;
-  sentAt: string;
+declare global {
+  interface Window {
+    google?: {
+      accounts?: {
+        oauth2?: {
+          initTokenClient: (config: {
+            client_id: string;
+            scope: string;
+            prompt?: string;
+            callback: (response: { access_token?: string; error?: string; error_description?: string }) => void;
+            error_callback?: (err: { type?: string; message?: string }) => void;
+          }) => {
+            requestAccessToken: (overrideConfig?: { prompt?: string }) => void;
+          };
+        };
+      };
+    };
+  }
 }
 
+const DEFAULT_GOOGLE_CLIENT_ID =
+  '236710689789-ipu0ad4sdke0paakb5ujmu0ukq9b4mc9.apps.googleusercontent.com';
+
 export const LoginPage: React.FC = () => {
-  const { login } = useAuth();
+  const { login, refreshSession } = useAuth();
 
   const [authTab, setAuthTab] = useState<'register' | 'login'>('register');
   const [step, setStep] = useState<'form' | 'otp_verify'>('form');
@@ -40,30 +50,11 @@ export const LoginPage: React.FC = () => {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [countdown, setCountdown] = useState(300);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [isLocked, setIsLocked] = useState(false);
   const [remainingAttempts, setRemainingAttempts] = useState<number | null>(null);
-  const [senderEmail, setSenderEmail] = useState<string>('hieuhoanghuu436@gmail.com');
-  const [hasUnreadMail, setHasUnreadMail] = useState(false);
-  const [showMailboxModal, setShowMailboxModal] = useState(false);
-  const [mailboxData, setMailboxData] = useState<MailboxMessage | null>(null);
-
-  // Read query params from URL hash (e.g. #/login?tab=register&redirect=%23%2Flessons%2F1)
-  useEffect(() => {
-    const rawHash = window.location.hash || '';
-    if (rawHash.includes('?')) {
-      const queryStr = rawHash.split('?')[1];
-      const params = new URLSearchParams(queryStr);
-      const tabParam = params.get('tab');
-      if (tabParam === 'register') setAuthTab('register');
-      if (tabParam === 'login') setAuthTab('login');
-      const redirectParam = params.get('redirect');
-      if (redirectParam) {
-        setInfoMessage('Vui lòng đăng nhập hoặc tạo tài khoản để tiếp tục vào học.');
-      }
-    }
-  }, []);
 
   const getRedirectTarget = (isNewUser?: boolean): string => {
     const rawHash = window.location.hash || '';
@@ -77,6 +68,45 @@ export const LoginPage: React.FC = () => {
     }
     return isNewUser ? '#/profile' : '#/courses';
   };
+
+  // Read query params from URL hash (e.g. #/login?tab=register&redirect=%23%2Flessons%2F1 or ?google_oauth=success)
+  useEffect(() => {
+    const rawHash = window.location.hash || '';
+    if (!rawHash.includes('?')) return;
+
+    const queryStr = rawHash.split('?')[1];
+    const params = new URLSearchParams(queryStr);
+
+    const tabParam = params.get('tab');
+    if (tabParam === 'register') setAuthTab('register');
+    if (tabParam === 'login') setAuthTab('login');
+
+    const googleError = params.get('google_error');
+    if (googleError) {
+      setErrorMessage(decodeURIComponent(googleError));
+    }
+
+    const googleOauth = params.get('google_oauth');
+    if (googleOauth === 'success') {
+      const isNew = params.get('is_new') === '1';
+      setIsGoogleLoading(true);
+      refreshSession()
+        .then((ok) => {
+          if (ok) {
+            window.location.hash = getRedirectTarget(isNew);
+          } else {
+            setErrorMessage('Không thể đồng bộ phiên đăng nhập Google. Vui lòng thử lại.');
+          }
+        })
+        .finally(() => setIsGoogleLoading(false));
+      return;
+    }
+
+    const redirectParam = params.get('redirect');
+    if (redirectParam && !googleError) {
+      setInfoMessage('Vui lòng đăng nhập hoặc tạo tài khoản để tiếp tục vào học.');
+    }
+  }, []);
 
   // Countdown timer for 300s OTP TTL
   useEffect(() => {
@@ -137,13 +167,9 @@ export const LoginPage: React.FC = () => {
         payload
       );
       setCountdown(res?.expiresIn || 300);
-      if (res?.senderEmail) {
-        setSenderEmail(res.senderEmail);
-      }
       setInfoMessage(
         res?.message || `Mã xác thực OTP 6 chữ số đã được gửi tới địa chỉ ${normalizedEmail}.`
       );
-      setHasUnreadMail(true);
       setStep('otp_verify');
       setOtp(['', '', '', '', '', '']);
     } catch (err: any) {
@@ -153,20 +179,6 @@ export const LoginPage: React.FC = () => {
       }
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const handleOpenMailbox = async () => {
-    try {
-      const normalizedEmail = email.trim().toLowerCase();
-      const mail = await api.get<MailboxMessage>('/auth/mailbox', {
-        params: { email: normalizedEmail },
-      });
-      setMailboxData(mail);
-      setHasUnreadMail(false);
-      setShowMailboxModal(true);
-    } catch (err: any) {
-      alert(err.message || 'Không thể tải nội dung thư.');
     }
   };
 
@@ -267,49 +279,92 @@ export const LoginPage: React.FC = () => {
     }
   };
 
+  /**
+   * Đăng nhập Google OAuth2 thật qua Google Identity Services (Popup chọn tài khoản Google thật)
+   * hoặc chuyển hướng sang OAuth2 Authorization Code Flow nếu trình duyệt chặn popup.
+   */
   const handleGoogleLogin = async () => {
-    setIsSubmitting(true);
+    setIsGoogleLoading(true);
     setErrorMessage(null);
 
     try {
-      const targetEmail = email.trim().toLowerCase().endsWith('@gmail.com')
-        ? email.trim().toLowerCase()
-        : 'google_user@gmail.com';
-      const targetName = displayName.trim() || 'Học Viên Google';
-      const targetAvatar = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150';
-      const googleId = 'g_' + Date.now();
+      const rawHash = window.location.hash || '';
+      const redirectState = rawHash.includes('?')
+        ? new URLSearchParams(rawHash.split('?')[1]).get('redirect') || ''
+        : '';
 
-      const header = btoa(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
-      const payload = btoa(
-        unescape(
-          encodeURIComponent(
-            JSON.stringify({
-              iss: 'https://accounts.google.com',
-              sub: googleId,
-              email: targetEmail,
-              email_verified: true,
-              name: targetName,
-              picture: targetAvatar,
-              exp: Math.floor(Date.now() / 1000) + 3600,
-            })
-          )
-        )
+      let clientId = DEFAULT_GOOGLE_CLIENT_ID;
+      let authUrl = '';
+
+      try {
+        const config = await api.get<{ clientId: string; authUrl: string }>('/auth/google/config', {
+          params: redirectState ? { state: redirectState } : undefined,
+        });
+        if (config?.clientId) clientId = config.clientId;
+        if (config?.authUrl) authUrl = config.authUrl;
+      } catch {
+        // Sử dụng DEFAULT_GOOGLE_CLIENT_ID nếu không tải được config
+      }
+
+      const googleOAuth2 = window.google?.accounts?.oauth2;
+
+      if (googleOAuth2) {
+        const tokenClient = googleOAuth2.initTokenClient({
+          client_id: clientId,
+          scope: 'openid email profile',
+          prompt: 'select_account',
+          callback: async (tokenResponse) => {
+            if (tokenResponse.error || !tokenResponse.access_token) {
+              setIsGoogleLoading(false);
+              if (tokenResponse.error !== 'access_denied') {
+                setErrorMessage(
+                  tokenResponse.error_description || 'Không thể xác thực tài khoản Google.'
+                );
+              }
+              return;
+            }
+
+            try {
+              const res = await api.post<any>('/auth/google', {
+                accessToken: tokenResponse.access_token,
+              });
+              login(res.accessToken, res.user);
+              window.location.hash = getRedirectTarget(res.isNewUser);
+            } catch (err: any) {
+              setErrorMessage(err.message || 'Đăng nhập bằng Google OAuth2 thất bại.');
+            } finally {
+              setIsGoogleLoading(false);
+            }
+          },
+          error_callback: (err) => {
+            setIsGoogleLoading(false);
+            if (err?.type === 'popup_failed_to_open' && authUrl) {
+              window.location.href = authUrl;
+              return;
+            }
+            if (err?.type !== 'popup_closed') {
+              setErrorMessage('Cửa sổ đăng nhập Google đã đóng hoặc bị chặn bởi trình duyệt.');
+            }
+          },
+        });
+
+        tokenClient.requestAccessToken({ prompt: 'select_account' });
+        return;
+      }
+
+      // Fallback: Chuyển hướng sang Google OAuth2 Authorization Code Flow nếu script GIS chưa sẵn sàng
+      if (authUrl) {
+        window.location.href = authUrl;
+        return;
+      }
+
+      setErrorMessage(
+        'Không thể khởi tạo Google Identity Services. Vui lòng kiểm tra kết nối mạng và thử lại.'
       );
-      const mockCredential = `${header}.${payload}.google_oauth2_sig`;
-
-      const res = await api.post<any>('/auth/google', {
-        credential: mockCredential,
-        email: targetEmail,
-        name: targetName,
-        avatar: targetAvatar,
-        googleId,
-      });
-      login(res.accessToken, res.user);
-      window.location.hash = getRedirectTarget(res.isNewUser);
+      setIsGoogleLoading(false);
     } catch (err: any) {
       setErrorMessage(err.message || 'Đăng nhập bằng Google thất bại.');
-    } finally {
-      setIsSubmitting(false);
+      setIsGoogleLoading(false);
     }
   };
 
@@ -324,8 +379,8 @@ export const LoginPage: React.FC = () => {
       <div className="max-w-md w-full bg-white rounded-3xl border border-gray-100 shadow-xl p-8 space-y-6">
         {/* Header */}
         <div className="text-center">
-          <div className="inline-flex w-16 h-16 rounded-2xl bg-gradient-to-tr from-primary-600 to-primary-500 text-white items-center justify-center text-3xl shadow-lg shadow-primary-500/20 mb-4">
-            🀄
+          <div className="inline-flex w-16 h-16 rounded-2xl bg-gradient-to-tr from-primary-600 to-primary-500 text-white items-center justify-center shadow-lg shadow-primary-500/20 mb-4">
+            <Languages className="w-8 h-8" aria-hidden="true" />
           </div>
           <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">
             Chào mừng đến với <span className="text-primary-600">ChinaEasy</span>
@@ -344,7 +399,7 @@ export const LoginPage: React.FC = () => {
                 setAuthTab('register');
                 setErrorMessage(null);
               }}
-              className={`py-2.5 text-xs font-bold rounded-xl transition-all ${
+              className={`min-h-[42px] py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
                 authTab === 'register'
                   ? 'bg-white text-primary-600 shadow-sm'
                   : 'text-gray-500 hover:text-gray-800'
@@ -358,7 +413,7 @@ export const LoginPage: React.FC = () => {
                 setAuthTab('login');
                 setErrorMessage(null);
               }}
-              className={`py-2.5 text-xs font-bold rounded-xl transition-all ${
+              className={`min-h-[42px] py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
                 authTab === 'login'
                   ? 'bg-white text-primary-600 shadow-sm'
                   : 'text-gray-500 hover:text-gray-800'
@@ -369,10 +424,21 @@ export const LoginPage: React.FC = () => {
           </div>
         )}
 
+        {/* Redirect / Status Info Notice */}
+        {infoMessage && step === 'form' && !errorMessage && (
+          <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-2xl text-amber-900 text-xs font-medium flex items-center gap-2.5">
+            <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0" aria-hidden="true" />
+            <span>{infoMessage}</span>
+          </div>
+        )}
+
         {/* Error Alert */}
         {errorMessage && (
-          <div className="p-4 rounded-2xl bg-red-50 border border-red-100 flex items-start gap-3 text-red-700 text-sm animate-shake">
-            <AlertTriangle className="w-5 h-5 shrink-0 text-red-500 mt-0.5" />
+          <div
+            role="alert"
+            className="p-4 rounded-2xl bg-red-50 border border-red-100 flex items-start gap-3 text-red-700 text-sm"
+          >
+            <AlertTriangle className="w-5 h-5 shrink-0 text-red-500 mt-0.5" aria-hidden="true" />
             <div className="space-y-1">
               <p className="font-semibold">{errorMessage}</p>
               {remainingAttempts !== null && !isLocked && (
@@ -387,7 +453,7 @@ export const LoginPage: React.FC = () => {
         {/* Info Alert (Email Dispatched Notice - NO OTP SHOWN ON UI) */}
         {infoMessage && step === 'otp_verify' && !errorMessage && (
           <div className="p-3.5 bg-emerald-50 border border-emerald-100 rounded-2xl text-emerald-800 text-xs flex items-center gap-2.5">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" aria-hidden="true" />
             <span>{infoMessage}</span>
           </div>
         )}
@@ -396,12 +462,19 @@ export const LoginPage: React.FC = () => {
         {step === 'form' && authTab === 'register' && (
           <form onSubmit={handleSendOtp} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+              <label
+                htmlFor="register-display-name"
+                className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5"
+              >
                 Họ và tên hiển thị
               </label>
               <div className="relative">
-                <UserIcon className="w-5 h-5 absolute left-3.5 top-3.5 text-gray-400" />
+                <UserIcon
+                  className="w-5 h-5 absolute left-3.5 top-3.5 text-gray-400"
+                  aria-hidden="true"
+                />
                 <input
+                  id="register-display-name"
                   type="text"
                   required
                   placeholder="Nguyễn Văn A"
@@ -413,12 +486,19 @@ export const LoginPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+              <label
+                htmlFor="register-email"
+                className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5"
+              >
                 Địa chỉ Gmail (@gmail.com)
               </label>
               <div className="relative">
-                <Mail className="w-5 h-5 absolute left-3.5 top-3.5 text-gray-400" />
+                <Mail
+                  className="w-5 h-5 absolute left-3.5 top-3.5 text-gray-400"
+                  aria-hidden="true"
+                />
                 <input
+                  id="register-email"
                   type="email"
                   required
                   placeholder="ten_cua_ban@gmail.com"
@@ -430,12 +510,19 @@ export const LoginPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+              <label
+                htmlFor="register-password"
+                className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5"
+              >
                 Mật khẩu
               </label>
               <div className="relative">
-                <Lock className="w-5 h-5 absolute left-3.5 top-3.5 text-gray-400" />
+                <Lock
+                  className="w-5 h-5 absolute left-3.5 top-3.5 text-gray-400"
+                  aria-hidden="true"
+                />
                 <input
+                  id="register-password"
                   type="password"
                   required
                   minLength={6}
@@ -449,11 +536,11 @@ export const LoginPage: React.FC = () => {
 
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="w-full flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-primary-600 hover:bg-primary-700 text-white font-semibold text-sm shadow-md shadow-primary-600/20 transition-all disabled:opacity-50"
+              disabled={isSubmitting || isGoogleLoading}
+              className="w-full min-h-[48px] flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-primary-600 hover:bg-primary-700 text-white font-semibold text-sm shadow-md shadow-primary-600/20 transition-all cursor-pointer disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
             >
               {isSubmitting ? 'Đang gửi mã OTP...' : 'Đăng ký & Gửi mã OTP xác thực'}
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-4 h-4" aria-hidden="true" />
             </button>
 
             <div className="relative flex items-center justify-center my-2">
@@ -464,10 +551,10 @@ export const LoginPage: React.FC = () => {
             <button
               type="button"
               onClick={handleGoogleLogin}
-              disabled={isSubmitting}
-              className="w-full flex items-center justify-center gap-3 px-5 py-3 rounded-2xl border border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold text-sm transition-all"
+              disabled={isSubmitting || isGoogleLoading}
+              className="w-full min-h-[48px] flex items-center justify-center gap-3 px-5 py-3 rounded-2xl border border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold text-sm transition-all cursor-pointer disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
             >
-              <svg className="w-5 h-5" viewBox="0 0 24 24">
+              <svg className="w-5 h-5" viewBox="0 0 24 24" aria-hidden="true">
                 <path
                   fill="#4285F4"
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -485,7 +572,7 @@ export const LoginPage: React.FC = () => {
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
                 />
               </svg>
-              Tiếp tục với Google OAuth2
+              {isGoogleLoading ? 'Đang kết nối Google OAuth2...' : 'Tiếp tục với Google OAuth2'}
             </button>
           </form>
         )}
@@ -497,12 +584,19 @@ export const LoginPage: React.FC = () => {
             className="space-y-4"
           >
             <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+              <label
+                htmlFor="login-email"
+                className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5"
+              >
                 Địa chỉ Gmail (@gmail.com)
               </label>
               <div className="relative">
-                <Mail className="w-5 h-5 absolute left-3.5 top-3.5 text-gray-400" />
+                <Mail
+                  className="w-5 h-5 absolute left-3.5 top-3.5 text-gray-400"
+                  aria-hidden="true"
+                />
                 <input
+                  id="login-email"
                   type="email"
                   required
                   placeholder="ten_cua_ban@gmail.com"
@@ -515,12 +609,19 @@ export const LoginPage: React.FC = () => {
 
             {loginSubMode === 'password' && (
               <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                <label
+                  htmlFor="login-password"
+                  className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5"
+                >
                   Mật khẩu
                 </label>
                 <div className="relative">
-                  <Lock className="w-5 h-5 absolute left-3.5 top-3.5 text-gray-400" />
+                  <Lock
+                    className="w-5 h-5 absolute left-3.5 top-3.5 text-gray-400"
+                    aria-hidden="true"
+                  />
                   <input
+                    id="login-password"
                     type="password"
                     required
                     placeholder="Nhập mật khẩu của bạn"
@@ -534,15 +635,15 @@ export const LoginPage: React.FC = () => {
 
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="w-full flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-primary-600 hover:bg-primary-700 text-white font-semibold text-sm shadow-md shadow-primary-600/20 transition-all disabled:opacity-50"
+              disabled={isSubmitting || isGoogleLoading}
+              className="w-full min-h-[48px] flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-primary-600 hover:bg-primary-700 text-white font-semibold text-sm shadow-md shadow-primary-600/20 transition-all cursor-pointer disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
             >
               {isSubmitting
                 ? 'Đang xử lý...'
                 : loginSubMode === 'password'
                   ? 'Đăng nhập vào học'
                   : 'Gửi mã xác thực OTP qua Gmail'}
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-4 h-4" aria-hidden="true" />
             </button>
 
             <button
@@ -551,9 +652,9 @@ export const LoginPage: React.FC = () => {
                 setLoginSubMode((prev) => (prev === 'password' ? 'otp' : 'password'));
                 setErrorMessage(null);
               }}
-              className="w-full flex items-center justify-center gap-1.5 text-xs font-semibold text-primary-600 hover:text-primary-700 py-1"
+              className="w-full flex items-center justify-center gap-1.5 text-xs font-semibold text-primary-600 hover:text-primary-700 py-1.5 cursor-pointer"
             >
-              <KeyRound className="w-3.5 h-3.5" />
+              <KeyRound className="w-3.5 h-3.5" aria-hidden="true" />
               {loginSubMode === 'password'
                 ? 'Chuyển sang đăng nhập bằng mã Email OTP (Không cần mật khẩu)'
                 : 'Chuyển sang đăng nhập bằng Mật khẩu'}
@@ -567,10 +668,10 @@ export const LoginPage: React.FC = () => {
             <button
               type="button"
               onClick={handleGoogleLogin}
-              disabled={isSubmitting}
-              className="w-full flex items-center justify-center gap-3 px-5 py-3 rounded-2xl border border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold text-sm transition-all"
+              disabled={isSubmitting || isGoogleLoading}
+              className="w-full min-h-[48px] flex items-center justify-center gap-3 px-5 py-3 rounded-2xl border border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold text-sm transition-all cursor-pointer disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
             >
-              <svg className="w-5 h-5" viewBox="0 0 24 24">
+              <svg className="w-5 h-5" viewBox="0 0 24 24" aria-hidden="true">
                 <path
                   fill="#4285F4"
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -588,7 +689,7 @@ export const LoginPage: React.FC = () => {
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
                 />
               </svg>
-              Tiếp tục với Google OAuth2
+              {isGoogleLoading ? 'Đang kết nối Google OAuth2...' : 'Tiếp tục với Google OAuth2'}
             </button>
           </form>
         )}
@@ -609,6 +710,7 @@ export const LoginPage: React.FC = () => {
                   id={`otp-${idx}`}
                   type="text"
                   inputMode="numeric"
+                  aria-label={`Chữ số OTP thứ ${idx + 1}`}
                   maxLength={1}
                   value={digit}
                   onChange={(e) => handleOtpChange(idx, e.target.value)}
@@ -622,7 +724,7 @@ export const LoginPage: React.FC = () => {
             {/* Timer & Resend */}
             <div className="flex items-center justify-between text-xs px-1">
               <div className="flex items-center gap-1.5 text-gray-500 font-mono">
-                <ShieldCheck className="w-4 h-4 text-primary-500" />
+                <ShieldCheck className="w-4 h-4 text-primary-500" aria-hidden="true" />
                 Hiệu lực: <span className="font-bold text-gray-900">{formatTimer(countdown)}</span>
               </div>
 
@@ -630,9 +732,9 @@ export const LoginPage: React.FC = () => {
                 type="button"
                 disabled={countdown > 0 || isSubmitting || isLocked}
                 onClick={() => handleSendOtp()}
-                className="flex items-center gap-1 text-primary-600 hover:text-primary-700 font-semibold disabled:opacity-40 disabled:hover:text-primary-600"
+                className="flex items-center gap-1 text-primary-600 hover:text-primary-700 font-semibold cursor-pointer disabled:opacity-40 disabled:hover:text-primary-600"
               >
-                <RotateCcw className="w-3.5 h-3.5" />
+                <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
                 Gửi lại mã
               </button>
             </div>
@@ -640,10 +742,10 @@ export const LoginPage: React.FC = () => {
             <button
               type="submit"
               disabled={isSubmitting || isLocked}
-              className="w-full flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-primary-600 hover:bg-primary-700 text-white font-semibold text-sm shadow-md shadow-primary-600/20 transition-all disabled:opacity-50"
+              className="w-full min-h-[48px] flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-primary-600 hover:bg-primary-700 text-white font-semibold text-sm shadow-md shadow-primary-600/20 transition-all cursor-pointer disabled:opacity-50"
             >
               {isSubmitting ? 'Đang xác thực...' : 'Xác thực OTP & Hoàn tất'}
-              <CheckCircle2 className="w-4 h-4" />
+              <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
             </button>
 
             <button
@@ -653,7 +755,7 @@ export const LoginPage: React.FC = () => {
                 setErrorMessage(null);
                 setInfoMessage(null);
               }}
-              className="w-full text-center text-xs text-gray-500 hover:text-gray-800 transition-colors"
+              className="w-full text-center text-xs text-gray-500 hover:text-gray-800 transition-colors cursor-pointer"
             >
               ← Quay lại chỉnh sửa thông tin Gmail
             </button>

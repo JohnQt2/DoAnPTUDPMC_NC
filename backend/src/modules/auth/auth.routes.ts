@@ -26,6 +26,8 @@ router.post(
   authController.loginPassword
 );
 
+router.get('/google/config', authController.googleConfig);
+router.get('/google/callback', authController.googleCallback);
 router.post('/google', authController.googleAuth);
 router.post('/refresh', authController.refresh);
 

@@ -104,6 +104,19 @@ export class AuthController {
     }
   };
 
+  googleConfig = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const state = typeof req.query.state === 'string' ? req.query.state : undefined;
+      const config = authService.getGoogleConfig(state);
+      res.status(200).json({
+        success: true,
+        data: config,
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
+
   googleAuth = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const dto = GoogleAuthDto.parse(req.body);
@@ -123,6 +136,41 @@ export class AuthController {
       });
     } catch (err) {
       next(err);
+    }
+  };
+
+  googleCallback = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const error = req.query.error as string | undefined;
+      const code = req.query.code as string | undefined;
+      const state = req.query.state as string | undefined;
+
+      if (error || !code) {
+        const errMsg = error === 'access_denied' ? 'Bạn đã hủy đăng nhập Google.' : 'Không nhận được mã xác thực từ Google.';
+        res.redirect(`${env.CLIENT_URL}/#/login?google_error=${encodeURIComponent(errMsg)}`);
+        return;
+      }
+
+      const clientInfo = this.getClientInfo(req);
+      const result = await authService.loginWithGoogle(
+        { code, redirectUri: env.GOOGLE_CALLBACK_URL },
+        clientInfo
+      );
+
+      this.setRefreshTokenCookie(res, result.refreshToken);
+
+      const queryParams = new URLSearchParams({
+        google_oauth: 'success',
+        is_new: result.isNewUser ? '1' : '0',
+      });
+      if (state) {
+        queryParams.set('redirect', state);
+      }
+
+      res.redirect(`${env.CLIENT_URL}/#/login?${queryParams.toString()}`);
+    } catch (err: any) {
+      const msg = err?.message || 'Đăng nhập bằng Google OAuth2 thất bại.';
+      res.redirect(`${env.CLIENT_URL}/#/login?google_error=${encodeURIComponent(msg)}`);
     }
   };
 

@@ -18,6 +18,14 @@ router.post(
   authController.verifyOtp
 );
 
+router.get('/mailbox', authController.getMailbox);
+
+router.post(
+  '/login',
+  rateLimit({ windowSeconds: 60, maxRequests: 10, keyPrefix: 'auth-login' }),
+  authController.loginPassword
+);
+
 router.post('/google', authController.googleAuth);
 router.post('/refresh', authController.refresh);
 

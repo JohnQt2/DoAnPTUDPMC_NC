@@ -58,12 +58,31 @@ export class UserService {
     };
   }
 
-  async updateProfile(userId: number, data: { display_name?: string; avatar_resource_id?: number }) {
+  async updateProfile(
+    userId: number,
+    data: { display_name?: string; avatar_url?: string; avatar_resource_id?: number }
+  ) {
+    let avatarResourceId = data.avatar_resource_id;
+
+    if (data.avatar_url && !avatarResourceId) {
+      const media = await prisma.mediaResources.create({
+        data: {
+          file_name: `avatar_${userId}_${Date.now()}.jpg`,
+          storage_key: `avatars/user_${userId}_${Date.now()}`,
+          public_url: data.avatar_url,
+          mime_type: 'image/jpeg',
+          resource_type: 'IMAGE',
+          uploaded_by: userId,
+        },
+      });
+      avatarResourceId = media.resource_id;
+    }
+
     const user = await prisma.users.update({
       where: { user_id: userId },
       data: {
-        display_name: data.display_name,
-        avatar_resource_id: data.avatar_resource_id,
+        ...(data.display_name !== undefined ? { display_name: data.display_name } : {}),
+        ...(avatarResourceId !== undefined ? { avatar_resource_id: avatarResourceId } : {}),
       },
       include: { avatarResource: true },
     });

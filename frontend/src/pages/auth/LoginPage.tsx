@@ -49,6 +49,35 @@ export const LoginPage: React.FC = () => {
   const [showMailboxModal, setShowMailboxModal] = useState(false);
   const [mailboxData, setMailboxData] = useState<MailboxMessage | null>(null);
 
+  // Read query params from URL hash (e.g. #/login?tab=register&redirect=%23%2Flessons%2F1)
+  useEffect(() => {
+    const rawHash = window.location.hash || '';
+    if (rawHash.includes('?')) {
+      const queryStr = rawHash.split('?')[1];
+      const params = new URLSearchParams(queryStr);
+      const tabParam = params.get('tab');
+      if (tabParam === 'register') setAuthTab('register');
+      if (tabParam === 'login') setAuthTab('login');
+      const redirectParam = params.get('redirect');
+      if (redirectParam) {
+        setInfoMessage('Vui lòng đăng nhập hoặc tạo tài khoản để tiếp tục vào học.');
+      }
+    }
+  }, []);
+
+  const getRedirectTarget = (isNewUser?: boolean): string => {
+    const rawHash = window.location.hash || '';
+    if (rawHash.includes('?')) {
+      const queryStr = rawHash.split('?')[1];
+      const params = new URLSearchParams(queryStr);
+      const redirectParam = params.get('redirect');
+      if (redirectParam) {
+        return decodeURIComponent(redirectParam);
+      }
+    }
+    return isNewUser ? '#/profile' : '#/courses';
+  };
+
   // Countdown timer for 300s OTP TTL
   useEffect(() => {
     let timer: any;
@@ -166,7 +195,7 @@ export const LoginPage: React.FC = () => {
         password,
       });
       login(res.accessToken, res.user);
-      window.location.hash = '#/courses';
+      window.location.hash = getRedirectTarget();
     } catch (err: any) {
       setErrorMessage(err.message || 'Đăng nhập thất bại.');
     } finally {
@@ -221,12 +250,7 @@ export const LoginPage: React.FC = () => {
         otp: fullOtp,
       });
       login(res.accessToken, res.user);
-
-      if (res.isNewUser) {
-        window.location.hash = '#/profile';
-      } else {
-        window.location.hash = '#/courses';
-      }
+      window.location.hash = getRedirectTarget(res.isNewUser);
     } catch (err: any) {
       setErrorMessage(err.message || 'Mã OTP không chính xác.');
       if (
@@ -281,11 +305,7 @@ export const LoginPage: React.FC = () => {
         googleId,
       });
       login(res.accessToken, res.user);
-      if (res.isNewUser) {
-        window.location.hash = '#/profile';
-      } else {
-        window.location.hash = '#/courses';
-      }
+      window.location.hash = getRedirectTarget(res.isNewUser);
     } catch (err: any) {
       setErrorMessage(err.message || 'Đăng nhập bằng Google thất bại.');
     } finally {

@@ -81,6 +81,16 @@ export class UserController {
     }
   };
 
+  adminListAuditLogs = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 25;
+      const logs = await userService.adminListAuditLogs(limit);
+      res.status(200).json({ success: true, data: logs });
+    } catch (err) {
+      next(err);
+    }
+  };
+
   adminUpdateUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const adminId = req.user!.userId;

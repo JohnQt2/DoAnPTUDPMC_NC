@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { assessmentController } from './assessment.controller';
-import { authenticate, optionalAuthenticate } from '../../shared/middleware/auth.middleware';
+import { authenticate } from '../../shared/middleware/auth.middleware';
 import { authorize } from '../../shared/middleware/rbac.middleware';
 import { idempotency } from '../../shared/middleware/idempotency.middleware';
 
@@ -17,8 +17,8 @@ router.post('/tests', authenticate, authorize('ADMIN', 'CONTENT_EDITOR'), assess
 router.put('/tests/:id', authenticate, authorize('ADMIN', 'CONTENT_EDITOR'), assessmentController.updateTest);
 router.post('/tests/:id/assign-questions', authenticate, authorize('ADMIN', 'CONTENT_EDITOR'), assessmentController.assignQuestions);
 
-// ─── Tests (Taking & Submitting) ───────────────────────────────────────
-router.get('/tests/:id', optionalAuthenticate, assessmentController.getTestDetail);
+// ─── Tests (Taking & Submitting - Protected) ──────────────────────────
+router.get('/tests/:id', authenticate, assessmentController.getTestDetail);
 router.post('/tests/:id/start', authenticate, assessmentController.startTestSession);
 router.post('/tests/:id/submit', authenticate, idempotency(86400), assessmentController.submitTest);
 

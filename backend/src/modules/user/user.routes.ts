@@ -11,8 +11,9 @@ router.put('/me', authenticate, userController.updateProfile);
 router.post('/onboarding', authenticate, userController.submitOnboarding);
 router.put('/notifications', authenticate, userController.updateNotifications);
 
-// Admin User Management Endpoints (RBAC: ADMIN)
+// Admin User Management & Audit Endpoints (RBAC: ADMIN)
 router.get('/admin/all', authenticate, authorize('ADMIN'), userController.adminListUsers);
+router.get('/admin/audit-logs', authenticate, authorize('ADMIN'), userController.adminListAuditLogs);
 router.put('/admin/:userId', authenticate, authorize('ADMIN'), userController.adminUpdateUser);
 
 export const userRoutes = router;

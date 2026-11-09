@@ -1,16 +1,19 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('🌱 Seeding ChinaEasy Database with rich pedagogical content...');
+  const defaultPasswordHash = await bcrypt.hash('123456', 10);
 
-  // 1. Users & Roles
+  // 1. Users & Roles (Mật khẩu mặc định: 123456)
   const admin = await prisma.users.upsert({
     where: { email: 'admin@chinaeasy.vn' },
-    update: {},
+    update: { password_hash: defaultPasswordHash, role: 'ADMIN', status: 'ACTIVE' },
     create: {
       email: 'admin@chinaeasy.vn',
+      password_hash: defaultPasswordHash,
       display_name: 'Quản Trị Viên (Admin)',
       role: 'ADMIN',
       status: 'ACTIVE',
@@ -26,9 +29,10 @@ async function main() {
 
   const editor = await prisma.users.upsert({
     where: { email: 'editor@chinaeasy.vn' },
-    update: {},
+    update: { password_hash: defaultPasswordHash, role: 'CONTENT_EDITOR', status: 'ACTIVE' },
     create: {
       email: 'editor@chinaeasy.vn',
+      password_hash: defaultPasswordHash,
       display_name: 'Biên Tập Viên (Editor)',
       role: 'CONTENT_EDITOR',
       status: 'ACTIVE',
@@ -43,9 +47,10 @@ async function main() {
 
   const student = await prisma.users.upsert({
     where: { email: 'student@chinaeasy.vn' },
-    update: {},
+    update: { password_hash: defaultPasswordHash, role: 'STUDENT', status: 'ACTIVE' },
     create: {
       email: 'student@chinaeasy.vn',
+      password_hash: defaultPasswordHash,
       display_name: 'Học Viên Demo',
       role: 'STUDENT',
       status: 'ACTIVE',

@@ -228,7 +228,7 @@ export class UserService {
       ];
     }
 
-    const [total, users] = await Promise.all([
+    const [total, users, totalUsers, activeUsers, adminCount, editorCount, lockedCount] = await Promise.all([
       prisma.users.count({ where }),
       prisma.users.findMany({
         where,
@@ -245,10 +245,22 @@ export class UserService {
           last_login_at: true,
         },
       }),
+      prisma.users.count(),
+      prisma.users.count({ where: { status: 'ACTIVE' } }),
+      prisma.users.count({ where: { role: 'ADMIN' } }),
+      prisma.users.count({ where: { role: 'CONTENT_EDITOR' } }),
+      prisma.users.count({ where: { status: { in: ['LOCKED', 'BANNED'] } } }),
     ]);
 
     return {
       users,
+      summary: {
+        totalUsers,
+        activeUsers,
+        adminCount,
+        editorCount,
+        lockedCount,
+      },
       pagination: {
         total,
         page,
@@ -256,6 +268,46 @@ export class UserService {
         totalPages: Math.ceil(total / limit),
       },
     };
+  }
+
+  /**
+   * RBAC Admin: Truy xuất nhật ký kiểm toán bảo mật & phân quyền (Audit Logs)
+   */
+  async adminListAuditLogs(limit: number = 25) {
+    const safeLimit = Math.min(100, Math.max(1, limit));
+    const logs = await prisma.auditLogs.findMany({
+      take: safeLimit,
+      orderBy: { created_at: 'desc' },
+      include: {
+        user: {
+          select: {
+            user_id: true,
+            email: true,
+            display_name: true,
+            role: true,
+          },
+        },
+      },
+    });
+
+    return logs.map((log) => ({
+      logId: log.log_id,
+      actionType: log.action_type,
+      targetEntity: log.target_entity,
+      targetId: log.target_id,
+      oldValue: log.old_value,
+      newValue: log.new_value,
+      ipAddress: log.ip_address,
+      createdAt: log.created_at,
+      actor: log.user
+        ? {
+            userId: log.user.user_id,
+            email: log.user.email,
+            displayName: log.user.display_name,
+            role: log.user.role,
+          }
+        : null,
+    }));
   }
 
   async adminUpdateUser(adminId: number, targetUserId: number, data: { role?: string; status?: string }) {
@@ -267,6 +319,15 @@ export class UserService {
       if (data.role && data.role !== 'ADMIN') {
         throw AppError.badRequest('Quản trị viên không thể tự hạ quyền của chính mình.');
       }
+    }
+
+    const existingTarget = await prisma.users.findUnique({
+      where: { user_id: targetUserId },
+      select: { role: true, status: true },
+    });
+
+    if (!existingTarget) {
+      throw AppError.notFound('Không tìm thấy tài khoản người dùng cần cập nhật.');
     }
 
     const user = await prisma.users.update({
@@ -291,6 +352,7 @@ export class UserService {
         action_type: 'ADMIN_UPDATE_USER',
         target_entity: 'Users',
         target_id: targetUserId.toString(),
+        old_value: JSON.stringify(existingTarget),
         new_value: JSON.stringify(data),
       },
     });

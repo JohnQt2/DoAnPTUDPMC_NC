@@ -33,6 +33,9 @@ export const LoginPasswordDto = z.object({
 });
 
 export const GoogleAuthDto = z.object({
+  accessToken: z.string().optional(),
+  code: z.string().optional(),
+  redirectUri: z.string().optional(),
   credential: z.string().optional(),
   email: z.string().email().optional(),
   name: z.string().optional(),

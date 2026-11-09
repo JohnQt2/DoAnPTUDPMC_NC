@@ -6,12 +6,14 @@ dotenv.config();
 /**
  * Giá trị mẫu trong .env.example. Nếu người dùng copy .env.example -> .env mà chưa điền,
  * các giá trị này (hoặc chuỗi rỗng) sẽ bị bỏ qua để hệ thống dùng cấu hình mặc định thay vì
- * đăng nhập SMTP bằng tài khoản giả và thất bại.
+ * đăng nhập SMTP hoặc Google OAuth2 bằng cấu hình giả và thất bại.
  */
 const PLACEHOLDER_VALUES = new Set([
   'your_email@gmail.com',
   'your_16_digit_gmail_app_password',
   'ChinaEasy <your_email@gmail.com>',
+  'mock-google-client-id-chinaeasy.apps.googleusercontent.com',
+  'mock-google-client-secret',
 ]);
 
 export function cleanEnvValue(value: unknown): string | undefined {
@@ -34,7 +36,13 @@ const envSchema = z.object({
     .string()
     .default('true')
     .transform((v) => v === 'true'),
-  GOOGLE_CLIENT_ID: z.string().default('mock-google-client-id-chinaeasy.apps.googleusercontent.com'),
+  GOOGLE_CLIENT_ID: z
+    .string()
+    .default('236710689789-ipu0ad4sdke0paakb5ujmu0ukq9b4mc9.apps.googleusercontent.com'),
+  GOOGLE_CLIENT_SECRET: z.string().default(''),
+  GOOGLE_CALLBACK_URL: z
+    .string()
+    .default('http://localhost:5000/api/v1/auth/google/callback'),
   CLIENT_URL: z.string().default('http://localhost:5173'),
   SMTP_HOST: z.string().default('smtp.gmail.com'),
   SMTP_PORT: z.string().default('465').transform((v) => parseInt(v, 10)),

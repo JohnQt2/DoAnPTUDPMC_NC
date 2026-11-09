@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { authService } from './auth.service';
-import { SendOtpDto, VerifyOtpDto, GoogleAuthDto, RefreshTokenDto } from './auth.dto';
+import { SendOtpDto, VerifyOtpDto, LoginPasswordDto, GoogleAuthDto, RefreshTokenDto } from './auth.dto';
 import { env } from '../../config/env';
 
 export class AuthController {
@@ -32,9 +32,51 @@ export class AuthController {
 
   sendOtp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { email } = SendOtpDto.parse(req.body);
-      const result = await authService.sendEmailOtp(email);
-      res.status(200).json({ success: true, data: result });
+      const { email, password, displayName, mode } = SendOtpDto.parse(req.body);
+      const result = await authService.sendEmailOtp(email, { password, displayName, mode });
+      res.status(200).json({
+        success: true,
+        data: {
+          message: result.message,
+          expiresIn: result.expiresIn,
+          senderEmail: result.senderEmail,
+        },
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  getMailbox = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const email = req.query.email as string;
+      const mail = await authService.getMailboxMessage(email);
+      res.status(200).json({
+        success: true,
+        data: mail,
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  loginPassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { email, password } = LoginPasswordDto.parse(req.body);
+      const clientInfo = this.getClientInfo(req);
+
+      const result = await authService.loginWithPassword(email, password, clientInfo);
+      this.setRefreshTokenCookie(res, result.refreshToken);
+
+      res.status(200).json({
+        success: true,
+        data: {
+          user: result.user,
+          accessToken: result.accessToken,
+          isNewUser: result.isNewUser,
+          expiresIn: 900,
+        },
+      });
     } catch (err) {
       next(err);
     }

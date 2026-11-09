@@ -10,6 +10,7 @@ datasource db {
 model Users {
   user_id            Int                    @id @default(autoincrement())
   email              String                 @unique
+  password_hash      String?
   display_name       String
   avatar_resource_id Int?
   role               String                 @default("STUDENT") // STUDENT, CONTENT_EDITOR, ADMIN

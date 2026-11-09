@@ -10,6 +10,7 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
+    "check:smtp": "tsx src/scripts/check-smtp.ts",
     "test": "node --test dist/**/*.test.js"
   },
   "dependencies": {

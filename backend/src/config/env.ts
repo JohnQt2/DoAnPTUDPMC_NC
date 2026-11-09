@@ -3,6 +3,24 @@ import { z } from 'zod';
 
 dotenv.config();
 
+/**
+ * Giá trị mẫu trong .env.example. Nếu người dùng copy .env.example -> .env mà chưa điền,
+ * các giá trị này (hoặc chuỗi rỗng) sẽ bị bỏ qua để hệ thống dùng cấu hình mặc định thay vì
+ * đăng nhập SMTP bằng tài khoản giả và thất bại.
+ */
+const PLACEHOLDER_VALUES = new Set([
+  'your_email@gmail.com',
+  'your_16_digit_gmail_app_password',
+  'ChinaEasy <your_email@gmail.com>',
+]);
+
+export function cleanEnvValue(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined;
+  const trimmed = value.trim();
+  if (!trimmed || PLACEHOLDER_VALUES.has(trimmed)) return undefined;
+  return trimmed;
+}
+
 const envSchema = z.object({
   PORT: z.string().default('5000').transform((v) => parseInt(v, 10)),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
@@ -18,9 +36,18 @@ const envSchema = z.object({
     .transform((v) => v === 'true'),
   GOOGLE_CLIENT_ID: z.string().default('mock-google-client-id-chinaeasy.apps.googleusercontent.com'),
   CLIENT_URL: z.string().default('http://localhost:5173'),
+  SMTP_HOST: z.string().default('smtp.gmail.com'),
+  SMTP_PORT: z.string().default('465').transform((v) => parseInt(v, 10)),
+  SMTP_USER: z.string().default('hieuhoanghuu436@gmail.com'),
+  SMTP_PASS: z.string().default('nxax fptz ldpt txyu'),
+  SMTP_FROM: z.string().default('ChinaEasy <hieuhoanghuu436@gmail.com>'),
 });
 
-const parsed = envSchema.safeParse(process.env);
+const parsed = envSchema.safeParse(
+  Object.fromEntries(
+    Object.keys(envSchema.shape).map((key) => [key, cleanEnvValue(process.env[key])])
+  )
+);
 
 if (!parsed.success) {
   console.error('Invalid environment variables:', parsed.error.format());

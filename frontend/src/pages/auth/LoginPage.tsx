@@ -56,72 +56,178 @@ export const LoginPage: React.FC = () => {
   const [isLocked, setIsLocked] = useState(false);
   const [remainingAttempts, setRemainingAttempts] = useState<number | null>(null);
 
-  const getRedirectTarget = (isNewUser?: boolean): string => {
-    const rawHash = window.location.hash || '';
-    if (rawHash.includes('?')) {
-      const queryStr = rawHash.split('?')[1];
-      const params = new URLSearchParams(queryStr);
-      const redirectParam = params.get('redirect');
-      if (redirectParam) {
-        return decodeURIComponent(redirectParam);
-      }
+  /**
+   * Lấy trang mà người dùng muốn truy cập trước khi bị yêu cầu đăng nhập.
+   *
+   * Ví dụ:
+   * #/login?redirect=%23%2Flearning-survey
+   * sẽ trả về:
+   * #/learning-survey
+   */
+  const getRedirectPath = (): string | null => {
+    const rawHash =
+      window.location.hash || '';
+
+    const queryIndex =
+      rawHash.indexOf('?');
+
+    if (queryIndex < 0) {
+      return null;
     }
-    return isNewUser ? '#/profile' : '#/courses';
+
+    const queryString =
+      rawHash.slice(queryIndex + 1);
+
+    const params =
+      new URLSearchParams(queryString);
+
+    const redirectPath =
+      params.get('redirect');
+
+    if (
+      !redirectPath ||
+      !redirectPath.startsWith('#/')
+    ) {
+      return null;
+    }
+
+    return redirectPath;
   };
 
-  // Read query params from URL hash (e.g. #/login?tab=register&redirect=%23%2Flessons%2F1 or ?google_oauth=success)
+  /**
+   * Điều hướng sau khi đăng nhập thành công.
+   *
+   * Ưu tiên:
+   * 1. Trang người dùng muốn truy cập trước đó.
+   * 2. Người dùng mới chuyển đến khảo sát.
+   * 3. Người dùng cũ chuyển đến danh sách khóa học.
+   */
+  const redirectAfterLogin = (
+    isNewUser: boolean = false
+  ): void => {
+    const redirectPath =
+      getRedirectPath();
+
+    window.location.hash =
+      redirectPath ||
+      (isNewUser
+        ? '#/learning-survey'
+        : '#/courses');
+  };
+
+  /**
+   * Đọc tham số từ URL hash.
+   *
+   * Ví dụ:
+   * #/login?tab=login&redirect=%23%2Flearning-survey
+   */
   useEffect(() => {
-    const rawHash = window.location.hash || '';
-    if (!rawHash.includes('?')) return;
+    const rawHash =
+      window.location.hash || '';
 
-    const queryStr = rawHash.split('?')[1];
-    const params = new URLSearchParams(queryStr);
-
-    const tabParam = params.get('tab');
-    if (tabParam === 'register') setAuthTab('register');
-    if (tabParam === 'login') setAuthTab('login');
-
-    const googleError = params.get('google_error');
-    if (googleError) {
-      setErrorMessage(decodeURIComponent(googleError));
-    }
-
-    const googleOauth = params.get('google_oauth');
-    if (googleOauth === 'success') {
-      const isNew = params.get('is_new') === '1';
-      setIsGoogleLoading(true);
-      refreshSession()
-        .then((ok) => {
-          if (ok) {
-            window.location.hash = getRedirectTarget(isNew);
-          } else {
-            setErrorMessage('Không thể đồng bộ phiên đăng nhập Google. Vui lòng thử lại.');
-          }
-        })
-        .finally(() => setIsGoogleLoading(false));
+    if (!rawHash.includes('?')) {
       return;
     }
 
-    const redirectParam = params.get('redirect');
+    const queryString =
+      rawHash.slice(
+        rawHash.indexOf('?') + 1
+      );
+
+    const params =
+      new URLSearchParams(queryString);
+
+    const tabParam =
+      params.get('tab');
+
+    if (tabParam === 'register') {
+      setAuthTab('register');
+    }
+
+    if (tabParam === 'login') {
+      setAuthTab('login');
+    }
+
+    const googleError =
+      params.get('google_error');
+
+    if (googleError) {
+      setErrorMessage(googleError);
+    }
+
+    const googleOauth =
+      params.get('google_oauth');
+
+    if (googleOauth === 'success') {
+      const isNew =
+        params.get('is_new') === '1';
+
+      setIsGoogleLoading(true);
+
+      void refreshSession()
+        .then((ok) => {
+          if (ok) {
+            redirectAfterLogin(isNew);
+            return;
+          }
+
+          setErrorMessage(
+            'Không thể đồng bộ phiên đăng nhập Google. Vui lòng thử lại.'
+          );
+        })
+        .catch(() => {
+          setErrorMessage(
+            'Không thể đồng bộ phiên đăng nhập Google. Vui lòng thử lại.'
+          );
+        })
+        .finally(() => {
+          setIsGoogleLoading(false);
+        });
+
+      return;
+    }
+
+    const redirectParam =
+      params.get('redirect');
+
     if (redirectParam && !googleError) {
-      setInfoMessage('Vui lòng đăng nhập hoặc tạo tài khoản để tiếp tục vào học.');
+      setInfoMessage(
+        'Vui lòng đăng nhập hoặc tạo tài khoản để tiếp tục vào học.'
+      );
     }
   }, []);
 
   // Countdown timer for 300s OTP TTL
   useEffect(() => {
-    let timer: any;
-    if (step === 'otp_verify' && countdown > 0) {
-      timer = setInterval(() => setCountdown((prev) => prev - 1), 1000);
+    if (step !== 'otp_verify') {
+      return;
     }
-    return () => clearInterval(timer);
-  }, [step, countdown]);
 
-  const validateGmailFormat = (value: string): boolean => {
-    const normalized = value.trim().toLowerCase();
-    return (
-      /^[a-zA-Z0-9._%+-]+@gmail\.com$/i.test(normalized) ||
-      /^[a-zA-Z0-9._%+-]+@chinaeasy\.vn$/i.test(normalized)
+    const timer =
+      window.setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            window.clearInterval(timer);
+            return 0;
+          }
+
+          return prev - 1;
+        });
+      }, 1000);
+
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, [step]);
+
+  const validateGmailFormat = (
+    value: string
+  ): boolean => {
+    const normalized =
+      value.trim().toLowerCase();
+
+    return /^[a-zA-Z0-9._%+-]+@gmail\.com$/i.test(
+      normalized
     );
   };
 
@@ -162,14 +268,23 @@ export const LoginPage: React.FC = () => {
         payload.displayName = displayName.trim();
       }
 
-      const res = await api.post<{ message: string; expiresIn: number; senderEmail?: string }>(
-        '/auth/otp/send',
-        payload
+      const res = await api.post<{
+        message: string;
+        expiresIn: number;
+        senderEmail?: string;
+      }>('/auth/otp/send', payload);
+
+      setCountdown(
+        res?.expiresIn || 300
       );
-      setCountdown(res?.expiresIn || 300);
+
       setInfoMessage(
-        res?.message || `Mã xác thực OTP 6 chữ số đã được gửi tới địa chỉ ${normalizedEmail}.`
+        res?.message ||
+        `Mã xác thực OTP 6 chữ số đã được gửi tới địa chỉ ${normalizedEmail}.`
       );
+
+      setIsLocked(false);
+      setRemainingAttempts(null);
       setStep('otp_verify');
       setOtp(['', '', '', '', '', '']);
     } catch (err: any) {
@@ -207,7 +322,7 @@ export const LoginPage: React.FC = () => {
         password,
       });
       login(res.accessToken, res.user);
-      window.location.hash = getRedirectTarget();
+      redirectAfterLogin(false);
     } catch (err: any) {
       setErrorMessage(err.message || 'Đăng nhập thất bại.');
     } finally {
@@ -245,6 +360,8 @@ export const LoginPage: React.FC = () => {
     }
   };
 
+
+
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     const fullOtp = otp.join('');
@@ -262,17 +379,60 @@ export const LoginPage: React.FC = () => {
         otp: fullOtp,
       });
       login(res.accessToken, res.user);
-      window.location.hash = getRedirectTarget(res.isNewUser);
+      redirectAfterLogin(
+        Boolean(res.isNewUser)
+      );
     } catch (err: any) {
-      setErrorMessage(err.message || 'Mã OTP không chính xác.');
-      if (
-        err.data?.error?.code === 'OTP_ACCOUNT_LOCKED' ||
-        err.data?.error?.code === 'OTP_MAX_ATTEMPTS_EXCEEDED'
-      ) {
-        setIsLocked(true);
+      const code =
+        err?.data?.error?.code;
+
+      switch (code) {
+        case 'OTP_INCORRECT':
+          setErrorMessage(
+            err.message ||
+            'Mã OTP không chính xác.'
+          );
+          break;
+
+        case 'OTP_EXPIRED':
+          setErrorMessage(
+            'Mã OTP đã hết hạn. Vui lòng yêu cầu mã mới.'
+          );
+          break;
+
+        case 'OTP_ACCOUNT_LOCKED':
+          setErrorMessage(
+            'Tài khoản đang bị tạm khóa. Vui lòng thử lại sau.'
+          );
+          setIsLocked(true);
+          break;
+
+        case 'OTP_MAX_ATTEMPTS_EXCEEDED':
+          setErrorMessage(
+            'Bạn đã nhập sai OTP quá 5 lần. Tài khoản bị khóa trong 15 phút.'
+          );
+          setIsLocked(true);
+          break;
+
+        case 'RATE_LIMITED':
+          setErrorMessage(
+            'Bạn đang thao tác quá nhanh. Vui lòng thử lại sau.'
+          );
+          break;
+
+        default:
+          setErrorMessage(
+            err.message ||
+            'Không thể xác thực OTP.'
+          );
       }
-      if (err.data?.error?.details?.remainingAttempts !== undefined) {
-        setRemainingAttempts(err.data.error.details.remainingAttempts);
+
+      const attempts =
+        err?.data?.error?.details
+          ?.remainingAttempts;
+
+      if (attempts !== undefined) {
+        setRemainingAttempts(attempts);
       }
     } finally {
       setIsSubmitting(false);
@@ -329,7 +489,9 @@ export const LoginPage: React.FC = () => {
                 accessToken: tokenResponse.access_token,
               });
               login(res.accessToken, res.user);
-              window.location.hash = getRedirectTarget(res.isNewUser);
+              redirectAfterLogin(
+                Boolean(res.isNewUser)
+              );
             } catch (err: any) {
               setErrorMessage(err.message || 'Đăng nhập bằng Google OAuth2 thất bại.');
             } finally {
@@ -399,11 +561,10 @@ export const LoginPage: React.FC = () => {
                 setAuthTab('register');
                 setErrorMessage(null);
               }}
-              className={`min-h-[42px] py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
-                authTab === 'register'
-                  ? 'bg-white text-primary-600 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-800'
-              }`}
+              className={`min-h-[42px] py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${authTab === 'register'
+                ? 'bg-white text-primary-600 shadow-sm'
+                : 'text-gray-500 hover:text-gray-800'
+                }`}
             >
               Đăng ký lần đầu (Guest)
             </button>
@@ -413,11 +574,10 @@ export const LoginPage: React.FC = () => {
                 setAuthTab('login');
                 setErrorMessage(null);
               }}
-              className={`min-h-[42px] py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
-                authTab === 'login'
-                  ? 'bg-white text-primary-600 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-800'
-              }`}
+              className={`min-h-[42px] py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${authTab === 'login'
+                ? 'bg-white text-primary-600 shadow-sm'
+                : 'text-gray-500 hover:text-gray-800'
+                }`}
             >
               Đăng nhập tài khoản
             </button>
@@ -731,7 +891,10 @@ export const LoginPage: React.FC = () => {
               <button
                 type="button"
                 disabled={countdown > 0 || isSubmitting || isLocked}
-                onClick={() => handleSendOtp()}
+                onClick={() => {
+                  setCountdown(300);
+                  void handleSendOtp();
+                }}
                 className="flex items-center gap-1 text-primary-600 hover:text-primary-700 font-semibold cursor-pointer disabled:opacity-40 disabled:hover:text-primary-600"
               >
                 <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />

@@ -7,8 +7,12 @@ const router = Router();
 
 // Student Profile Endpoints
 router.get('/me', authenticate, userController.getProfile);
+router.get('/me/progress', authenticate, userController.getUserProgressOverview);
+router.get('/progress', authenticate, userController.getUserProgressOverview);
 router.put('/me', authenticate, userController.updateProfile);
 router.post('/onboarding', authenticate, userController.submitOnboarding);
+router.post('/onboarding/preview', authenticate, userController.previewOnboarding);
+router.get('/roadmap', authenticate, userController.getActiveRoadmap);
 router.put('/notifications', authenticate, userController.updateNotifications);
 
 // Admin User Management & Audit Endpoints (RBAC: ADMIN)

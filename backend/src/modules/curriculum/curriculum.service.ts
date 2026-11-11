@@ -1,5 +1,6 @@
 import { prisma } from '../../shared/database/prisma.client';
 import { AppError } from '../../shared/errors/app-error';
+import { assessmentService } from '../assessment/assessment.service';
 import {
   CreateCourseInput,
   UpdateCourseInput,
@@ -59,18 +60,84 @@ export class CurriculumService {
       throw AppError.notFound('Không tìm thấy khóa học này.');
     }
 
-    // If userId provided, fetch user lesson progress for this course's lessons
-    let progressMap: Map<number, boolean> = new Map();
-    if (userId) {
-      const lessonIds = course.chapters.flatMap((ch) => ch.lessons.map((l) => l.lesson_id));
-      if (lessonIds.length > 0) {
-        const progressRecords = await prisma.userLessonProgress.findMany({
-          where: { user_id: userId, lesson_id: { in: lessonIds } },
+    // Flatten all published lessons in sequential order to determine lock/unlock chain
+    const orderedLessons: Array<{
+      lesson_id: number;
+      chapter_id: number;
+      title: string;
+      order_index: number;
+    }> = [];
+
+    for (const ch of course.chapters) {
+      for (const l of ch.lessons) {
+        orderedLessons.push({
+          lesson_id: l.lesson_id,
+          chapter_id: ch.chapter_id,
+          title: l.title,
+          order_index: l.order_index,
         });
-        for (const p of progressRecords) {
-          progressMap.set(p.lesson_id, p.is_completed);
+      }
+    }
+
+    // If userId provided, fetch user lesson progress for this course's lessons
+    const progressMap = new Map<
+      number,
+      { isCompleted: boolean; status: string; highestScore: number; completedAt: Date | null }
+    >();
+
+    if (userId && orderedLessons.length > 0) {
+      const lessonIds = orderedLessons.map((l) => l.lesson_id);
+      const progressRecords = await prisma.userLessonProgress.findMany({
+        where: { user_id: userId, lesson_id: { in: lessonIds } },
+      });
+      for (const p of progressRecords) {
+        progressMap.set(p.lesson_id, {
+          isCompleted: p.is_completed,
+          status: p.status || (p.is_completed ? 'COMPLETED' : 'LOCKED'),
+          highestScore: p.highest_score || 0,
+          completedAt: p.completed_at || null,
+        });
+      }
+    }
+
+    // Compute is_unlocked and status chain for each lesson
+    const unlockMap = new Map<number, boolean>();
+    const statusMap = new Map<number, string>();
+
+    for (let i = 0; i < orderedLessons.length; i++) {
+      const cur = orderedLessons[i];
+      const prog = progressMap.get(cur.lesson_id);
+
+      let isUnlocked = false;
+      if (i === 0) {
+        isUnlocked = true;
+      } else if (
+        prog?.isCompleted ||
+        (prog?.status && ['UNLOCKED', 'IN_PROGRESS', 'COMPLETED'].includes(prog.status.toUpperCase()))
+      ) {
+        isUnlocked = true;
+      } else {
+        const prev = orderedLessons[i - 1];
+        const prevProg = progressMap.get(prev.lesson_id);
+        if (prevProg?.isCompleted) {
+          isUnlocked = true;
         }
       }
+
+      unlockMap.set(cur.lesson_id, isUnlocked);
+
+      let computedStatus = 'LOCKED';
+      if (prog?.isCompleted) {
+        computedStatus = 'COMPLETED';
+      } else if (prog?.status === 'IN_PROGRESS') {
+        computedStatus = 'IN_PROGRESS';
+      } else if (prog?.status === 'UNLOCKED' || isUnlocked) {
+        computedStatus = 'UNLOCKED';
+      } else {
+        computedStatus = 'LOCKED';
+      }
+
+      statusMap.set(cur.lesson_id, computedStatus);
     }
 
     return {
@@ -85,17 +152,41 @@ export class CurriculumService {
         chapterId: ch.chapter_id,
         title: ch.title,
         orderIndex: ch.order_index,
-        lessons: ch.lessons.map((l) => ({
-          lessonId: l.lesson_id,
-          title: l.title,
-          orderIndex: l.order_index,
-          estimatedDurationMins: l.estimated_duration_mins,
-          status: l.status,
-          blocksCount: l._count.blocks,
-          vocabulariesCount: l._count.vocabularies,
-          testsCount: l._count.tests,
-          ...(userId ? { isCompleted: progressMap.get(l.lesson_id) ?? false } : {}),
-        })),
+        lessons: ch.lessons.map((l) => {
+          const prog = progressMap.get(l.lesson_id);
+          const isUnlocked = unlockMap.get(l.lesson_id) ?? false;
+          const status = statusMap.get(l.lesson_id) ?? 'LOCKED';
+          const isCompleted = prog?.isCompleted ?? false;
+          const highestScore = prog?.highestScore ?? 0;
+          const completedAt = prog?.completedAt ?? null;
+
+          return {
+            lessonId: l.lesson_id,
+            title: l.title,
+            orderIndex: l.order_index,
+            estimatedDurationMins: l.estimated_duration_mins,
+            blocksCount: l._count.blocks,
+            vocabulariesCount: l._count.vocabularies,
+            testsCount: l._count.tests,
+            publishStatus: l.status,
+            ...(userId
+              ? {
+                  status,
+                  progressStatus: status,
+                  isUnlocked,
+                  is_unlocked: isUnlocked,
+                  isCompleted,
+                  is_completed: isCompleted,
+                  highestScore,
+                  highest_score: highestScore,
+                  completedAt,
+                  completed_at: completedAt,
+                }
+              : {
+                  status: l.status,
+                }),
+          };
+        }),
       })),
     };
   }
@@ -279,7 +370,7 @@ export class CurriculumService {
     return { message: 'Đã xóa bài học thành công.' };
   }
 
-  async getLessonDetail(lessonId: number) {
+  async getLessonDetail(lessonId: number, userId?: number, userRole?: string) {
     const lesson = await prisma.lessons.findUnique({
       where: { lesson_id: lessonId },
       include: {
@@ -308,12 +399,41 @@ export class CurriculumService {
       throw AppError.notFound('Không tìm thấy bài học này.');
     }
 
+    // Kiểm tra điều kiện mở khóa bài học nếu là học viên (STUDENT)
+    if (userId && (!userRole || userRole === 'STUDENT')) {
+      const unlockStatus = await assessmentService.checkLessonUnlockStatus(userId, lessonId);
+      if (!unlockStatus.isUnlocked) {
+        throw AppError.forbidden(
+          unlockStatus.reason || 'Bài học này đang bị khóa. Bạn cần hoàn thành bài học tiên quyết để mở khóa.',
+          'LESSON_LOCKED',
+          unlockStatus
+        );
+      }
+    }
+
+    let userProgress: any = null;
+    if (userId) {
+      const prog = await prisma.userLessonProgress.findUnique({
+        where: { user_id_lesson_id: { user_id: userId, lesson_id: lessonId } },
+      });
+      if (prog) {
+        userProgress = {
+          status: prog.status || (prog.is_completed ? 'COMPLETED' : 'UNLOCKED'),
+          isCompleted: prog.is_completed,
+          highestScore: prog.highest_score || 0,
+          completedAt: prog.completed_at,
+          lastStudiedAt: prog.last_studied_at,
+        };
+      }
+    }
+
     return {
       lessonId: lesson.lesson_id,
       title: lesson.title,
       orderIndex: lesson.order_index,
       estimatedDurationMins: lesson.estimated_duration_mins,
       status: lesson.status,
+      userProgress,
       chapter: {
         chapterId: lesson.chapter.chapter_id,
         title: lesson.chapter.title,
@@ -336,6 +456,96 @@ export class CurriculumService {
         audioUrl: v.character.audioResource?.public_url || null,
       })),
       tests: lesson.tests,
+    };
+  }
+
+  /**
+   * Ghi nhận tiến độ hoạt động học bài (nghe audio, xem từ vựng, luyện Pinyin, viết chữ Hán,...)
+   * Nếu bài chưa mở khóa -> 403 LESSON_LOCKED
+   * Nếu đã mở khóa nhưng chưa COMPLETED -> status = 'IN_PROGRESS'
+   */
+  async recordLessonProgress(userId: number, lessonId: number) {
+    const lesson = await prisma.lessons.findUnique({
+      where: { lesson_id: lessonId },
+      include: {
+        chapter: {
+          include: { course: true },
+        },
+      },
+    });
+
+    if (!lesson) {
+      throw AppError.notFound('Bài học không tồn tại.');
+    }
+
+    // 1. Kiểm tra điều kiện mở khóa bài học: nếu chưa mở khóa -> 403 LESSON_LOCKED
+    const unlockStatus = await assessmentService.checkLessonUnlockStatus(userId, lessonId);
+    if (!unlockStatus.isUnlocked) {
+      throw AppError.forbidden(
+        unlockStatus.reason || 'Bài học này đang bị khóa. Bạn không thể ghi nhận tiến độ học.',
+        'LESSON_LOCKED',
+        unlockStatus
+      );
+    }
+
+    // 2. Kiểm tra tiến độ hiện tại
+    const existing = await prisma.userLessonProgress.findUnique({
+      where: {
+        user_id_lesson_id: {
+          user_id: userId,
+          lesson_id: lessonId,
+        },
+      },
+    });
+
+    // Nếu bài học đã hoàn thành -> giữ nguyên status: 'COMPLETED', chỉ cập nhật last_studied_at
+    if (existing && existing.is_completed) {
+      const updated = await prisma.userLessonProgress.update({
+        where: { progress_id: existing.progress_id },
+        data: {
+          last_studied_at: new Date(),
+        },
+      });
+
+      return {
+        lessonId: updated.lesson_id,
+        status: updated.status || 'COMPLETED',
+        isCompleted: updated.is_completed,
+        highestScore: updated.highest_score || 0,
+        lastStudiedAt: updated.last_studied_at,
+        completedAt: updated.completed_at,
+      };
+    }
+
+    // Nếu bài học đã mở khóa nhưng chưa COMPLETED -> Upsert status = 'IN_PROGRESS'
+    const updated = await prisma.userLessonProgress.upsert({
+      where: {
+        user_id_lesson_id: {
+          user_id: userId,
+          lesson_id: lessonId,
+        },
+      },
+      create: {
+        user_id: userId,
+        lesson_id: lessonId,
+        status: 'IN_PROGRESS',
+        is_completed: false,
+        highest_score: 0,
+        last_studied_at: new Date(),
+      },
+      update: {
+        status: 'IN_PROGRESS',
+        last_studied_at: new Date(),
+      },
+    });
+
+    return {
+      lessonId: updated.lesson_id,
+      status: updated.status,
+      isCompleted: updated.is_completed,
+      highestScore: updated.highest_score || 0,
+      lastStudiedAt: updated.last_studied_at,
+      completedAt: updated.completed_at,
     };
   }
 

@@ -254,12 +254,21 @@ export const ProfilePage: React.FC = () => {
 
         {/* Section 2: Onboarding & Study Goal */}
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-6">
-          <div className="flex items-center gap-3 border-b border-gray-100 pb-4">
-            <Compass className="w-5 h-5 text-secondary-600" />
-            <div>
-              <h2 className="text-lg font-bold text-gray-900">Lộ Trình Cá Nhân</h2>
-              <p className="text-xs text-gray-400">Khảo sát mục tiêu và gán khóa học phù hợp</p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
+            <div className="flex items-center gap-3">
+              <Compass className="w-5 h-5 text-secondary-600" />
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">Lộ Trình Cá Nhân</h2>
+                <p className="text-xs text-gray-400">Khảo sát mục tiêu và gán khóa học phù hợp từ HSK 1 đến HSK 6</p>
+              </div>
             </div>
+            <a
+              href="#/onboarding"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-primary-50 hover:bg-primary-100 text-primary-700 font-bold text-xs transition-colors cursor-pointer"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Xem lộ trình chi tiết</span>
+            </a>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
@@ -275,7 +284,12 @@ export const ProfilePage: React.FC = () => {
               >
                 <option value="ZERO">Mới bắt đầu (Chưa biết gì)</option>
                 <option value="PINYIN_KNOWN">Đã biết Pinyin cơ bản</option>
-                <option value="ELEMENTARY">Sơ cấp HSK 1</option>
+                <option value="HSK1">Đang ở trình độ HSK 1</option>
+                <option value="HSK2">Đang ở trình độ HSK 2</option>
+                <option value="HSK3">Đang ở trình độ HSK 3</option>
+                <option value="HSK4">Đang ở trình độ HSK 4</option>
+                <option value="HSK5">Đang ở trình độ HSK 5</option>
+                <option value="HSK6">Đang ở trình độ HSK 6</option>
               </select>
             </div>
 
@@ -291,6 +305,10 @@ export const ProfilePage: React.FC = () => {
               >
                 <option value="HSK1">Đạt chứng chỉ HSK 1</option>
                 <option value="HSK2">Đạt chứng chỉ HSK 2</option>
+                <option value="HSK3">Đạt chứng chỉ HSK 3</option>
+                <option value="HSK4">Đạt chứng chỉ HSK 4</option>
+                <option value="HSK5">Đạt chứng chỉ HSK 5</option>
+                <option value="HSK6">Đạt chứng chỉ HSK 6</option>
                 <option value="COMMUNICATION">Giao tiếp đời sống</option>
                 <option value="HOBBY">Học theo sở thích</option>
               </select>
@@ -306,10 +324,12 @@ export const ProfilePage: React.FC = () => {
                 onChange={(e) => setDailyCommitment(parseInt(e.target.value, 10))}
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
               >
-                <option value={10}>10 phút / ngày</option>
-                <option value={15}>15 phút / ngày (Khuyên dùng)</option>
-                <option value={20}>20 phút / ngày</option>
-                <option value={30}>30 phút / ngày</option>
+                <option value={15}>15 phút / ngày (0.25 giờ)</option>
+                <option value={30}>30 phút / ngày (0.5 giờ)</option>
+                <option value={45}>45 phút / ngày (0.75 giờ)</option>
+                <option value={60}>60 phút / ngày (1 giờ)</option>
+                <option value={90}>90 phút / ngày (1.5 giờ)</option>
+                <option value={120}>120 phút / ngày (2 giờ)</option>
               </select>
             </div>
           </div>

@@ -11,6 +11,7 @@ import {
   X,
   Volume2,
   Sparkles,
+  Compass,
 } from 'lucide-react';
 
 export const Navbar: React.FC<{ currentPath: string }> = ({ currentPath }) => {
@@ -26,6 +27,7 @@ export const Navbar: React.FC<{ currentPath: string }> = ({ currentPath }) => {
 
   const studentLinks = [
     { label: 'Khóa Học', hash: '#/courses', icon: BookOpen },
+    { label: 'Lộ Trình Cá Nhân', hash: '#/onboarding', icon: Compass },
     { label: 'Ngữ Âm Pinyin', hash: '#/pinyin', icon: Volume2 },
     { label: 'Luyện Viết Chữ Hán', hash: '#/characters', icon: Sparkles },
     { label: 'Ôn Tập SRS', hash: '#/srs', icon: Brain },

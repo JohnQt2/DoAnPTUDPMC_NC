@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
-import { BookOpen, Award, Clock, ArrowRight, CheckCircle2, Sparkles } from 'lucide-react';
+import { BookOpen, Award, ArrowRight, CheckCircle2, Sparkles, Compass, Target } from 'lucide-react';
+
+const HSK_BADGE_STYLES: Record<string, string> = {
+  HSK1: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  HSK2: 'bg-cyan-50 text-cyan-700 border-cyan-200',
+  HSK3: 'bg-amber-50 text-amber-700 border-amber-200',
+  HSK4: 'bg-orange-50 text-orange-700 border-orange-200',
+  HSK5: 'bg-rose-50 text-rose-700 border-rose-200',
+  HSK6: 'bg-purple-50 text-purple-700 border-purple-200',
+};
 
 export const CourseListPage: React.FC = () => {
   const [courses, setCourses] = useState<any[]>([]);
@@ -36,6 +45,23 @@ export const CourseListPage: React.FC = () => {
           <p className="text-primary-100 text-sm sm:text-base leading-relaxed">
             Học chuẩn ngữ âm Pinyin, làm chủ các nét bút thuận chữ Hán với công nghệ vẽ tương tác, và rèn luyện phản xạ với bài kiểm tra đa dạng.
           </p>
+          <div className="pt-2 flex flex-wrap gap-3">
+            <a
+              href="#/onboarding"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white text-primary-700 hover:bg-primary-50 font-bold text-xs sm:text-sm shadow-sm transition-all cursor-pointer"
+            >
+              <Compass className="w-4 h-4" />
+              <span>Thiết lập lộ trình học</span>
+              <ArrowRight className="w-4 h-4" />
+            </a>
+            <a
+              href="#/onboarding?mode=survey"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs sm:text-sm border border-white/20 transition-all cursor-pointer"
+            >
+              <Target className="w-4 h-4 text-secondary-300" />
+              <span>Làm lại khảo sát</span>
+            </a>
+          </div>
           <div className="pt-2 flex flex-wrap gap-4 text-xs font-semibold text-primary-200">
             <span className="flex items-center gap-1.5">
               <CheckCircle2 className="w-4 h-4 text-secondary-400" />
@@ -84,7 +110,11 @@ export const CourseListPage: React.FC = () => {
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="px-3 py-1 rounded-full bg-primary-50 text-primary-600 font-extrabold text-xs">
+                    <span
+                      className={`px-3 py-1 rounded-full border font-extrabold text-xs ${
+                        HSK_BADGE_STYLES[course.level || 'HSK1'] || 'bg-primary-50 text-primary-600 border-primary-100'
+                      }`}
+                    >
                       {course.level || 'HSK1'}
                     </span>
                     <span className="text-xs text-gray-400 font-mono">

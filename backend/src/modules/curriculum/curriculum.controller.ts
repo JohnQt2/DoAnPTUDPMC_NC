@@ -136,8 +136,27 @@ export class CurriculumController {
   getLessonDetail = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const lessonId = parseInt(req.params.id, 10);
-      const lesson = await curriculumService.getLessonDetail(lessonId);
+      const userId = req.user?.userId;
+      const userRole = req.user?.role;
+      const lesson = await curriculumService.getLessonDetail(lessonId, userId, userRole);
       res.status(200).json({ success: true, data: lesson });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  recordLessonProgress = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const lessonId = parseInt(req.params.id || req.params.lessonId, 10);
+      const userId = req.user!.userId;
+      const result = await curriculumService.recordLessonProgress(userId, lessonId);
+      res.status(200).json({
+        success: true,
+        data: {
+          message: 'Ghi nhận tiến độ học bài thành công.',
+          ...result,
+        },
+      });
     } catch (err) {
       next(err);
     }

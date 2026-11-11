@@ -6,17 +6,86 @@ export const UpdateProfileDto = z.object({
   avatar_resource_id: z.number().int().positive().optional(),
 });
 
-export const OnboardingSurveyDto = z.object({
-  starting_level: z.enum(['ZERO', 'PINYIN_KNOWN', 'ELEMENTARY'], {
-    errorMap: () => ({ message: 'Trình độ xuất phát không hợp lệ.' }),
-  }),
-  target_goal: z.enum(['HSK1', 'HSK2', 'COMMUNICATION', 'HOBBY'], {
-    errorMap: () => ({ message: 'Mục tiêu học không hợp lệ.' }),
-  }),
-  daily_commitment_mins: z.number().min(5).max(120).default(15),
-  reminder_time: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, 'Khung giờ nhắc học phải có định dạng HH:mm (ví dụ 20:00).').default('20:00'),
-  course_id: z.number().int().positive().optional(),
-});
+export const StartingLevelEnum = z.enum(
+  ['ZERO', 'PINYIN_KNOWN', 'ELEMENTARY', 'HSK1', 'HSK2', 'HSK3', 'HSK4', 'HSK5', 'HSK6'],
+  {
+    errorMap: () => ({
+      message:
+        'Trình độ xuất phát không hợp lệ (chọn ZERO, PINYIN_KNOWN, ELEMENTARY hoặc HSK1 - HSK6).',
+    }),
+  }
+);
+export type StartingLevel = z.infer<typeof StartingLevelEnum>;
+
+export const TargetGoalEnum = z.enum(
+  ['HSK1', 'HSK2', 'HSK3', 'HSK4', 'HSK5', 'HSK6', 'COMMUNICATION', 'HOBBY'],
+  {
+    errorMap: () => ({
+      message: 'Mục tiêu học không hợp lệ (chọn HSK1 - HSK6, COMMUNICATION hoặc HOBBY).',
+    }),
+  }
+);
+export type TargetGoal = z.infer<typeof TargetGoalEnum>;
+
+export const DailyCommitmentMinsEnum = z.coerce
+  .number({
+    invalid_type_error:
+      'Thời gian học mỗi ngày phải là số nguyên (10, 15, 20, 30, 45, 60, 90, 120).',
+  })
+  .int()
+  .refine((val) => [10, 15, 20, 30, 45, 60, 90, 120].includes(val), {
+    message: 'Thời gian học mỗi ngày phải là 10, 15, 20, 30, 45, 60, 90 hoặc 120 phút.',
+  })
+  .default(15);
+export type DailyCommitmentMins = 10 | 15 | 20 | 30 | 45 | 60 | 90 | 120;
+
+export const OnboardingSurveyDto = z
+  .object({
+    skip: z.boolean().optional().default(false),
+    starting_level: StartingLevelEnum.optional(),
+    target_goal: TargetGoalEnum.optional(),
+    daily_commitment_mins: DailyCommitmentMinsEnum.optional(),
+    target_weeks: z.coerce.number().int().min(1).max(104).optional(),
+    reminder_time: z
+      .string()
+      .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, 'Khung giờ nhắc học phải có định dạng HH:mm (ví dụ 20:00).')
+      .optional(),
+    course_id: z.number().int().positive().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (!data.skip) {
+      if (!data.starting_level) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['starting_level'],
+          message: 'Vui lòng chọn trình độ xuất phát hoặc chọn skip.',
+        });
+      }
+      if (!data.target_goal) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['target_goal'],
+          message: 'Vui lòng chọn mục tiêu học tập hoặc chọn skip.',
+        });
+      }
+    }
+  })
+  .transform((data) => {
+    const isSkip = Boolean(data.skip);
+    return {
+      skip: isSkip,
+      starting_level: (isSkip && !data.starting_level ? 'ZERO' : data.starting_level!) as StartingLevel,
+      target_goal: (isSkip && !data.target_goal ? 'HSK1' : data.target_goal!) as TargetGoal,
+      daily_commitment_mins: (data.daily_commitment_mins ?? 15) as DailyCommitmentMins,
+      target_weeks: data.target_weeks,
+      reminder_time: data.reminder_time ?? '20:00',
+      course_id: data.course_id,
+    };
+  });
+export type OnboardingSurveyInput = z.infer<typeof OnboardingSurveyDto>;
+
+export const PreviewOnboardingDto = OnboardingSurveyDto;
+export type PreviewOnboardingInput = OnboardingSurveyInput;
 
 export const UpdateNotificationsDto = z.object({
   reminder_time: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/).optional(),

@@ -66,7 +66,7 @@ export const LoginPage: React.FC = () => {
         return decodeURIComponent(redirectParam);
       }
     }
-    return isNewUser ? '#/profile' : '#/courses';
+    return isNewUser ? '#/onboarding' : '#/courses';
   };
 
   // Read query params from URL hash (e.g. #/login?tab=register&redirect=%23%2Flessons%2F1 or ?google_oauth=success)

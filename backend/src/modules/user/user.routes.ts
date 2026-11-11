@@ -9,6 +9,8 @@ const router = Router();
 router.get('/me', authenticate, userController.getProfile);
 router.put('/me', authenticate, userController.updateProfile);
 router.post('/onboarding', authenticate, userController.submitOnboarding);
+router.post('/onboarding/preview', authenticate, userController.previewOnboarding);
+router.get('/roadmap', authenticate, userController.getActiveRoadmap);
 router.put('/notifications', authenticate, userController.updateNotifications);
 
 // Admin User Management & Audit Endpoints (RBAC: ADMIN)

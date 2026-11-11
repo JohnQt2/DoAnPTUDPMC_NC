@@ -1,5 +1,10 @@
 import { prisma } from '../../shared/database/prisma.client';
 import { AppError } from '../../shared/errors/app-error';
+import {
+  RoadmapRuleEngine,
+  CourseCurriculumItem,
+} from './roadmap-rule.engine';
+import { OnboardingSurveyInput } from './user.dto';
 
 export class UserService {
   async getProfile(userId: number) {
@@ -25,7 +30,88 @@ export class UserService {
       where: { user_id: userId, is_completed: true },
     });
 
-    const activeRoadmap = user.roadmaps[0] || null;
+    let activeRoadmapData: any = null;
+    if (user.roadmaps.length > 0) {
+      const activeRoadmap = user.roadmaps[0];
+
+      // Đếm tổng số bài học đã xuất bản trong khóa học
+      const totalRoadmapLessons = await prisma.lessons.count({
+        where: {
+          chapter: { course_id: activeRoadmap.course_id },
+          status: 'PUBLISHED',
+        },
+      });
+
+      // Đếm số bài học của khóa học này mà học viên đã hoàn thành
+      const completedRoadmapLessons = await prisma.userLessonProgress.count({
+        where: {
+          user_id: userId,
+          is_completed: true,
+          lesson: {
+            chapter: { course_id: activeRoadmap.course_id },
+            status: 'PUBLISHED',
+          },
+        },
+      });
+
+      const roadmapCompletionPercentage =
+        totalRoadmapLessons > 0
+          ? Math.round((completedRoadmapLessons / totalRoadmapLessons) * 100)
+          : 0;
+
+      // Tìm bài học hiện tại cần học tiếp (được UNLOCKED hoặc IN_PROGRESS mà chưa hoàn thành)
+      const currentProgress = await prisma.userLessonProgress.findFirst({
+        where: {
+          user_id: userId,
+          status: 'UNLOCKED',
+          is_completed: false,
+          lesson: {
+            chapter: { course_id: activeRoadmap.course_id },
+            status: 'PUBLISHED',
+          },
+        },
+        include: {
+          lesson: {
+            include: { chapter: true },
+          },
+        },
+        orderBy: [
+          { lesson: { chapter: { order_index: 'asc' } } },
+          { lesson: { order_index: 'asc' } },
+        ],
+      });
+
+      const currentLesson = currentProgress
+        ? {
+            lessonId: currentProgress.lesson.lesson_id,
+            title: currentProgress.lesson.title,
+            orderIndex: currentProgress.lesson.order_index,
+            chapterTitle: currentProgress.lesson.chapter.title,
+            estimatedDurationMins: currentProgress.lesson.estimated_duration_mins,
+            status: currentProgress.status,
+          }
+        : null;
+
+      activeRoadmapData = {
+        // Giữ nguyên toàn bộ định dạng và thuộc tính cũ
+        roadmapId: activeRoadmap.roadmap_id,
+        courseId: activeRoadmap.course_id,
+        courseTitle: activeRoadmap.course.title,
+        courseLevel: activeRoadmap.course.level,
+        startingLevel: activeRoadmap.starting_level,
+        targetGoal: activeRoadmap.target_goal,
+        dailyCommitmentMins: activeRoadmap.daily_commitment_mins,
+        // Bổ sung thêm các trường dữ liệu tiến độ thực tế (cả camelCase và snake_case)
+        completed_lessons_count: completedRoadmapLessons,
+        total_lessons_count: totalRoadmapLessons,
+        completion_percentage: roadmapCompletionPercentage,
+        completedLessonsCount: completedRoadmapLessons,
+        totalLessonsCount: totalRoadmapLessons,
+        completionPercentage: roadmapCompletionPercentage,
+        current_lesson: currentLesson,
+        currentLesson: currentLesson,
+      };
+    }
 
     return {
       userId: user.user_id,
@@ -37,17 +123,7 @@ export class UserService {
       createdAt: user.created_at,
       lastLoginAt: user.last_login_at,
       completedLessonsCount,
-      activeRoadmap: activeRoadmap
-        ? {
-            roadmapId: activeRoadmap.roadmap_id,
-            courseId: activeRoadmap.course_id,
-            courseTitle: activeRoadmap.course.title,
-            courseLevel: activeRoadmap.course.level,
-            startingLevel: activeRoadmap.starting_level,
-            targetGoal: activeRoadmap.target_goal,
-            dailyCommitmentMins: activeRoadmap.daily_commitment_mins,
-          }
-        : null,
+      activeRoadmap: activeRoadmapData,
       notificationSettings: user.notificationSettings
         ? {
             reminderTime: user.notificationSettings.reminder_time,
@@ -105,83 +181,494 @@ export class UserService {
   }
 
   /**
-   * UC02: Khảo sát mục tiêu và thiết lập lộ trình cá nhân
+   * UC02: Khảo sát mục tiêu và thiết lập lộ trình cá nhân hóa (RoadmapRuleEngine)
    */
-  async submitOnboarding(
-    userId: number,
-    data: {
-      starting_level: string;
-      target_goal: string;
-      daily_commitment_mins: number;
-      reminder_time: string;
-      course_id?: number;
-    }
-  ) {
-    let targetCourseId = data.course_id;
+  async submitOnboarding(userId: number, data: OnboardingSurveyInput) {
+    // 1. Lấy danh sách khóa học, chương học và bài học đã phát hành để làm dữ liệu cho engine
+    const courses = (await prisma.courses.findMany({
+      where: { is_published: true },
+      include: {
+        chapters: {
+          orderBy: { order_index: 'asc' },
+          include: {
+            lessons: {
+              where: { status: 'PUBLISHED' },
+              orderBy: { order_index: 'asc' },
+            },
+          },
+        },
+      },
+      orderBy: { course_id: 'asc' },
+    })) as CourseCurriculumItem[];
 
-    if (!targetCourseId) {
-      const course = await prisma.courses.findFirst({
-        where: {
-          level: data.target_goal === 'HSK2' ? 'HSK2' : 'HSK1',
+    if (courses.length === 0) {
+      throw AppError.badRequest('Hệ thống hiện chưa có khóa học nào được kích hoạt.');
+    }
+
+    // 2. Chạy thuật toán khớp lộ trình cá nhân hóa
+    const matched = RoadmapRuleEngine.matchRoadmap(data, courses);
+
+    // 3. Thực thi lưu trữ nguyên tử trong transaction
+    const result = await prisma.$transaction(async (tx) => {
+      // 3.1. Vô hiệu hóa lộ trình đang hoạt động trước đó (nếu có)
+      await tx.userRoadmaps.updateMany({
+        where: { user_id: userId, is_active: true },
+        data: { is_active: false },
+      });
+
+      // 3.2. Tạo lộ trình cá nhân hóa mới
+      const roadmap = await tx.userRoadmaps.create({
+        data: {
+          user_id: userId,
+          course_id: matched.courseId,
+          starting_level: data.starting_level,
+          target_goal: data.target_goal,
+          daily_commitment_mins: matched.dailyCommitmentMins,
+          is_active: true,
+        },
+        include: { course: true },
+      });
+
+      // 3.3. Cập nhật hoặc khởi tạo cài đặt nhắc học
+      const notifSettings = await tx.notificationSettings.upsert({
+        where: { user_id: userId },
+        create: {
+          user_id: userId,
+          reminder_time: matched.reminderTime,
+          notify_email: true,
+          notify_webpush: false,
+        },
+        update: {
+          reminder_time: matched.reminderTime,
         },
       });
-      targetCourseId = course?.course_id;
-    }
 
-    if (!targetCourseId) {
-      const fallbackCourse = await prisma.courses.findFirst();
-      targetCourseId = fallbackCourse?.course_id || 1;
-    }
+      // 3.4. Khởi tạo trạng thái tiến độ bài học (UserLessonProgress)
+      // Mở khóa các bài học ban đầu (UNLOCKED) nếu chưa COMPLETED
+      for (const lessonId of matched.initialUnlockedLessonIds) {
+        const existing = await tx.userLessonProgress.findUnique({
+          where: {
+            user_id_lesson_id: {
+              user_id: userId,
+              lesson_id: lessonId,
+            },
+          },
+        });
 
-    // Deactivate previous roadmaps
-    await prisma.userRoadmaps.updateMany({
-      where: { user_id: userId, is_active: true },
-      data: { is_active: false },
+        if (!existing) {
+          await tx.userLessonProgress.create({
+            data: {
+              user_id: userId,
+              lesson_id: lessonId,
+              status: 'UNLOCKED',
+              is_completed: false,
+              highest_score: 0,
+            },
+          });
+        } else if (!existing.is_completed && (existing.status === 'LOCKED' || !existing.status)) {
+          await tx.userLessonProgress.update({
+            where: { progress_id: existing.progress_id },
+            data: { status: 'UNLOCKED' },
+          });
+        }
+      }
+
+      // 3.5. Ghi sự kiện vào bảng OutboxMessages (Transactional Outbox Pattern)
+      await tx.outboxMessages.create({
+        data: {
+          aggregate_type: 'ONBOARDING',
+          aggregate_id: String(userId),
+          event_type: 'ROADMAP_CREATED',
+          payload: JSON.stringify({
+            userId,
+            roadmapId: roadmap.roadmap_id,
+            courseId: matched.courseId,
+            courseTitle: matched.courseTitle,
+            courseCode: matched.courseCode,
+            courseLevel: matched.courseLevel,
+            startingLevel: data.starting_level,
+            targetGoal: data.target_goal,
+            dailyCommitmentMins: matched.dailyCommitmentMins,
+            reminderTime: matched.reminderTime,
+            recommendedFirstLessonId: matched.recommendedFirstLessonId,
+            initialUnlockedLessonIds: matched.initialUnlockedLessonIds,
+            estimatedDays: matched.estimatedDays,
+            lessonsPerWeek: matched.lessonsPerWeek,
+            weeklyMilestones: matched.weeklyMilestones,
+            isSkip: Boolean(data.skip),
+            timestamp: new Date().toISOString(),
+          }),
+          status: 'PENDING',
+        },
+      });
+
+      // 3.6. Ghi nhật ký kiểm toán (AuditLogs)
+      await tx.auditLogs.create({
+        data: {
+          user_id: userId,
+          action_type: 'ONBOARDING_SURVEY_COMPLETED',
+          target_entity: 'UserRoadmaps',
+          target_id: roadmap.roadmap_id.toString(),
+          new_value: JSON.stringify({
+            roadmapId: roadmap.roadmap_id,
+            courseId: matched.courseId,
+            recommendedFirstLessonId: matched.recommendedFirstLessonId,
+            initialUnlockedLessonIds: matched.initialUnlockedLessonIds,
+            estimatedDays: matched.estimatedDays,
+            isSkip: Boolean(data.skip),
+          }),
+        },
+      });
+
+      // 3.7. Lấy chi tiết bài học khuyến nghị bắt đầu
+      let recommendedFirstLessonDetail: any = null;
+      if (matched.recommendedFirstLessonId) {
+        const lesson = await tx.lessons.findUnique({
+          where: { lesson_id: matched.recommendedFirstLessonId },
+          include: { chapter: true },
+        });
+        if (lesson) {
+          recommendedFirstLessonDetail = {
+            lessonId: lesson.lesson_id,
+            title: lesson.title,
+            orderIndex: lesson.order_index,
+            chapterId: lesson.chapter_id,
+            chapterTitle: lesson.chapter.title,
+            estimatedDurationMins: lesson.estimated_duration_mins,
+            status: 'UNLOCKED',
+          };
+        }
+      }
+
+      return {
+        roadmap: {
+          roadmapId: roadmap.roadmap_id,
+          courseId: matched.courseId,
+          courseTitle: matched.courseTitle,
+          courseCode: matched.courseCode,
+          courseLevel: matched.courseLevel,
+          startingLevel: roadmap.starting_level,
+          targetGoal: roadmap.target_goal,
+          dailyCommitmentMins: roadmap.daily_commitment_mins,
+          isActive: roadmap.is_active,
+          createdAt: roadmap.created_at,
+          estimatedDays: matched.estimatedDays,
+          lessonsPerWeek: matched.lessonsPerWeek,
+          totalLessons: matched.totalLessons,
+          learningFocus: matched.learningFocus,
+        },
+        notification_settings: {
+          reminderTime: notifSettings.reminder_time,
+          notifyEmail: notifSettings.notify_email,
+          notifyWebpush: notifSettings.notify_webpush,
+        },
+        recommended_first_lesson: recommendedFirstLessonDetail,
+        recommendedFirstLessonId: matched.recommendedFirstLessonId,
+        initial_unlocked_lesson_ids: matched.initialUnlockedLessonIds,
+        weekly_milestones: matched.weeklyMilestones,
+      };
     });
 
-    // Create new active roadmap
-    const roadmap = await prisma.userRoadmaps.create({
-      data: {
-        user_id: userId,
-        course_id: targetCourseId,
-        starting_level: data.starting_level,
-        target_goal: data.target_goal,
-        daily_commitment_mins: data.daily_commitment_mins,
-        is_active: true,
+    return result;
+  }
+
+  /**
+   * Xem trước lộ trình đề xuất (Preview Onboarding Roadmap) - Không ghi vào DB
+   */
+  async previewOnboarding(data: OnboardingSurveyInput) {
+    const courses = (await prisma.courses.findMany({
+      where: { is_published: true },
+      include: {
+        chapters: {
+          orderBy: { order_index: 'asc' },
+          include: {
+            lessons: {
+              where: { status: 'PUBLISHED' },
+              orderBy: { order_index: 'asc' },
+            },
+          },
+        },
       },
-      include: { course: true },
-    });
+      orderBy: { course_id: 'asc' },
+    })) as CourseCurriculumItem[];
 
-    // Upsert notification settings
-    await prisma.notificationSettings.upsert({
+    if (courses.length === 0) {
+      throw AppError.badRequest('Hệ thống hiện chưa có khóa học nào được kích hoạt.');
+    }
+
+    const matched = RoadmapRuleEngine.matchRoadmap(data, courses);
+
+    let recommendedFirstLessonDetail: any = null;
+    if (matched.recommendedFirstLessonId) {
+      const lesson = await prisma.lessons.findUnique({
+        where: { lesson_id: matched.recommendedFirstLessonId },
+        include: { chapter: true },
+      });
+      if (lesson) {
+        recommendedFirstLessonDetail = {
+          lessonId: lesson.lesson_id,
+          title: lesson.title,
+          orderIndex: lesson.order_index,
+          chapterId: lesson.chapter_id,
+          chapterTitle: lesson.chapter.title,
+          estimatedDurationMins: lesson.estimated_duration_mins,
+          status: 'UNLOCKED',
+        };
+      }
+    }
+
+    return {
+      courseId: matched.courseId,
+      courseTitle: matched.courseTitle,
+      courseCode: matched.courseCode,
+      courseLevel: matched.courseLevel,
+      startingLevel: matched.startingLevel,
+      targetGoal: matched.targetGoal,
+      dailyCommitmentMins: matched.dailyCommitmentMins,
+      reminderTime: matched.reminderTime,
+      estimatedDays: matched.estimatedDays,
+      lessonsPerWeek: matched.lessonsPerWeek,
+      totalLessons: matched.totalLessons,
+      learningFocus: matched.learningFocus,
+      initialUnlockedLessonIds: matched.initialUnlockedLessonIds,
+      recommended_first_lesson: recommendedFirstLessonDetail,
+      recommendedFirstLessonId: matched.recommendedFirstLessonId,
+      weekly_milestones: matched.weeklyMilestones,
+    };
+  }
+
+  /**
+   * Truy xuất lộ trình đang hoạt động (Active Roadmap) kèm tiến độ học tập thực tế
+   */
+  async getActiveRoadmap(userId: number) {
+    const user = await prisma.users.findUnique({
       where: { user_id: userId },
-      create: {
-        user_id: userId,
-        reminder_time: data.reminder_time,
-        notify_email: true,
-        notify_webpush: false,
-      },
-      update: {
-        reminder_time: data.reminder_time,
+      include: {
+        roadmaps: {
+          where: { is_active: true },
+          include: { course: true },
+          take: 1,
+        },
+        notificationSettings: true,
       },
     });
 
-    await prisma.auditLogs.create({
-      data: {
-        user_id: userId,
-        action_type: 'ONBOARDING_SURVEY_COMPLETED',
-        target_entity: 'UserRoadmaps',
-        target_id: roadmap.roadmap_id.toString(),
-        new_value: JSON.stringify(data),
+    if (!user) {
+      throw AppError.notFound('Không tìm thấy tài khoản người dùng.');
+    }
+
+    const activeRoadmap = user.roadmaps[0];
+    if (!activeRoadmap) {
+      return null;
+    }
+
+    // Lấy thông tin chi tiết khóa học, chương và các bài học PUBLISHED
+    const course = await prisma.courses.findUnique({
+      where: { course_id: activeRoadmap.course_id },
+      include: {
+        chapters: {
+          orderBy: { order_index: 'asc' },
+          include: {
+            lessons: {
+              where: { status: 'PUBLISHED' },
+              orderBy: { order_index: 'asc' },
+            },
+          },
+        },
       },
+    });
+
+    if (!course) {
+      throw AppError.notFound('Không tìm thấy khóa học của lộ trình.');
+    }
+
+    // Lấy danh sách khóa học để chạy engine tính milestone chuẩn
+    const courses = (await prisma.courses.findMany({
+      where: { is_published: true },
+      include: {
+        chapters: {
+          orderBy: { order_index: 'asc' },
+          include: {
+            lessons: {
+              where: { status: 'PUBLISHED' },
+              orderBy: { order_index: 'asc' },
+            },
+          },
+        },
+      },
+      orderBy: { course_id: 'asc' },
+    })) as CourseCurriculumItem[];
+
+    const matched = RoadmapRuleEngine.matchRoadmap(
+      {
+        starting_level: activeRoadmap.starting_level as any,
+        target_goal: activeRoadmap.target_goal as any,
+        daily_commitment_mins: activeRoadmap.daily_commitment_mins,
+        reminder_time: user.notificationSettings?.reminder_time || '20:00',
+        course_id: activeRoadmap.course_id,
+      },
+      courses
+    );
+
+    // Thu thập toàn bộ bài học theo thứ tự học
+    const flatLessons: Array<{
+      lesson_id: number;
+      chapter_id: number;
+      chapter_title: string;
+      title: string;
+      order_index: number;
+      estimated_duration_mins: number;
+    }> = [];
+
+    for (const ch of course.chapters) {
+      for (const l of ch.lessons) {
+        flatLessons.push({
+          lesson_id: l.lesson_id,
+          chapter_id: ch.chapter_id,
+          chapter_title: ch.title,
+          title: l.title,
+          order_index: l.order_index,
+          estimated_duration_mins: l.estimated_duration_mins,
+        });
+      }
+    }
+
+    // Lấy tiến độ học tập thực tế của học viên trên các bài học này
+    const lessonIds = flatLessons.map((l) => l.lesson_id);
+    const progressList = await prisma.userLessonProgress.findMany({
+      where: {
+        user_id: userId,
+        lesson_id: { in: lessonIds },
+      },
+    });
+
+    const progressMap = new Map<
+      number,
+      {
+        status: string;
+        is_completed: boolean;
+        highest_score: number | null;
+        completed_at: Date | null;
+        last_studied_at: Date;
+      }
+    >();
+
+    progressList.forEach((p) => {
+      progressMap.set(p.lesson_id, {
+        status: p.status || (p.is_completed ? 'COMPLETED' : 'LOCKED'),
+        is_completed: p.is_completed,
+        highest_score: p.highest_score,
+        completed_at: p.completed_at,
+        last_studied_at: p.last_studied_at,
+      });
+    });
+
+    const totalLessonsCount = flatLessons.length;
+    const completedLessonsCount = flatLessons.filter(
+      (l) => progressMap.get(l.lesson_id)?.is_completed
+    ).length;
+    const completionPercentage =
+      totalLessonsCount > 0 ? Math.round((completedLessonsCount / totalLessonsCount) * 100) : 0;
+
+    // Xác định bài học hiện tại (current_lesson): bài UNLOCKED đầu tiên chưa hoàn thành
+    let currentLessonItem = flatLessons.find((l) => {
+      const p = progressMap.get(l.lesson_id);
+      return !p?.is_completed && p?.status === 'UNLOCKED';
+    });
+
+    if (!currentLessonItem) {
+      currentLessonItem = flatLessons.find((l) => !progressMap.get(l.lesson_id)?.is_completed);
+    }
+    if (!currentLessonItem && flatLessons.length > 0) {
+      currentLessonItem = flatLessons[flatLessons.length - 1];
+    }
+
+    const currentLesson = currentLessonItem
+      ? {
+          lessonId: currentLessonItem.lesson_id,
+          title: currentLessonItem.title,
+          orderIndex: currentLessonItem.order_index,
+          chapterId: currentLessonItem.chapter_id,
+          chapterTitle: currentLessonItem.chapter_title,
+          estimatedDurationMins: currentLessonItem.estimated_duration_mins,
+          status: progressMap.get(currentLessonItem.lesson_id)?.status || 'UNLOCKED',
+          isCompleted: progressMap.get(currentLessonItem.lesson_id)?.is_completed || false,
+          highestScore: progressMap.get(currentLessonItem.lesson_id)?.highest_score || 0,
+        }
+      : null;
+
+    // Tiến độ theo từng chương (chapters_progress)
+    const chaptersProgress = course.chapters.map((ch) => {
+      const chLessons = ch.lessons;
+      const chCompleted = chLessons.filter(
+        (l) => progressMap.get(l.lesson_id)?.is_completed
+      ).length;
+      return {
+        chapterId: ch.chapter_id,
+        title: ch.title,
+        orderIndex: ch.order_index,
+        totalLessons: chLessons.length,
+        completedLessons: chCompleted,
+        isCompleted: chLessons.length > 0 && chCompleted === chLessons.length,
+      };
+    });
+
+    // Làm giàu weekly_milestones với dữ liệu tiến độ thực tế của từng bài
+    const enrichedMilestones = matched.weeklyMilestones.map((m) => {
+      const milestoneLessons = m.lessonIds.map((id) => {
+        const l = flatLessons.find((item) => item.lesson_id === id);
+        const p = progressMap.get(id);
+        return {
+          lessonId: id,
+          title: l?.title || '',
+          chapterTitle: l?.chapter_title || '',
+          estimatedDurationMins: l?.estimated_duration_mins || 15,
+          status: p?.status || 'LOCKED',
+          isCompleted: p?.is_completed || false,
+          highestScore: p?.highest_score || 0,
+        };
+      });
+      const compCount = milestoneLessons.filter((l) => l.isCompleted).length;
+      return {
+        ...m,
+        completedLessonsCount: compCount,
+        isCompleted: milestoneLessons.length > 0 && compCount === milestoneLessons.length,
+        lessons: milestoneLessons,
+      };
     });
 
     return {
-      roadmapId: roadmap.roadmap_id,
-      courseTitle: roadmap.course.title,
-      targetGoal: roadmap.target_goal,
-      dailyCommitmentMins: roadmap.daily_commitment_mins,
-      reminderTime: data.reminder_time,
+      roadmapId: activeRoadmap.roadmap_id,
+      courseId: activeRoadmap.course_id,
+      courseTitle: activeRoadmap.course.title,
+      courseCode: activeRoadmap.course.code,
+      courseLevel: activeRoadmap.course.level,
+      startingLevel: activeRoadmap.starting_level,
+      targetGoal: activeRoadmap.target_goal,
+      dailyCommitmentMins: activeRoadmap.daily_commitment_mins,
+      isActive: activeRoadmap.is_active,
+      createdAt: activeRoadmap.created_at,
+      completed_lessons_count: completedLessonsCount,
+      total_lessons_count: totalLessonsCount,
+      completion_percentage: completionPercentage,
+      completedLessonsCount,
+      totalLessonsCount,
+      completionPercentage,
+      current_lesson: currentLesson,
+      currentLesson,
+      estimatedDays: matched.estimatedDays,
+      lessonsPerWeek: matched.lessonsPerWeek,
+      learningFocus: matched.learningFocus,
+      chaptersProgress,
+      weekly_milestones: enrichedMilestones,
+      weeklyMilestones: enrichedMilestones,
+      notificationSettings: user.notificationSettings
+        ? {
+            reminderTime: user.notificationSettings.reminder_time,
+            notifyEmail: user.notificationSettings.notify_email,
+            notifyWebpush: user.notificationSettings.notify_webpush,
+          }
+        : null,
     };
   }
 

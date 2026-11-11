@@ -36,16 +36,44 @@ export class UserController {
     try {
       const userId = req.user!.userId;
       const dto = OnboardingSurveyDto.parse(req.body);
-      const result = await userService.submitOnboarding(userId, {
-        starting_level: dto.starting_level,
-        target_goal: dto.target_goal,
-        daily_commitment_mins: dto.daily_commitment_mins,
-        reminder_time: dto.reminder_time,
-        course_id: dto.course_id,
-      });
+      const result = await userService.submitOnboarding(userId, dto);
       res.status(200).json({
         success: true,
-        data: { message: 'Thiết lập lộ trình học tập cá nhân thành công!', roadmap: result },
+        data: {
+          message: dto.skip
+            ? 'Đã áp dụng lộ trình mặc định thành công (Bỏ qua khảo sát)!'
+            : 'Thiết lập lộ trình học tập cá nhân thành công!',
+          ...result,
+        },
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  previewOnboarding = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const dto = OnboardingSurveyDto.parse(req.body);
+      const preview = await userService.previewOnboarding(dto);
+      res.status(200).json({
+        success: true,
+        data: {
+          message: 'Tạo bản xem trước lộ trình đề xuất thành công.',
+          ...preview,
+        },
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  getActiveRoadmap = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = req.user!.userId;
+      const roadmap = await userService.getActiveRoadmap(userId);
+      res.status(200).json({
+        success: true,
+        data: roadmap,
       });
     } catch (err) {
       next(err);

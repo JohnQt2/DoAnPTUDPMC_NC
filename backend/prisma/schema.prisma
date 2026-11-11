@@ -280,14 +280,17 @@ model TestSubmissionDetails {
 }
 
 model UserLessonProgress {
-  progress_id     Int      @id @default(autoincrement())
+  progress_id     Int       @id @default(autoincrement())
   user_id         Int
   lesson_id       Int
-  is_completed    Boolean  @default(false)
-  last_studied_at DateTime @default(now())
+  status          String?   @default("LOCKED") // "LOCKED" | "UNLOCKED" | "IN_PROGRESS" | "COMPLETED"
+  is_completed    Boolean   @default(false)
+  highest_score   Float?    @default(0)
+  completed_at    DateTime?
+  last_studied_at DateTime  @default(now())
 
-  user            Users    @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
-  lesson          Lessons  @relation(fields: [lesson_id], references: [lesson_id], onDelete: Cascade)
+  user            Users     @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  lesson          Lessons   @relation(fields: [lesson_id], references: [lesson_id], onDelete: Cascade)
 
   @@unique([user_id, lesson_id])
   @@map("UserLessonProgress")
@@ -375,4 +378,20 @@ model DatabaseBackups {
   completed_at     DateTime?
 
   @@map("DatabaseBackups")
+}
+
+model OutboxMessages {
+  id             String    @id @default(uuid())
+  aggregate_type String    // e.g. "LESSON_PROGRESS", "ONBOARDING", "USER"
+  aggregate_id   String    // e.g. userId hoặc lessonId
+  event_type     String    // e.g. "LESSON_COMPLETED", "ROADMAP_CREATED"
+  payload        String    // JSON string lưu payload dữ liệu sự kiện
+  status         String    @default("PENDING") // "PENDING", "PROCESSED", "FAILED"
+  retry_count    Int       @default(0)
+  error_message  String?
+  created_at     DateTime  @default(now())
+  processed_at   DateTime?
+
+  @@index([status, created_at])
+  @@map("OutboxMessages")
 }

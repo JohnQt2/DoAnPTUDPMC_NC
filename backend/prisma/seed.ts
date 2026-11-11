@@ -323,7 +323,138 @@ async function main() {
     },
   });
 
-  console.log('✅ Courses, Chapters & Lessons created with content blocks');
+  // 4B. Seed HSK 2 - HSK 6 Courses & Units (Chuẩn HSK 1-6)
+  const additionalCourses = [
+    {
+      code: 'HSK2',
+      level: 'HSK2',
+      title: 'Khóa Học Tiếng Trung Sơ Trung Cấp HSK 2',
+      description: 'Mở rộng lên 300 từ vựng và cấu trúc ngữ pháp giao tiếp đời sống, mua sắm, hỏi đường, thời tiết.',
+      chapters: [
+        {
+          title: 'Unit 1: Kế Hoạch Cuối Tuần & Thời Gian (九月去北京旅游最好)',
+          lessons: [
+            { title: 'Bài 1: Tháng 9 đi Bắc Kinh du lịch là tuyệt nhất', duration: 15 },
+            { title: 'Bài 2: Mỗi ngày tôi đều thức dậy lúc 6 giờ', duration: 15 },
+          ],
+        },
+        {
+          title: 'Unit 2: Sinh Hoạt & Mua Sắm Hằng Ngày',
+          lessons: [
+            { title: 'Bài 3: Chiếc áo màu đỏ bên trái đắt hơn một chút', duration: 18 },
+          ],
+        },
+      ],
+    },
+    {
+      code: 'HSK3',
+      level: 'HSK3',
+      title: 'Khóa Học Tiếng Trung Trung Cấp HSK 3',
+      description: 'Làm chủ 600 từ vựng HSK 3, câu chữ 把, câu chữ 被, bổ ngữ xu hướng và giao tiếp công việc cơ bản.',
+      chapters: [
+        {
+          title: 'Unit 1: Kế Hoạch Cuộc Sống & Công Việc (周末你有什么打算)',
+          lessons: [
+            { title: 'Bài 1: Cuối tuần bạn có dự định gì?', duration: 20 },
+            { title: 'Bài 2: Khi nào anh ấy quay về?', duration: 20 },
+          ],
+        },
+      ],
+    },
+    {
+      code: 'HSK4',
+      level: 'HSK4',
+      title: 'Giáo Trình Chuẩn HSK 4 (Quyển Thượng & Quyển Hạ)',
+      description: 'Trọn bộ 1200 từ vựng Chuẩn HSK 4, luyện nghe MP3 thực chiến và đọc hiểu đoạn văn dài phục vụ du học & làm việc.',
+      chapters: [
+        {
+          title: 'Unit 1 (Quyển Hạ - Bài 11): Đọc Sách & Tri Thức (读书好，读好书，好读书)',
+          lessons: [
+            { title: 'Bài 11: Đọc sách tốt, đọc sách hay, thích đọc sách', duration: 25 },
+            { title: 'Bài 12: Dụng tâm phát hiện thế giới xung quanh', duration: 25 },
+          ],
+        },
+        {
+          title: 'Unit 2 (Quyển Hạ - Bài 13-14): Tâm Lý & Nghệ Thuật Sống',
+          lessons: [
+            { title: 'Bài 13: Uống cạn ly cà phê đắng của cuộc đời', duration: 25 },
+            { title: 'Bài 14: Bảo vệ môi trường bắt đầu từ những việc nhỏ', duration: 25 },
+          ],
+        },
+      ],
+    },
+    {
+      code: 'HSK5',
+      level: 'HSK5',
+      title: 'Khóa Học Tiếng Trung Cao Cấp HSK 5',
+      description: 'Chinh phục 2500 từ vựng HSK 5, đọc hiểu báo chí, văn học hiện đại, thuyết trình và viết luận chuyên sâu.',
+      chapters: [
+        {
+          title: 'Unit 1: Văn Hóa & Triết Lý Nhân Sinh (爱的细节)',
+          lessons: [
+            { title: 'Bài 1: Những chi tiết nhỏ của tình yêu thương', duration: 30 },
+            { title: 'Bài 2: Giữ lại một khung cửa sổ cho tâm hồn', duration: 30 },
+          ],
+        },
+      ],
+    },
+    {
+      code: 'HSK6',
+      level: 'HSK6',
+      title: 'Khóa Học Tiếng Trung Thành Thạo HSK 6',
+      description: 'Làm chủ 5000+ từ vựng học thuật, thành ngữ tứ tự (成语), phân tích lỗi câu và tóm tắt văn bản chuyên ngành.',
+      chapters: [
+        {
+          title: 'Unit 1: Tư Duy Học Thuật & Văn Chương Cổ Kim',
+          lessons: [
+            { title: 'Bài 1: Nghệ thuật tóm tắt luận văn (缩写训练)', duration: 35 },
+            { title: 'Bài 2: Phân tích thành ngữ và ngữ pháp học thuật HSK 6', duration: 35 },
+          ],
+        },
+      ],
+    },
+  ];
+
+  for (const cData of additionalCourses) {
+    const existingCourse = await prisma.courses.findUnique({ where: { code: cData.code } });
+    if (!existingCourse) {
+      const createdCourse = await prisma.courses.create({
+        data: {
+          code: cData.code,
+          level: cData.level,
+          title: cData.title,
+          description: cData.description,
+          is_published: true,
+        },
+      });
+
+      for (let cIdx = 0; cIdx < cData.chapters.length; cIdx++) {
+        const ch = cData.chapters[cIdx];
+        const createdChapter = await prisma.chapters.create({
+          data: {
+            course_id: createdCourse.course_id,
+            title: ch.title,
+            order_index: cIdx + 1,
+          },
+        });
+
+        for (let lIdx = 0; lIdx < ch.lessons.length; lIdx++) {
+          const ls = ch.lessons[lIdx];
+          await prisma.lessons.create({
+            data: {
+              chapter_id: createdChapter.chapter_id,
+              title: ls.title,
+              order_index: lIdx + 1,
+              estimated_duration_mins: ls.duration,
+              status: 'PUBLISHED',
+            },
+          });
+        }
+      }
+    }
+  }
+
+  console.log('✅ Courses, Chapters & Lessons created with content blocks (HSK 1 - HSK 6)');
 
   // 5. Question Bank
   const q1 = await prisma.questions.create({
@@ -419,26 +550,31 @@ async function main() {
 
   // 7. Seed Initial SRS Flashcards for demo student
   if (charNi && charHao) {
-    await prisma.userSrsItems.createMany({
-      data: [
-        {
-          user_id: student.user_id,
-          char_id: charNi.char_id,
-          ease_factor: 2.5,
-          interval_days: 1,
-          repetitions: 1,
-          next_review_at: new Date(Date.now() - 3600000), // Due 1 hour ago
-        },
-        {
-          user_id: student.user_id,
-          char_id: charHao.char_id,
-          ease_factor: 2.5,
-          interval_days: 1,
-          repetitions: 2,
-          next_review_at: new Date(Date.now() - 7200000), // Due 2 hours ago
-        },
-      ],
+    const existingSrsCount = await prisma.userSrsItems.count({
+      where: { user_id: student.user_id },
     });
+    if (existingSrsCount === 0) {
+      await prisma.userSrsItems.createMany({
+        data: [
+          {
+            user_id: student.user_id,
+            char_id: charNi.char_id,
+            ease_factor: 2.5,
+            interval_days: 1,
+            repetitions: 1,
+            next_review_at: new Date(Date.now() - 3600000), // Due 1 hour ago
+          },
+          {
+            user_id: student.user_id,
+            char_id: charHao.char_id,
+            ease_factor: 2.5,
+            interval_days: 1,
+            repetitions: 2,
+            next_review_at: new Date(Date.now() - 7200000), // Due 2 hours ago
+          },
+        ],
+      });
+    }
     console.log('✅ Initial SRS review queue seeded for demo student');
   }
 

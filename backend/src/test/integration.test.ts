@@ -1,13 +1,20 @@
+import http from 'http';
 import { app } from '../app';
 import { prisma } from '../shared/database/prisma.client';
 import { redisService } from '../shared/redis/redis.service';
 import { calculateSM2, ratingToQuality, previewNextIntervals } from '../shared/utils/sm2';
+import { signAccessToken } from '../shared/utils/crypto';
 import assert from 'assert';
 
 async function runTests() {
   console.log('🧪 Starting ChinaEasy Modular Monolith Integration Tests...\n');
 
+  let server: http.Server | null = null;
   try {
+    server = http.createServer(app);
+    await new Promise<void>((resolve) => server!.listen(0, resolve));
+    const address = server.address() as any;
+    const baseUrl = `http://127.0.0.1:${address.port}`;
     // ─── TEST 1: SM-2 Algorithm Unit Tests ──────────────────────────────
     console.log('▶ Test 1: SuperMemo-2 (SM-2) Spaced Repetition Algorithm');
     // First repetition, good rating (q=4) -> interval 1 day
@@ -265,13 +272,232 @@ async function runTests() {
     assert(auditLogs.length > 0, 'Audit logs should record RBAC and Auth actions');
     console.log('  ✔ RBAC role enforcement (403 Forbidden), role promotion, and Security Audit Logs verified.');
 
+    // ─── TEST 7: Onboarding Survey, Roadmap Generation & Outbox Event ───
+    console.log('\n▶ Test 7: Onboarding Survey, Roadmap Generation & Outbox Event');
+    const roadmapStudent = await prisma.users.create({
+      data: {
+        email: `student_roadmap_${Date.now()}@chinaeasy.vn`,
+        password_hash: 'hashed_password',
+        display_name: 'Học viên Onboarding Test',
+        role: 'STUDENT',
+        status: 'ACTIVE',
+      },
+    });
+
+    const roadmapToken = signAccessToken({
+      userId: roadmapStudent.user_id,
+      email: roadmapStudent.email,
+      role: roadmapStudent.role,
+    });
+
+    const onboardingRes = await fetch(`${baseUrl}/api/v1/users/onboarding`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${roadmapToken}`,
+      },
+      body: JSON.stringify({
+        starting_level: 'ZERO',
+        target_goal: 'HSK1',
+        daily_commitment_mins: 20,
+        reminder_time: '20:30',
+      }),
+    });
+
+    assert.strictEqual(onboardingRes.status, 200, 'POST /onboarding should return 200');
+    const onboardingJson: any = await onboardingRes.json();
+    assert.strictEqual(onboardingJson.success, true);
+    assert(onboardingJson.data.roadmap, 'Response should contain roadmap data');
+
+    // 1. Verify UserRoadmaps record in DB
+    const activeRoadmap = await prisma.userRoadmaps.findFirst({
+      where: { user_id: roadmapStudent.user_id, is_active: true },
+    });
+    assert(activeRoadmap, 'Active UserRoadmap must be created');
+    assert.strictEqual(activeRoadmap.starting_level, 'ZERO');
+    assert.strictEqual(activeRoadmap.target_goal, 'HSK1');
+    assert.strictEqual(activeRoadmap.daily_commitment_mins, 20);
+
+    // 2. Verify UserLessonProgress record with status = 'UNLOCKED'
+    const initialUnlocked = await prisma.userLessonProgress.findMany({
+      where: { user_id: roadmapStudent.user_id, status: 'UNLOCKED' },
+    });
+    assert(initialUnlocked.length > 0, 'At least 1 lesson should be initially UNLOCKED for ZERO level');
+    assert.strictEqual(initialUnlocked[0].lesson_id, 1, 'Initial unlocked lesson should be Lesson 1');
+
+    // 3. Verify Outbox event ROADMAP_CREATED
+    const outboxRoadmap = await prisma.outboxMessages.findFirst({
+      where: {
+        aggregate_type: 'ONBOARDING',
+        event_type: 'ROADMAP_CREATED',
+        aggregate_id: String(roadmapStudent.user_id),
+      },
+    });
+    assert(outboxRoadmap, 'Outbox event ROADMAP_CREATED must be recorded');
+    const outboxPayload = JSON.parse(outboxRoadmap.payload);
+    assert.strictEqual(outboxPayload.startingLevel, 'ZERO');
+    assert.strictEqual(outboxPayload.targetGoal, 'HSK1');
+    console.log('  ✔ Onboarding creates active UserRoadmap, UNLOCKED progress, and ROADMAP_CREATED outbox event.');
+
+    // ─── TEST 8: Onboarding Roadmap Preview ─────────────────────────────
+    console.log('\n▶ Test 8: Onboarding Roadmap Preview');
+    const previewRes = await fetch(`${baseUrl}/api/v1/users/onboarding/preview`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${roadmapToken}`,
+      },
+      body: JSON.stringify({
+        starting_level: 'ZERO',
+        target_goal: 'HSK1',
+        daily_commitment_mins: 20,
+        reminder_time: '20:30',
+      }),
+    });
+
+    assert.strictEqual(previewRes.status, 200, 'POST /onboarding/preview should return 200');
+    const previewJson: any = await previewRes.json();
+    assert.strictEqual(previewJson.success, true);
+    const previewData = previewJson.data;
+
+    const weeklyMilestones = previewData.weekly_milestones || previewData.weeklyMilestones;
+    const estimatedDays = previewData.estimated_days ?? previewData.estimatedDays;
+
+    assert(Array.isArray(weeklyMilestones) && weeklyMilestones.length > 0, 'weekly_milestones must be a non-empty array');
+    assert(typeof estimatedDays === 'number' && estimatedDays > 0, 'estimated_days must be a positive number');
+    console.log(`  ✔ Preview returned ${weeklyMilestones.length} weekly milestones and ${estimatedDays} estimated days.`);
+
+    // ─── TEST 9: 80% Passing Threshold, Next Lesson Unlock & Outbox Event
+    console.log('\n▶ Test 9: 80% Passing Threshold, Next Lesson Unlock & Outbox Event');
+
+    // Step 9.1: Lesson 2 is currently locked
+    const unlockStatusBefore = await assessmentService.checkLessonUnlockStatus(roadmapStudent.user_id, 2);
+    assert.strictEqual(unlockStatusBefore.isUnlocked, false, 'Lesson 2 should be locked initially');
+
+    // Step 9.2: Submit test with score < 80% (1/4 correct = 25%)
+    const failSession = await assessmentService.startTestSession(roadmapStudent.user_id, 1);
+    const failAnswers = [
+      { question_id: 1, user_answer: 'B' }, // Correct
+      { question_id: 2, user_answer: 'WRONG' },
+      { question_id: 3, user_answer: 'WRONG' },
+      { question_id: 4, user_answer: 'WRONG' },
+    ];
+    const failSubmission: any = await assessmentService.submitTest(
+      roadmapStudent.user_id,
+      1,
+      {
+        session_token: failSession.sessionToken,
+        duration_seconds: 60,
+        answers: failAnswers,
+      }
+    );
+    assert.strictEqual(failSubmission.score, 25);
+    assert.strictEqual(failSubmission.isPassed, false);
+
+    const progressAfterFail = await prisma.userLessonProgress.findUnique({
+      where: { user_id_lesson_id: { user_id: roadmapStudent.user_id, lesson_id: 1 } },
+    });
+    assert.strictEqual(progressAfterFail?.is_completed, false, 'Lesson 1 should NOT be completed with score < 80%');
+
+    const unlockStatusAfterFail = await assessmentService.checkLessonUnlockStatus(roadmapStudent.user_id, 2);
+    assert.strictEqual(unlockStatusAfterFail.isUnlocked, false, 'Lesson 2 must remain locked after failing test');
+
+    // Step 9.3: Submit test with score >= 80% (4/4 correct = 100%)
+    const passSession = await assessmentService.startTestSession(roadmapStudent.user_id, 1);
+    const passAnswers = [
+      { question_id: 1, user_answer: 'B' },
+      { question_id: 2, user_answer: 'B' },
+      { question_id: 3, user_answer: 'B' },
+      { question_id: 4, user_answer: 'C' },
+    ];
+    const passSubmission: any = await assessmentService.submitTest(
+      roadmapStudent.user_id,
+      1,
+      {
+        session_token: passSession.sessionToken,
+        duration_seconds: 90,
+        answers: passAnswers,
+      }
+    );
+    assert.strictEqual(passSubmission.score, 100);
+    assert.strictEqual(passSubmission.isPassed, true);
+
+    const progressAfterPass = await prisma.userLessonProgress.findUnique({
+      where: { user_id_lesson_id: { user_id: roadmapStudent.user_id, lesson_id: 1 } },
+    });
+    assert.strictEqual(progressAfterPass?.is_completed, true, 'Lesson 1 must be is_completed = true');
+    assert.strictEqual(progressAfterPass?.status, 'COMPLETED', 'Lesson 1 status must be COMPLETED');
+    assert(progressAfterPass?.highest_score! >= 80, 'highest_score must be >= 80');
+
+    // Lesson 2 must now be UNLOCKED
+    const unlockStatusAfterPass = await assessmentService.checkLessonUnlockStatus(roadmapStudent.user_id, 2);
+    assert.strictEqual(unlockStatusAfterPass.isUnlocked, true, 'Lesson 2 must be unlocked after passing Lesson 1 with >= 80%');
+
+    const progressLesson2 = await prisma.userLessonProgress.findUnique({
+      where: { user_id_lesson_id: { user_id: roadmapStudent.user_id, lesson_id: 2 } },
+    });
+    assert.strictEqual(progressLesson2?.status, 'UNLOCKED', 'Lesson 2 status must be UNLOCKED in UserLessonProgress');
+
+    // Outbox event LESSON_COMPLETED
+    const outboxMessages = await prisma.outboxMessages.findMany({
+      where: {
+        aggregate_type: 'LESSON_PROGRESS',
+        event_type: 'LESSON_COMPLETED',
+      },
+      orderBy: { created_at: 'desc' },
+    });
+    const outboxLessonCompleted = outboxMessages.find((m) => {
+      const p = JSON.parse(m.payload);
+      return (p.user_id === roadmapStudent.user_id || p.userId === roadmapStudent.user_id) && (p.lesson_id === 1 || p.lessonId === 1);
+    });
+    assert(outboxLessonCompleted, 'Outbox message for LESSON_COMPLETED must be recorded');
+    const lessonPayload = JSON.parse(outboxLessonCompleted.payload);
+    assert.strictEqual(lessonPayload.lesson_id ?? lessonPayload.lessonId, 1);
+    assert.strictEqual(lessonPayload.score, 100);
+    console.log('  ✔ Score < 80% keeps lesson incomplete; score >= 80% completes lesson, unlocks next lesson, and writes outbox event.');
+
+    // ─── TEST 10: Student Learning Progress Overview & Next Recommended Lesson API
+    console.log('\n▶ Test 10: Student Learning Progress Overview & Next Recommended Lesson API');
+    const progressRes = await fetch(`${baseUrl}/api/v1/users/me/progress`, {
+      headers: {
+        Authorization: `Bearer ${roadmapToken}`,
+      },
+    });
+    assert.strictEqual(progressRes.status, 200, 'GET /users/me/progress should return 200');
+    const progressJson: any = await progressRes.json();
+    assert.strictEqual(progressJson.success, true);
+
+    const progressData = progressJson.data;
+    const courseProgress = progressData.course_progress || progressData.courseProgress;
+    const nextRecommended = progressData.next_recommended_lesson || progressData.nextRecommendedLesson;
+    const completedLessons = courseProgress.completed_lessons ?? courseProgress.completedLessons;
+    const completionPct = courseProgress.completion_percentage ?? courseProgress.completionPercentage;
+
+    assert.strictEqual(completedLessons, 1, 'Should have 1 completed lesson');
+    assert(completionPct > 0, 'Completion percentage should be > 0');
+    assert(nextRecommended, 'next_recommended_lesson should be present');
+    const nextLessonId = nextRecommended.lesson_id ?? nextRecommended.lessonId;
+    assert.strictEqual(nextLessonId, 2, 'Next recommended lesson should be Lesson 2');
+
+    // Also verify alias route /api/v1/progress
+    const aliasRes = await fetch(`${baseUrl}/api/v1/progress`, {
+      headers: {
+        Authorization: `Bearer ${roadmapToken}`,
+      },
+    });
+    assert.strictEqual(aliasRes.status, 200, 'GET /progress (alias) should return 200');
+    console.log('  ✔ Progress API accurately reflects completion percentage and next recommended lesson.');
+
     console.log('\n======================================================');
-    console.log('✅ ALL INTEGRATION TESTS PASSED (6/6 MODULES VERIFIED)!');
+    console.log('✅ ALL INTEGRATION TESTS PASSED (10/10 MODULES VERIFIED)!');
     console.log('======================================================');
   } catch (error) {
     console.error('❌ Test failed with error:', error);
     process.exit(1);
   } finally {
+    if (server) {
+      server.close();
+    }
     await prisma.$disconnect();
   }
 }

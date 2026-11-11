@@ -14,12 +14,17 @@ import {
   Sparkles,
   Smartphone,
   Laptop,
+  Shield,
+  Search,
+  LogOut,
 } from 'lucide-react';
 
 export const ProfilePage: React.FC = () => {
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, logout } = useAuth();
 
   const [displayName, setDisplayName] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState('');
+  const [completedLessonsCount, setCompletedLessonsCount] = useState(0);
   const [reminderTime, setReminderTime] = useState('20:00');
   const [notifyEmail, setNotifyEmail] = useState(true);
   const [notifyWebpush, setNotifyWebpush] = useState(false);
@@ -31,6 +36,11 @@ export const ProfilePage: React.FC = () => {
   const [targetGoal, setTargetGoal] = useState('HSK1');
   const [dailyCommitment, setDailyCommitment] = useState(15);
 
+  // Admin RBAC user management state
+  const [adminUsers, setAdminUsers] = useState<any[]>([]);
+  const [adminSearch, setAdminSearch] = useState('');
+  const [adminRoleFilter, setAdminRoleFilter] = useState('');
+
   const [isSaving, setIsSaving] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
@@ -39,10 +49,18 @@ export const ProfilePage: React.FC = () => {
     loadSessions();
   }, []);
 
+  useEffect(() => {
+    if (user?.role === 'ADMIN') {
+      loadAdminUsers();
+    }
+  }, [user?.role, adminRoleFilter]);
+
   const loadProfile = async () => {
     try {
       const data = await api.get<any>('/users/me');
       setDisplayName(data.displayName || '');
+      setAvatarUrl(data.avatarUrl || '');
+      setCompletedLessonsCount(data.completedLessonsCount || 0);
       if (data.notificationSettings) {
         setReminderTime(data.notificationSettings.reminderTime || '20:00');
         setNotifyEmail(data.notificationSettings.notifyEmail ?? true);
@@ -68,24 +86,57 @@ export const ProfilePage: React.FC = () => {
     }
   };
 
+  const loadAdminUsers = async (searchOverride?: string) => {
+    try {
+      const data = await api.get<any>('/users/admin/all', {
+        params: {
+          search: (searchOverride !== undefined ? searchOverride : adminSearch) || undefined,
+          role: adminRoleFilter || undefined,
+          limit: 20,
+        },
+      });
+      setAdminUsers(data?.users || []);
+    } catch (err) {
+      console.error('Failed to load admin users:', err);
+    }
+  };
+
+  const handleAdminUpdateUser = async (targetUserId: number, updates: { role?: string; status?: string }) => {
+    try {
+      await api.put(`/users/admin/${targetUserId}`, updates);
+      loadAdminUsers();
+      setSuccessMsg('Đã cập nhật phân quyền / trạng thái người dùng (RBAC) thành công!');
+      setTimeout(() => setSuccessMsg(null), 3000);
+    } catch (err: any) {
+      alert(err.message || 'Lỗi khi cập nhật quyền người dùng');
+    }
+  };
+
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
     setSuccessMsg(null);
 
     try {
-      // 1. Update Profile name
-      await api.put('/users/me', { display_name: displayName });
-      updateUser({ displayName });
+      // 1. Update Profile name & avatar
+      const payload: any = { display_name: displayName };
+      if (avatarUrl.trim()) {
+        payload.avatar_url = avatarUrl.trim();
+      }
+      const updatedRes = await api.put<any>('/users/me', payload);
+      updateUser({
+        displayName,
+        avatarUrl: updatedRes?.profile?.avatarUrl ?? (avatarUrl.trim() || undefined),
+      });
 
-      // 2. Update Notifications (UC03)
+      // 2. Update Notifications
       await api.put('/users/notifications', {
         reminder_time: reminderTime,
         notify_email: notifyEmail,
         notify_webpush: notifyWebpush,
       });
 
-      // 3. Save Onboarding / Roadmap Goal (UC02)
+      // 3. Save Onboarding / Roadmap Goal
       const res = await api.post<any>('/users/onboarding', {
         starting_level: startingLevel,
         target_goal: targetGoal,
@@ -132,7 +183,7 @@ export const ProfilePage: React.FC = () => {
             Hồ Sơ Cá Nhân & Thiết Lập Học Tập
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            Quản lý thông tin định danh, thiết lập lộ trình (UC02) và thông báo nhắc học (UC03)
+            Quản lý thông tin định danh, thiết lập lộ trình và thông báo nhắc học
           </p>
         </div>
         <span className="px-3 py-1 bg-primary-50 text-primary-700 rounded-full text-xs font-bold uppercase tracking-wider">
@@ -150,9 +201,14 @@ export const ProfilePage: React.FC = () => {
       <form onSubmit={handleSaveProfile} className="space-y-6">
         {/* Section 1: Basic Profile */}
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-6">
-          <div className="flex items-center gap-3 border-b border-gray-100 pb-4">
-            <User className="w-5 h-5 text-primary-600" />
-            <h2 className="text-lg font-bold text-gray-900">Thông Tin Tài Khoản</h2>
+          <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+            <div className="flex items-center gap-3">
+              <User className="w-5 h-5 text-primary-600" />
+              <h2 className="text-lg font-bold text-gray-900">Thông Tin Tài Khoản</h2>
+            </div>
+            <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full">
+              Đã hoàn thành: {completedLessonsCount} bài học
+            </span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -180,15 +236,28 @@ export const ProfilePage: React.FC = () => {
                 className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 text-gray-400 text-sm cursor-not-allowed"
               />
             </div>
+
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+                Ảnh đại diện (Avatar URL)
+              </label>
+              <input
+                type="url"
+                placeholder="https://images.unsplash.com/..."
+                value={avatarUrl}
+                onChange={(e) => setAvatarUrl(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+              />
+            </div>
           </div>
         </div>
 
-        {/* Section 2: UC02 Onboarding & Study Goal */}
+        {/* Section 2: Onboarding & Study Goal */}
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-6">
           <div className="flex items-center gap-3 border-b border-gray-100 pb-4">
             <Compass className="w-5 h-5 text-secondary-600" />
             <div>
-              <h2 className="text-lg font-bold text-gray-900">Lộ Trình Cá Nhân (UC02)</h2>
+              <h2 className="text-lg font-bold text-gray-900">Lộ Trình Cá Nhân</h2>
               <p className="text-xs text-gray-400">Khảo sát mục tiêu và gán khóa học phù hợp</p>
             </div>
           </div>
@@ -246,12 +315,12 @@ export const ProfilePage: React.FC = () => {
           </div>
         </div>
 
-        {/* Section 3: UC03 Notification Reminder Settings */}
+        {/* Section 3: Notification Reminder Settings */}
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-6">
           <div className="flex items-center gap-3 border-b border-gray-100 pb-4">
             <Bell className="w-5 h-5 text-accent-600" />
             <div>
-              <h2 className="text-lg font-bold text-gray-900">Cài Đặt Thông Báo Nhắc Học (UC03)</h2>
+              <h2 className="text-lg font-bold text-gray-900">Cài Đặt Thông Báo Nhắc Học</h2>
               <p className="text-xs text-gray-400">Giữ chuỗi học tập (Streak) và nhận lời nhắc đều đặn</p>
             </div>
           </div>
@@ -359,7 +428,16 @@ export const ProfilePage: React.FC = () => {
                   </div>
                 </div>
 
-                {!sess.isCurrent && (
+                {sess.isCurrent ? (
+                  <button
+                    onClick={logout}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-xl border border-gray-200 transition-colors"
+                    title="Đăng xuất phiên hiện tại"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    Đăng xuất
+                  </button>
+                ) : (
                   <button
                     onClick={() => handleRevokeSession(sess.session_id)}
                     className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
@@ -373,6 +451,92 @@ export const ProfilePage: React.FC = () => {
           })}
         </div>
       </div>
+
+      {/* Section 5: RBAC User Management (Visible for ADMIN role) */}
+      {user?.role === 'ADMIN' && (
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
+            <div className="flex items-center gap-3">
+              <Shield className="w-5 h-5 text-primary-600" />
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">
+                  Quản Trị Phân Quyền Người Dùng (RBAC - Admin)
+                </h2>
+                <p className="text-xs text-gray-400">
+                  Phân quyền vai trò (STUDENT, CONTENT_EDITOR, ADMIN) và khóa/mở khóa tài khoản
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <Search className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
+                <input
+                  type="text"
+                  placeholder="Tìm email hoặc tên..."
+                  value={adminSearch}
+                  onChange={(e) => setAdminSearch(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && loadAdminUsers()}
+                  className="pl-9 pr-3 py-1.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+              <select
+                value={adminRoleFilter}
+                onChange={(e) => setAdminRoleFilter(e.target.value)}
+                className="px-3 py-1.5 rounded-xl border border-gray-200 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                <option value="">Tất cả vai trò</option>
+                <option value="STUDENT">STUDENT</option>
+                <option value="CONTENT_EDITOR">CONTENT_EDITOR</option>
+                <option value="ADMIN">ADMIN</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="divide-y divide-gray-100">
+            {adminUsers.map((u) => (
+              <div key={u.user_id} className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-gray-900">{u.display_name}</span>
+                    <span className="text-xs text-gray-400">({u.email})</span>
+                  </div>
+                  <span className="text-[11px] text-gray-400">
+                    ID #{u.user_id} • Trạng thái:{' '}
+                    <strong className={u.status === 'ACTIVE' ? 'text-emerald-600' : 'text-red-600'}>
+                      {u.status}
+                    </strong>
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <select
+                    value={u.role}
+                    disabled={u.user_id === user.userId}
+                    onChange={(e) => handleAdminUpdateUser(u.user_id, { role: e.target.value })}
+                    className="px-3 py-1.5 rounded-xl border border-gray-200 text-xs font-semibold bg-gray-50 disabled:opacity-50"
+                  >
+                    <option value="STUDENT">STUDENT</option>
+                    <option value="CONTENT_EDITOR">CONTENT_EDITOR</option>
+                    <option value="ADMIN">ADMIN</option>
+                  </select>
+
+                  <select
+                    value={u.status}
+                    disabled={u.user_id === user.userId}
+                    onChange={(e) => handleAdminUpdateUser(u.user_id, { status: e.target.value })}
+                    className="px-3 py-1.5 rounded-xl border border-gray-200 text-xs font-semibold bg-gray-50 disabled:opacity-50"
+                  >
+                    <option value="ACTIVE">ACTIVE</option>
+                    <option value="LOCKED">LOCKED</option>
+                    <option value="BANNED">BANNED</option>
+                  </select>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

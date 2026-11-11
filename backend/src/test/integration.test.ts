@@ -103,6 +103,48 @@ async function runTests() {
       console.log('  ✔ Detected token reuse and revoked entire session family.');
     }
 
+    // Google OAuth2 Identity Verification & Account Mapping (maps to existing email account)
+    const googleHeader = Buffer.from(JSON.stringify({ alg: 'RS256', typ: 'JWT' })).toString('base64');
+    const googlePayload = Buffer.from(
+      JSON.stringify({
+        iss: 'https://accounts.google.com',
+        sub: 'google_sub_12345',
+        email: validEmail,
+        email_verified: true,
+        name: 'Student Mapped via Google',
+        picture: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+        exp: Math.floor(Date.now() / 1000) + 3600,
+      })
+    ).toString('base64');
+    const mockGoogleJwt = `${googleHeader}.${googlePayload}.sig`;
+
+    const googleMapped = await authService.loginWithGoogle(
+      { credential: mockGoogleJwt },
+      { ip: '10.0.0.1', userAgent: 'Chrome Desktop Windows' }
+    );
+    assert.strictEqual(googleMapped.isNewUser, false, 'Should map to existing account with same email');
+    assert.strictEqual(googleMapped.user.userId, authResult.user.userId);
+    assert(googleMapped.user.avatarUrl, 'Should sync Google avatar to existing user');
+
+    // Create a second device session for the same user and test Device Session Revocation & Logout
+    const secondDevice = await authService.loginWithGoogle(
+      { credential: mockGoogleJwt },
+      { ip: '10.0.0.2', userAgent: 'Mobile Safari iPhone' }
+    );
+    const activeSessionsBefore = await authService.listUserSessions(authResult.user.userId);
+    assert.strictEqual(activeSessionsBefore.length, 2, 'Should have 2 active device sessions');
+
+    // Revoke the first device session specifically
+    await authService.revokeSession(authResult.user.userId, activeSessionsBefore[1].session_id);
+    const activeSessionsAfterRevoke = await authService.listUserSessions(authResult.user.userId);
+    assert.strictEqual(activeSessionsAfterRevoke.length, 1, 'Should have 1 active session left after revoking device');
+
+    // Logout the remaining session
+    await authService.logout(authResult.user.userId, undefined, secondDevice.refreshToken);
+    const activeSessionsAfterLogout = await authService.listUserSessions(authResult.user.userId);
+    assert.strictEqual(activeSessionsAfterLogout.length, 0, 'Should have 0 active sessions after logout');
+    console.log('  ✔ Google OAuth2 account mapping, device session revocation, and logout verified.');
+
     // ─── TEST 4: Assessment, Idempotency & 80% Unlock Condition ──────────
     console.log('\n▶ Test 4: Assessment Snapshot, Idempotency-Key & 80% Lesson Unlock');
     const { assessmentService } = await import('../modules/assessment/assessment.service');

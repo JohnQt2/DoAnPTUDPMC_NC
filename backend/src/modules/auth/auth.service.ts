@@ -1,4 +1,5 @@
 import { randomUUID } from 'crypto';
+import bcrypt from 'bcryptjs';
 import { prisma } from '../../shared/database/prisma.client';
 import { redisService } from '../../shared/redis/redis.service';
 import {
@@ -11,6 +12,7 @@ import {
 import { AppError } from '../../shared/errors/app-error';
 import { GoogleAuthInput } from './auth.dto';
 import { env } from '../../config/env';
+import { mailerService } from '../../shared/mail/mailer.service';
 
 interface ClientInfo {
   ip?: string;
@@ -23,9 +25,12 @@ export class AuthService {
   private readonly MAX_OTP_ATTEMPTS = 5;
 
   /**
-   * UC01: Gửi mã OTP xác thực email
+   * UC01: Gửi mã OTP xác thực email (Hỗ trợ cả Đăng ký tài khoản mới lần đầu kèm mật khẩu & Đăng nhập OTP)
    */
-  async sendEmailOtp(email: string): Promise<{ message: string; expiresIn: number; devOtp?: string }> {
+  async sendEmailOtp(
+    email: string,
+    options?: { password?: string; displayName?: string; mode?: 'register' | 'login' }
+  ): Promise<{ message: string; expiresIn: number; senderEmail?: string; devOtp?: string }> {
     const lockoutKey = `otp:lockout:${email}`;
     const isLocked = await redisService.get(lockoutKey);
 
@@ -38,32 +43,94 @@ export class AuthService {
       );
     }
 
+    const existingUser = (await prisma.users.findUnique({ where: { email } })) as any;
+
+    if (options?.mode === 'register') {
+      if (!options.password || options.password.length < 6) {
+        throw AppError.badRequest('Vui lòng nhập mật khẩu tối thiểu 6 ký tự để đăng ký tài khoản mới.');
+      }
+      if (existingUser && existingUser.password_hash) {
+        throw AppError.badRequest(
+          'Địa chỉ Gmail này đã được đăng ký tài khoản. Vui lòng chuyển sang tab Đăng nhập.',
+          'EMAIL_ALREADY_REGISTERED'
+        );
+      }
+    }
+
     // Generate 6-digit OTP and compute its hash
     const otp = generateOtp();
     const otpHash = hashString(otp);
+    const passwordHash = options?.password ? await bcrypt.hash(options.password, 10) : undefined;
 
-    // Store in Redis with TTL 300s and initial attempt counter
+    // Store in Redis with TTL 300s, initial attempt counter, and pending registration data if provided
     const otpKey = `otp:${email}`;
     const payload = JSON.stringify({
       hash: otpHash,
       attempts: 0,
       createdAt: Date.now(),
+      passwordHash,
+      displayName: options?.displayName,
     });
 
     await redisService.set(otpKey, payload, this.OTP_TTL_SECONDS);
 
-    console.log(`[OTP DISPATCH] Email: ${email} | OTP: ${otp} (TTL: ${this.OTP_TTL_SECONDS}s)`);
+    // Hệ thống tự tạo email gửi đi (Auto-generated Sender Email) chứa mã OTP và địa chỉ Gmail đã đăng ký
+    const mailResult = await mailerService.sendOtpEmail(email, otp, this.OTP_TTL_SECONDS);
 
+    if (!mailResult.sentViaSmtp) {
+      const reason = mailResult.errorReason || 'Không rõ nguyên nhân.';
+
+      if (env.NODE_ENV === 'production') {
+        // Không giữ OTP mà người dùng không bao giờ nhận được
+        await redisService.del(otpKey);
+        throw new AppError(
+          'Hệ thống tạm thời không gửi được email OTP. Vui lòng thử lại sau ít phút.',
+          502,
+          mailResult.errorCode || 'OTP_EMAIL_FAILED'
+        );
+      }
+
+      // Môi trường phát triển: in mã OTP ra terminal backend để vẫn chạy thử được khi chưa cấu hình SMTP
+      // (không bao giờ trả mã OTP về giao diện web).
+      console.warn('\n================= [DEV] OTP FALLBACK =================');
+      console.warn(`  Không gửi được email tới ${email}.`);
+      console.warn(`  Nguyên nhân: ${reason}`);
+      console.warn(`  👉 Mã OTP (hiệu lực ${this.OTP_TTL_SECONDS}s): ${otp}`);
+      console.warn('======================================================\n');
+
+      return {
+        message: `Không gửi được email OTP tới ${email}. ${reason} (Chế độ phát triển: mã OTP đã được in trong cửa sổ terminal đang chạy backend.)`,
+        expiresIn: this.OTP_TTL_SECONDS,
+        senderEmail: mailResult.senderEmail,
+        devOtp: otp,
+      };
+    }
     return {
-      message: 'Mã xác thực OTP đã được gửi đến email của bạn. Mã có hiệu lực trong 5 phút.',
+      message: `Hệ thống (${mailResult.senderEmail}) đã gửi email chứa mã OTP 6 chữ số đến địa chỉ ${email}. Mã có hiệu lực trong 5 phút.`,
       expiresIn: this.OTP_TTL_SECONDS,
-      // Dev helper for seamless inspection & testing
-      devOtp: env.NODE_ENV === 'development' ? otp : undefined,
+      senderEmail: mailResult.senderEmail,
+      // Chỉ dùng cho bộ kiểm thử tự động nội bộ (AuthController không trả trường này ra HTTP response)
+      devOtp: env.NODE_ENV !== 'production' ? otp : undefined,
     };
   }
 
   /**
-   * UC01: Xác thực mã OTP và đăng nhập / đăng ký
+   * Truy xuất bức thư OTP mới nhất trong hộp thư của địa chỉ Gmail đã đăng ký
+   */
+  async getMailboxMessage(email: string) {
+    const normalized = email?.trim().toLowerCase();
+    if (!normalized) {
+      throw AppError.badRequest('Vui lòng cung cấp địa chỉ Gmail.');
+    }
+    const mail = await mailerService.getLatestEmailForAddress(normalized);
+    if (!mail) {
+      throw AppError.notFound('Không có email xác thực nào đang chờ hoặc thư đã hết hạn 5 phút.');
+    }
+    return mail;
+  }
+
+  /**
+   * UC01: Xác thực mã OTP và hoàn tất đăng ký tài khoản mới / đăng nhập
    */
   async verifyEmailOtp(
     email: string,
@@ -100,6 +167,8 @@ export class AuthService {
       hash: string;
       attempts: number;
       createdAt: number;
+      passwordHash?: string;
+      displayName?: string;
     };
 
     const inputHash = hashString(otp);
@@ -111,6 +180,7 @@ export class AuthService {
       if (newAttempts >= this.MAX_OTP_ATTEMPTS) {
         // Exceeded 5 attempts -> Delete OTP and lock for 15 minutes
         await redisService.del(otpKey);
+        await redisService.del(`mailbox:${email}`);
         await redisService.set(lockoutKey, 'LOCKED', this.LOCKOUT_TTL_SECONDS);
 
         throw AppError.tooManyRequests(
@@ -132,6 +202,7 @@ export class AuthService {
 
     // OTP verified successfully -> Delete OTP from Redis
     await redisService.del(otpKey);
+    await redisService.del(`mailbox:${email}`);
 
     // Check or create user in DB
     let isNewUser = false;
@@ -141,11 +212,12 @@ export class AuthService {
 
     if (!user) {
       isNewUser = true;
-      const defaultName = email.split('@')[0];
+      const defaultName = record.displayName?.trim() || email.split('@')[0];
 
       user = await prisma.users.create({
         data: {
           email,
+          password_hash: record.passwordHash || null,
           display_name: defaultName,
           role: 'STUDENT',
           status: 'ACTIVE',
@@ -156,7 +228,7 @@ export class AuthService {
               notify_webpush: false,
             },
           },
-        },
+        } as any,
       });
 
       // Assign default introductory course roadmap if course exists
@@ -194,7 +266,11 @@ export class AuthService {
 
       user = await prisma.users.update({
         where: { user_id: user.user_id },
-        data: { last_login_at: new Date() },
+        data: {
+          last_login_at: new Date(),
+          ...(record.passwordHash ? { password_hash: record.passwordHash } : {}),
+          ...(record.displayName ? { display_name: record.displayName.trim() } : {}),
+        } as any,
       });
 
       await prisma.auditLogs.create({
@@ -233,6 +309,79 @@ export class AuthService {
   }
 
   /**
+   * Đăng nhập bằng Gmail (@gmail.com) và Mật khẩu đã đăng ký
+   */
+  async loginWithPassword(
+    email: string,
+    password: string,
+    clientInfo: ClientInfo
+  ): Promise<{
+    user: any;
+    accessToken: string;
+    refreshToken: string;
+    isNewUser: boolean;
+  }> {
+    const user = (await prisma.users.findUnique({
+      where: { email },
+      include: { avatarResource: true },
+    })) as any;
+
+    if (!user || !user.password_hash) {
+      throw AppError.unauthorized(
+        'Tài khoản chưa được đăng ký mật khẩu hoặc email không tồn tại. Vui lòng đăng ký tài khoản mới hoặc đăng nhập bằng OTP.',
+        'INVALID_CREDENTIALS'
+      );
+    }
+
+    if (user.status === 'BANNED' || user.status === 'LOCKED') {
+      throw AppError.forbidden('Tài khoản đã bị tạm khóa. Vui lòng liên hệ quản trị viên.');
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password_hash);
+    if (!isMatch) {
+      throw AppError.unauthorized('Mật khẩu không chính xác.', 'INVALID_CREDENTIALS');
+    }
+
+    await prisma.users.update({
+      where: { user_id: user.user_id },
+      data: { last_login_at: new Date() },
+    });
+
+    await prisma.auditLogs.create({
+      data: {
+        user_id: user.user_id,
+        action_type: 'LOGIN_PASSWORD',
+        target_entity: 'Users',
+        target_id: user.user_id.toString(),
+        ip_address: clientInfo.ip,
+      },
+    });
+
+    const sessionFamilyId = randomUUID();
+    const { accessToken, refreshToken } = await this.createSession(
+      user.user_id,
+      user.email,
+      user.role,
+      sessionFamilyId,
+      clientInfo
+    );
+
+    return {
+      user: {
+        userId: user.user_id,
+        email: user.email,
+        displayName: user.display_name,
+        role: user.role,
+        status: user.status,
+        avatarUrl: user.avatarResource?.public_url || null,
+      },
+      accessToken,
+      refreshToken,
+      isNewUser: false,
+    };
+  }
+
+  /**
    * UC01: Tích hợp Đăng nhập bằng Google OAuth2
    */
   async loginWithGoogle(
@@ -244,22 +393,33 @@ export class AuthService {
     refreshToken: string;
     isNewUser: boolean;
   }> {
-    // In production, verify Google ID token with OAuth2Client. In development, accept valid email mapping
-    let email = dto.email;
+    //In production, verify Google ID token with OAuth2Client. In development, accept valid email mapping
+    let email = dto.email?.trim().toLowerCase();
     let name = dto.name;
+    let avatar = dto.avatar;
+    let googleId = dto.googleId;
 
     if (dto.credential) {
-      // Decode JWT payload from credential if provided
+      // Decode and verify JWT payload from Google OAuth2 credential if provided
       try {
         const parts = dto.credential.split('.');
         if (parts.length === 3) {
           const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf-8'));
+          if (payload.exp && Date.now() >= payload.exp * 1000) {
+            throw AppError.unauthorized('Google ID Token đã hết hạn.', 'GOOGLE_TOKEN_EXPIRED');
+          }
+          if (payload.email_verified === false) {
+            throw AppError.badRequest('Email Google chưa được xác minh.', 'GOOGLE_EMAIL_UNVERIFIED');
+          }
           if (payload.email) {
-            email = payload.email;
+            email = String(payload.email).trim().toLowerCase();
             name = payload.name || name;
+            avatar = payload.picture || avatar;
+            googleId = payload.sub || googleId;
           }
         }
       } catch (err) {
+        if (err instanceof AppError) throw err;
         console.warn('Failed to parse Google credential token:', err);
       }
     }
@@ -271,14 +431,31 @@ export class AuthService {
     let isNewUser = false;
     let user = await prisma.users.findUnique({
       where: { email },
+      include: { avatarResource: true },
     });
 
     if (!user) {
       isNewUser = true;
+      let avatarResourceId: number | undefined;
+
+      if (avatar) {
+        const media = await prisma.mediaResources.create({
+          data: {
+            file_name: `google_avatar_${Date.now()}.jpg`,
+            storage_key: `avatars/google_${googleId || Date.now()}`,
+            public_url: avatar,
+            mime_type: 'image/jpeg',
+            resource_type: 'IMAGE',
+          },
+        });
+        avatarResourceId = media.resource_id;
+      }
+
       user = await prisma.users.create({
         data: {
           email,
           display_name: name || email.split('@')[0],
+          avatar_resource_id: avatarResourceId,
           role: 'STUDENT',
           status: 'ACTIVE',
           notificationSettings: {
@@ -289,6 +466,7 @@ export class AuthService {
             },
           },
         },
+        include: { avatarResource: true },
       });
 
       const defaultCourse = await prisma.courses.findFirst({
@@ -314,7 +492,7 @@ export class AuthService {
           action_type: 'REGISTER_GOOGLE',
           target_entity: 'Users',
           target_id: user.user_id.toString(),
-          new_value: JSON.stringify({ email }),
+          new_value: JSON.stringify({ email, googleId }),
           ip_address: clientInfo.ip,
         },
       });
@@ -323,9 +501,28 @@ export class AuthService {
         throw AppError.forbidden('Tài khoản đã bị tạm khóa. Vui lòng liên hệ quản trị viên.');
       }
 
+      let avatarResourceId = user.avatar_resource_id;
+      if (!avatarResourceId && avatar) {
+        const media = await prisma.mediaResources.create({
+          data: {
+            file_name: `google_avatar_${user.user_id}.jpg`,
+            storage_key: `avatars/google_${user.user_id}`,
+            public_url: avatar,
+            mime_type: 'image/jpeg',
+            resource_type: 'IMAGE',
+            uploaded_by: user.user_id,
+          },
+        });
+        avatarResourceId = media.resource_id;
+      }
+
       user = await prisma.users.update({
         where: { user_id: user.user_id },
-        data: { last_login_at: new Date() },
+        data: {
+          last_login_at: new Date(),
+          ...(avatarResourceId ? { avatar_resource_id: avatarResourceId } : {}),
+        },
+        include: { avatarResource: true },
       });
 
       await prisma.auditLogs.create({
@@ -334,6 +531,7 @@ export class AuthService {
           action_type: 'LOGIN_GOOGLE',
           target_entity: 'Users',
           target_id: user.user_id.toString(),
+          new_value: googleId ? JSON.stringify({ googleId }) : null,
           ip_address: clientInfo.ip,
         },
       });
@@ -355,6 +553,7 @@ export class AuthService {
         displayName: user.display_name,
         role: user.role,
         status: user.status,
+        avatarUrl: user.avatarResource?.public_url || null,
       },
       accessToken,
       refreshToken,

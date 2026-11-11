@@ -103,7 +103,7 @@ export const SrsReviewPage: React.FC = () => {
         <div className="flex items-center gap-2.5">
           <Brain className="w-6 h-6 text-primary-600" />
           <h1 className="text-xl font-extrabold text-gray-900 tracking-tight">
-            Ôn Tập Ngắt Quãng SM-2 (UC07)
+            Ôn Tập Ngắt Quãng SM-2
           </h1>
         </div>
 

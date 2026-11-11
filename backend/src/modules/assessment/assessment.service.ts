@@ -225,6 +225,18 @@ export class AssessmentService {
       throw AppError.badRequest('Bài kiểm tra hiện chưa có câu hỏi nào.');
     }
 
+    // Kiểm tra điều kiện mở khóa bài học nếu bài kiểm tra thuộc về một bài học
+    if (test.lesson_id) {
+      const unlockStatus = await this.checkLessonUnlockStatus(userId, test.lesson_id);
+      if (!unlockStatus.isUnlocked) {
+        throw AppError.forbidden(
+          unlockStatus.reason || 'Bài học này đang bị khóa. Bạn không thể làm bài kiểm tra khi chưa mở khóa bài học.',
+          'LESSON_LOCKED',
+          unlockStatus
+        );
+      }
+    }
+
     // Generate snapshot
     const snapshotQuestions = test.testQuestions.map((tq) => ({
       question_id: tq.question.question_id,
@@ -356,10 +368,22 @@ export class AssessmentService {
 
     const test = await prisma.tests.findUnique({
       where: { test_id: testId },
-      include: { lesson: true },
+      include: { lesson: { include: { chapter: true } } },
     });
 
     if (!test) throw AppError.notFound('Bài kiểm tra không tồn tại.');
+
+    // Kiểm tra điều kiện mở khóa bài học nếu bài kiểm tra thuộc về một bài học
+    if (test.lesson_id) {
+      const unlockStatus = await this.checkLessonUnlockStatus(userId, test.lesson_id);
+      if (!unlockStatus.isUnlocked) {
+        throw AppError.forbidden(
+          unlockStatus.reason || 'Bài học này đang bị khóa. Bạn không thể nộp bài kiểm tra.',
+          'LESSON_LOCKED',
+          unlockStatus
+        );
+      }
+    }
 
     // 3. Compute score & evaluate answers
     const userAnswersMap = new Map<number, string>();
@@ -393,7 +417,8 @@ export class AssessmentService {
     const totalQuestions = questionsForGrading.length;
     const scorePercentage =
       totalQuestions > 0 ? Number(((correctCount / totalQuestions) * 100).toFixed(1)) : 0;
-    const isPassed = scorePercentage >= test.passing_score;
+    // Quy tắc nghiệp vụ số 9: tối thiểu 80% để hoàn thành bài
+    const isPassed = scorePercentage >= 80;
 
     // 4. ATOMIC PRISMA TRANSACTION
     const result = await prisma.$transaction(async (tx) => {
@@ -427,35 +452,95 @@ export class AssessmentService {
       let nextLessonId: number | null = null;
 
       if (test.lesson_id) {
-        // Upsert lesson progress
-        await tx.userLessonProgress.upsert({
+        const lessonId = test.lesson_id;
+
+        // Đọc bản ghi UserLessonProgress hiện tại bên trong transaction
+        const existingProgress = await tx.userLessonProgress.findUnique({
           where: {
             user_id_lesson_id: {
               user_id: userId,
-              lesson_id: test.lesson_id,
+              lesson_id: lessonId,
             },
-          },
-          create: {
-            user_id: userId,
-            lesson_id: test.lesson_id,
-            is_completed: isPassed,
-            last_studied_at: new Date(),
-          },
-          update: {
-            is_completed: isPassed ? true : undefined,
-            last_studied_at: new Date(),
           },
         });
 
-        // Check if 80% condition met to unlock the next lesson
-        if (scorePercentage >= 80) {
+        const prevHighest = existingProgress?.highest_score ?? 0;
+        const newHighestScore = Math.max(prevHighest, scorePercentage);
+
+        // Trường hợp score < 80
+        if (scorePercentage < 80) {
+          if (!existingProgress?.is_completed) {
+            await tx.userLessonProgress.upsert({
+              where: {
+                user_id_lesson_id: {
+                  user_id: userId,
+                  lesson_id: lessonId,
+                },
+              },
+              create: {
+                user_id: userId,
+                lesson_id: lessonId,
+                is_completed: false,
+                status: 'IN_PROGRESS',
+                highest_score: newHighestScore,
+                last_studied_at: new Date(),
+              },
+              update: {
+                is_completed: false,
+                status: 'IN_PROGRESS',
+                highest_score: newHighestScore,
+                last_studied_at: new Date(),
+              },
+            });
+            // Tuyệt đối KHÔNG mở khóa bài tiếp theo
+          } else {
+            // Đã từng hoàn thành trước đó: giữ nguyên is_completed: true, status: 'COMPLETED'
+            await tx.userLessonProgress.update({
+              where: { progress_id: existingProgress.progress_id },
+              data: {
+                highest_score: newHighestScore,
+                last_studied_at: new Date(),
+              },
+            });
+          }
+        } else {
+          // Trường hợp score >= 80 (isPassed === true)
+          const completedAt = existingProgress?.completed_at ?? new Date();
+
+          await tx.userLessonProgress.upsert({
+            where: {
+              user_id_lesson_id: {
+                user_id: userId,
+                lesson_id: lessonId,
+              },
+            },
+            create: {
+              user_id: userId,
+              lesson_id: lessonId,
+              is_completed: true,
+              status: 'COMPLETED',
+              highest_score: newHighestScore,
+              completed_at: completedAt,
+              last_studied_at: new Date(),
+            },
+            update: {
+              is_completed: true,
+              status: 'COMPLETED',
+              highest_score: newHighestScore,
+              completed_at: completedAt,
+              last_studied_at: new Date(),
+            },
+          });
+
+          // Tìm bài học PUBLISHED kế tiếp theo thứ tự (chapter.order_index, lesson.order_index) trong cùng khóa học
           const currentLesson = await tx.lessons.findUnique({
-            where: { lesson_id: test.lesson_id },
+            where: { lesson_id: lessonId },
+            include: { chapter: true },
           });
 
           if (currentLesson) {
-            // Find next lesson in the same chapter or next chapter
-            const nextLesson = await tx.lessons.findFirst({
+            // 1. Tìm trong cùng chương: bài PUBLISHED có order_index > currentLesson.order_index
+            let nextLesson = await tx.lessons.findFirst({
               where: {
                 chapter_id: currentLesson.chapter_id,
                 order_index: { gt: currentLesson.order_index },
@@ -464,11 +549,82 @@ export class AssessmentService {
               orderBy: { order_index: 'asc' },
             });
 
+            // 2. Nếu không có trong cùng chương, tìm bài đầu tiên của chương kế tiếp trong cùng khóa học
+            if (!nextLesson) {
+              const nextChapter = await tx.chapters.findFirst({
+                where: {
+                  course_id: currentLesson.chapter.course_id,
+                  order_index: { gt: currentLesson.chapter.order_index },
+                },
+                orderBy: { order_index: 'asc' },
+                include: {
+                  lessons: {
+                    where: { status: 'PUBLISHED' },
+                    orderBy: { order_index: 'asc' },
+                    take: 1,
+                  },
+                },
+              });
+
+              if (nextChapter && nextChapter.lessons.length > 0) {
+                nextLesson = nextChapter.lessons[0];
+              }
+            }
+
             if (nextLesson) {
-              nextLessonUnlocked = true;
               nextLessonId = nextLesson.lesson_id;
+
+              // Upsert bản ghi UserLessonProgress cho bài kế tiếp với status = 'UNLOCKED'
+              const nextProgress = await tx.userLessonProgress.findUnique({
+                where: {
+                  user_id_lesson_id: {
+                    user_id: userId,
+                    lesson_id: nextLesson.lesson_id,
+                  },
+                },
+              });
+
+              if (!nextProgress) {
+                await tx.userLessonProgress.create({
+                  data: {
+                    user_id: userId,
+                    lesson_id: nextLesson.lesson_id,
+                    status: 'UNLOCKED',
+                    is_completed: false,
+                    highest_score: 0,
+                    last_studied_at: new Date(),
+                  },
+                });
+                nextLessonUnlocked = true;
+              } else if (nextProgress.status === 'LOCKED' || !nextProgress.status) {
+                await tx.userLessonProgress.update({
+                  where: { progress_id: nextProgress.progress_id },
+                  data: { status: 'UNLOCKED' },
+                });
+                nextLessonUnlocked = true;
+              } else {
+                nextLessonUnlocked = true;
+              }
             }
           }
+
+          // Ghi 1 sự kiện vào bảng OutboxMessages ngay trong cùng transaction
+          await tx.outboxMessages.create({
+            data: {
+              aggregate_type: 'LESSON_PROGRESS',
+              aggregate_id: String(lessonId),
+              event_type: 'LESSON_COMPLETED',
+              payload: JSON.stringify({
+                user_id: userId,
+                lesson_id: lessonId,
+                score: scorePercentage,
+                unlocked_next_lesson_id: nextLessonId,
+                completed_at: completedAt,
+                timestamp: new Date().toISOString(),
+              }),
+              status: 'PENDING',
+            },
+          });
         }
       }
 
@@ -479,7 +635,7 @@ export class AssessmentService {
           action_type: 'SUBMIT_TEST',
           target_entity: 'TestSubmissions',
           target_id: submission.submission_id.toString(),
-          new_value: JSON.stringify({ score: scorePercentage, isPassed }),
+          new_value: JSON.stringify({ score: scorePercentage, isPassed, nextLessonId, nextLessonUnlocked }),
         },
       });
 
@@ -487,7 +643,7 @@ export class AssessmentService {
         submissionId: submission.submission_id,
         score: scorePercentage,
         isPassed,
-        passingScore: test.passing_score,
+        passingScore: 80,
         durationSeconds: data.duration_seconds,
         nextLessonUnlocked,
         nextLessonId,
@@ -502,7 +658,10 @@ export class AssessmentService {
 
   /**
    * Kiểm tra điều kiện mở khóa bài học:
-   * Bài học đầu tiên luôn mở. Các bài học sau chỉ mở khi bài học trước đạt >= 80% điểm hoặc đã hoàn thành.
+   * Thỏa mãn ít nhất 1 trong 3 điều kiện:
+   * 1. Là bài học đầu tiên của khóa học (Chapters.order_index nhỏ nhất và Lessons.order_index nhỏ nhất).
+   * 2. Đã có bản ghi trong UserLessonProgress với status là 'UNLOCKED', 'IN_PROGRESS' hoặc 'COMPLETED' (hoặc is_completed === true).
+   * 3. Bài học PUBLISHED đứng liền trước nó trong cùng khóa học đã có is_completed === true (hoặc có bài thi TestSubmissions đạt score >= 80 / is_passed === true).
    */
   async checkLessonUnlockStatus(userId: number, lessonId: number): Promise<{
     isUnlocked: boolean;
@@ -512,67 +671,99 @@ export class AssessmentService {
   }> {
     const targetLesson = await prisma.lessons.findUnique({
       where: { lesson_id: lessonId },
-      include: { chapter: true },
+      include: {
+        chapter: {
+          include: { course: true },
+        },
+      },
     });
 
     if (!targetLesson) throw AppError.notFound('Bài học không tồn tại.');
 
-    // Find preceding lesson in chapter
-    const prevLesson = await prisma.lessons.findFirst({
+    const courseId = targetLesson.chapter.course_id;
+
+    // ─── ĐIỀU KIỆN 1: Là bài học đầu tiên của khóa học ────────────────
+    const firstChapter = await prisma.chapters.findFirst({
+      where: { course_id: courseId },
+      orderBy: { order_index: 'asc' },
+      include: {
+        lessons: {
+          where: { status: 'PUBLISHED' },
+          orderBy: { order_index: 'asc' },
+          take: 1,
+        },
+      },
+    });
+
+    if (
+      firstChapter &&
+      firstChapter.lessons.length > 0 &&
+      firstChapter.lessons[0].lesson_id === lessonId
+    ) {
+      return { isUnlocked: true };
+    }
+
+    // ─── ĐIỀU KIỆN 2: Đã có bản ghi trong UserLessonProgress ──────────
+    const currentProgress = await prisma.userLessonProgress.findUnique({
+      where: {
+        user_id_lesson_id: {
+          user_id: userId,
+          lesson_id: lessonId,
+        },
+      },
+    });
+
+    if (currentProgress) {
+      const validStatuses = ['UNLOCKED', 'IN_PROGRESS', 'COMPLETED'];
+      if (
+        currentProgress.is_completed ||
+        (currentProgress.status && validStatuses.includes(currentProgress.status.toUpperCase()))
+      ) {
+        return { isUnlocked: true };
+      }
+    }
+
+    // ─── ĐIỀU KIỆN 3: Bài học PUBLISHED đứng liền trước nó trong cùng khóa học ───
+    // 3a. Tìm trong cùng chapter: bài PUBLISHED có order_index < targetLesson.order_index (lấy bài có order_index lớn nhất trong số đó)
+    let prevLesson = await prisma.lessons.findFirst({
       where: {
         chapter_id: targetLesson.chapter_id,
         order_index: { lt: targetLesson.order_index },
+        status: 'PUBLISHED',
       },
       orderBy: { order_index: 'desc' },
     });
 
-    // If first lesson in chapter, check if it's the first chapter
+    // 3b. Nếu không có trong cùng chapter (targetLesson là bài đầu của chapter):
+    // Tìm chapter đứng trước trong cùng khóa học có chứa bài học PUBLISHED
     if (!prevLesson) {
       const prevChapter = await prisma.chapters.findFirst({
         where: {
-          course_id: targetLesson.chapter.course_id,
+          course_id: courseId,
           order_index: { lt: targetLesson.chapter.order_index },
         },
         orderBy: { order_index: 'desc' },
         include: {
           lessons: {
+            where: { status: 'PUBLISHED' },
             orderBy: { order_index: 'desc' },
             take: 1,
           },
         },
       });
 
-      if (!prevChapter || prevChapter.lessons.length === 0) {
-        // First lesson of first chapter is unlocked by default!
-        return { isUnlocked: true };
+      if (prevChapter && prevChapter.lessons.length > 0) {
+        prevLesson = prevChapter.lessons[0];
       }
+    }
 
-      const lastLessonOfPrevChapter = prevChapter.lessons[0];
-      const progress = await prisma.userLessonProgress.findUnique({
-        where: {
-          user_id_lesson_id: {
-            user_id: userId,
-            lesson_id: lastLessonOfPrevChapter.lesson_id,
-          },
-        },
-      });
-
-      if (!progress || !progress.is_completed) {
-        return {
-          isUnlocked: false,
-          reason: `Bạn cần hoàn thành bài học "${lastLessonOfPrevChapter.title}" (đạt ≥ 80%) ở chương trước để mở khóa bài học này.`,
-          requiredScore: 80,
-          previousLesson: {
-            lessonId: lastLessonOfPrevChapter.lesson_id,
-            title: lastLessonOfPrevChapter.title,
-          },
-        };
-      }
+    // Nếu không tìm thấy bài nào đứng trước (nghĩa là targetLesson chính là bài đầu tiên của khóa)
+    if (!prevLesson) {
       return { isUnlocked: true };
     }
 
-    // Check progress of previous lesson in same chapter
-    const progress = await prisma.userLessonProgress.findUnique({
+    // Kiểm tra tiến độ của bài học đứng trước
+    const prevProgress = await prisma.userLessonProgress.findUnique({
       where: {
         user_id_lesson_id: {
           user_id: userId,
@@ -581,19 +772,35 @@ export class AssessmentService {
       },
     });
 
-    if (!progress || !progress.is_completed) {
-      return {
-        isUnlocked: false,
-        reason: `Bạn cần hoàn thành bài học "${prevLesson.title}" (đạt ≥ 80%) để mở khóa bài học tiếp theo.`,
-        requiredScore: 80,
-        previousLesson: {
-          lessonId: prevLesson.lesson_id,
-          title: prevLesson.title,
-        },
-      };
+    if (prevProgress && prevProgress.is_completed) {
+      return { isUnlocked: true };
     }
 
-    return { isUnlocked: true };
+    // Hoặc kiểm tra xem có bài thi TestSubmissions của bài học trước đạt score >= 80 hoặc is_passed === true chưa
+    const passingSubmission = await prisma.testSubmissions.findFirst({
+      where: {
+        user_id: userId,
+        test: {
+          lesson_id: prevLesson.lesson_id,
+        },
+        OR: [{ score: { gte: 80 } }, { is_passed: true }],
+      },
+    });
+
+    if (passingSubmission) {
+      return { isUnlocked: true };
+    }
+
+    // Cả 3 điều kiện đều không thỏa mãn -> Bài bị khóa
+    return {
+      isUnlocked: false,
+      reason: `Bạn cần hoàn thành bài học "${prevLesson.title}" (đạt ≥ 80%) để mở khóa bài học này.`,
+      requiredScore: 80,
+      previousLesson: {
+        lessonId: prevLesson.lesson_id,
+        title: prevLesson.title,
+      },
+    };
   }
 
   async getUserSubmissions(userId: number, testId?: number) {

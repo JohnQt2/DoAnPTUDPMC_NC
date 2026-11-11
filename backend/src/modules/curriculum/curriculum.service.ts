@@ -1,5 +1,6 @@
 import { prisma } from '../../shared/database/prisma.client';
 import { AppError } from '../../shared/errors/app-error';
+import { assessmentService } from '../assessment/assessment.service';
 import {
   CreateCourseInput,
   UpdateCourseInput,
@@ -60,7 +61,10 @@ export class CurriculumService {
     }
 
     // If userId provided, fetch user lesson progress for this course's lessons
-    let progressMap: Map<number, boolean> = new Map();
+    let progressMap: Map<
+      number,
+      { isCompleted: boolean; status: string; highestScore: number }
+    > = new Map();
     if (userId) {
       const lessonIds = course.chapters.flatMap((ch) => ch.lessons.map((l) => l.lesson_id));
       if (lessonIds.length > 0) {
@@ -68,7 +72,11 @@ export class CurriculumService {
           where: { user_id: userId, lesson_id: { in: lessonIds } },
         });
         for (const p of progressRecords) {
-          progressMap.set(p.lesson_id, p.is_completed);
+          progressMap.set(p.lesson_id, {
+            isCompleted: p.is_completed,
+            status: p.status || (p.is_completed ? 'COMPLETED' : 'LOCKED'),
+            highestScore: p.highest_score || 0,
+          });
         }
       }
     }
@@ -85,17 +93,26 @@ export class CurriculumService {
         chapterId: ch.chapter_id,
         title: ch.title,
         orderIndex: ch.order_index,
-        lessons: ch.lessons.map((l) => ({
-          lessonId: l.lesson_id,
-          title: l.title,
-          orderIndex: l.order_index,
-          estimatedDurationMins: l.estimated_duration_mins,
-          status: l.status,
-          blocksCount: l._count.blocks,
-          vocabulariesCount: l._count.vocabularies,
-          testsCount: l._count.tests,
-          ...(userId ? { isCompleted: progressMap.get(l.lesson_id) ?? false } : {}),
-        })),
+        lessons: ch.lessons.map((l) => {
+          const prog = progressMap.get(l.lesson_id);
+          return {
+            lessonId: l.lesson_id,
+            title: l.title,
+            orderIndex: l.order_index,
+            estimatedDurationMins: l.estimated_duration_mins,
+            status: l.status,
+            blocksCount: l._count.blocks,
+            vocabulariesCount: l._count.vocabularies,
+            testsCount: l._count.tests,
+            ...(userId
+              ? {
+                  isCompleted: prog?.isCompleted ?? false,
+                  progressStatus: prog?.status ?? 'LOCKED',
+                  highestScore: prog?.highestScore ?? 0,
+                }
+              : {}),
+          };
+        }),
       })),
     };
   }
@@ -279,7 +296,7 @@ export class CurriculumService {
     return { message: 'Đã xóa bài học thành công.' };
   }
 
-  async getLessonDetail(lessonId: number) {
+  async getLessonDetail(lessonId: number, userId?: number, userRole?: string) {
     const lesson = await prisma.lessons.findUnique({
       where: { lesson_id: lessonId },
       include: {
@@ -308,12 +325,41 @@ export class CurriculumService {
       throw AppError.notFound('Không tìm thấy bài học này.');
     }
 
+    // Kiểm tra điều kiện mở khóa bài học nếu là học viên (STUDENT)
+    if (userId && (!userRole || userRole === 'STUDENT')) {
+      const unlockStatus = await assessmentService.checkLessonUnlockStatus(userId, lessonId);
+      if (!unlockStatus.isUnlocked) {
+        throw AppError.forbidden(
+          unlockStatus.reason || 'Bài học này đang bị khóa. Bạn cần hoàn thành bài học tiên quyết để mở khóa.',
+          'LESSON_LOCKED',
+          unlockStatus
+        );
+      }
+    }
+
+    let userProgress: any = null;
+    if (userId) {
+      const prog = await prisma.userLessonProgress.findUnique({
+        where: { user_id_lesson_id: { user_id: userId, lesson_id: lessonId } },
+      });
+      if (prog) {
+        userProgress = {
+          status: prog.status || (prog.is_completed ? 'COMPLETED' : 'UNLOCKED'),
+          isCompleted: prog.is_completed,
+          highestScore: prog.highest_score || 0,
+          completedAt: prog.completed_at,
+          lastStudiedAt: prog.last_studied_at,
+        };
+      }
+    }
+
     return {
       lessonId: lesson.lesson_id,
       title: lesson.title,
       orderIndex: lesson.order_index,
       estimatedDurationMins: lesson.estimated_duration_mins,
       status: lesson.status,
+      userProgress,
       chapter: {
         chapterId: lesson.chapter.chapter_id,
         title: lesson.chapter.title,

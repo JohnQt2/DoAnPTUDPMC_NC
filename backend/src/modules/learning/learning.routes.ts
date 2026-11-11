@@ -4,13 +4,11 @@ import { authenticate } from '../../shared/middleware/auth.middleware';
 
 const router = Router();
 
-// Public Learning Endpoints
-router.get('/pinyin', learningController.getPinyin);
-router.get('/pinyin/minimal-pairs', learningController.getMinimalPairs);
-router.get('/characters', learningController.getCharacters);
-router.get('/characters/:id', learningController.getCharacterDetail);
-
-// Protected Practice Endpoints
+// Protected Learning & Practice Endpoints (Requires Authentication)
+router.get('/pinyin', authenticate, learningController.getPinyin);
+router.get('/pinyin/minimal-pairs', authenticate, learningController.getMinimalPairs);
+router.get('/characters', authenticate, learningController.getCharacters);
+router.get('/characters/:id', authenticate, learningController.getCharacterDetail);
 router.post('/practices', authenticate, learningController.recordPractice);
 router.get('/practices/stats', authenticate, learningController.getPracticeStats);
 

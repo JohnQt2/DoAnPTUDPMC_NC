@@ -466,10 +466,19 @@ export class CurriculumService {
     }
 
     if (course.is_published) {
-      throw AppError.badRequest('Khóa học này đã được xuất bản.');
+      const unpublished = await prisma.courses.update({
+        where: { course_id: courseId },
+        data: { is_published: false },
+      });
+      return {
+        courseId: unpublished.course_id,
+        title: unpublished.title,
+        isPublished: unpublished.is_published,
+        message: 'Đã chuyển khóa học về trạng thái bản nháp (DRAFT).',
+      };
     }
 
-    // Validate all lessons are published
+    // Validate all lessons are published when chapters exist
     const unpublishedLessons = course.chapters
       .flatMap((ch) => ch.lessons)
       .filter((l) => l.status !== 'PUBLISHED');
@@ -480,10 +489,6 @@ export class CurriculumService {
         'UNPUBLISHED_LESSONS',
         { unpublishedLessons: unpublishedLessons.map((l) => ({ lessonId: l.lesson_id, title: l.title })) }
       );
-    }
-
-    if (course.chapters.length === 0) {
-      throw AppError.badRequest('Khóa học phải có ít nhất 1 chương trước khi xuất bản.');
     }
 
     const updated = await prisma.courses.update({

@@ -17,8 +17,8 @@ router.post('/chapters', authenticate, authorize('ADMIN', 'CONTENT_EDITOR'), cur
 router.put('/chapters/:id', authenticate, authorize('ADMIN', 'CONTENT_EDITOR'), curriculumController.updateChapter);
 router.delete('/chapters/:id', authenticate, authorize('ADMIN', 'CONTENT_EDITOR'), curriculumController.deleteChapter);
 
-// ─── Lessons ──────────────────────────────────────────────────────────
-router.get('/lessons/:id', optionalAuthenticate, curriculumController.getLessonDetail);
+// ─── Lessons (Protected: Requires Authenticated Student / Editor / Admin) ─
+router.get('/lessons/:id', authenticate, curriculumController.getLessonDetail);
 router.post('/lessons', authenticate, authorize('ADMIN', 'CONTENT_EDITOR'), curriculumController.createLesson);
 router.put('/lessons/:id', authenticate, authorize('ADMIN', 'CONTENT_EDITOR'), curriculumController.updateLesson);
 router.delete('/lessons/:id', authenticate, authorize('ADMIN', 'CONTENT_EDITOR'), curriculumController.deleteLesson);

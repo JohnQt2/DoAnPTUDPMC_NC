@@ -439,21 +439,23 @@ async function runTests() {
     assert.strictEqual(progressLesson2?.status, 'UNLOCKED', 'Lesson 2 status must be UNLOCKED in UserLessonProgress');
 
     // Outbox event LESSON_COMPLETED
-    const outboxMessages = await prisma.outboxMessages.findMany({
+    const outboxLessonCompleted = await prisma.outboxMessages.findFirst({
       where: {
         aggregate_type: 'LESSON_PROGRESS',
         event_type: 'LESSON_COMPLETED',
+        aggregate_id: `${roadmapStudent.user_id}:1`,
       },
       orderBy: { created_at: 'desc' },
     });
-    const outboxLessonCompleted = outboxMessages.find((m) => {
-      const p = JSON.parse(m.payload);
-      return (p.user_id === roadmapStudent.user_id || p.userId === roadmapStudent.user_id) && (p.lesson_id === 1 || p.lessonId === 1);
-    });
-    assert(outboxLessonCompleted, 'Outbox message for LESSON_COMPLETED must be recorded');
+    assert(outboxLessonCompleted, 'Outbox message for LESSON_COMPLETED must be recorded with aggregate_id userId:lessonId');
     const lessonPayload = JSON.parse(outboxLessonCompleted.payload);
-    assert.strictEqual(lessonPayload.lesson_id ?? lessonPayload.lessonId, 1);
+    assert.strictEqual(lessonPayload.lessonId, 1);
+    assert.strictEqual(lessonPayload.lesson_id, 1);
+    assert.strictEqual(lessonPayload.userId, roadmapStudent.user_id);
+    assert.strictEqual(lessonPayload.user_id, roadmapStudent.user_id);
     assert.strictEqual(lessonPayload.score, 100);
+    assert.strictEqual(lessonPayload.isPassed, true);
+    assert.strictEqual(lessonPayload.is_passed, true);
     console.log('  ✔ Score < 80% keeps lesson incomplete; score >= 80% completes lesson, unlocks next lesson, and writes outbox event.');
 
     // ─── TEST 10: Student Learning Progress Overview & Next Recommended Lesson API
@@ -488,8 +490,136 @@ async function runTests() {
     assert.strictEqual(aliasRes.status, 200, 'GET /progress (alias) should return 200');
     console.log('  ✔ Progress API accurately reflects completion percentage and next recommended lesson.');
 
+    // ─── TEST 11: Cross-Chapter Lesson Unlock & In-Progress Profile Sync ──
+    console.log('\n▶ Test 11: Cross-Chapter Lesson Unlock & In-Progress Profile Sync');
+
+    // 11.1 Test In-Progress Lesson Sync in getProfile
+    const inProgressRes = await fetch(`${baseUrl}/api/v1/curriculum/lessons/2/progress`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${roadmapToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    assert.strictEqual(inProgressRes.status, 200);
+    const inProgressJson: any = await inProgressRes.json();
+    assert.strictEqual(inProgressJson.data.status, 'IN_PROGRESS');
+
+    const profileRes = await fetch(`${baseUrl}/api/v1/users/me`, {
+      headers: { Authorization: `Bearer ${roadmapToken}` },
+    });
+    assert.strictEqual(profileRes.status, 200);
+    const profileJson: any = await profileRes.json();
+    const currentLessonInProfile = profileJson.data.activeRoadmap?.currentLesson;
+    assert(currentLessonInProfile, 'currentLesson should exist in profile activeRoadmap');
+    assert.strictEqual(currentLessonInProfile.lessonId, 2);
+    assert.strictEqual(currentLessonInProfile.status, 'IN_PROGRESS');
+    console.log('  ✔ getProfile accurately prioritizes IN_PROGRESS lesson as currentLesson.');
+
+    // 11.2 Test recordLessonProgress rejects DRAFT lesson with 400
+    const draftLesson = await prisma.lessons.create({
+      data: {
+        chapter_id: 1,
+        title: 'Bài học Nháp Thử Nghiệm',
+        order_index: 99,
+        status: 'DRAFT',
+      },
+    });
+
+    const draftProgressRes = await fetch(`${baseUrl}/api/v1/curriculum/lessons/${draftLesson.lesson_id}/progress`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${roadmapToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    assert.strictEqual(draftProgressRes.status, 400, 'recordLessonProgress on DRAFT lesson must return 400');
+    await prisma.lessons.delete({ where: { lesson_id: draftLesson.lesson_id } });
+    console.log('  ✔ recordLessonProgress correctly rejects DRAFT lessons with HTTP 400.');
+
+    // 11.3 Cross-Chapter Lesson Unlock with Intermediate Empty/Draft Chapter
+    const testCourseCode = `TEST_CROSS_${Date.now()}`;
+    const crossCourse = await prisma.courses.create({
+      data: {
+        title: 'Khóa học Test Cross Chapter',
+        code: testCourseCode,
+        level: 'HSK1',
+        is_published: true,
+      },
+    });
+
+    const ch1 = await prisma.chapters.create({
+      data: { course_id: crossCourse.course_id, title: 'Chương 1 (Có bài)', order_index: 1 },
+    });
+    const ch2Empty = await prisma.chapters.create({
+      data: { course_id: crossCourse.course_id, title: 'Chương 2 (Chỉ có bài nháp)', order_index: 2 },
+    });
+    const ch3 = await prisma.chapters.create({
+      data: { course_id: crossCourse.course_id, title: 'Chương 3 (Có bài đích)', order_index: 3 },
+    });
+
+    const crossLesson1 = await prisma.lessons.create({
+      data: { chapter_id: ch1.chapter_id, title: 'Bài 1 Chương 1', order_index: 1, status: 'PUBLISHED' },
+    });
+    await prisma.lessons.create({
+      data: { chapter_id: ch2Empty.chapter_id, title: 'Bài Nháp Chương 2', order_index: 1, status: 'DRAFT' },
+    });
+    const crossLesson3 = await prisma.lessons.create({
+      data: { chapter_id: ch3.chapter_id, title: 'Bài 1 Chương 3', order_index: 1, status: 'PUBLISHED' },
+    });
+
+    const crossQuestion = await prisma.questions.create({
+      data: {
+        question_type: 'SINGLE_CHOICE',
+        skill_category: 'READING',
+        difficulty_level: 'HSK1',
+        content: 'Cross test question?',
+        options_json: JSON.stringify(['A', 'B']),
+        correct_answer: 'A',
+      },
+    });
+    const crossTest = await prisma.tests.create({
+      data: {
+        lesson_id: crossLesson1.lesson_id,
+        title: 'Bài kiểm tra Cross Lesson 1',
+        test_type: 'LESSON_QUIZ',
+        passing_score: 80,
+        is_published: true,
+      },
+    });
+    await prisma.testQuestions.create({
+      data: { test_id: crossTest.test_id, question_id: crossQuestion.question_id, order_index: 1 },
+    });
+
+    // Verify crossLesson3 is locked before passing crossLesson1
+    const crossUnlockBefore = await assessmentService.checkLessonUnlockStatus(roadmapStudent.user_id, crossLesson3.lesson_id);
+    assert.strictEqual(crossUnlockBefore.isUnlocked, false, 'Lesson in Chapter 3 must be locked before passing Chapter 1');
+    assert.strictEqual(crossUnlockBefore.previousLesson?.lessonId, crossLesson1.lesson_id, 'Previous lesson must skip Chapter 2 and identify crossLesson1');
+
+    // Submit test for crossLesson1 with 100%
+    const crossSession = await assessmentService.startTestSession(roadmapStudent.user_id, crossTest.test_id);
+    const crossSubmit: any = await assessmentService.submitTest(roadmapStudent.user_id, crossTest.test_id, {
+      session_token: crossSession.sessionToken,
+      duration_seconds: 30,
+      answers: [{ question_id: crossQuestion.question_id, user_answer: 'A' }],
+    });
+    assert.strictEqual(crossSubmit.isPassed, true);
+
+    // Verify crossLesson3 is now UNLOCKED across the empty Chapter 2!
+    const crossUnlockAfter = await assessmentService.checkLessonUnlockStatus(roadmapStudent.user_id, crossLesson3.lesson_id);
+    assert.strictEqual(crossUnlockAfter.isUnlocked, true, 'Lesson in Chapter 3 must be unlocked skipping empty/draft Chapter 2');
+
+    const progressCross3 = await prisma.userLessonProgress.findUnique({
+      where: { user_id_lesson_id: { user_id: roadmapStudent.user_id, lesson_id: crossLesson3.lesson_id } },
+    });
+    assert.strictEqual(progressCross3?.status, 'UNLOCKED', 'UserLessonProgress for Chapter 3 lesson must be UNLOCKED');
+    console.log('  ✔ Cross-chapter unlock successfully skipped draft/empty chapters and unlocked target lesson.');
+
+    // Cleanup cross test course
+    await prisma.courses.delete({ where: { course_id: crossCourse.course_id } });
+
     console.log('\n======================================================');
-    console.log('✅ ALL INTEGRATION TESTS PASSED (10/10 MODULES VERIFIED)!');
+    console.log('✅ ALL INTEGRATION TESTS PASSED (11/11 MODULES VERIFIED)!');
     console.log('======================================================');
   } catch (error) {
     console.error('❌ Test failed with error:', error);

@@ -549,12 +549,13 @@ export class AssessmentService {
               orderBy: { order_index: 'asc' },
             });
 
-            // 2. Nếu không có trong cùng chương, tìm bài đầu tiên của chương kế tiếp trong cùng khóa học
+            // 2. Nếu không có trong cùng chương, tìm bài đầu tiên của chương kế tiếp trong cùng khóa học (chương có bài PUBLISHED)
             if (!nextLesson) {
               const nextChapter = await tx.chapters.findFirst({
                 where: {
                   course_id: currentLesson.chapter.course_id,
                   order_index: { gt: currentLesson.chapter.order_index },
+                  lessons: { some: { status: 'PUBLISHED' } },
                 },
                 orderBy: { order_index: 'asc' },
                 include: {
@@ -612,13 +613,19 @@ export class AssessmentService {
           await tx.outboxMessages.create({
             data: {
               aggregate_type: 'LESSON_PROGRESS',
-              aggregate_id: String(lessonId),
+              aggregate_id: `${userId}:${lessonId}`,
               event_type: 'LESSON_COMPLETED',
               payload: JSON.stringify({
+                userId,
                 user_id: userId,
+                lessonId,
                 lesson_id: lessonId,
                 score: scorePercentage,
+                isPassed,
+                is_passed: isPassed,
+                unlockedNextLessonId: nextLessonId,
                 unlocked_next_lesson_id: nextLessonId,
+                completedAt,
                 completed_at: completedAt,
                 timestamp: new Date().toISOString(),
               }),
@@ -741,6 +748,7 @@ export class AssessmentService {
         where: {
           course_id: courseId,
           order_index: { lt: targetLesson.chapter.order_index },
+          lessons: { some: { status: 'PUBLISHED' } },
         },
         orderBy: { order_index: 'desc' },
         include: {

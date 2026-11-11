@@ -13,6 +13,8 @@ import { curriculumRoutes } from './modules/curriculum/curriculum.routes';
 import { learningRoutes } from './modules/learning/learning.routes';
 import { assessmentRoutes } from './modules/assessment/assessment.routes';
 import { srsRoutes } from './modules/srs/srs.routes';
+import { userController } from './modules/user/user.controller';
+import { authenticate } from './shared/middleware/auth.middleware';
 
 export const app = express();
 
@@ -54,6 +56,7 @@ app.get('/api/v1/health', async (req, res) => {
 // Mount Modular Monolith Routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
+app.get('/api/v1/progress', authenticate, userController.getUserProgressOverview);
 app.use('/api/v1/curriculum', curriculumRoutes);
 app.use('/api/v1/learning', learningRoutes);
 app.use('/api/v1/assessment', assessmentRoutes);

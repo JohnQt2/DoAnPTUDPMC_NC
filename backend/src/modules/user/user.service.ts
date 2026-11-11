@@ -134,6 +134,269 @@ export class UserService {
     };
   }
 
+  /**
+   * UC04: Tổng hợp bức tranh tiến độ toàn diện của học viên
+   * - active_roadmap
+   * - course_progress (tổng bài PUBLISHED, số bài COMPLETED, IN_PROGRESS, % hoàn thành, điểm quiz TB)
+   * - lessons_progress (từng bài kèm status, highest_score, completed_at)
+   * - next_recommended_lesson (bài IN_PROGRESS hoặc UNLOCKED có thứ tự nhỏ nhất)
+   */
+  async getUserProgressOverview(userId: number) {
+    const user = await prisma.users.findUnique({
+      where: { user_id: userId },
+      include: {
+        roadmaps: {
+          where: { is_active: true },
+          include: { course: true },
+          take: 1,
+        },
+      },
+    });
+
+    if (!user) {
+      throw AppError.notFound('Không tìm thấy tài khoản người dùng.');
+    }
+
+    const activeRoadmap = user.roadmaps[0] || null;
+
+    let targetCourseId: number | null | undefined = activeRoadmap?.course_id;
+
+    if (!targetCourseId) {
+      const firstCourse = await prisma.courses.findFirst({
+        where: { is_published: true },
+        orderBy: { course_id: 'asc' },
+      });
+      targetCourseId = firstCourse?.course_id ?? null;
+    }
+
+    if (!targetCourseId) {
+      return {
+        active_roadmap: null,
+        activeRoadmap: null,
+        course_progress: null,
+        courseProgress: null,
+        next_recommended_lesson: null,
+        nextRecommendedLesson: null,
+        lessons_progress: [],
+        lessonsProgress: [],
+      };
+    }
+
+    const course = await prisma.courses.findUnique({
+      where: { course_id: targetCourseId },
+      include: {
+        chapters: {
+          orderBy: { order_index: 'asc' },
+          include: {
+            lessons: {
+              where: { status: 'PUBLISHED' },
+              orderBy: { order_index: 'asc' },
+            },
+          },
+        },
+      },
+    });
+
+    if (!course) {
+      throw AppError.notFound('Không tìm thấy khóa học.');
+    }
+
+    // Flatten all published lessons in sequential order
+    const orderedLessons: Array<{
+      lesson_id: number;
+      chapter_id: number;
+      chapter_title: string;
+      title: string;
+      order_index: number;
+      estimated_duration_mins: number;
+    }> = [];
+
+    for (const ch of course.chapters) {
+      for (const l of ch.lessons) {
+        orderedLessons.push({
+          lesson_id: l.lesson_id,
+          chapter_id: ch.chapter_id,
+          chapter_title: ch.title,
+          title: l.title,
+          order_index: l.order_index,
+          estimated_duration_mins: l.estimated_duration_mins,
+        });
+      }
+    }
+
+    // Fetch user lesson progress
+    const lessonIds = orderedLessons.map((l) => l.lesson_id);
+    const progressList = await prisma.userLessonProgress.findMany({
+      where: {
+        user_id: userId,
+        lesson_id: { in: lessonIds },
+      },
+    });
+
+    const progressMap = new Map<number, any>();
+    progressList.forEach((p) => {
+      progressMap.set(p.lesson_id, p);
+    });
+
+    // Fetch test submissions to compute average_quiz_score
+    const submissions = await prisma.testSubmissions.findMany({
+      where: {
+        user_id: userId,
+        test: {
+          lesson_id: { in: lessonIds },
+        },
+      },
+      select: { score: true },
+    });
+
+    const averageQuizScore =
+      submissions.length > 0
+        ? Number(
+            (submissions.reduce((acc, cur) => acc + cur.score, 0) / submissions.length).toFixed(1)
+          )
+        : 0;
+
+    // Compute progress & unlock status for each lesson
+    const lessonProgressItems: Array<{
+      lesson_id: number;
+      lessonId: number;
+      title: string;
+      order_index: number;
+      chapter_id: number;
+      chapter_title: string;
+      estimated_duration_mins: number;
+      status: string;
+      is_unlocked: boolean;
+      is_completed: boolean;
+      highest_score: number;
+      completed_at: Date | null;
+      last_studied_at: Date | null;
+    }> = [];
+
+    for (let i = 0; i < orderedLessons.length; i++) {
+      const cur = orderedLessons[i];
+      const prog = progressMap.get(cur.lesson_id);
+
+      let isUnlocked = false;
+      if (i === 0) {
+        isUnlocked = true;
+      } else if (
+        prog?.is_completed ||
+        (prog?.status && ['UNLOCKED', 'IN_PROGRESS', 'COMPLETED'].includes(prog.status.toUpperCase()))
+      ) {
+        isUnlocked = true;
+      } else {
+        const prev = orderedLessons[i - 1];
+        const prevProg = progressMap.get(prev.lesson_id);
+        if (prevProg?.is_completed) {
+          isUnlocked = true;
+        }
+      }
+
+      let computedStatus = 'LOCKED';
+      if (prog?.is_completed) {
+        computedStatus = 'COMPLETED';
+      } else if (prog?.status === 'IN_PROGRESS') {
+        computedStatus = 'IN_PROGRESS';
+      } else if (prog?.status === 'UNLOCKED' || isUnlocked) {
+        computedStatus = 'UNLOCKED';
+      } else {
+        computedStatus = 'LOCKED';
+      }
+
+      lessonProgressItems.push({
+        lesson_id: cur.lesson_id,
+        lessonId: cur.lesson_id,
+        title: cur.title,
+        order_index: cur.order_index,
+        chapter_id: cur.chapter_id,
+        chapter_title: cur.chapter_title,
+        estimated_duration_mins: cur.estimated_duration_mins,
+        status: computedStatus,
+        is_unlocked: isUnlocked,
+        is_completed: Boolean(prog?.is_completed),
+        highest_score: prog?.highest_score || 0,
+        completed_at: prog?.completed_at || null,
+        last_studied_at: prog?.last_studied_at || null,
+      });
+    }
+
+    const totalLessons = orderedLessons.length;
+    const completedLessons = lessonProgressItems.filter((l) => l.is_completed).length;
+    const inProgressLessons = lessonProgressItems.filter((l) => l.status === 'IN_PROGRESS').length;
+    const completionPercentage =
+      totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+
+    // Tìm bài học tiếp theo cần học ngay: bài đang ở trạng thái 'IN_PROGRESS' hoặc 'UNLOCKED' có thứ tự nhỏ nhất
+    let nextRecommended = lessonProgressItems.find(
+      (l) => l.status === 'IN_PROGRESS' && !l.is_completed
+    );
+
+    if (!nextRecommended) {
+      nextRecommended = lessonProgressItems.find(
+        (l) => l.status === 'UNLOCKED' && !l.is_completed
+      );
+    }
+
+    if (!nextRecommended && lessonProgressItems.length > 0) {
+      nextRecommended = lessonProgressItems[lessonProgressItems.length - 1];
+    }
+
+    const nextRecommendedLesson = nextRecommended
+      ? {
+          lesson_id: nextRecommended.lesson_id,
+          lessonId: nextRecommended.lesson_id,
+          title: nextRecommended.title,
+          order_index: nextRecommended.order_index,
+          chapter_id: nextRecommended.chapter_id,
+          chapter_title: nextRecommended.chapter_title,
+          estimated_duration_mins: nextRecommended.estimated_duration_mins,
+          status: nextRecommended.status,
+          highest_score: nextRecommended.highest_score,
+        }
+      : null;
+
+    return {
+      active_roadmap: activeRoadmap
+        ? {
+            roadmap_id: activeRoadmap.roadmap_id,
+            roadmapId: activeRoadmap.roadmap_id,
+            course_id: activeRoadmap.course_id,
+            courseId: activeRoadmap.course_id,
+            course_title: activeRoadmap.course.title,
+            courseTitle: activeRoadmap.course.title,
+            course_code: activeRoadmap.course.code,
+            courseCode: activeRoadmap.course.code,
+            course_level: activeRoadmap.course.level,
+            courseLevel: activeRoadmap.course.level,
+            starting_level: activeRoadmap.starting_level,
+            target_goal: activeRoadmap.target_goal,
+            daily_commitment_mins: activeRoadmap.daily_commitment_mins,
+            is_active: activeRoadmap.is_active,
+            created_at: activeRoadmap.created_at,
+          }
+        : null,
+      course_progress: {
+        course_id: course.course_id,
+        course_title: course.title,
+        total_lessons: totalLessons,
+        totalLessons: totalLessons,
+        completed_lessons: completedLessons,
+        completedLessons: completedLessons,
+        in_progress_lessons: inProgressLessons,
+        inProgressLessons: inProgressLessons,
+        completion_percentage: completionPercentage,
+        completionPercentage: completionPercentage,
+        average_quiz_score: averageQuizScore,
+        averageQuizScore: averageQuizScore,
+      },
+      next_recommended_lesson: nextRecommendedLesson,
+      nextRecommendedLesson: nextRecommendedLesson,
+      lessons_progress: lessonProgressItems,
+      lessonsProgress: lessonProgressItems,
+    };
+  }
+
   async updateProfile(
     userId: number,
     data: { display_name?: string; avatar_url?: string; avatar_resource_id?: number }

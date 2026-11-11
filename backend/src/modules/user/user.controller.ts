@@ -80,6 +80,19 @@ export class UserController {
     }
   };
 
+  getUserProgressOverview = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = req.user!.userId;
+      const progress = await userService.getUserProgressOverview(userId);
+      res.status(200).json({
+        success: true,
+        data: progress,
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
+
   updateNotifications = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userId = req.user!.userId;

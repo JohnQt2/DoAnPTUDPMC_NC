@@ -1,0 +1,126 @@
+{
+  "course_id": "hsk1",
+  "chapter_id": "hsk1_u03",
+  "title": "Bài 3: 你叫什么名字？",
+  "description": "Nǐ jiào shénme míngzi? - Bạn tên là gì?",
+  "order_index": 3,
+  "lessons": [
+    {
+      "lesson_id": "hsk1_u03_l01",
+      "title": "Từ vựng và phát âm",
+      "order_index": 1,
+      "lesson_blocks": [
+        {
+          "lesson_block_id": "hsk1_u03_l01_b01",
+          "block_type": "VOCABULARY_PRESENTATION",
+          "order_index": 1,
+          "content_references": [
+            { "content_type": "VOCABULARY", "content_id": "hsk1_vocab12" },
+            { "content_type": "VOCABULARY", "content_id": "hsk1_vocab13" },
+            { "content_type": "VOCABULARY", "content_id": "hsk1_vocab14" },
+            { "content_type": "VOCABULARY", "content_id": "hsk1_vocab15" },
+            { "content_type": "VOCABULARY", "content_id": "hsk1_vocab16" },
+            { "content_type": "VOCABULARY", "content_id": "hsk1_vocab17" },
+            { "content_type": "VOCABULARY", "content_id": "hsk1_vocab18" },
+            { "content_type": "VOCABULARY", "content_id": "hsk1_vocab19" },
+            { "content_type": "VOCABULARY", "content_id": "hsk1_vocab20" },
+            { "content_type": "VOCABULARY", "content_id": "hsk1_vocab21" },
+            { "content_type": "VOCABULARY", "content_id": "hsk1_vocab22" },
+            { "content_type": "VOCABULARY", "content_id": "hsk1_vocab23" },
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex22" }
+          ]
+        },
+        {
+          "lesson_block_id": "hsk1_u03_l01_b02",
+          "block_type": "PHONETIC_PRESENTATION",
+          "order_index": 2,
+          "content_references": [
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex23" },
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex24" },
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex25" },
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex26" },
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex27" },
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex28" },
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex29" },
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex30" },
+            { "content_type": "PHONETIC", "content_id": "hsk1_phonetic03" }
+          ]
+        }
+      ]
+    },
+    {
+      "lesson_id": "hsk1_u03_l02",
+      "title": "Hội thoại, ghép câu và ngữ pháp",
+      "order_index": 2,
+      "lesson_blocks": [
+        {
+          "lesson_block_id": "hsk1_u03_l02_b01",
+          "block_type": "DIALOGUE_PRESENTATION",
+          "order_index": 1,
+          "content_references": [
+            { "content_type": "DIALOGUE", "content_id": "hsk1_dialogue07" },
+            { "content_type": "DIALOGUE", "content_id": "hsk1_dialogue08" },
+            { "content_type": "DIALOGUE", "content_id": "hsk1_dialogue09" },
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex31" },
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex32" },
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex33" },
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex34" },
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex35" },
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex36" },
+            { "content_type": "GRAMMAR", "content_id": "hsk1_gram01" },
+            { "content_type": "GRAMMAR", "content_id": "hsk1_gram02" },
+            { "content_type": "GRAMMAR", "content_id": "hsk1_gram03" }
+          ]
+        }
+      ]
+    },
+    {
+      "lesson_id": "hsk1_u03_l03",
+      "title": "Tập viết chữ Hán, kiểm tra và vận dụng",
+      "order_index": 3,
+      "lesson_blocks": [
+        {
+          "lesson_block_id": "hsk1_u03_l03_b01",
+          "block_type": "HANZI_WRITING",
+          "order_index": 1,
+          "content_references": [
+            { "content_type": "HANZI", "content_id": "hsk1_hanzi11" },
+            { "content_type": "HANZI", "content_id": "hsk1_hanzi12" },
+            { "content_type": "HANZI", "content_id": "hsk1_hanzi13" },
+            { "content_type": "HANZI", "content_id": "hsk1_hanzi14" }
+          ]
+        },
+        {
+          "lesson_block_id": "hsk1_u03_l03_b02",
+          "block_type": "QUIZ",
+          "order_index": 2,
+          "content_references": [
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex37" },
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex38" },
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex39" },
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex40" },
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex41" },
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex42" },
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex43" },
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex44" },
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex45" }
+          ]
+        },
+        {
+          "lesson_block_id": "hsk1_u03_l03_b03",
+          "block_type": "DIALOGUE_PRESENTATION",
+          "order_index": 3,
+          "content_references": [
+            { "content_type": "DIALOGUE", "content_id": "hsk1_dialogue10" },
+            { "content_type": "DIALOGUE", "content_id": "hsk1_dialogue07" },
+            { "content_type": "DIALOGUE", "content_id": "hsk1_dialogue08" },
+            { "content_type": "DIALOGUE", "content_id": "hsk1_dialogue09" },
+            { "content_type": "GRAMMAR", "content_id": "hsk1_gram01" },
+            { "content_type": "GRAMMAR", "content_id": "hsk1_gram02" },
+            { "content_type": "GRAMMAR", "content_id": "hsk1_gram03" }
+          ]
+        }
+      ]
+    }
+  ]
+}

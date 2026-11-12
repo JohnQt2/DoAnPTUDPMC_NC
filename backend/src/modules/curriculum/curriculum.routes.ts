@@ -8,6 +8,7 @@ const router = Router();
 // ─── Courses ──────────────────────────────────────────────────────────
 router.get('/courses', optionalAuthenticate, curriculumController.listCourses);
 router.get('/courses/:id', optionalAuthenticate, curriculumController.getCourseDetail);
+router.get('/courses/:id/units', optionalAuthenticate, curriculumController.listUnitsForCourse);
 router.post('/courses', authenticate, authorize('ADMIN', 'CONTENT_EDITOR'), curriculumController.createCourse);
 router.put('/courses/:id', authenticate, authorize('ADMIN', 'CONTENT_EDITOR'), curriculumController.updateCourse);
 router.post('/courses/:id/publish', authenticate, authorize('ADMIN', 'CONTENT_EDITOR'), curriculumController.publishCourse);
@@ -19,10 +20,17 @@ router.delete('/chapters/:id', authenticate, authorize('ADMIN', 'CONTENT_EDITOR'
 
 // ─── Lessons ──────────────────────────────────────────────────────────
 router.get('/lessons/:id', optionalAuthenticate, curriculumController.getLessonDetail);
+router.get('/lessons/:id/content', optionalAuthenticate, curriculumController.getLessonContent);
 router.post('/lessons', authenticate, authorize('ADMIN', 'CONTENT_EDITOR'), curriculumController.createLesson);
 router.put('/lessons/:id', authenticate, authorize('ADMIN', 'CONTENT_EDITOR'), curriculumController.updateLesson);
 router.delete('/lessons/:id', authenticate, authorize('ADMIN', 'CONTENT_EDITOR'), curriculumController.deleteLesson);
 router.post('/lessons/:id/publish', authenticate, authorize('ADMIN', 'CONTENT_EDITOR'), curriculumController.publishLesson);
+
+// ─── Units and Learning Content ──────────────────────────────────────
+router.get('/units/:id/content', optionalAuthenticate, curriculumController.getUnitContent);
+router.get('/units/:id/contents', optionalAuthenticate, curriculumController.listUnitContents);
+router.get('/units/:id', optionalAuthenticate, curriculumController.getUnitDetail);
+router.get('/contents/:id', optionalAuthenticate, curriculumController.getLearningContent);
 
 // ─── Lesson Blocks ────────────────────────────────────────────────────
 router.post('/lesson-blocks', authenticate, authorize('ADMIN', 'CONTENT_EDITOR'), curriculumController.createLessonBlock);

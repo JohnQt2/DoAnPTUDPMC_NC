@@ -1,0 +1,380 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Users {
+  user_id            Int       @id @default(autoincrement())
+  email              String    @unique
+  display_name       String
+  avatar_resource_id Int?
+  role               String    @default("STUDENT") // STUDENT, CONTENT_EDITOR, ADMIN
+  status             String    @default("ACTIVE") // ACTIVE, BANNED, LOCKED
+  row_version        Int
+  created_at         DateTime  @default(now())
+  last_login_at      DateTime?
+
+  avatarResource       MediaResources?       @relation("UserAvatar", fields: [avatar_resource_id], references: [resource_id], onDelete: SetNull)
+  sessions             UserSessions[]
+  notificationSettings NotificationSettings?
+  roadmaps             UserRoadmaps[]
+  lessonProgress       UserLessonProgress[]
+  submissions          TestSubmissions[]
+  srsItems             UserSrsItems[]
+  practices            UserSkillPractices[]
+  auditLogs            AuditLogs[]
+  uploadedMedia        MediaResources[]      @relation("MediaUploader")
+
+  @@map("users")
+}
+
+model UserSessions {
+  session_id         Int      @id @default(autoincrement())
+  user_id            Int
+  refresh_token_hash String
+  family_id          String   @default(uuid())
+  ip_address         String?
+  user_agent         String?
+  is_revoked         Boolean  @default(false)
+  expires_at         DateTime
+  created_at         DateTime @default(now())
+
+  user Users @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([refresh_token_hash])
+  @@index([family_id])
+  @@map("UserSessions")
+}
+
+model NotificationSettings {
+  setting_id     Int      @id @default(autoincrement())
+  user_id        Int      @unique
+  reminder_time  String   @default("20:00")
+  notify_email   Boolean  @default(true)
+  notify_webpush Boolean  @default(false)
+  updated_at     DateTime @default(now()) @updatedAt
+
+  user Users @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@map("NotificationSettings")
+}
+
+model Courses {
+  course_id    Int      @id @default(autoincrement())
+  title        String
+  code         String   @unique
+  description  String?
+  level        String   @default("HSK1")
+  is_published Boolean  @default(false)
+  created_at   DateTime @default(now())
+
+  chapters Chapters[]
+  roadmaps UserRoadmaps[]
+
+  @@map("courses")
+}
+
+model Chapters {
+  chapter_id  Int    @id @default(autoincrement())
+  course_id   Int
+  title       String
+  order_index Int
+
+  course  Courses   @relation(fields: [course_id], references: [course_id], onDelete: Cascade)
+  lessons Lessons[]
+
+  @@index([course_id, order_index])
+  @@map("chapters")
+}
+
+model Lessons {
+  lesson_id               Int      @id @default(autoincrement())
+  chapter_id              Int
+  title                   String
+  order_index             Int
+  estimated_duration_mins Int      @default(10)
+  status                  String   @default("DRAFT") // DRAFT, PUBLISHED
+  row_version             Int
+  created_at              DateTime @default(now())
+  updated_at              DateTime @default(now()) @updatedAt
+
+  chapter      Chapters             @relation(fields: [chapter_id], references: [chapter_id], onDelete: Cascade)
+  blocks       LessonBlocks[]
+  vocabularies LessonVocabularies[]
+  tests        Tests[]
+  progress     UserLessonProgress[]
+
+  @@index([chapter_id, order_index])
+  @@map("lessons")
+}
+
+model LessonBlocks {
+  block_id          Int    @id @default(autoincrement())
+  lesson_id         Int
+  block_type        String // THEORY, PINYIN, HANZI, AUDIO, EXAMPLE, VOCABULARY
+  order_index       Int
+  content_json      String // Structured JSON
+  media_resource_id Int?
+
+  lesson        Lessons         @relation(fields: [lesson_id], references: [lesson_id], onDelete: Cascade)
+  mediaResource MediaResources? @relation(fields: [media_resource_id], references: [resource_id], onDelete: SetNull)
+
+  @@index([lesson_id, order_index])
+  @@map("lesson_blocks")
+}
+
+model Characters {
+  char_id           Int      @id @default(autoincrement())
+  character         String   @unique
+  pinyin            String
+  sino_vietnamese   String?
+  meaning           String
+  radical           String?
+  strokes_count     Int      @default(1)
+  stroke_order_svg  String? // SVG vector paths or JSON strokes
+  audio_resource_id Int?
+  created_at        DateTime @default(now())
+
+  audioResource MediaResources?      @relation(fields: [audio_resource_id], references: [resource_id], onDelete: SetNull)
+  vocabularies  LessonVocabularies[]
+  srsItems      UserSrsItems[]
+  practices     UserSkillPractices[]
+
+  @@index([character])
+  @@map("characters")
+}
+
+model LessonVocabularies {
+  lesson_id Int
+  char_id   Int
+
+  lesson    Lessons    @relation(fields: [lesson_id], references: [lesson_id], onDelete: Cascade)
+  character Characters @relation(fields: [char_id], references: [char_id], onDelete: Cascade)
+
+  @@id([lesson_id, char_id])
+  @@map("lesson_vocabularies")
+}
+
+model PinyinSyllables {
+  syllable_id       Int     @id @default(autoincrement())
+  syllable          String
+  tone              Int // 0 (neutral), 1, 2, 3, 4
+  category          String // INITIAL, FINAL, SYLLABLE
+  f0_pitch_contour  String? // Pitch contour description / Chao numbers e.g. "55", "35", "214", "51"
+  mouth_shape_guide String? // Physiological articulation instructions
+  audio_resource_id Int?
+  contrast_pair_id  Int? // Minimal pair contrast reference
+
+  audioResource   MediaResources?      @relation(fields: [audio_resource_id], references: [resource_id], onDelete: SetNull)
+  contrastPair    PinyinSyllables?     @relation("ContrastPair", fields: [contrast_pair_id], references: [syllable_id], onDelete: SetNull)
+  contrastingWith PinyinSyllables[]    @relation("ContrastPair")
+  practices       UserSkillPractices[]
+
+  @@index([syllable, tone])
+  @@map("PinyinSyllables")
+}
+
+model MediaResources {
+  resource_id     Int      @id @default(autoincrement())
+  file_name       String
+  storage_key     String
+  public_url      String
+  mime_type       String
+  file_size_bytes BigInt
+  resource_type   String // AUDIO, IMAGE, VIDEO, SVG, DOCUMENT
+  uploaded_by     Int?
+  created_at      DateTime @default(now())
+
+  uploader        Users?            @relation("MediaUploader", fields: [uploaded_by], references: [user_id], onDelete: SetNull)
+  avatarUsers     Users[]           @relation("UserAvatar")
+  lessonBlocks    LessonBlocks[]
+  characters      Characters[]
+  pinyinSyllables PinyinSyllables[]
+  questions       Questions[]
+
+  @@map("media_resources")
+}
+
+model Questions {
+  question_id       Int      @id @default(autoincrement())
+  question_type     String // TONE_PICKER, RADICAL_BUILDER, SYNTAX_SCRAMBLE, AUDIO_CLOZE, SPEED_MATCH, MULTIPLE_CHOICE
+  skill_category    String // PINYIN, TONE, READING, LISTENING, WRITING
+  difficulty_level  String // HSK1, HSK2, EASY, MEDIUM, HARD
+  content           String
+  options_json      String // JSON array of options
+  correct_answer    String
+  explanation       String?
+  media_resource_id Int?
+  created_at        DateTime @default(now())
+
+  mediaResource     MediaResources?         @relation(fields: [media_resource_id], references: [resource_id], onDelete: SetNull)
+  testQuestions     TestQuestions[]
+  submissionDetails TestSubmissionDetails[]
+
+  @@map("Questions")
+}
+
+model Tests {
+  test_id         Int      @id @default(autoincrement())
+  lesson_id       Int?
+  title           String
+  test_type       String   @default("QUIZ") // QUIZ, CHECKPOINT, MOCK_EXAM
+  passing_score   Int      @default(80) // Passing threshold percentage (e.g. 80%)
+  time_limit_mins Int      @default(15)
+  is_published    Boolean  @default(false)
+  created_at      DateTime @default(now())
+
+  lesson        Lessons?          @relation(fields: [lesson_id], references: [lesson_id], onDelete: SetNull)
+  testQuestions TestQuestions[]
+  submissions   TestSubmissions[]
+
+  @@map("Tests")
+}
+
+model TestQuestions {
+  test_id     Int
+  question_id Int
+  order_index Int
+
+  test     Tests     @relation(fields: [test_id], references: [test_id], onDelete: Cascade)
+  question Questions @relation(fields: [question_id], references: [question_id], onDelete: Cascade)
+
+  @@id([test_id, question_id])
+  @@map("TestQuestions")
+}
+
+model TestSubmissions {
+  submission_id    Int      @id @default(autoincrement())
+  user_id          Int
+  test_id          Int
+  score            Float
+  is_passed        Boolean
+  duration_seconds Int
+  idempotency_key  String?  @unique
+  snapshot_data    String? // JSON snapshot of questions at test time
+  submitted_at     DateTime @default(now())
+
+  user    Users                   @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  test    Tests                   @relation(fields: [test_id], references: [test_id], onDelete: Cascade)
+  details TestSubmissionDetails[]
+
+  @@index([user_id, submitted_at])
+  @@map("TestSubmissions")
+}
+
+model TestSubmissionDetails {
+  detail_id     Int     @id @default(autoincrement())
+  submission_id Int
+  question_id   Int
+  user_answer   String
+  is_correct    Boolean
+
+  submission TestSubmissions @relation(fields: [submission_id], references: [submission_id], onDelete: Cascade)
+  question   Questions       @relation(fields: [question_id], references: [question_id], onDelete: Cascade)
+
+  @@map("TestSubmissionDetails")
+}
+
+model UserLessonProgress {
+  progress_id     Int      @id @default(autoincrement())
+  user_id         Int
+  lesson_id       Int
+  is_completed    Boolean  @default(false)
+  last_studied_at DateTime @default(now())
+
+  user   Users   @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  lesson Lessons @relation(fields: [lesson_id], references: [lesson_id], onDelete: Cascade)
+
+  @@unique([user_id, lesson_id])
+  @@map("UserLessonProgress")
+}
+
+model UserRoadmaps {
+  roadmap_id            Int      @id @default(autoincrement())
+  user_id               Int
+  course_id             Int
+  starting_level        String
+  target_goal           String
+  daily_commitment_mins Int      @default(15)
+  is_active             Boolean  @default(true)
+  created_at            DateTime @default(now())
+
+  user   Users   @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  course Courses @relation(fields: [course_id], references: [course_id], onDelete: Cascade)
+
+  @@index([user_id, is_active])
+  @@map("UserRoadmaps")
+}
+
+model UserSkillPractices {
+  practice_id    Int      @id @default(autoincrement())
+  user_id        Int
+  practice_type  String // PINYIN, TONE, MINIMAL_PAIR, HANZI_STROKE
+  char_id        Int?
+  syllable_id    Int?
+  is_successful  Boolean
+  mistakes_count Int      @default(0)
+  practiced_at   DateTime @default(now())
+
+  user      Users            @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  character Characters?      @relation(fields: [char_id], references: [char_id], onDelete: SetNull)
+  syllable  PinyinSyllables? @relation(fields: [syllable_id], references: [syllable_id], onDelete: SetNull)
+
+  @@index([user_id, practice_type, practiced_at])
+  @@map("UserSkillPractices")
+}
+
+model UserSrsItems {
+  srs_id           Int       @id @default(autoincrement())
+  user_id          Int
+  char_id          Int
+  ease_factor      Float     @default(2.5) // Minimum 1.3
+  interval_days    Int       @default(1)
+  repetitions      Int       @default(0)
+  next_review_at   DateTime
+  last_reviewed_at DateTime?
+
+  user      Users      @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  character Characters @relation(fields: [char_id], references: [char_id], onDelete: Cascade)
+
+  @@unique([user_id, char_id], name: "UQ_User_Char_SRS")
+  @@index([user_id, next_review_at])
+  @@map("UserSrsItems")
+}
+
+model AuditLogs {
+  log_id        Int      @id @default(autoincrement())
+  user_id       Int?
+  action_type   String // LOGIN, LOGOUT, PROFILE_UPDATE, SUBMIT_TEST, CREATE_LESSON, PUBLISH_LESSON, etc.
+  target_entity String
+  target_id     String
+  old_value     String?
+  new_value     String?
+  ip_address    String?
+  created_at    DateTime @default(now())
+
+  user Users? @relation(fields: [user_id], references: [user_id], onDelete: SetNull)
+
+  @@index([created_at])
+  @@index([user_id])
+  @@map("AuditLogs")
+}
+
+model DatabaseBackups {
+  backup_id        Int       @id @default(autoincrement())
+  backup_file_name String
+  storage_r2_url   String?
+  file_size_bytes  Int?
+  checksum_sha256  String?
+  status           String    @default("COMPLETED")
+  row_version      Int
+  started_at       DateTime  @default(now())
+  completed_at     DateTime?
+
+  @@map("DatabaseBackups")
+}

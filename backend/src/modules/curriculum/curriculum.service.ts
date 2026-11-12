@@ -1,3 +1,4 @@
+import { ContentType, Prisma } from '@prisma/client';
 import { prisma } from '../../shared/database/prisma.client';
 import { AppError } from '../../shared/errors/app-error';
 import {
@@ -11,18 +12,58 @@ import {
   UpdateLessonBlockInput,
 } from './curriculum.dto';
 
+const lessonContentInclude = {
+  blocks: {
+    orderBy: { order_index: 'asc' as const },
+    include: {
+      contentReferences: {
+        orderBy: { order_index: 'asc' as const },
+        include: { content: true },
+      },
+    },
+  },
+} satisfies Prisma.LessonsInclude;
+
+type LessonWithLearningContent = Prisma.LessonsGetPayload<{
+  include: typeof lessonContentInclude;
+}>;
+
+function mapLessonLearningContent(lesson: LessonWithLearningContent) {
+  return {
+    lessonId: lesson.lesson_id,
+    externalId: lesson.external_id,
+    title: lesson.title,
+    orderIndex: lesson.order_index,
+    estimatedDurationMins: lesson.estimated_duration_mins,
+    status: lesson.status,
+    lessonBlocks: lesson.blocks.map((block) => ({
+      blockId: block.block_id,
+      externalId: block.external_id,
+      blockType: block.block_type,
+      orderIndex: block.order_index,
+      contentJson: block.content_json,
+      media: [],
+      contents: block.contentReferences.map((reference) => ({
+        content_id: reference.content.content_id,
+        external_id: reference.content.external_id,
+        content_type: reference.content.content_type,
+        item_id: reference.item_id,
+        order_index: reference.order_index,
+        content_json: reference.content.content_json,
+      })),
+    })),
+  };
+}
+
 export class CurriculumService {
   // ─── Courses ───────────────────────────────────────────────────────
 
-  async listCourses(publishedOnly: boolean) {
-    const where = publishedOnly ? { is_published: true } : {};
-
+  async listCourses() {
     const courses = await prisma.courses.findMany({
-      where,
       include: {
         _count: { select: { chapters: true } },
       },
-      orderBy: { created_at: 'desc' },
+      orderBy: [{ level: 'asc' }, { course_id: 'asc' }],
     });
 
     return courses.map((c) => ({
@@ -35,6 +76,220 @@ export class CurriculumService {
       chaptersCount: c._count.chapters,
       createdAt: c.created_at,
     }));
+  }
+
+  async listUnitsForCourse(courseId: number) {
+    const course = await prisma.courses.findUnique({
+      where: { course_id: courseId },
+      select: { course_id: true },
+    });
+    if (!course) throw AppError.notFound('Không tìm thấy khóa học này.');
+
+    const units = await prisma.chapters.findMany({
+      where: { course_id: courseId },
+      orderBy: { order_index: 'asc' },
+      include: { _count: { select: { lessons: true } } },
+    });
+
+    return units.map((unit) => ({
+      unitId: unit.chapter_id,
+      externalId: unit.external_id,
+      courseId: unit.course_id,
+      title: unit.title,
+      description: unit.description,
+      orderIndex: unit.order_index,
+      lessonsCount: unit._count.lessons,
+    }));
+  }
+
+  async getUnitDetail(unitId: number) {
+    const unit = await prisma.chapters.findUnique({
+      where: { chapter_id: unitId },
+      include: {
+        course: { select: { course_id: true, title: true, code: true, level: true } },
+        lessons: {
+          orderBy: { order_index: 'asc' },
+          select: {
+            lesson_id: true,
+            external_id: true,
+            title: true,
+            order_index: true,
+            estimated_duration_mins: true,
+            status: true,
+          },
+        },
+      },
+    });
+
+    if (!unit) throw AppError.notFound('Không tìm thấy Unit này.');
+
+    return {
+      unitId: unit.chapter_id,
+      externalId: unit.external_id,
+      courseId: unit.course_id,
+      title: unit.title,
+      description: unit.description,
+      orderIndex: unit.order_index,
+      course: unit.course,
+      lessons: unit.lessons.map((lesson) => ({
+        lessonId: lesson.lesson_id,
+        externalId: lesson.external_id,
+        title: lesson.title,
+        orderIndex: lesson.order_index,
+        estimatedDurationMins: lesson.estimated_duration_mins,
+        status: lesson.status,
+      })),
+    };
+  }
+
+  async getUnitContent(unitId: number) {
+    const unit = await prisma.chapters.findUnique({
+      where: { chapter_id: unitId },
+      include: {
+        lessons: {
+          orderBy: { order_index: 'asc' },
+          include: lessonContentInclude,
+        },
+      },
+    });
+
+    if (!unit) throw AppError.notFound('Không tìm thấy Unit này.');
+
+    return {
+      unit: {
+        unitId: unit.chapter_id,
+        externalId: unit.external_id,
+        courseId: unit.course_id,
+        title: unit.title,
+        description: unit.description,
+        orderIndex: unit.order_index,
+      },
+      lessons: unit.lessons.map(mapLessonLearningContent),
+    };
+  }
+
+  async getLessonContent(lessonId: number) {
+    const lesson = await prisma.lessons.findUnique({
+      where: { lesson_id: lessonId },
+      include: {
+        ...lessonContentInclude,
+        chapter: {
+          select: {
+            chapter_id: true,
+            external_id: true,
+            title: true,
+            course_id: true,
+          },
+        },
+      },
+    });
+
+    if (!lesson) throw AppError.notFound('Không tìm thấy bài học này.');
+
+    return {
+      ...mapLessonLearningContent(lesson),
+      unit: {
+        unitId: lesson.chapter.chapter_id,
+        externalId: lesson.chapter.external_id,
+        title: lesson.chapter.title,
+        courseId: lesson.chapter.course_id,
+      },
+    };
+  }
+
+  async listUnitContents(unitId: number, contentType?: ContentType) {
+    const unit = await prisma.chapters.findUnique({
+      where: { chapter_id: unitId },
+      select: { chapter_id: true },
+    });
+    if (!unit) throw AppError.notFound('Không tìm thấy Unit này.');
+
+    const references = await prisma.lessonBlockContentReferences.findMany({
+      where: {
+        lessonBlock: {
+          is: {
+            lesson: { is: { chapter_id: unitId } },
+          },
+        },
+        ...(contentType ? { content: { is: { content_type: contentType } } } : {}),
+      },
+      include: {
+        content: true,
+        lessonBlock: {
+          select: {
+            block_id: true,
+            order_index: true,
+            lesson: { select: { lesson_id: true, order_index: true } },
+          },
+        },
+      },
+      orderBy: [{ lesson_block_id: 'asc' }, { order_index: 'asc' }],
+    });
+
+    references.sort(
+      (a, b) =>
+        a.lessonBlock.lesson.order_index - b.lessonBlock.lesson.order_index ||
+        a.lessonBlock.order_index - b.lessonBlock.order_index ||
+        a.order_index - b.order_index
+    );
+
+    const contents = new Map<
+      number,
+      {
+        content_id: number;
+        external_id: string;
+        content_type: ContentType;
+        item_id: string | null;
+        order_index: number;
+        content_json: Prisma.JsonValue;
+        references: Array<{
+          lesson_id: number;
+          lesson_block_id: number;
+          item_id: string | null;
+          order_index: number;
+        }>;
+      }
+    >();
+
+    for (const reference of references) {
+      let content = contents.get(reference.content_id);
+      if (!content) {
+        content = {
+          content_id: reference.content.content_id,
+          external_id: reference.content.external_id,
+          content_type: reference.content.content_type,
+          item_id: reference.item_id,
+          order_index: reference.order_index,
+          content_json: reference.content.content_json,
+          references: [],
+        };
+        contents.set(reference.content_id, content);
+      }
+      content.references.push({
+        lesson_id: reference.lessonBlock.lesson.lesson_id,
+        lesson_block_id: reference.lessonBlock.block_id,
+        item_id: reference.item_id,
+        order_index: reference.order_index,
+      });
+    }
+
+    return Array.from(contents.values());
+  }
+
+  async getLearningContent(contentId: number) {
+    const content = await prisma.learningContents.findUnique({
+      where: { content_id: contentId },
+    });
+    if (!content) throw AppError.notFound('Không tìm thấy nội dung học liệu này.');
+
+    return {
+      content_id: content.content_id,
+      external_id: content.external_id,
+      content_type: content.content_type,
+      content_json: content.content_json,
+      created_at: content.created_at,
+      updated_at: content.updated_at,
+    };
   }
 
   async getCourseDetail(courseId: number, userId?: number) {

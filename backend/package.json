@@ -10,6 +10,8 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
+    "db:import-learning-content": "tsx prisma/importers/import-learning-content.ts",
+    "seed:validate": "tsx prisma/scripts/validate-seed-data.ts",
     "test": "node --test dist/**/*.test.js"
   },
   "dependencies": {

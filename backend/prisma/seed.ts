@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { importLearningContent } from './importers/import-learning-content';
 
 const prisma = new PrismaClient();
 
@@ -436,6 +437,9 @@ async function main() {
     });
     console.log('✅ Initial SRS review queue seeded for demo student');
   }
+
+  // Additive JSON curriculum import; the legacy seed above remains intact.
+  await importLearningContent(prisma);
 
   console.log('🎉 Database seeding completed successfully!');
 }

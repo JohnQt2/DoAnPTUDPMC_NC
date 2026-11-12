@@ -1,0 +1,199 @@
+[
+  {
+    "hanzi_id": "hsk1_hanzi01",
+    "character": "一",
+    "pinyin": "yī",
+    "meaning": "Số một (1)",
+    "stroke_count": 1,
+    "radical": null,
+    "notes": [
+      "1 nét ngang"
+    ],
+    "examples": [],
+    "character_audio_path": null,
+    "stroke_svg_path": null
+  },
+  {
+    "hanzi_id": "hsk1_hanzi02",
+    "character": "二",
+    "pinyin": "èr",
+    "meaning": "Số hai (2)",
+    "stroke_count": 2,
+    "radical": null,
+    "notes": [
+      "2 nét ngang"
+    ],
+    "examples": [],
+    "character_audio_path": null,
+    "stroke_svg_path": null
+  },
+  {
+    "hanzi_id": "hsk1_hanzi03",
+    "character": "三",
+    "pinyin": "sān",
+    "meaning": "Số ba (3)",
+    "stroke_count": 3,
+    "radical": null,
+    "notes": [
+      "3 nét ngang"
+    ],
+    "examples": [],
+    "character_audio_path": null,
+    "stroke_svg_path": null
+  },
+  {
+    "hanzi_id": "hsk1_hanzi04",
+    "character": "你",
+    "pinyin": "nǐ",
+    "meaning": "Bạn / Anh",
+    "stroke_count": 7,
+    "radical": "亻",
+    "notes": [
+      "Bộ Nhân đứng 亻 + 尔"
+    ],
+    "examples": [],
+    "character_audio_path": null,
+    "stroke_svg_path": null
+  },
+  {
+    "hanzi_id": "hsk1_hanzi05",
+    "character": "好",
+    "pinyin": "hǎo",
+    "meaning": "Tốt / Khỏe",
+    "stroke_count": 6,
+    "radical": "女",
+    "notes": [
+      "Bộ Nữ 女 + Bộ Tử 子"
+    ],
+    "examples": [],
+    "character_audio_path": null,
+    "stroke_svg_path": null
+  },
+  {
+    "hanzi_id": "hsk1_hanzi06",
+    "character": "口",
+    "pinyin": "kǒu",
+    "meaning": "miệng",
+    "stroke_count": 3,
+    "radical": "口",
+    "notes": [
+      "Kết cấu độc thể. Nét: sổ, ngang gập, ngang."
+    ],
+    "examples": [],
+    "character_audio_path": "hanzi_b2_kou.mp3",
+    "stroke_svg_path": null
+  },
+  {
+    "hanzi_id": "hsk1_hanzi07",
+    "character": "见",
+    "pinyin": "jiàn",
+    "meaning": "nhìn thấy",
+    "stroke_count": 4,
+    "radical": null,
+    "notes": [
+      "Trên là phần 目 giản hóa, dưới là 儿. Viết trên trước, dưới sau."
+    ],
+    "examples": [],
+    "character_audio_path": "hanzi_b2_jian.mp3",
+    "stroke_svg_path": null
+  },
+  {
+    "hanzi_id": "hsk1_hanzi08",
+    "character": "山",
+    "pinyin": "shān",
+    "meaning": "núi",
+    "stroke_count": 3,
+    "radical": "山",
+    "notes": [
+      "Kết cấu độc thể. Viết nét sổ giữa trước, sau đó hai bên."
+    ],
+    "examples": [],
+    "character_audio_path": "hanzi_b2_shān.mp3",
+    "stroke_svg_path": null
+  },
+  {
+    "hanzi_id": "hsk1_hanzi09",
+    "character": "小",
+    "pinyin": "xiǎo",
+    "meaning": "nhỏ",
+    "stroke_count": 3,
+    "radical": "小",
+    "notes": [
+      "Kết cấu độc thể. Viết nét giữa trước, rồi phẩy và chấm hai bên."
+    ],
+    "examples": [],
+    "character_audio_path": "hanzi_b2_xiao.mp3",
+    "stroke_svg_path": null
+  },
+  {
+    "hanzi_id": "hsk1_hanzi10",
+    "character": "不",
+    "pinyin": "bù",
+    "meaning": "không",
+    "stroke_count": 4,
+    "radical": null,
+    "notes": [
+      "Kết cấu độc thể. Viết ngang, phẩy, sổ, chấm."
+    ],
+    "examples": [],
+    "character_audio_path": "hanzi_b2_bu.mp3",
+    "stroke_svg_path": null
+  },
+  {
+    "hanzi_id": "hsk1_hanzi11",
+    "character": "月",
+    "pinyin": "yuè",
+    "meaning": "mặt trăng, tháng",
+    "stroke_count": 4,
+    "radical": "月",
+    "notes": [
+      "Nét phẩy dọc, ngang gập móc, hai nét ngang bên trong."
+    ],
+    "examples": [],
+    "character_audio_path": "hanzi_b3_yuè.mp3",
+    "stroke_svg_path": null
+  },
+  {
+    "hanzi_id": "hsk1_hanzi12",
+    "character": "心",
+    "pinyin": "xīn",
+    "meaning": "trái tim, lòng",
+    "stroke_count": 4,
+    "radical": "心",
+    "notes": [
+      "Chấm trái, nằm móc, chấm giữa, chấm phải."
+    ],
+    "examples": [],
+    "character_audio_path": "hanzi_b3_xīn.mp3",
+    "stroke_svg_path": null
+  },
+  {
+    "hanzi_id": "hsk1_hanzi13",
+    "character": "中",
+    "pinyin": "zhōng",
+    "meaning": "giữa, Trung",
+    "stroke_count": 4,
+    "radical": "丨",
+    "notes": [
+      "Viết khung 口 trước, nét sổ giữa sau."
+    ],
+    "examples": [],
+    "character_audio_path": "hanzi_b3_zhōng.mp3",
+    "stroke_svg_path": null
+  },
+  {
+    "hanzi_id": "hsk1_hanzi14",
+    "character": "人",
+    "pinyin": "rén",
+    "meaning": "người",
+    "stroke_count": 2,
+    "radical": "人",
+    "notes": [
+      "Phẩy trước, mác sau."
+    ],
+    "examples": [],
+    "character_audio_path": "hanzi_b3_rén.mp3",
+    "stroke_svg_path": null
+  }
+
+]

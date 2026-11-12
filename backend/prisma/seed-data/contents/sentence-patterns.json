@@ -1,0 +1,87 @@
+[
+  {
+    "sentence_pattern_id": "hsk1_pattern03",
+    "title": "Mẫu câu dùng trong lớp",
+    "pattern": "打开书。",
+    "explanation": "Hãy mở sách ra.",
+    "notes": [],
+    "examples": [
+      {
+        "example_id": "hsk1_pattern03_ex01",
+        "text": "打开书。",
+        "pinyin": "Dǎkāi shū.",
+        "meaning": "Hãy mở sách ra.",
+        "image_path": null,
+        "audio_path": "classroom_b2_open_book.mp3"
+      }
+    ]
+  },
+  {
+    "sentence_pattern_id": "hsk1_pattern04",
+    "title": "Mẫu câu dùng trong lớp",
+    "pattern": "请大声读。",
+    "explanation": "Hãy đọc to lên.",
+    "notes": [],
+    "examples": [
+      {
+        "example_id": "hsk1_pattern04_ex01",
+        "text": "请大声读。",
+        "pinyin": "Qǐng dàshēng dú.",
+        "meaning": "Hãy đọc to lên.",
+        "image_path": null,
+        "audio_path": "classroom_b2_read_aloud.mp3"
+      }
+    ]
+  },
+  {
+    "sentence_pattern_id": "hsk1_pattern05",
+    "title": "Mẫu câu dùng trong lớp",
+    "pattern": "再读一遍。",
+    "explanation": "Hãy đọc lại một lần nữa.",
+    "notes": [],
+    "examples": [
+      {
+        "example_id": "hsk1_pattern05_ex01",
+        "text": "再读一遍。",
+        "pinyin": "Zài dú yí biàn.",
+        "meaning": "Hãy đọc lại một lần nữa.",
+        "image_path": null,
+        "audio_path": "classroom_b2_read_again.mp3"
+      }
+    ]
+  },
+  {
+    "sentence_pattern_id": "hsk1_pattern06",
+    "title": "Mẫu câu dùng trong lớp",
+    "pattern": "一起读。",
+    "explanation": "Hãy cùng đọc.",
+    "notes": [],
+    "examples": [
+      {
+        "example_id": "hsk1_pattern06_ex01",
+        "text": "一起读。",
+        "pinyin": "Yìqǐ dú.",
+        "meaning": "Hãy cùng đọc.",
+        "image_path": null,
+        "audio_path": "classroom_b2_read_together.mp3"
+      }
+    ]
+  },
+  {
+    "sentence_pattern_id": "hsk1_pattern07",
+    "title": "Mẫu câu dùng trong lớp",
+    "pattern": "有问题吗？",
+    "explanation": "Có câu hỏi nào không?",
+    "notes": [],
+    "examples": [
+      {
+        "example_id": "hsk1_pattern07_ex01",
+        "text": "有问题吗？",
+        "pinyin": "Yǒu wèntí ma?",
+        "meaning": "Có câu hỏi nào không?",
+        "image_path": null,
+        "audio_path": "classroom_b2_questions.mp3"
+      }
+    ]
+  }
+]

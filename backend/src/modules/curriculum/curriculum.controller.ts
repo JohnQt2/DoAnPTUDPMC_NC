@@ -1,4 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
+import { ContentType } from '@prisma/client';
+import { AppError } from '../../shared/errors/app-error';
 import { curriculumService } from './curriculum.service';
 import {
   CreateCourseDto,
@@ -11,14 +13,36 @@ import {
   UpdateLessonBlockDto,
 } from './curriculum.dto';
 
+const contentTypes = new Set<string>(Object.values(ContentType));
+
+function parseIdParam(value: string, name: string): number {
+  if (!/^[1-9]\d*$/.test(value)) {
+    throw AppError.badRequest(`${name} phải là số nguyên dương.`, 'INVALID_ID');
+  }
+  const parsed = Number(value);
+  if (!Number.isSafeInteger(parsed)) {
+    throw AppError.badRequest(`${name} không hợp lệ.`, 'INVALID_ID');
+  }
+  return parsed;
+}
+
+function parseContentType(value: unknown): ContentType | undefined {
+  if (value === undefined) return undefined;
+  if (typeof value !== 'string' || !contentTypes.has(value)) {
+    throw AppError.badRequest(
+      `contentType không hợp lệ. Giá trị hỗ trợ: ${Array.from(contentTypes).join(', ')}.`,
+      'INVALID_CONTENT_TYPE'
+    );
+  }
+  return value as ContentType;
+}
+
 export class CurriculumController {
   // ─── Courses ───────────────────────────────────────────────────────
 
   listCourses = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const isAdmin = req.user?.role === 'ADMIN' || req.user?.role === 'CONTENT_EDITOR';
-      const publishedOnly = !isAdmin;
-      const courses = await curriculumService.listCourses(publishedOnly);
+      const courses = await curriculumService.listCourses();
       res.status(200).json({ success: true, data: courses });
     } catch (err) {
       next(err);
@@ -27,10 +51,71 @@ export class CurriculumController {
 
   getCourseDetail = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const courseId = parseInt(req.params.id, 10);
+      const courseId = parseIdParam(req.params.id, 'courseId');
       const userId = req.user?.userId;
       const course = await curriculumService.getCourseDetail(courseId, userId);
       res.status(200).json({ success: true, data: course });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  listUnitsForCourse = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const courseId = parseIdParam(req.params.id, 'courseId');
+      const units = await curriculumService.listUnitsForCourse(courseId);
+      res.status(200).json({ success: true, data: units });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  getUnitDetail = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const unitId = parseIdParam(req.params.id, 'unitId');
+      const unit = await curriculumService.getUnitDetail(unitId);
+      res.status(200).json({ success: true, data: unit });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  getUnitContent = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const unitId = parseIdParam(req.params.id, 'unitId');
+      const content = await curriculumService.getUnitContent(unitId);
+      res.status(200).json({ success: true, data: content });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  getLessonContent = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const lessonId = parseIdParam(req.params.id, 'lessonId');
+      const content = await curriculumService.getLessonContent(lessonId);
+      res.status(200).json({ success: true, data: content });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  listUnitContents = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const unitId = parseIdParam(req.params.id, 'unitId');
+      const contentType = parseContentType(req.query.contentType);
+      const contents = await curriculumService.listUnitContents(unitId, contentType);
+      res.status(200).json({ success: true, data: contents });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  getLearningContent = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const contentId = parseIdParam(req.params.id, 'contentId');
+      const content = await curriculumService.getLearningContent(contentId);
+      res.status(200).json({ success: true, data: content });
     } catch (err) {
       next(err);
     }
@@ -135,7 +220,7 @@ export class CurriculumController {
 
   getLessonDetail = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const lessonId = parseInt(req.params.id, 10);
+      const lessonId = parseIdParam(req.params.id, 'lessonId');
       const lesson = await curriculumService.getLessonDetail(lessonId);
       res.status(200).json({ success: true, data: lesson });
     } catch (err) {

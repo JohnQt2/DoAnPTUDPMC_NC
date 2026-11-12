@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { AppError } from '../errors/app-error';
 import { ZodError } from 'zod';
-import { env } from '../../config/env';
 
 export function errorHandler(
   err: any,
@@ -68,14 +67,14 @@ export function errorHandler(
     return;
   }
 
-  console.error('Unhandled server error:', err);
+  const errorName = err instanceof Error ? err.name : 'UnknownError';
+  console.error(`Unhandled server error (${errorName}) on ${req.method} ${req.path}`);
 
   res.status(500).json({
     success: false,
     error: {
       message: 'Đã xảy ra lỗi hệ thống nội bộ.',
       code: 'INTERNAL_SERVER_ERROR',
-      details: env.NODE_ENV === 'development' ? err.message : undefined,
     },
   });
 }

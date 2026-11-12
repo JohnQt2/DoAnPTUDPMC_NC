@@ -1,0 +1,107 @@
+{
+  "course_id": "hsk1",
+  "chapter_id": "hsk1_u02",
+  "title": "Bài 2: 谢谢你！",
+  "description": "Xièxie nǐ! - Cảm ơn bạn!",
+  "order_index": 2,
+  "lessons": [
+    {
+      "lesson_id": "hsk1_u02_l01",
+      "title": "Từ vựng và phát âm",
+      "order_index": 1,
+      "lesson_blocks": [
+        {
+          "lesson_block_id": "hsk1_u02_l01_b01",
+          "block_type": "VOCABULARY_PRESENTATION",
+          "order_index": 1,
+          "content_references": [
+            { "content_type": "VOCABULARY", "content_id": "hsk1_vocab07" },
+            { "content_type": "VOCABULARY", "content_id": "hsk1_vocab01" },
+            { "content_type": "VOCABULARY", "content_id": "hsk1_vocab08" },
+            { "content_type": "VOCABULARY", "content_id": "hsk1_vocab09" },
+            { "content_type": "VOCABULARY", "content_id": "hsk1_vocab10" },
+            { "content_type": "VOCABULARY", "content_id": "hsk1_vocab11" },
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex07" }
+          ]
+        },
+        {
+          "lesson_block_id": "hsk1_u02_l01_b02",
+          "block_type": "PHONETIC_PRESENTATION",
+          "order_index": 2,
+          "content_references": [
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex08" },
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex09" },
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex10" },
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex11" },
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex12" },
+            { "content_type": "PHONETIC", "content_id": "hsk1_phonetic02" }
+          ]
+        }
+      ]
+    },
+    {
+      "lesson_id": "hsk1_u02_l02",
+      "title": "Hội thoại, ghép câu và chữ Hán",
+      "order_index": 2,
+      "lesson_blocks": [
+        {
+          "lesson_block_id": "hsk1_u02_l02_b01",
+          "block_type": "DIALOGUE_PRESENTATION",
+          "order_index": 1,
+          "content_references": [
+            { "content_type": "DIALOGUE", "content_id": "hsk1_dialogue04" },
+            { "content_type": "DIALOGUE", "content_id": "hsk1_dialogue05" },
+            { "content_type": "DIALOGUE", "content_id": "hsk1_dialogue06" },
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex13" },
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex14" },
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex15" },
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex16" }
+          ]
+        },
+        {
+          "lesson_block_id": "hsk1_u02_l02_b02",
+          "block_type": "HANZI_WRITING",
+          "order_index": 2,
+          "content_references": [
+            { "content_type": "HANZI", "content_id": "hsk1_hanzi06" },
+            { "content_type": "HANZI", "content_id": "hsk1_hanzi07" },
+            { "content_type": "HANZI", "content_id": "hsk1_hanzi08" },
+            { "content_type": "HANZI", "content_id": "hsk1_hanzi09" },
+            { "content_type": "HANZI", "content_id": "hsk1_hanzi10" },
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex17" }
+          ]
+        }
+      ]
+    },
+    {
+      "lesson_id": "hsk1_u02_l03",
+      "title": "Kiểm tra tổng hợp và mẫu câu dùng trong lớp",
+      "order_index": 3,
+      "lesson_blocks": [
+        {
+          "lesson_block_id": "hsk1_u02_l03_b01",
+          "block_type": "QUIZ",
+          "order_index": 1,
+          "content_references": [
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex18" },
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex19" },
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex20" },
+            { "content_type": "EXERCISE", "content_id": "hsk1_ex21" }
+          ]
+        },
+        {
+          "lesson_block_id": "hsk1_u02_l03_b02",
+          "block_type": "SENTENCE_PATTERN_PRESENTATION",
+          "order_index": 2,
+          "content_references": [
+            { "content_type": "SENTENCE_PATTERN", "content_id": "hsk1_pattern03" },
+            { "content_type": "SENTENCE_PATTERN", "content_id": "hsk1_pattern04" },
+            { "content_type": "SENTENCE_PATTERN", "content_id": "hsk1_pattern05" },
+            { "content_type": "SENTENCE_PATTERN", "content_id": "hsk1_pattern06" },
+            { "content_type": "SENTENCE_PATTERN", "content_id": "hsk1_pattern07" }
+          ]
+        }
+      ]
+    }
+  ]
+}

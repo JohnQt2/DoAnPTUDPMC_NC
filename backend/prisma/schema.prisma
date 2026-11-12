@@ -3,46 +3,55 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-model Users {
-  user_id            Int                    @id @default(autoincrement())
-  email              String                 @unique
-  display_name       String
-  avatar_resource_id Int?
-  role               String                 @default("STUDENT") // STUDENT, CONTENT_EDITOR, ADMIN
-  status             String                 @default("ACTIVE")  // ACTIVE, BANNED, LOCKED
-  created_at         DateTime               @default(now())
-  last_login_at      DateTime?
+enum ContentType {
+  VOCABULARY
+  DIALOGUE
+  GRAMMAR
+  HANZI
+  PHONETIC
+  SENTENCE_PATTERN
+  EXERCISE
+}
 
-  avatarResource     MediaResources?        @relation("UserAvatar", fields: [avatar_resource_id], references: [resource_id], onDelete: SetNull)
-  sessions           UserSessions[]
+model Users {
+  user_id              Int                   @id @default(autoincrement())
+  email                String                @unique
+  password_hash        String?
+  display_name         String
+  avatar_resource_id   Int?
+  role                 String                @default("STUDENT")
+  status               String                @default("ACTIVE")
+  created_at           DateTime              @default(now())
+  last_login_at        DateTime?
+  auditLogs            AuditLogs[]
+  uploadedMedia        MediaResources[]      @relation("MediaUploader")
   notificationSettings NotificationSettings?
-  roadmaps           UserRoadmaps[]
-  lessonProgress     UserLessonProgress[]
-  submissions        TestSubmissions[]
-  srsItems           UserSrsItems[]
-  practices          UserSkillPractices[]
-  auditLogs          AuditLogs[]
-  uploadedMedia      MediaResources[]       @relation("MediaUploader")
+  submissions          TestSubmissions[]
+  lessonProgress       UserLessonProgress[]
+  roadmaps             UserRoadmaps[]
+  sessions             UserSessions[]
+  practices            UserSkillPractices[]
+  srsItems             UserSrsItems[]
+  avatarResource       MediaResources?       @relation("UserAvatar", fields: [avatar_resource_id], references: [resource_id])
 
   @@map("Users")
 }
 
 model UserSessions {
-  session_id         Int       @id @default(autoincrement())
+  session_id         Int      @id @default(autoincrement())
   user_id            Int
   refresh_token_hash String
-  family_id          String    @default(uuid())
+  family_id          String   @default(uuid())
   ip_address         String?
   user_agent         String?
-  is_revoked         Boolean   @default(false)
+  is_revoked         Boolean  @default(false)
   expires_at         DateTime
-  created_at         DateTime  @default(now())
-
-  user               Users     @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  created_at         DateTime @default(now())
+  user               Users    @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
 
   @@index([user_id])
   @@index([refresh_token_hash])
@@ -57,7 +66,6 @@ model NotificationSettings {
   notify_email   Boolean  @default(true)
   notify_webpush Boolean  @default(false)
   updated_at     DateTime @default(now()) @updatedAt
-
   user           Users    @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
 
   @@map("NotificationSettings")
@@ -71,7 +79,6 @@ model Courses {
   level        String         @default("HSK1")
   is_published Boolean        @default(false)
   created_at   DateTime       @default(now())
-
   chapters     Chapters[]
   roadmaps     UserRoadmaps[]
 
@@ -80,30 +87,33 @@ model Courses {
 
 model Chapters {
   chapter_id  Int       @id @default(autoincrement())
+  external_id String?   @unique
   course_id   Int
   title       String
+  description String?
   order_index Int
-
   course      Courses   @relation(fields: [course_id], references: [course_id], onDelete: Cascade)
   lessons     Lessons[]
 
+  @@unique([course_id, external_id])
+  @@unique([course_id, order_index])
   @@index([course_id, order_index])
   @@map("Chapters")
 }
 
 model Lessons {
   lesson_id               Int                  @id @default(autoincrement())
+  external_id             String?              @unique
   chapter_id              Int
   title                   String
   order_index             Int
   estimated_duration_mins Int                  @default(10)
-  status                  String               @default("DRAFT") // DRAFT, PUBLISHED
+  status                  String               @default("DRAFT")
   created_at              DateTime             @default(now())
   updated_at              DateTime             @default(now()) @updatedAt
-
-  chapter                 Chapters             @relation(fields: [chapter_id], references: [chapter_id], onDelete: Cascade)
   blocks                  LessonBlocks[]
   vocabularies            LessonVocabularies[]
+  chapter                 Chapters             @relation(fields: [chapter_id], references: [chapter_id], onDelete: Cascade)
   tests                   Tests[]
   progress                UserLessonProgress[]
 
@@ -112,18 +122,44 @@ model Lessons {
 }
 
 model LessonBlocks {
-  block_id          Int             @id @default(autoincrement())
+  block_id          Int                            @id @default(autoincrement())
+  external_id       String?                        @unique
   lesson_id         Int
-  block_type        String          // THEORY, PINYIN, HANZI, AUDIO, EXAMPLE, VOCABULARY
+  block_type        String
   order_index       Int
-  content_json      String          // Structured JSON
+  content_json      Json
   media_resource_id Int?
-
-  lesson            Lessons         @relation(fields: [lesson_id], references: [lesson_id], onDelete: Cascade)
-  mediaResource     MediaResources? @relation(fields: [media_resource_id], references: [resource_id], onDelete: SetNull)
+  contentReferences LessonBlockContentReferences[]
+  lesson            Lessons                        @relation(fields: [lesson_id], references: [lesson_id], onDelete: Cascade)
+  mediaResource     MediaResources?                @relation(fields: [media_resource_id], references: [resource_id])
 
   @@index([lesson_id, order_index])
   @@map("LessonBlocks")
+}
+
+model LearningContents {
+  content_id      Int                            @id @default(autoincrement())
+  external_id     String
+  content_type    ContentType
+  content_json    Json
+  created_at      DateTime                       @default(now())
+  updated_at      DateTime                       @default(now()) @updatedAt
+  blockReferences LessonBlockContentReferences[]
+
+  @@unique([content_type, external_id])
+}
+
+model LessonBlockContentReferences {
+  reference_id    Int              @id @default(autoincrement())
+  lesson_block_id Int
+  content_id      Int
+  item_id         String?
+  order_index     Int
+  lessonBlock     LessonBlocks     @relation(fields: [lesson_block_id], references: [block_id], onDelete: Cascade)
+  content         LearningContents @relation(fields: [content_id], references: [content_id], onDelete: Cascade)
+
+  @@unique([lesson_block_id, content_id, item_id])
+  @@index([content_id])
 }
 
 model Characters {
@@ -134,14 +170,13 @@ model Characters {
   meaning           String
   radical           String?
   strokes_count     Int                  @default(1)
-  stroke_order_svg  String?              // SVG vector paths or JSON strokes
+  stroke_order_svg  String?
   audio_resource_id Int?
   created_at        DateTime             @default(now())
-
-  audioResource     MediaResources?      @relation(fields: [audio_resource_id], references: [resource_id], onDelete: SetNull)
+  audioResource     MediaResources?      @relation(fields: [audio_resource_id], references: [resource_id])
   vocabularies      LessonVocabularies[]
-  srsItems          UserSrsItems[]
   practices         UserSkillPractices[]
+  srsItems          UserSrsItems[]
 
   @@index([character])
   @@map("Characters")
@@ -150,28 +185,26 @@ model Characters {
 model LessonVocabularies {
   lesson_id Int
   char_id   Int
-
-  lesson    Lessons    @relation(fields: [lesson_id], references: [lesson_id], onDelete: Cascade)
   character Characters @relation(fields: [char_id], references: [char_id], onDelete: Cascade)
+  lesson    Lessons    @relation(fields: [lesson_id], references: [lesson_id], onDelete: Cascade)
 
   @@id([lesson_id, char_id])
   @@map("LessonVocabularies")
 }
 
 model PinyinSyllables {
-  syllable_id        Int                  @id @default(autoincrement())
-  syllable           String
-  tone               Int                  // 0 (neutral), 1, 2, 3, 4
-  category           String               // INITIAL, FINAL, SYLLABLE
-  f0_pitch_contour   String?              // Pitch contour description / Chao numbers e.g. "55", "35", "214", "51"
-  mouth_shape_guide  String?              // Physiological articulation instructions
-  audio_resource_id  Int?
-  contrast_pair_id   Int?                 // Minimal pair contrast reference
-
-  audioResource      MediaResources?      @relation(fields: [audio_resource_id], references: [resource_id], onDelete: SetNull)
-  contrastPair       PinyinSyllables?     @relation("ContrastPair", fields: [contrast_pair_id], references: [syllable_id], onDelete: SetNull)
-  contrastingWith    PinyinSyllables[]    @relation("ContrastPair")
-  practices          UserSkillPractices[]
+  syllable_id       Int                  @id @default(autoincrement())
+  syllable          String
+  tone              Int
+  category          String
+  f0_pitch_contour  String?
+  mouth_shape_guide String?
+  audio_resource_id Int?
+  contrast_pair_id  Int?
+  audioResource     MediaResources?      @relation(fields: [audio_resource_id], references: [resource_id])
+  contrastPair      PinyinSyllables?     @relation("ContrastPair", fields: [contrast_pair_id], references: [syllable_id])
+  contrastingWith   PinyinSyllables[]    @relation("ContrastPair")
+  practices         UserSkillPractices[]
 
   @@index([syllable, tone])
   @@map("PinyinSyllables")
@@ -184,33 +217,31 @@ model MediaResources {
   public_url      String
   mime_type       String
   file_size_bytes Int               @default(0)
-  resource_type   String            // AUDIO, IMAGE, VIDEO, SVG, DOCUMENT
+  resource_type   String
   uploaded_by     Int?
   created_at      DateTime          @default(now())
-
-  uploader        Users?            @relation("MediaUploader", fields: [uploaded_by], references: [user_id], onDelete: SetNull)
-  avatarUsers     Users[]           @relation("UserAvatar")
-  lessonBlocks    LessonBlocks[]
   characters      Characters[]
+  lessonBlocks    LessonBlocks[]
+  uploader        Users?            @relation("MediaUploader", fields: [uploaded_by], references: [user_id])
   pinyinSyllables PinyinSyllables[]
   questions       Questions[]
+  avatarUsers     Users[]           @relation("UserAvatar")
 
   @@map("MediaResources")
 }
 
 model Questions {
   question_id       Int                     @id @default(autoincrement())
-  question_type     String                  // TONE_PICKER, RADICAL_BUILDER, SYNTAX_SCRAMBLE, AUDIO_CLOZE, SPEED_MATCH, MULTIPLE_CHOICE
-  skill_category    String                  // PINYIN, TONE, READING, LISTENING, WRITING
-  difficulty_level  String                  // HSK1, HSK2, EASY, MEDIUM, HARD
+  question_type     String
+  skill_category    String
+  difficulty_level  String
   content           String
-  options_json      String                  // JSON array of options
+  options_json      String
   correct_answer    String
   explanation       String?
   media_resource_id Int?
   created_at        DateTime                @default(now())
-
-  mediaResource     MediaResources?         @relation(fields: [media_resource_id], references: [resource_id], onDelete: SetNull)
+  mediaResource     MediaResources?         @relation(fields: [media_resource_id], references: [resource_id])
   testQuestions     TestQuestions[]
   submissionDetails TestSubmissionDetails[]
 
@@ -218,18 +249,17 @@ model Questions {
 }
 
 model Tests {
-  test_id          Int               @id @default(autoincrement())
-  lesson_id        Int?
-  title            String
-  test_type        String            @default("QUIZ") // QUIZ, CHECKPOINT, MOCK_EXAM
-  passing_score    Int               @default(80)     // Passing threshold percentage (e.g. 80%)
-  time_limit_mins  Int               @default(15)
-  is_published     Boolean           @default(false)
-  created_at       DateTime          @default(now())
-
-  lesson           Lessons?          @relation(fields: [lesson_id], references: [lesson_id], onDelete: SetNull)
-  testQuestions    TestQuestions[]
-  submissions      TestSubmissions[]
+  test_id         Int               @id @default(autoincrement())
+  lesson_id       Int?
+  title           String
+  test_type       String            @default("QUIZ")
+  passing_score   Int               @default(80)
+  time_limit_mins Int               @default(15)
+  is_published    Boolean           @default(false)
+  created_at      DateTime          @default(now())
+  testQuestions   TestQuestions[]
+  submissions     TestSubmissions[]
+  lesson          Lessons?          @relation(fields: [lesson_id], references: [lesson_id])
 
   @@map("Tests")
 }
@@ -238,9 +268,8 @@ model TestQuestions {
   test_id     Int
   question_id Int
   order_index Int
-
-  test        Tests     @relation(fields: [test_id], references: [test_id], onDelete: Cascade)
   question    Questions @relation(fields: [question_id], references: [question_id], onDelete: Cascade)
+  test        Tests     @relation(fields: [test_id], references: [test_id], onDelete: Cascade)
 
   @@id([test_id, question_id])
   @@map("TestQuestions")
@@ -254,12 +283,11 @@ model TestSubmissions {
   is_passed        Boolean
   duration_seconds Int
   idempotency_key  String?                 @unique
-  snapshot_data    String?                 // JSON snapshot of questions at test time
+  snapshot_data    String?
   submitted_at     DateTime                @default(now())
-
-  user             Users                   @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
-  test             Tests                   @relation(fields: [test_id], references: [test_id], onDelete: Cascade)
   details          TestSubmissionDetails[]
+  test             Tests                   @relation(fields: [test_id], references: [test_id], onDelete: Cascade)
+  user             Users                   @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
 
   @@index([user_id, submitted_at])
   @@map("TestSubmissions")
@@ -271,9 +299,8 @@ model TestSubmissionDetails {
   question_id   Int
   user_answer   String
   is_correct    Boolean
-
-  submission    TestSubmissions @relation(fields: [submission_id], references: [submission_id], onDelete: Cascade)
   question      Questions       @relation(fields: [question_id], references: [question_id], onDelete: Cascade)
+  submission    TestSubmissions @relation(fields: [submission_id], references: [submission_id], onDelete: Cascade)
 
   @@map("TestSubmissionDetails")
 }
@@ -284,9 +311,8 @@ model UserLessonProgress {
   lesson_id       Int
   is_completed    Boolean  @default(false)
   last_studied_at DateTime @default(now())
-
-  user            Users    @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
   lesson          Lessons  @relation(fields: [lesson_id], references: [lesson_id], onDelete: Cascade)
+  user            Users    @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
 
   @@unique([user_id, lesson_id])
   @@map("UserLessonProgress")
@@ -301,9 +327,8 @@ model UserRoadmaps {
   daily_commitment_mins Int      @default(15)
   is_active             Boolean  @default(true)
   created_at            DateTime @default(now())
-
-  user                  Users    @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
   course                Courses  @relation(fields: [course_id], references: [course_id], onDelete: Cascade)
+  user                  Users    @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
 
   @@index([user_id, is_active])
   @@map("UserRoadmaps")
@@ -312,16 +337,15 @@ model UserRoadmaps {
 model UserSkillPractices {
   practice_id    Int              @id @default(autoincrement())
   user_id        Int
-  practice_type  String           // PINYIN, TONE, MINIMAL_PAIR, HANZI_STROKE
+  practice_type  String
   char_id        Int?
   syllable_id    Int?
   is_successful  Boolean
   mistakes_count Int              @default(0)
   practiced_at   DateTime         @default(now())
-
+  character      Characters?      @relation(fields: [char_id], references: [char_id])
+  syllable       PinyinSyllables? @relation(fields: [syllable_id], references: [syllable_id])
   user           Users            @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
-  character      Characters?      @relation(fields: [char_id], references: [char_id], onDelete: SetNull)
-  syllable       PinyinSyllables? @relation(fields: [syllable_id], references: [syllable_id], onDelete: SetNull)
 
   @@index([user_id, practice_type, practiced_at])
   @@map("UserSkillPractices")
@@ -331,14 +355,13 @@ model UserSrsItems {
   srs_id           Int        @id @default(autoincrement())
   user_id          Int
   char_id          Int
-  ease_factor      Float      @default(2.5) // Minimum 1.3
+  ease_factor      Float      @default(2.5)
   interval_days    Int        @default(1)
   repetitions      Int        @default(0)
   next_review_at   DateTime
   last_reviewed_at DateTime?
-
-  user             Users      @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
   character        Characters @relation(fields: [char_id], references: [char_id], onDelete: Cascade)
+  user             Users      @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
 
   @@unique([user_id, char_id], name: "UQ_User_Char_SRS")
   @@index([user_id, next_review_at])
@@ -348,15 +371,14 @@ model UserSrsItems {
 model AuditLogs {
   log_id        Int      @id @default(autoincrement())
   user_id       Int?
-  action_type   String   // LOGIN, LOGOUT, PROFILE_UPDATE, SUBMIT_TEST, CREATE_LESSON, PUBLISH_LESSON, etc.
+  action_type   String
   target_entity String
   target_id     String
   old_value     String?
   new_value     String?
   ip_address    String?
   created_at    DateTime @default(now())
-
-  user          Users?   @relation(fields: [user_id], references: [user_id], onDelete: SetNull)
+  user          Users?   @relation(fields: [user_id], references: [user_id])
 
   @@index([created_at])
   @@index([user_id])

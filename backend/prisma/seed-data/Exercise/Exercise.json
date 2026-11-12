@@ -1,0 +1,1798 @@
+[
+  {
+    "exercise_id": "hsk1_ex01",
+    "exercise_type": "AUDIO_MULTIPLE_CHOICE",
+    "instruction": "Luyện nghe chọn Pinyin đúng.",
+    "question": {
+      "content_reference": null,
+      "text": null,
+      "image_path": null,
+      "audio_path": "audio/hsk1/lesson01/phonetics/phonetics_01.mp3"
+    },
+    "options": [
+      {
+        "option_id": "A",
+        "content_reference": null,
+        "text": "bā",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "B",
+        "content_reference": null,
+        "text": "pā",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "C",
+        "content_reference": null,
+        "text": "mā",
+        "image_path": null,
+        "audio_path": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex02",
+    "exercise_type": "AUDIO_MULTIPLE_CHOICE",
+    "instruction": "Luyện nghe chọn Pinyin đúng.",
+    "question": {
+      "content_reference": null,
+      "text": null,
+      "image_path": null,
+      "audio_path": "audio/hsk1/lesson01/phonetics/phonetics_02.mp3"
+    },
+    "options": [
+      {
+        "option_id": "A",
+        "content_reference": null,
+        "text": "tǎ",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "B",
+        "content_reference": null,
+        "text": "dǎ",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "C",
+        "content_reference": null,
+        "text": "nǎ",
+        "image_path": null,
+        "audio_path": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex03",
+    "exercise_type": "SENTENCE_ORDERING",
+    "instruction": "Sắp xếp các thẻ từ thành câu hoàn chỉnh.",
+    "question": {
+      "content_reference": null,
+      "text": "Dịch câu \"Chào các bạn!\"",
+      "image_path": null,
+      "audio_path": null
+    },
+    "items": [
+      {
+        "item_id": "item01",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab02",
+          "field": "word"
+        },
+        "text": null,
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "item_id": "item02",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab04",
+          "field": "word"
+        },
+        "text": null,
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "item_id": "item03",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab03",
+          "field": "word"
+        },
+        "text": null,
+        "image_path": null,
+        "audio_path": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex04",
+    "exercise_type": "IMAGE_MULTIPLE_CHOICE",
+    "instruction": "Nghe âm thanh và chọn bức tranh đúng.",
+    "question": {
+      "content_reference": null,
+      "text": null,
+      "image_path": null,
+      "audio_path": "audio/hsk1/lesson01/quiz/quiz_01.mp3"
+    },
+    "options": [
+      {
+        "option_id": "A",
+        "content_reference": null,
+        "text": "Tranh hai người cúi chào kính trọng",
+        "image_path": "assets/images/hsk1/lesson01/quiz/img_quiz_bow.png",
+        "audio_path": null
+      },
+      {
+        "option_id": "B",
+        "content_reference": null,
+        "text": "Tranh hai bạn trẻ vẫy tay",
+        "image_path": "assets/images/hsk1/lesson01/quiz/img_quiz_wave.png",
+        "audio_path": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex05",
+    "exercise_type": "IMAGE_MULTIPLE_CHOICE",
+    "instruction": "Nghe âm thanh và chọn bức tranh đúng.",
+    "question": {
+      "content_reference": null,
+      "text": null,
+      "image_path": null,
+      "audio_path": "audio/hsk1/lesson01/quiz/quiz_02.mp3"
+    },
+    "options": [
+      {
+        "option_id": "A",
+        "content_reference": null,
+        "text": "Tranh hai người bắt tay",
+        "image_path": "assets/images/hsk1/lesson01/quiz/img_quiz_handshake.png",
+        "audio_path": null
+      },
+      {
+        "option_id": "B",
+        "content_reference": null,
+        "text": "Tranh gãi đầu cúi mặt xin lỗi",
+        "image_path": "assets/images/hsk1/lesson01/quiz/img_quiz_apology.png",
+        "audio_path": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex06",
+    "exercise_type": "MATCHING",
+    "instruction": "Nối cặp từ tương ứng.",
+    "left_items": [
+      {
+        "item_id": "left01",
+        "content_reference": null,
+        "text": "您好 (nín hǎo)",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "item_id": "left02",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab05",
+          "field": "word"
+        },
+        "text": null,
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "item_id": "left03",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab06",
+          "field": "word"
+        },
+        "text": null,
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "item_id": "left04",
+        "content_reference": null,
+        "text": "你们好 (nǐmen hǎo)",
+        "image_path": null,
+        "audio_path": null
+      }
+    ],
+    "right_items": [
+      {
+        "item_id": "rightA",
+        "content_reference": null,
+        "text": "Không sao đâu",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "item_id": "rightB",
+        "content_reference": null,
+        "text": "Chào các bạn!",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "item_id": "rightC",
+        "content_reference": null,
+        "text": "Xin lỗi",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "item_id": "rightD",
+        "content_reference": null,
+        "text": "Chào ngài / Chào ông",
+        "image_path": null,
+        "audio_path": null
+      }
+    ]
+  },
+  
+  {
+    "exercise_id": "hsk1_ex07",
+    "exercise_type": "MULTIPLE_CHOICE",
+    "instruction": "Chọn lời đáp phù hợp.",
+    "question": {
+      "content_reference": null,
+      "text": "谢谢你！",
+      "image_path": null,
+      "audio_path": null
+    },
+    "options": [
+      {
+        "option_id": "A",
+        "content_reference": null,
+        "text": "不客气！",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "B",
+        "content_reference": null,
+        "text": "再见！",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "C",
+        "content_reference": null,
+        "text": "你好！",
+        "image_path": null,
+        "audio_path": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex08",
+    "exercise_type": "AUDIO_MULTIPLE_CHOICE",
+    "instruction": "Nghe và chọn Pinyin đúng.",
+    "question": {
+      "content_reference": null,
+      "text": null,
+      "image_path": null,
+      "audio_path": "listen_01.mp3"
+    },
+    "options": [
+      {
+        "option_id": "A",
+        "content_reference": null,
+        "text": "zhī",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "B",
+        "content_reference": null,
+        "text": "chī",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "C",
+        "content_reference": null,
+        "text": "shī",
+        "image_path": null,
+        "audio_path": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex09",
+    "exercise_type": "AUDIO_MULTIPLE_CHOICE",
+    "instruction": "Nghe và chọn Pinyin đúng.",
+    "question": {
+      "content_reference": null,
+      "text": null,
+      "image_path": null,
+      "audio_path": "listen_02.mp3"
+    },
+    "options": [
+      {
+        "option_id": "A",
+        "content_reference": null,
+        "text": "zān",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "B",
+        "content_reference": null,
+        "text": "zán",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "C",
+        "content_reference": null,
+        "text": "zàn",
+        "image_path": null,
+        "audio_path": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex10",
+    "exercise_type": "AUDIO_MULTIPLE_CHOICE",
+    "instruction": "Nghe và chọn Pinyin đúng.",
+    "question": {
+      "content_reference": null,
+      "text": null,
+      "image_path": null,
+      "audio_path": "listen_03.mp3"
+    },
+    "options": [
+      {
+        "option_id": "A",
+        "content_reference": null,
+        "text": "xuān",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "B",
+        "content_reference": null,
+        "text": "xuán",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "C",
+        "content_reference": null,
+        "text": "xuàn",
+        "image_path": null,
+        "audio_path": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex11",
+    "exercise_type": "AUDIO_MULTIPLE_CHOICE",
+    "instruction": "Nghe và chọn Pinyin đúng.",
+    "question": {
+      "content_reference": null,
+      "text": null,
+      "image_path": null,
+      "audio_path": "listen_04.mp3"
+    },
+    "options": [
+      {
+        "option_id": "A",
+        "content_reference": null,
+        "text": "yīng",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "B",
+        "content_reference": null,
+        "text": "yíng",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "C",
+        "content_reference": null,
+        "text": "yìng",
+        "image_path": null,
+        "audio_path": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex12",
+    "exercise_type": "AUDIO_MULTIPLE_CHOICE",
+    "instruction": "Nghe và chọn Pinyin đúng.",
+    "question": {
+      "content_reference": null,
+      "text": null,
+      "image_path": null,
+      "audio_path": "listen_05.mp3"
+    },
+    "options": [
+      {
+        "option_id": "A",
+        "content_reference": null,
+        "text": "shěn",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "B",
+        "content_reference": null,
+        "text": "shén",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "C",
+        "content_reference": null,
+        "text": "shèn",
+        "image_path": null,
+        "audio_path": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex13",
+    "exercise_type": "SENTENCE_ORDERING",
+    "instruction": "Xếp từ thành câu: Cảm ơn bạn!",
+    "question": {
+      "content_reference": null,
+      "text": null,
+      "image_path": null,
+      "audio_path": null
+    },
+    "items": [
+      {
+        "item_id": "item01",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab07",
+          "field": "word"
+        },
+        "text": null,
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "item_id": "item02",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab01",
+          "field": "word"
+        },
+        "text": null,
+        "image_path": null,
+        "audio_path": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex14",
+    "exercise_type": "SENTENCE_ORDERING",
+    "instruction": "Xếp từ thành câu: Đừng khách sáo!",
+    "question": {
+      "content_reference": null,
+      "text": null,
+      "image_path": null,
+      "audio_path": null
+    },
+    "items": [
+      {
+        "item_id": "item01",
+        "content_reference": null,
+        "text": "客气",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "item_id": "item02",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab08",
+          "field": "word"
+        },
+        "text": null,
+        "image_path": null,
+        "audio_path": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex15",
+    "exercise_type": "SENTENCE_ORDERING",
+    "instruction": "Xếp từ thành câu: Tạm biệt!",
+    "question": {
+      "content_reference": null,
+      "text": null,
+      "image_path": null,
+      "audio_path": null
+    },
+    "items": [
+      {
+        "item_id": "item01",
+        "content_reference": null,
+        "text": "见",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "item_id": "item02",
+        "content_reference": null,
+        "text": "再",
+        "image_path": null,
+        "audio_path": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex16",
+    "exercise_type": "SENTENCE_ORDERING",
+    "instruction": "Xếp từ thành câu: Không cần cảm ơn đâu!",
+    "question": {
+      "content_reference": null,
+      "text": null,
+      "image_path": null,
+      "audio_path": null
+    },
+    "items": [
+      {
+        "item_id": "item01",
+        "content_reference": null,
+        "text": "谢",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "item_id": "item02",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab08",
+          "field": "word"
+        },
+        "text": null,
+        "image_path": null,
+        "audio_path": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex17",
+    "exercise_type": "MULTIPLE_CHOICE",
+    "instruction": "Chọn chữ có nét sổ móc 亅.",
+    "question": {
+      "content_reference": null,
+      "text": null,
+      "image_path": null,
+      "audio_path": null
+    },
+    "options": [
+      {
+        "option_id": "A",
+        "content_reference": {
+          "content_type": "HANZI",
+          "content_id": "hsk1_hanzi09",
+          "field": "character"
+        },
+        "text": null,
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "B",
+        "content_reference": {
+          "content_type": "HANZI",
+          "content_id": "hsk1_hanzi08",
+          "field": "character"
+        },
+        "text": null,
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "C",
+        "content_reference": {
+          "content_type": "HANZI",
+          "content_id": "hsk1_hanzi06",
+          "field": "character"
+        },
+        "text": null,
+        "image_path": null,
+        "audio_path": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex18",
+    "exercise_type": "IMAGE_MULTIPLE_CHOICE",
+    "instruction": "Nghe và chọn bức tranh đúng.",
+    "question": {
+      "content_reference": null,
+      "text": null,
+      "image_path": null,
+      "audio_path": "final_listen_01.mp3"
+    },
+    "options": [
+      {
+        "option_id": "A",
+        "content_reference": null,
+        "text": "Một người trao đồ và người kia nói lời cảm ơn.",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "B",
+        "content_reference": null,
+        "text": "Hai người vẫy tay tạm biệt.",
+        "image_path": null,
+        "audio_path": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex19",
+    "exercise_type": "IMAGE_MULTIPLE_CHOICE",
+    "instruction": "Nghe và chọn bức tranh đúng.",
+    "question": {
+      "content_reference": null,
+      "text": null,
+      "image_path": null,
+      "audio_path": "final_listen_02.mp3"
+    },
+    "options": [
+      {
+        "option_id": "A",
+        "content_reference": null,
+        "text": "Hai người cúi chào cảm ơn.",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "B",
+        "content_reference": null,
+        "text": "Hai người rời đi và vẫy tay chào.",
+        "image_path": null,
+        "audio_path": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex20",
+    "exercise_type": "IMAGE_MULTIPLE_CHOICE",
+    "instruction": "Nghe và chọn bức tranh đúng.",
+    "question": {
+      "content_reference": null,
+      "text": null,
+      "image_path": null,
+      "audio_path": "final_listen_03.mp3"
+    },
+    "options": [
+      {
+        "option_id": "A",
+        "content_reference": null,
+        "text": "Một người đáp lại lời cảm ơn.",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "B",
+        "content_reference": null,
+        "text": "Một người xin lỗi.",
+        "image_path": null,
+        "audio_path": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex21",
+    "exercise_type": "MATCHING",
+    "instruction": "Nối cặp tương ứng.",
+    "left_items": [
+      {
+        "item_id": "left01",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab07",
+          "field": "word"
+        },
+        "text": null
+      },
+      {
+        "item_id": "left02",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab10",
+          "field": "word"
+        },
+        "text": null
+      },
+      {
+        "item_id": "left03",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab11",
+          "field": "word"
+        },
+        "text": null
+      },
+      {
+        "item_id": "left04",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab09",
+          "field": "word"
+        },
+        "text": null
+      },
+      {
+        "item_id": "left05",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab01",
+          "field": "word"
+        },
+        "text": null
+      }
+    ],
+    "right_items": [
+      {
+        "item_id": "right01",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab07",
+          "field": "meaning"
+        },
+        "text": null
+      },
+      {
+        "item_id": "right02",
+        "content_reference": null,
+        "text": "đừng khách sáo"
+      },
+      {
+        "item_id": "right03",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab11",
+          "field": "meaning"
+        },
+        "text": null
+      },
+      {
+        "item_id": "right04",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab09",
+          "field": "meaning"
+        },
+        "text": null
+      },
+      {
+        "item_id": "right05",
+        "content_reference": null,
+        "text": "bạn, anh, chị"
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex22",
+    "exercise_type": "MULTIPLE_CHOICE",
+    "instruction": "Chọn câu trả lời phù hợp.",
+    "question": {
+      "content_reference": null,
+      "text": "你叫什么名字？",
+      "image_path": null,
+      "audio_path": null
+    },
+    "options": [
+      {
+        "option_id": "A",
+        "content_reference": null,
+        "text": "我叫李月。",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "B",
+        "content_reference": null,
+        "text": "我是学生吗？",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "C",
+        "content_reference": null,
+        "text": "再见！",
+        "image_path": null,
+        "audio_path": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex23",
+    "exercise_type": "AUDIO_MULTIPLE_CHOICE",
+    "instruction": "Nghe và chọn Pinyin đúng.",
+    "question": {
+      "content_reference": null,
+      "text": null,
+      "image_path": null,
+      "audio_path": "listen_b3_01.mp3"
+    },
+    "options": [
+      {
+        "option_id": "A",
+        "content_reference": null,
+        "text": "sì",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "B",
+        "content_reference": null,
+        "text": "cì",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "C",
+        "content_reference": null,
+        "text": "xì",
+        "image_path": null,
+        "audio_path": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex24",
+    "exercise_type": "AUDIO_MULTIPLE_CHOICE",
+    "instruction": "Nghe và chọn Pinyin đúng.",
+    "question": {
+      "content_reference": null,
+      "text": null,
+      "image_path": null,
+      "audio_path": "listen_b3_02.mp3"
+    },
+    "options": [
+      {
+        "option_id": "A",
+        "content_reference": null,
+        "text": "suān",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "B",
+        "content_reference": null,
+        "text": "cuān",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "C",
+        "content_reference": null,
+        "text": "xuān",
+        "image_path": null,
+        "audio_path": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex25",
+    "exercise_type": "AUDIO_MULTIPLE_CHOICE",
+    "instruction": "Nghe và chọn Pinyin đúng.",
+    "question": {
+      "content_reference": null,
+      "text": null,
+      "image_path": null,
+      "audio_path": "listen_b3_03.mp3"
+    },
+    "options": [
+      {
+        "option_id": "A",
+        "content_reference": null,
+        "text": "zǐ",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "B",
+        "content_reference": null,
+        "text": "cǐ",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "C",
+        "content_reference": null,
+        "text": "qǐ",
+        "image_path": null,
+        "audio_path": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex26",
+    "exercise_type": "AUDIO_MULTIPLE_CHOICE",
+    "instruction": "Nghe và chọn Pinyin đúng.",
+    "question": {
+      "content_reference": null,
+      "text": null,
+      "image_path": null,
+      "audio_path": "listen_b3_04.mp3"
+    },
+    "options": [
+      {
+        "option_id": "A",
+        "content_reference": null,
+        "text": "zuàn",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "B",
+        "content_reference": null,
+        "text": "suàn",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "C",
+        "content_reference": null,
+        "text": "xuàn",
+        "image_path": null,
+        "audio_path": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex27",
+    "exercise_type": "AUDIO_MULTIPLE_CHOICE",
+    "instruction": "Nghe và chọn Pinyin đúng.",
+    "question": {
+      "content_reference": null,
+      "text": null,
+      "image_path": null,
+      "audio_path": "listen_b3_05.mp3"
+    },
+    "options": [
+      {
+        "option_id": "A",
+        "content_reference": null,
+        "text": "jiā",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "B",
+        "content_reference": null,
+        "text": "xiā",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "C",
+        "content_reference": null,
+        "text": "zā",
+        "image_path": null,
+        "audio_path": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex28",
+    "exercise_type": "AUDIO_MULTIPLE_CHOICE",
+    "instruction": "Nghe và chọn Pinyin đúng.",
+    "question": {
+      "content_reference": null,
+      "text": null,
+      "image_path": null,
+      "audio_path": "listen_b3_06.mp3"
+    },
+    "options": [
+      {
+        "option_id": "A",
+        "content_reference": null,
+        "text": "xīn",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "B",
+        "content_reference": null,
+        "text": "qīn",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "C",
+        "content_reference": null,
+        "text": "jīn",
+        "image_path": null,
+        "audio_path": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex29",
+    "exercise_type": "AUDIO_MULTIPLE_CHOICE",
+    "instruction": "Nghe và chọn Pinyin đúng.",
+    "question": {
+      "content_reference": null,
+      "text": null,
+      "image_path": null,
+      "audio_path": "listen_b3_07.mp3"
+    },
+    "options": [
+      {
+        "option_id": "A",
+        "content_reference": null,
+        "text": "jiǎng",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "B",
+        "content_reference": null,
+        "text": "xiǎng",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "C",
+        "content_reference": null,
+        "text": "zǎng",
+        "image_path": null,
+        "audio_path": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex30",
+    "exercise_type": "AUDIO_MULTIPLE_CHOICE",
+    "instruction": "Nghe và chọn Pinyin đúng.",
+    "question": {
+      "content_reference": null,
+      "text": null,
+      "image_path": null,
+      "audio_path": "listen_b3_08.mp3"
+    },
+    "options": [
+      {
+        "option_id": "A",
+        "content_reference": null,
+        "text": "qiú",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "B",
+        "content_reference": null,
+        "text": "jiǔ",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "C",
+        "content_reference": null,
+        "text": "zǒu",
+        "image_path": null,
+        "audio_path": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex31",
+    "exercise_type": "SENTENCE_ORDERING",
+    "instruction": "Xếp từ thành câu: Bạn tên là gì?",
+    "question": {
+      "content_reference": null,
+      "text": null,
+      "image_path": null,
+      "audio_path": null
+    },
+    "items": [
+      {
+        "item_id": "item01",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab14",
+          "field": "word"
+        },
+        "text": null
+      },
+      {
+        "item_id": "item02",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab13",
+          "field": "word"
+        },
+        "text": null
+      },
+      {
+        "item_id": "item03",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab01",
+          "field": "word"
+        },
+        "text": null
+      },
+      {
+        "item_id": "item04",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab12",
+          "field": "word"
+        },
+        "text": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex32",
+    "exercise_type": "SENTENCE_ORDERING",
+    "instruction": "Xếp từ thành câu: Tôi tên là Lý Nguyệt.",
+    "question": {
+      "content_reference": null,
+      "text": null,
+      "image_path": null,
+      "audio_path": null
+    },
+    "items": [
+      {
+        "item_id": "item01",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab21",
+          "field": "word"
+        },
+        "text": null
+      },
+      {
+        "item_id": "item02",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab15",
+          "field": "word"
+        },
+        "text": null
+      },
+      {
+        "item_id": "item03",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab12",
+          "field": "word"
+        },
+        "text": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex33",
+    "exercise_type": "SENTENCE_ORDERING",
+    "instruction": "Xếp từ thành câu: Bạn là giáo viên phải không?",
+    "question": {
+      "content_reference": null,
+      "text": null,
+      "image_path": null,
+      "audio_path": null
+    },
+    "items": [
+      {
+        "item_id": "item01",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab18",
+          "field": "word"
+        },
+        "text": null
+      },
+      {
+        "item_id": "item02",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab17",
+          "field": "word"
+        },
+        "text": null
+      },
+      {
+        "item_id": "item03",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab16",
+          "field": "word"
+        },
+        "text": null
+      },
+      {
+        "item_id": "item04",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab01",
+          "field": "word"
+        },
+        "text": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex34",
+    "exercise_type": "SENTENCE_ORDERING",
+    "instruction": "Xếp từ thành câu: Tôi không phải giáo viên.",
+    "question": {
+      "content_reference": null,
+      "text": null,
+      "image_path": null,
+      "audio_path": null
+    },
+    "items": [
+      {
+        "item_id": "item01",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab17",
+          "field": "word"
+        },
+        "text": null
+      },
+      {
+        "item_id": "item02",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab08",
+          "field": "word"
+        },
+        "text": null
+      },
+      {
+        "item_id": "item03",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab15",
+          "field": "word"
+        },
+        "text": null
+      },
+      {
+        "item_id": "item04",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab16",
+          "field": "word"
+        },
+        "text": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex35",
+    "exercise_type": "SENTENCE_ORDERING",
+    "instruction": "Xếp từ thành câu: Tôi là học sinh.",
+    "question": {
+      "content_reference": null,
+      "text": null,
+      "image_path": null,
+      "audio_path": null
+    },
+    "items": [
+      {
+        "item_id": "item01",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab16",
+          "field": "word"
+        },
+        "text": null
+      },
+      {
+        "item_id": "item02",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab19",
+          "field": "word"
+        },
+        "text": null
+      },
+      {
+        "item_id": "item03",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab15",
+          "field": "word"
+        },
+        "text": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex36",
+    "exercise_type": "SENTENCE_ORDERING",
+    "instruction": "Xếp từ thành câu: Bạn là người Trung Quốc phải không?",
+    "question": {
+      "content_reference": null,
+      "text": null,
+      "image_path": null,
+      "audio_path": null
+    },
+    "items": [
+      {
+        "item_id": "item01",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab22",
+          "field": "word"
+        },
+        "text": null
+      },
+      {
+        "item_id": "item02",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab20",
+          "field": "word"
+        },
+        "text": null
+      },
+      {
+        "item_id": "item03",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab18",
+          "field": "word"
+        },
+        "text": null
+      },
+      {
+        "item_id": "item04",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab01",
+          "field": "word"
+        },
+        "text": null
+      },
+      {
+        "item_id": "item05",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab16",
+          "field": "word"
+        },
+        "text": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex37",
+    "exercise_type": "IMAGE_MULTIPLE_CHOICE",
+    "instruction": "Nghe âm thanh và chọn bức tranh đúng.",
+    "question": {
+      "content_reference": null,
+      "text": null,
+      "image_path": null,
+      "audio_path": "final_b3_01.mp3"
+    },
+    "options": [
+      {
+        "option_id": "A",
+        "content_reference": null,
+        "text": "Thẻ tên ghi 李月.",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "B",
+        "content_reference": null,
+        "text": "Thẻ tên ghi 刘月.",
+        "image_path": null,
+        "audio_path": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex38",
+    "exercise_type": "IMAGE_MULTIPLE_CHOICE",
+    "instruction": "Nghe âm thanh và chọn bức tranh đúng.",
+    "question": {
+      "content_reference": null,
+      "text": null,
+      "image_path": null,
+      "audio_path": "final_b3_02.mp3"
+    },
+    "options": [
+      {
+        "option_id": "A",
+        "content_reference": null,
+        "text": "Một lớp học có người học đang ngồi học.",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "B",
+        "content_reference": null,
+        "text": "Một người đứng giảng bài trước bảng.",
+        "image_path": null,
+        "audio_path": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex39",
+    "exercise_type": "IMAGE_MULTIPLE_CHOICE",
+    "instruction": "Nghe âm thanh và chọn bức tranh đúng.",
+    "question": {
+      "content_reference": null,
+      "text": null,
+      "image_path": null,
+      "audio_path": "final_b3_03.mp3"
+    },
+    "options": [
+      {
+        "option_id": "A",
+        "content_reference": null,
+        "text": "Thẻ quốc tịch Trung Quốc.",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "B",
+        "content_reference": null,
+        "text": "Thẻ quốc tịch Mỹ.",
+        "image_path": null,
+        "audio_path": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex40",
+    "exercise_type": "IMAGE_MULTIPLE_CHOICE",
+    "instruction": "Nghe âm thanh và chọn bức tranh đúng.",
+    "question": {
+      "content_reference": null,
+      "text": null,
+      "image_path": null,
+      "audio_path": "final_b3_04.mp3"
+    },
+    "options": [
+      {
+        "option_id": "A",
+        "content_reference": null,
+        "text": "Một người hỏi người đứng cạnh bảng.",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "option_id": "B",
+        "content_reference": null,
+        "text": "Hai người vẫy tay tạm biệt.",
+        "image_path": null,
+        "audio_path": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex41",
+    "exercise_type": "MATCHING",
+    "instruction": "Nối cặp tương ứng.",
+    "left_items": [
+      {
+        "item_id": "left01",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab12",
+          "field": "word"
+        },
+        "text": null
+      },
+      {
+        "item_id": "left02",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab13",
+          "field": "word"
+        },
+        "text": null
+      },
+      {
+        "item_id": "left03",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab14",
+          "field": "word"
+        },
+        "text": null
+      },
+      {
+        "item_id": "left04",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab17",
+          "field": "word"
+        },
+        "text": null
+      },
+      {
+        "item_id": "left05",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab19",
+          "field": "word"
+        },
+        "text": null
+      },
+      {
+        "item_id": "left06",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab22",
+          "field": "word"
+        },
+        "text": null
+      },
+      {
+        "item_id": "left07",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab23",
+          "field": "word"
+        },
+        "text": null
+      },
+      {
+        "item_id": "left08",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab20",
+          "field": "word"
+        },
+        "text": null
+      }
+    ],
+    "right_items": [
+      {
+        "item_id": "right01",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab12",
+          "field": "meaning"
+        },
+        "text": null
+      },
+      {
+        "item_id": "right02",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab13",
+          "field": "meaning"
+        },
+        "text": null
+      },
+      {
+        "item_id": "right03",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab14",
+          "field": "meaning"
+        },
+        "text": null
+      },
+      {
+        "item_id": "right04",
+        "content_reference": null,
+        "text": "giáo viên"
+      },
+      {
+        "item_id": "right05",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab19",
+          "field": "meaning"
+        },
+        "text": null
+      },
+      {
+        "item_id": "right06",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab22",
+          "field": "meaning"
+        },
+        "text": null
+      },
+      {
+        "item_id": "right07",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab23",
+          "field": "meaning"
+        },
+        "text": null
+      },
+      {
+        "item_id": "right08",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab20",
+          "field": "meaning"
+        },
+        "text": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex42",
+    "exercise_type": "FILL_BLANK_CHOICE",
+    "instruction": "Chọn từ thích hợp để hoàn thành câu.",
+    "question": {
+      "content_reference": null,
+      "text": "你叫（   ）名字？",
+      "image_path": null,
+      "audio_path": null
+    },
+    "options": [
+      {
+        "option_id": "A",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab13",
+          "field": "word"
+        },
+        "text": null
+      },
+      {
+        "option_id": "B",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab18",
+          "field": "word"
+        },
+        "text": null
+      },
+      {
+        "option_id": "C",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab16",
+          "field": "word"
+        },
+        "text": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex43",
+    "exercise_type": "FILL_BLANK_CHOICE",
+    "instruction": "Chọn từ thích hợp để hoàn thành câu.",
+    "question": {
+      "content_reference": null,
+      "text": "我（   ）学生。",
+      "image_path": null,
+      "audio_path": null
+    },
+    "options": [
+      {
+        "option_id": "A",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab12",
+          "field": "word"
+        },
+        "text": null
+      },
+      {
+        "option_id": "B",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab16",
+          "field": "word"
+        },
+        "text": null
+      },
+      {
+        "option_id": "C",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab13",
+          "field": "word"
+        },
+        "text": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex44",
+    "exercise_type": "FILL_BLANK_CHOICE",
+    "instruction": "Chọn từ thích hợp để hoàn thành câu.",
+    "question": {
+      "content_reference": null,
+      "text": "你是老师（   ）？",
+      "image_path": null,
+      "audio_path": null
+    },
+    "options": [
+      {
+        "option_id": "A",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab18",
+          "field": "word"
+        },
+        "text": null
+      },
+      {
+        "option_id": "B",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab15",
+          "field": "word"
+        },
+        "text": null
+      },
+      {
+        "option_id": "C",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab20",
+          "field": "word"
+        },
+        "text": null
+      }
+    ]
+  },
+  {
+    "exercise_id": "hsk1_ex45",
+    "exercise_type": "FILL_BLANK_CHOICE",
+    "instruction": "Chọn từ thích hợp để hoàn thành câu.",
+    "question": {
+      "content_reference": null,
+      "text": "我（   ）是老师，我是学生。",
+      "image_path": null,
+      "audio_path": null
+    },
+    "options": [
+      {
+        "option_id": "A",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab18",
+          "field": "word"
+        },
+        "text": null
+      },
+      {
+        "option_id": "B",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab08",
+          "field": "word"
+        },
+        "text": null
+      },
+      {
+        "option_id": "C",
+        "content_reference": {
+          "content_type": "VOCABULARY",
+          "content_id": "hsk1_vocab12",
+          "field": "word"
+        },
+        "text": null
+      }
+    ]
+  }
+]

@@ -6,6 +6,7 @@ import { Navbar } from './components/Navbar';
 import { LandingPage } from './pages/landing/LandingPage';
 import { LoginPage } from './pages/auth/LoginPage';
 import { ProfilePage } from './pages/profile/ProfilePage';
+import { OnboardingRoadmapPage } from './pages/onboarding/OnboardingRoadmapPage';
 import { CourseListPage } from './pages/courses/CourseListPage';
 import { CourseDetailPage } from './pages/courses/CourseDetailPage';
 import { LessonPage } from './pages/lessons/LessonPage';
@@ -118,6 +119,10 @@ const AppContent: React.FC = () => {
 
     if (basePath.startsWith('#/profile')) {
       return <ProfilePage />;
+    }
+
+    if (basePath.startsWith('#/onboarding') || basePath.startsWith('#/roadmap')) {
+      return <OnboardingRoadmapPage />;
     }
 
     if (basePath.startsWith('#/courses/')) {

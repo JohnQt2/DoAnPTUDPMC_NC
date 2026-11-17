@@ -4,3 +4,8 @@ node_modules/
 *.db-journal
 dist/
 .agents/
+
+# Local environment and SQLite database
+backend/.env
+backend/prisma/dev.db
+backend/prisma/dev.db-journal

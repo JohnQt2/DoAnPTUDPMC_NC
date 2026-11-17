@@ -59,11 +59,11 @@ export class UserService {
           ? Math.round((completedRoadmapLessons / totalRoadmapLessons) * 100)
           : 0;
 
-      // Tìm bài học hiện tại cần học tiếp (được UNLOCKED hoặc IN_PROGRESS mà chưa hoàn thành)
-      const currentProgress = await prisma.userLessonProgress.findFirst({
+      // Tìm bài học hiện tại cần học tiếp: Ưu tiên bài đang học dở ('IN_PROGRESS') trước; nếu chưa có, tìm bài mới mở khóa ('UNLOCKED')
+      let currentProgress = await prisma.userLessonProgress.findFirst({
         where: {
           user_id: userId,
-          status: 'UNLOCKED',
+          status: 'IN_PROGRESS',
           is_completed: false,
           lesson: {
             chapter: { course_id: activeRoadmap.course_id },
@@ -80,6 +80,29 @@ export class UserService {
           { lesson: { order_index: 'asc' } },
         ],
       });
+
+      if (!currentProgress) {
+        currentProgress = await prisma.userLessonProgress.findFirst({
+          where: {
+            user_id: userId,
+            status: 'UNLOCKED',
+            is_completed: false,
+            lesson: {
+              chapter: { course_id: activeRoadmap.course_id },
+              status: 'PUBLISHED',
+            },
+          },
+          include: {
+            lesson: {
+              include: { chapter: true },
+            },
+          },
+          orderBy: [
+            { lesson: { chapter: { order_index: 'asc' } } },
+            { lesson: { order_index: 'asc' } },
+          ],
+        });
+      }
 
       const currentLesson = currentProgress
         ? {

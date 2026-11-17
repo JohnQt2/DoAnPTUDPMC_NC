@@ -70,12 +70,14 @@ export class CurriculumService {
 
     for (const ch of course.chapters) {
       for (const l of ch.lessons) {
-        orderedLessons.push({
-          lesson_id: l.lesson_id,
-          chapter_id: ch.chapter_id,
-          title: l.title,
-          order_index: l.order_index,
-        });
+        if (l.status === 'PUBLISHED') {
+          orderedLessons.push({
+            lesson_id: l.lesson_id,
+            chapter_id: ch.chapter_id,
+            title: l.title,
+            order_index: l.order_index,
+          });
+        }
       }
     }
 
@@ -476,6 +478,10 @@ export class CurriculumService {
 
     if (!lesson) {
       throw AppError.notFound('Bài học không tồn tại.');
+    }
+
+    if (lesson.status !== 'PUBLISHED') {
+      throw AppError.badRequest('Không thể ghi nhận tiến độ cho bài học chưa xuất bản.');
     }
 
     // 1. Kiểm tra điều kiện mở khóa bài học: nếu chưa mở khóa -> 403 LESSON_LOCKED

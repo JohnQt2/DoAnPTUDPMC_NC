@@ -26,9 +26,27 @@ export interface CourseCurriculumItem {
 }
 
 export interface RoadmapSurveyInput {
-  starting_level: 'ZERO' | 'PINYIN_KNOWN' | 'ELEMENTARY';
-  target_goal: 'HSK1' | 'HSK2' | 'COMMUNICATION' | 'HOBBY';
+  starting_level:
+    | 'ZERO'
+    | 'PINYIN_KNOWN'
+    | 'ELEMENTARY'
+    | 'HSK1'
+    | 'HSK2'
+    | 'HSK3'
+    | 'HSK4'
+    | 'HSK5'
+    | 'HSK6';
+  target_goal:
+    | 'HSK1'
+    | 'HSK2'
+    | 'HSK3'
+    | 'HSK4'
+    | 'HSK5'
+    | 'HSK6'
+    | 'COMMUNICATION'
+    | 'HOBBY';
   daily_commitment_mins: number;
+  target_weeks?: number;
   reminder_time: string;
   course_id?: number;
 }
@@ -63,7 +81,7 @@ export interface MatchedRoadmapResult {
 
 export class RoadmapRuleEngine {
   /**
-   * Khớp lộ trình học tập cá nhân hóa dựa trên kết quả khảo sát và giáo trình hiện có
+   * Khớp lộ trình học tập cá nhân hóa dựa trên kết quả khảo sát và giáo trình hiện có (Hỗ trợ HSK 1 -> HSK 6)
    */
   static matchRoadmap(
     input: RoadmapSurveyInput,
@@ -83,25 +101,37 @@ export class RoadmapRuleEngine {
     }
 
     if (!selectedCourse) {
-      if (input.starting_level === 'ELEMENTARY' || input.target_goal === 'HSK2') {
-        // Ưu tiên tìm khóa học HSK2
-        selectedCourse = publishedCourses.find(
-          (c) => c.level.toUpperCase() === 'HSK2' || c.code.toUpperCase() === 'HSK2'
-        );
-        // Fallback về HSK1 nếu chưa có HSK2
+      // Xác định cấp độ HSK mục tiêu từ target_goal hoặc starting_level
+      const hskLevels = ['HSK1', 'HSK2', 'HSK3', 'HSK4', 'HSK5', 'HSK6'];
+      let desiredLevel = 'HSK1';
+
+      if (hskLevels.includes(input.target_goal)) {
+        desiredLevel = input.target_goal;
+      } else if (input.starting_level === 'ELEMENTARY') {
+        desiredLevel = 'HSK2';
+      } else if (hskLevels.includes(input.starting_level)) {
+        const idx = hskLevels.indexOf(input.starting_level);
+        desiredLevel = hskLevels[Math.min(hskLevels.length - 1, idx + 1)] || input.starting_level;
+      }
+
+      selectedCourse = publishedCourses.find(
+        (c) => c.level.toUpperCase() === desiredLevel || c.code.toUpperCase() === desiredLevel
+      );
+
+      // Nếu chưa có khóa ở cấp độ desiredLevel (ví dụ trong môi trường test chỉ seed HSK1/HSK2), fallback về khóa gần nhất
+      if (!selectedCourse) {
+        if (desiredLevel !== 'HSK1') {
+          selectedCourse = publishedCourses.find(
+            (c) => c.level.toUpperCase() === 'HSK2' || c.code.toUpperCase() === 'HSK2'
+          );
+        }
         if (!selectedCourse) {
           selectedCourse = publishedCourses.find(
             (c) => c.level.toUpperCase() === 'HSK1' || c.code.toUpperCase() === 'HSK1'
           );
         }
-      } else {
-        // ZERO hoặc PINYIN_KNOWN chọn khóa HSK1
-        selectedCourse = publishedCourses.find(
-          (c) => c.level.toUpperCase() === 'HSK1' || c.code.toUpperCase() === 'HSK1'
-        );
       }
 
-      // Fallback cuối cùng nếu không tìm thấy HSK1/HSK2
       if (!selectedCourse) {
         selectedCourse = publishedCourses[0];
       }
@@ -126,13 +156,10 @@ export class RoadmapRuleEngine {
 
     if (flatLessons.length > 0) {
       if (input.starting_level === 'ZERO') {
-        // Mở khóa bài học đầu tiên của khóa học; bài khuyến nghị là bài đầu tiên
         const firstLesson = flatLessons[0];
         initialUnlockedLessonIds = [firstLesson.lesson_id];
         recommendedFirstLessonId = firstLesson.lesson_id;
       } else if (input.starting_level === 'PINYIN_KNOWN') {
-        // Học viên đã biết Pinyin: Mở khóa các bài thuộc chương Pinyin nhập môn để ôn lại
-        // Đồng thời mở khóa và đặt recommendedFirstLessonId vào bài học từ vựng/hội thoại kế tiếp
         const firstChapter = sortedChapters[0];
         const firstChapterLessonIds = (firstChapter?.lessons || [])
           .filter((l) => l.status === 'PUBLISHED')
@@ -140,9 +167,12 @@ export class RoadmapRuleEngine {
 
         initialUnlockedLessonIds = [...firstChapterLessonIds];
 
-        // Tìm bài học đầu tiên nằm ngoài chương nhập môn Pinyin (hoặc bài thuộc chapter 2)
-        const nextChapter = sortedChapters.find((ch) => ch.order_index > (firstChapter?.order_index ?? 0));
-        const nextChapterLessons = (nextChapter?.lessons || []).filter((l) => l.status === 'PUBLISHED');
+        const nextChapter = sortedChapters.find(
+          (ch) => ch.order_index > (firstChapter?.order_index ?? 0)
+        );
+        const nextChapterLessons = (nextChapter?.lessons || []).filter(
+          (l) => l.status === 'PUBLISHED'
+        );
 
         if (nextChapterLessons.length > 0) {
           const nextLesson = nextChapterLessons[0];
@@ -151,7 +181,6 @@ export class RoadmapRuleEngine {
           }
           recommendedFirstLessonId = nextLesson.lesson_id;
         } else if (flatLessons.length > 1) {
-          // Nếu chỉ có 1 chapter nhưng nhiều bài, gợi ý bài thứ 2
           recommendedFirstLessonId = flatLessons[1].lesson_id;
           if (!initialUnlockedLessonIds.includes(flatLessons[1].lesson_id)) {
             initialUnlockedLessonIds.push(flatLessons[1].lesson_id);
@@ -159,33 +188,75 @@ export class RoadmapRuleEngine {
         } else {
           recommendedFirstLessonId = flatLessons[0].lesson_id;
         }
-      } else if (input.starting_level === 'ELEMENTARY') {
-        // Học viên đã có nền tảng sơ cấp: Mở khóa chương đầu và đặt bài học bắt đầu ở chặng tương ứng
-        const firstChapter = sortedChapters[0];
-        const firstChapterLessonIds = (firstChapter?.lessons || [])
-          .filter((l) => l.status === 'PUBLISHED')
-          .map((l) => l.lesson_id);
+      } else {
+        // ELEMENTARY hoặc HSK1..HSK6: Nếu chọn khóa học đúng cấp độ mục tiêu mới thì bắt đầu từ bài đầu của khóa mới,
+        // còn nếu vẫn ở cùng khóa học (ví dụ HSK1) thì mở khóa chương 1 và bắt đầu ở chương 2
+        if (
+          input.starting_level === 'ELEMENTARY' &&
+          selectedCourse.level.toUpperCase() === 'HSK1'
+        ) {
+          const firstChapter = sortedChapters[0];
+          const firstChapterLessonIds = (firstChapter?.lessons || [])
+            .filter((l) => l.status === 'PUBLISHED')
+            .map((l) => l.lesson_id);
 
-        initialUnlockedLessonIds = [...firstChapterLessonIds];
+          initialUnlockedLessonIds = [...firstChapterLessonIds];
 
-        // Đặt bài học bắt đầu ở chương kế tiếp (hoặc bài tương ứng)
-        const nextChapter = sortedChapters.find((ch) => ch.order_index > (firstChapter?.order_index ?? 0));
-        const nextChapterLessons = (nextChapter?.lessons || []).filter((l) => l.status === 'PUBLISHED');
+          const nextChapter = sortedChapters.find(
+            (ch) => ch.order_index > (firstChapter?.order_index ?? 0)
+          );
+          const nextChapterLessons = (nextChapter?.lessons || []).filter(
+            (l) => l.status === 'PUBLISHED'
+          );
 
-        if (nextChapterLessons.length > 0) {
-          const nextLesson = nextChapterLessons[0];
-          if (!initialUnlockedLessonIds.includes(nextLesson.lesson_id)) {
-            initialUnlockedLessonIds.push(nextLesson.lesson_id);
+          if (nextChapterLessons.length > 0) {
+            const nextLesson = nextChapterLessons[0];
+            if (!initialUnlockedLessonIds.includes(nextLesson.lesson_id)) {
+              initialUnlockedLessonIds.push(nextLesson.lesson_id);
+            }
+            recommendedFirstLessonId = nextLesson.lesson_id;
+          } else {
+            recommendedFirstLessonId = flatLessons[flatLessons.length - 1].lesson_id;
           }
-          recommendedFirstLessonId = nextLesson.lesson_id;
         } else {
-          recommendedFirstLessonId = flatLessons[flatLessons.length - 1].lesson_id;
+          const firstChapter = sortedChapters[0];
+          const firstChapterLessonIds = (firstChapter?.lessons || [])
+            .filter((l) => l.status === 'PUBLISHED')
+            .map((l) => l.lesson_id);
+
+          if (input.starting_level === 'ELEMENTARY') {
+            initialUnlockedLessonIds = [...firstChapterLessonIds];
+            const nextChapter = sortedChapters.find(
+              (ch) => ch.order_index > (firstChapter?.order_index ?? 0)
+            );
+            const nextChapterLessons = (nextChapter?.lessons || []).filter(
+              (l) => l.status === 'PUBLISHED'
+            );
+            if (nextChapterLessons.length > 0) {
+              const nextLesson = nextChapterLessons[0];
+              if (!initialUnlockedLessonIds.includes(nextLesson.lesson_id)) {
+                initialUnlockedLessonIds.push(nextLesson.lesson_id);
+              }
+              recommendedFirstLessonId = nextLesson.lesson_id;
+            } else {
+              recommendedFirstLessonId = flatLessons[0].lesson_id;
+              if (!initialUnlockedLessonIds.includes(recommendedFirstLessonId)) {
+                initialUnlockedLessonIds.push(recommendedFirstLessonId);
+              }
+            }
+          } else {
+            // HSK1..HSK6
+            const firstLesson = flatLessons[0];
+            initialUnlockedLessonIds = [firstLesson.lesson_id];
+            recommendedFirstLessonId = firstLesson.lesson_id;
+          }
         }
       }
     }
 
     // 4. Quy tắc tính toán tiến độ & Chia chặng (Milestones)
-    const dailyMins = [10, 15, 20, 30].includes(input.daily_commitment_mins)
+    const validCommitments = [10, 15, 20, 30, 45, 60, 90, 120];
+    const dailyMins = validCommitments.includes(input.daily_commitment_mins)
       ? input.daily_commitment_mins
       : 15;
 
@@ -206,13 +277,33 @@ export class RoadmapRuleEngine {
     switch (input.target_goal) {
       case 'HSK1':
         learningFocus =
-          'Làm chủ 150 từ vựng căn bản, nắm chắc cấu trúc ngữ pháp HSK 1, quy tắc bút thuận chữ Hán và vượt qua bài kiểm tra củng cố đạt ≥ 80%.';
+          'Làm chủ 150–300 từ vựng căn bản, nắm chắc cấu trúc ngữ pháp HSK 1, quy tắc bút thuận chữ Hán và vượt qua bài kiểm tra củng cố đạt ≥ 80%.';
         targetScore = 80;
         break;
       case 'HSK2':
         learningFocus =
-          'Mở rộng 300 từ vựng, củng cố mẫu câu phức, làm chủ các dạng câu hỏi HSK 2 và luyện đề checkpoint đạt ≥ 80%.';
+          'Mở rộng 300–600 từ vựng sơ cấp, củng cố mẫu câu phức, làm chủ các dạng câu hỏi HSK 2 và luyện đề checkpoint đạt ≥ 80%.';
         targetScore = 80;
+        break;
+      case 'HSK3':
+        learningFocus =
+          'Chinh phục 600–900 từ vựng trung cấp, làm chủ cấu trúc câu chữ 把 (bǎ), chữ 被 (bèi), bổ ngữ xu hướng và giao tiếp độc lập trong công việc.';
+        targetScore = 80;
+        break;
+      case 'HSK4':
+        learningFocus =
+          'Làm chủ 1.200 từ vựng chuẩn Giáo trình HSK 4 (Quyển Thượng & Quyển Hạ), đọc hiểu đoạn văn dài, thảo luận chủ đề xã hội - kinh tế và viết đoạn văn nghị luận.';
+        targetScore = 80;
+        break;
+      case 'HSK5':
+        learningFocus =
+          'Chinh phục 2.500 từ vựng cao cấp, đọc báo chí - văn học nguyên bản, nghe hiểu phim ảnh và thuyết trình chuyên sâu.';
+        targetScore = 80;
+        break;
+      case 'HSK6':
+        learningFocus =
+          'Làm chủ 5.000+ từ vựng học thuật và thành ngữ (Thành ngữ 4 chữ), diễn đạt lưu loát tương đương người bản xứ trong môi trường học thuật và thương mại.';
+        targetScore = 85;
         break;
       case 'COMMUNICATION':
         learningFocus =
@@ -274,4 +365,3 @@ export class RoadmapRuleEngine {
     };
   }
 }
-

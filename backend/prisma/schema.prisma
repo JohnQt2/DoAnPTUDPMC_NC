@@ -103,9 +103,23 @@ model Chapters {
   course_id   Int
   title       String
   order_index Int
+  description String?
+  objective   String?
+  thumbnail_url String?
+  unit_number Int?      // Thứ tự Unit trong khóa học (alias cho order_index)
+  slug        String?   // e.g. "hsk1_u01"
 
   course      Courses   @relation(fields: [course_id], references: [course_id], onDelete: Cascade)
   lessons     Lessons[]
+
+  // Unit decomposition relations
+  unitVocabularies     UnitVocabulary[]
+  unitSentencePatterns UnitSentencePattern[]
+  unitGrammars         UnitGrammar[]
+  unitDialogues        UnitDialogue[]
+  unitPhonetics        UnitPhonetic[]
+  unitHanzis           UnitHanzi[]
+  exercises            Exercise[]
 
   @@index([course_id, order_index])
   @@map("Chapters")
@@ -413,4 +427,256 @@ model OutboxMessages {
 
   @@index([status, created_at])
   @@map("OutboxMessages")
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  CURRICULUM CONTENT LIBRARY — Atomic Content Repositories
+// ═══════════════════════════════════════════════════════════════
+
+/// Kho từ vựng dùng chung (vocabulary_id khớp với seed-data/contents/vocabularies.json)
+model Vocabulary {
+  id              Int               @id @default(autoincrement())
+  vocabulary_id   String            @unique // e.g. "hsk1_vocab01"
+  word            String
+  pinyin          String
+  meaning         String
+  word_type       String?
+  notes           String?           // JSON array string
+  examples        String?           // JSON array string
+  word_image_path String?
+  word_audio_path String?
+  hsk_level       String?           // "HSK1".."HSK6"
+  created_at      DateTime          @default(now())
+
+  unitVocabularies UnitVocabulary[]
+
+  @@index([vocabulary_id])
+  @@index([hsk_level])
+  @@map("Vocabulary")
+}
+
+/// Kho mẫu câu dùng chung (sentence_pattern_id khớp với seed-data/contents/sentence-patterns.json)
+model SentencePattern {
+  id                  Int                    @id @default(autoincrement())
+  sentence_pattern_id String                 @unique // e.g. "hsk1_pattern03"
+  title               String?
+  pattern             String
+  explanation         String?
+  notes               String?                // JSON array string
+  examples            String?                // JSON array string
+  created_at          DateTime               @default(now())
+
+  unitSentencePatterns UnitSentencePattern[]
+
+  @@index([sentence_pattern_id])
+  @@map("SentencePattern")
+}
+
+/// Kho điểm ngữ pháp dùng chung (grammar_id khớp với seed-data/contents/grammars.json)
+model Grammar {
+  id           Int            @id @default(autoincrement())
+  grammar_id   String         @unique // e.g. "hsk1_gram01"
+  title        String
+  structure    String?
+  explanation  String?
+  notes        String?        // JSON array string
+  examples     String?        // JSON array string
+  created_at   DateTime       @default(now())
+
+  unitGrammars UnitGrammar[]
+
+  @@index([grammar_id])
+  @@map("Grammar")
+}
+
+/// Kho bài hội thoại dùng chung (dialogue_id khớp với seed-data/contents/dialogues.json)
+model Dialogue {
+  id           Int             @id @default(autoincrement())
+  dialogue_id  String          @unique // e.g. "hsk1_dialogue01"
+  title        String?
+  audio_path   String?
+  turns        String?         // JSON array string: [{speaker, hanzi, pinyin, meaning, ...}]
+  created_at   DateTime        @default(now())
+
+  unitDialogues UnitDialogue[]
+
+  @@index([dialogue_id])
+  @@map("Dialogue")
+}
+
+/// Kho kiến thức ngữ âm dùng chung (phonetic_id khớp với seed-data/contents/phonetics.json)
+model Phonetic {
+  id           Int             @id @default(autoincrement())
+  phonetic_id  String          @unique // e.g. "hsk1_phonetic01"
+  syllables    String?         // JSON array string
+  rules        String?         // JSON array string: [{rule_id, title, explanation, examples, audio_path}]
+  created_at   DateTime        @default(now())
+
+  unitPhonetics UnitPhonetic[]
+
+  @@index([phonetic_id])
+  @@map("Phonetic")
+}
+
+/// Kho chữ Hán dùng chung (hanzi_id khớp với seed-data/contents/hanzi.json)
+model Hanzi {
+  id                   Int          @id @default(autoincrement())
+  hanzi_id             String       @unique // e.g. "hsk1_hanzi01"
+  character            String       @unique
+  pinyin               String?
+  meaning              String?
+  stroke_count         Int?
+  radical              String?
+  notes                String?      // JSON array string
+  examples             String?      // JSON array string
+  character_audio_path String?
+  stroke_svg_path      String?      // path to SVG file or inline SVG content
+  svg_content          String?      // inline SVG nét viết
+  created_at           DateTime     @default(now())
+
+  unitHanzis UnitHanzi[]
+
+  @@index([hanzi_id])
+  @@index([character])
+  @@map("Hanzi")
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  UNIT DECOMPOSITION TABLES — Phân rã học liệu theo Unit
+// ═══════════════════════════════════════════════════════════════
+
+/// Bảng phân rã: Vocabulary thuộc Unit nào (kèm thứ tự hiển thị)
+model UnitVocabulary {
+  id             Int        @id @default(autoincrement())
+  unit_id        Int
+  vocabulary_id  Int
+  order_index    Int        @default(0)
+  block_type     String?    // e.g. "VOCABULARY_PRESENTATION"
+
+  unit           Chapters   @relation(fields: [unit_id], references: [chapter_id], onDelete: Cascade)
+  vocabulary     Vocabulary @relation(fields: [vocabulary_id], references: [id], onDelete: Cascade)
+
+  @@unique([unit_id, vocabulary_id])
+  @@index([unit_id, order_index])
+  @@map("UnitVocabulary")
+}
+
+/// Bảng phân rã: SentencePattern thuộc Unit nào
+model UnitSentencePattern {
+  id                  Int             @id @default(autoincrement())
+  unit_id             Int
+  sentence_pattern_id Int
+  order_index         Int             @default(0)
+  block_type          String?
+
+  unit                Chapters        @relation(fields: [unit_id], references: [chapter_id], onDelete: Cascade)
+  sentencePattern     SentencePattern @relation(fields: [sentence_pattern_id], references: [id], onDelete: Cascade)
+
+  @@unique([unit_id, sentence_pattern_id])
+  @@index([unit_id, order_index])
+  @@map("UnitSentencePattern")
+}
+
+/// Bảng phân rã: Grammar thuộc Unit nào
+model UnitGrammar {
+  id          Int      @id @default(autoincrement())
+  unit_id     Int
+  grammar_id  Int
+  order_index Int      @default(0)
+  block_type  String?
+
+  unit        Chapters @relation(fields: [unit_id], references: [chapter_id], onDelete: Cascade)
+  grammar     Grammar  @relation(fields: [grammar_id], references: [id], onDelete: Cascade)
+
+  @@unique([unit_id, grammar_id])
+  @@index([unit_id, order_index])
+  @@map("UnitGrammar")
+}
+
+/// Bảng phân rã: Dialogue thuộc Unit nào
+model UnitDialogue {
+  id          Int      @id @default(autoincrement())
+  unit_id     Int
+  dialogue_id Int
+  order_index Int      @default(0)
+  block_type  String?
+
+  unit        Chapters @relation(fields: [unit_id], references: [chapter_id], onDelete: Cascade)
+  dialogue    Dialogue @relation(fields: [dialogue_id], references: [id], onDelete: Cascade)
+
+  @@unique([unit_id, dialogue_id])
+  @@index([unit_id, order_index])
+  @@map("UnitDialogue")
+}
+
+/// Bảng phân rã: Phonetic thuộc Unit nào
+model UnitPhonetic {
+  id          Int      @id @default(autoincrement())
+  unit_id     Int
+  phonetic_id Int
+  order_index Int      @default(0)
+  block_type  String?
+
+  unit        Chapters @relation(fields: [unit_id], references: [chapter_id], onDelete: Cascade)
+  phonetic    Phonetic @relation(fields: [phonetic_id], references: [id], onDelete: Cascade)
+
+  @@unique([unit_id, phonetic_id])
+  @@index([unit_id, order_index])
+  @@map("UnitPhonetic")
+}
+
+/// Bảng phân rã: Hanzi thuộc Unit nào
+model UnitHanzi {
+  id          Int      @id @default(autoincrement())
+  unit_id     Int
+  hanzi_id    Int
+  order_index Int      @default(0)
+  block_type  String?
+
+  unit        Chapters @relation(fields: [unit_id], references: [chapter_id], onDelete: Cascade)
+  hanzi       Hanzi    @relation(fields: [hanzi_id], references: [id], onDelete: Cascade)
+
+  @@unique([unit_id, hanzi_id])
+  @@index([unit_id, order_index])
+  @@map("UnitHanzi")
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  EXERCISE REPOSITORY — Kho bài tập gắn với Unit (Chapter)
+// ═══════════════════════════════════════════════════════════════
+
+/// Kho bài tập (exercise_id khớp với seed-data/Exercise/Exercise.json)
+model Exercise {
+  exercise_id    String           @unique
+  id             Int              @id @default(autoincrement())
+  unit_id        Int?             // liên kết tới chapter_id (Unit)
+  exercise_type  String           // AUDIO_MULTIPLE_CHOICE, MULTIPLE_CHOICE, SENTENCE_ORDERING, MATCHING, IMAGE_MULTIPLE_CHOICE
+  instruction    String?
+  question       String?          // JSON object: {text, image_path, audio_path, content_reference}
+  options        String?          // JSON array: for MULTIPLE_CHOICE, AUDIO_MC, IMAGE_MC
+  items          String?          // JSON array: for SENTENCE_ORDERING
+  left_items     String?          // JSON array: for MATCHING
+  right_items    String?          // JSON array: for MATCHING
+  created_at     DateTime         @default(now())
+
+  unit           Chapters?        @relation(fields: [unit_id], references: [chapter_id], onDelete: SetNull)
+  answer         ExerciseAnswer?
+
+  @@index([exercise_id])
+  @@index([unit_id])
+  @@map("Exercise")
+}
+
+/// Đáp án bài tập (exercise_id khớp với seed-data/Exercise/exercise-answers.json)
+model ExerciseAnswer {
+  id           Int      @id @default(autoincrement())
+  exercise_id  String   @unique
+  answer_type  String   // SINGLE_CHOICE, ORDERED_ITEMS, MATCHING
+  correct_data String   // JSON: correct_option_id | correct_item_ids | correct_pairs
+  explanation  String?
+  created_at   DateTime @default(now())
+
+  exercise     Exercise @relation(fields: [exercise_id], references: [exercise_id], onDelete: Cascade)
+
+  @@map("ExerciseAnswer")
 }

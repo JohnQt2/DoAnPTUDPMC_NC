@@ -1,0 +1,260 @@
+[
+  {
+    "vocabulary_id": "hsk1_vocab01",
+    "word": "你",
+    "pinyin": "nǐ",
+    "meaning": "Bạn / Anh / Chị",
+    "word_type": null,
+    "notes": [],
+    "examples": [],
+    "word_image_path": "assets/images/hsk1/lesson01/vocab/img_ni.png",
+    "word_audio_path": "audio/hsk1/lesson01/vocab/vocab_ni.mp3"
+  },
+  {
+    "vocabulary_id": "hsk1_vocab02",
+    "word": "好",
+    "pinyin": "hǎo",
+    "meaning": "Tốt / Khỏe / An lành",
+    "word_type": null,
+    "notes": [],
+    "examples": [],
+    "word_image_path": "assets/images/hsk1/lesson01/vocab/img_hao.png",
+    "word_audio_path": "audio/hsk1/lesson01/vocab/vocab_hao.mp3"
+  },
+  {
+    "vocabulary_id": "hsk1_vocab03",
+    "word": "您",
+    "pinyin": "nín",
+    "meaning": "Ngài / Ông / Bà (kính ngữ)",
+    "word_type": null,
+    "notes": [],
+    "examples": [],
+    "word_image_path": "assets/images/hsk1/lesson01/vocab/img_nin.png",
+    "word_audio_path": "audio/hsk1/lesson01/vocab/vocab_nin.mp3"
+  },
+  {
+    "vocabulary_id": "hsk1_vocab04",
+    "word": "你们",
+    "pinyin": "nǐmen",
+    "meaning": "Các bạn / Các anh / Các chị",
+    "word_type": null,
+    "notes": [],
+    "examples": [],
+    "word_image_path": "assets/images/hsk1/lesson01/vocab/img_nimen.png",
+    "word_audio_path": "audio/hsk1/lesson01/vocab/vocab_nimen.mp3"
+  },
+  {
+    "vocabulary_id": "hsk1_vocab05",
+    "word": "对不起",
+    "pinyin": "duìbuqǐ",
+    "meaning": "Xin lỗi / Thành thật xin lỗi",
+    "word_type": null,
+    "notes": [],
+    "examples": [],
+    "word_image_path": "assets/images/hsk1/lesson01/vocab/img_duibuqi.png",
+    "word_audio_path": "audio/hsk1/lesson01/vocab/vocab_duibuqi.mp3"
+  },
+  {
+    "vocabulary_id": "hsk1_vocab06",
+    "word": "没关系",
+    "pinyin": "méi guānxi",
+    "meaning": "Không sao / Không có gì",
+    "word_type": null,
+    "notes": [],
+    "examples": [],
+    "word_image_path": "assets/images/hsk1/lesson01/vocab/img_meiguanxi.png",
+    "word_audio_path": "audio/hsk1/lesson01/vocab/vocab_meiguanxi.mp3"
+  },
+  
+  {
+    "vocabulary_id": "hsk1_vocab07",
+    "word": "谢谢",
+    "pinyin": "xièxie",
+    "meaning": "cảm ơn",
+    "word_type": null,
+    "notes": [],
+    "examples": [],
+    "word_image_path": null,
+    "word_audio_path": "vocab_b2_xiexie.mp3"
+  },
+  {
+    "vocabulary_id": "hsk1_vocab08",
+    "word": "不",
+    "pinyin": "bù",
+    "meaning": "không, không cần, đừng",
+    "word_type": null,
+    "notes": [],
+    "examples": [],
+    "word_image_path": null,
+    "word_audio_path": "vocab_b2_bu.mp3"
+  },
+  {
+    "vocabulary_id": "hsk1_vocab09",
+    "word": "不谢",
+    "pinyin": "bú xiè",
+    "meaning": "không cần cảm ơn",
+    "word_type": null,
+    "notes": [],
+    "examples": [],
+    "word_image_path": null,
+    "word_audio_path": "vocab_b2_buxie.mp3"
+  },
+  {
+    "vocabulary_id": "hsk1_vocab10",
+    "word": "不客气",
+    "pinyin": "bú kèqi",
+    "meaning": "đừng khách sáo, không có gì",
+    "word_type": null,
+    "notes": [],
+    "examples": [],
+    "word_image_path": null,
+    "word_audio_path": "vocab_b2_bukeqi.mp3"
+  },
+  {
+    "vocabulary_id": "hsk1_vocab11",
+    "word": "再见",
+    "pinyin": "zàijiàn",
+    "meaning": "tạm biệt",
+    "word_type": null,
+    "notes": [],
+    "examples": [],
+    "word_image_path": null,
+    "word_audio_path": "vocab_b2_zaijian.mp3"
+  },
+  
+  {
+    "vocabulary_id": "hsk1_vocab12",
+    "word": "叫",
+    "pinyin": "jiào",
+    "meaning": "tên là, gọi là",
+    "word_type": null,
+    "notes": [],
+    "examples": [],
+    "word_image_path": null,
+    "word_audio_path": "vocab_b3_01.mp3"
+  },
+  {
+    "vocabulary_id": "hsk1_vocab13",
+    "word": "什么",
+    "pinyin": "shénme",
+    "meaning": "gì, cái gì",
+    "word_type": null,
+    "notes": [],
+    "examples": [],
+    "word_image_path": null,
+    "word_audio_path": "vocab_b3_02.mp3"
+  },
+  {
+    "vocabulary_id": "hsk1_vocab14",
+    "word": "名字",
+    "pinyin": "míngzi",
+    "meaning": "tên",
+    "word_type": null,
+    "notes": [],
+    "examples": [],
+    "word_image_path": null,
+    "word_audio_path": "vocab_b3_03.mp3"
+  },
+  {
+    "vocabulary_id": "hsk1_vocab15",
+    "word": "我",
+    "pinyin": "wǒ",
+    "meaning": "tôi, mình",
+    "word_type": null,
+    "notes": [],
+    "examples": [],
+    "word_image_path": null,
+    "word_audio_path": "vocab_b3_04.mp3"
+  },
+  {
+    "vocabulary_id": "hsk1_vocab16",
+    "word": "是",
+    "pinyin": "shì",
+    "meaning": "là",
+    "word_type": null,
+    "notes": [],
+    "examples": [],
+    "word_image_path": null,
+    "word_audio_path": "vocab_b3_05.mp3"
+  },
+  {
+    "vocabulary_id": "hsk1_vocab17",
+    "word": "老师",
+    "pinyin": "lǎoshī",
+    "meaning": "thầy giáo, cô giáo",
+    "word_type": null,
+    "notes": [],
+    "examples": [],
+    "word_image_path": null,
+    "word_audio_path": "vocab_b3_06.mp3"
+  },
+  {
+    "vocabulary_id": "hsk1_vocab18",
+    "word": "吗",
+    "pinyin": "ma",
+    "meaning": "trợ từ đặt cuối câu hỏi",
+    "word_type": null,
+    "notes": [],
+    "examples": [],
+    "word_image_path": null,
+    "word_audio_path": "vocab_b3_07.mp3"
+  },
+  {
+    "vocabulary_id": "hsk1_vocab19",
+    "word": "学生",
+    "pinyin": "xuésheng",
+    "meaning": "học sinh, sinh viên",
+    "word_type": null,
+    "notes": [],
+    "examples": [],
+    "word_image_path": null,
+    "word_audio_path": "vocab_b3_08.mp3"
+  },
+  {
+    "vocabulary_id": "hsk1_vocab20",
+    "word": "人",
+    "pinyin": "rén",
+    "meaning": "người",
+    "word_type": null,
+    "notes": [],
+    "examples": [],
+    "word_image_path": null,
+    "word_audio_path": "vocab_b3_09.mp3"
+  },
+  {
+    "vocabulary_id": "hsk1_vocab21",
+    "word": "李月",
+    "pinyin": "Lǐ Yuè",
+    "meaning": "Lý Nguyệt, tên người",
+    "word_type": null,
+    "notes": [],
+    "examples": [],
+    "word_image_path": null,
+    "word_audio_path": "vocab_b3_10.mp3"
+  },
+  {
+    "vocabulary_id": "hsk1_vocab22",
+    "word": "中国",
+    "pinyin": "Zhōngguó",
+    "meaning": "Trung Quốc",
+    "word_type": null,
+    "notes": [],
+    "examples": [],
+    "word_image_path": null,
+    "word_audio_path": "vocab_b3_11.mp3"
+  },
+  {
+    "vocabulary_id": "hsk1_vocab23",
+    "word": "美国",
+    "pinyin": "Měiguó",
+    "meaning": "nước Mỹ",
+    "word_type": null,
+    "notes": [],
+    "examples": [],
+    "word_image_path": null,
+    "word_audio_path": "vocab_b3_12.mp3"
+  }
+
+
+
+]

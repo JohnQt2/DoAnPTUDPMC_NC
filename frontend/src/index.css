@@ -4,17 +4,17 @@
 
 @layer base {
   body {
-    @apply antialiased text-gray-900 bg-gray-50 selection:bg-primary-100 selection:text-primary-800;
+    @apply antialiased text-gray-900 bg-white selection:bg-primary-100 selection:text-primary-800;
   }
 }
 
-/* Chinese TianZiGe Grid Pattern */
+/* Chinese TianZiGe Grid Pattern (Soft Coral Red) */
 .tianzige-grid {
   background-image: 
-    linear-gradient(to right, rgba(196, 30, 58, 0.15) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(196, 30, 58, 0.15) 1px, transparent 1px),
-    linear-gradient(45deg, transparent calc(50% - 0.5px), rgba(196, 30, 58, 0.1) calc(50% - 0.5px), rgba(196, 30, 58, 0.1) calc(50% + 0.5px), transparent calc(50% + 0.5px)),
-    linear-gradient(-45deg, transparent calc(50% - 0.5px), rgba(196, 30, 58, 0.1) calc(50% - 0.5px), rgba(196, 30, 58, 0.1) calc(50% + 0.5px), transparent calc(50% + 0.5px));
+    linear-gradient(to right, rgba(242, 90, 90, 0.16) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(242, 90, 90, 0.16) 1px, transparent 1px),
+    linear-gradient(45deg, transparent calc(50% - 0.5px), rgba(242, 90, 90, 0.11) calc(50% - 0.5px), rgba(242, 90, 90, 0.11) calc(50% + 0.5px), transparent calc(50% + 0.5px)),
+    linear-gradient(-45deg, transparent calc(50% - 0.5px), rgba(242, 90, 90, 0.11) calc(50% - 0.5px), rgba(242, 90, 90, 0.11) calc(50% + 0.5px), transparent calc(50% + 0.5px));
   background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%;
   background-position: center;
 }

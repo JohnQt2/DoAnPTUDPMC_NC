@@ -121,6 +121,7 @@ export const LoginPage: React.FC = () => {
     const normalized = value.trim().toLowerCase();
     return (
       /^[a-zA-Z0-9._%+-]+@gmail\.com$/i.test(normalized) ||
+      /^[a-zA-Z0-9._%+-]+@hanzi4u\.id\.vn$/i.test(normalized) ||
       /^[a-zA-Z0-9._%+-]+@chinaeasy\.vn$/i.test(normalized)
     );
   };
@@ -379,14 +380,14 @@ export const LoginPage: React.FC = () => {
       <div className="max-w-md w-full bg-white rounded-3xl border border-gray-100 shadow-xl p-8 space-y-6">
         {/* Header */}
         <div className="text-center">
-          <div className="inline-flex w-16 h-16 rounded-2xl bg-gradient-to-tr from-primary-600 to-primary-500 text-white items-center justify-center shadow-lg shadow-primary-500/20 mb-4">
+          <div className="inline-flex w-16 h-16 rounded-2xl bg-gradient-to-tr from-primary-500 to-primary-400 text-white items-center justify-center shadow-lg shadow-primary-500/20 mb-4">
             <Languages className="w-8 h-8" aria-hidden="true" />
           </div>
           <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">
-            Chào mừng đến với <span className="text-primary-600">ChinaEasy</span>
+            Chào mừng đến với <span className="text-primary-500">Hanzi4u</span>
           </h2>
           <p className="text-sm text-gray-500 mt-1">
-            Nền tảng học tiếng Trung sơ cấp HSK chuẩn hóa cho người Việt
+            Nền tảng học tiếng Trung thích ứng chuẩn HSK 3.0 dành cho người Việt
           </p>
         </div>
 

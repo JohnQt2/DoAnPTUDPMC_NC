@@ -34,15 +34,15 @@ const AppContent: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-primary-50/40 to-white">
         <div className="flex flex-col items-center gap-3">
           <span
             aria-hidden="true"
-            className="w-12 h-12 rounded-2xl bg-primary-600 text-white flex items-center justify-center font-chinese font-black text-2xl shadow-lg motion-safe:animate-pulse"
+            className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-primary-500 to-primary-400 text-white flex items-center justify-center font-chinese font-black text-2xl shadow-lg shadow-primary-500/20 motion-safe:animate-pulse"
           >
-            中
+            汉
           </span>
-          <span className="text-sm font-bold text-gray-600">Đang khởi tạo ChinaEasy...</span>
+          <span className="text-sm font-bold text-gray-600">Đang khởi tạo Hanzi4u...</span>
         </div>
       </div>
     );
@@ -69,38 +69,38 @@ const AppContent: React.FC = () => {
     const redirectUrl = `#/login?redirect=${encodeURIComponent(currentHash)}`;
     return (
       <div className="max-w-xl mx-auto my-16 px-4">
-        <div className="bg-white rounded-3xl p-8 sm:p-10 border border-gray-200/80 shadow-xl shadow-gray-200/50 text-center space-y-6">
-          <div className="w-16 h-16 rounded-3xl bg-primary-50 text-primary-600 mx-auto flex items-center justify-center shadow-inner">
+        <div className="bg-white rounded-3xl p-8 sm:p-10 border border-primary-100 shadow-xl shadow-primary-100/50 text-center space-y-6">
+          <div className="w-16 h-16 rounded-3xl bg-primary-50 text-primary-500 mx-auto flex items-center justify-center shadow-inner">
             <Lock aria-hidden="true" className="w-8 h-8" />
           </div>
 
           <div className="space-y-2">
-            <span className="px-3 py-1 rounded-full bg-primary-50 text-primary-700 text-xs font-bold uppercase tracking-wider">
-              Yêu cầu đăng nhập
+            <span className="px-3 py-1 rounded-full bg-primary-50 text-primary-600 text-xs font-bold uppercase tracking-wider">
+              Cổng Học Viên Hanzi4u
             </span>
             <h2 className="text-2xl font-black text-gray-900 tracking-tight">
-              Bắt Đầu Hành Trình Học Tiếng Trung
+              Đăng Nhập Không Gian Học Tập Cá Nhân
             </h2>
             <p className="text-sm text-gray-600 leading-relaxed max-w-md mx-auto">
-              Trang bạn vừa truy cập yêu cầu tài khoản học viên để hệ thống ghi nhận kết quả, đo cao độ giọng nói và lưu tiến độ ôn tập ngắt quãng (SM-2).
+              Đăng nhập để mở lộ trình thích ứng HSK 3.0, lưu điểm luyện viết chữ Hán, đo cao độ giọng nói F0 và đồng bộ thẻ nhớ SRS của riêng bạn.
             </p>
           </div>
 
           <div className="space-y-3 pt-2">
             <a
               href={redirectUrl}
-              className="w-full min-h-[48px] flex items-center justify-center gap-2 py-3.5 px-6 rounded-2xl bg-primary-600 hover:bg-primary-700 active:scale-[0.98] text-white font-bold text-sm shadow-md shadow-primary-600/20 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2"
+              className="w-full min-h-[48px] flex items-center justify-center gap-2 py-3.5 px-6 rounded-2xl bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 active:scale-[0.98] text-white font-bold text-sm shadow-md shadow-primary-500/20 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
             >
-              <span>Đăng Nhập / Tạo Tài Khoản Ngay</span>
+              <span>Đăng Nhập / Tạo Tài Khoản Học Thử</span>
               <ArrowRight aria-hidden="true" className="w-4 h-4" />
             </a>
 
             <a
               href="#/"
-              className="w-full min-h-[44px] flex items-center justify-center gap-2 py-3 px-6 rounded-2xl border border-gray-200 hover:bg-gray-50 text-gray-700 font-semibold text-xs transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600"
+              className="w-full min-h-[44px] flex items-center justify-center gap-2 py-3 px-6 rounded-2xl border border-primary-100 hover:bg-primary-50/50 text-gray-700 font-semibold text-xs transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
             >
-              <Home aria-hidden="true" className="w-4 h-4 text-gray-400" />
-              <span>Quay Lại Trang Chủ Giới Thiệu</span>
+              <Home aria-hidden="true" className="w-4 h-4 text-primary-400" />
+              <span>Quay Lại Trang Chủ Hanzi4u</span>
             </a>
           </div>
         </div>
@@ -112,7 +112,6 @@ const AppContent: React.FC = () => {
   // 2. AUTHENTICATED USER ROUTES
   // ──────────────────────────────────────────────────────────────────────────
   const renderCurrentPage = () => {
-    // If logged in user opens root or landing -> go straight to courses
     if (basePath === '#/' || basePath === '' || basePath === '#/landing' || basePath === '#/login') {
       return <CourseListPage />;
     }
@@ -163,7 +162,7 @@ const AppContent: React.FC = () => {
       if (!canAccessCMS) {
         return (
           <div className="max-w-lg mx-auto my-20 px-4 text-center space-y-5">
-            <div className="w-16 h-16 rounded-3xl bg-red-50 text-red-600 mx-auto flex items-center justify-center">
+            <div className="w-16 h-16 rounded-3xl bg-primary-50 text-primary-600 mx-auto flex items-center justify-center">
               <ShieldAlert className="w-8 h-8" />
             </div>
             <h2 className="text-2xl font-black text-gray-900">403 - Không Có Quyền Truy Cập</h2>
@@ -172,7 +171,7 @@ const AppContent: React.FC = () => {
             </p>
             <a
               href="#/courses"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-primary-600 hover:bg-primary-700 text-white font-bold text-sm shadow-md transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-primary-500 hover:bg-primary-600 text-white font-bold text-sm shadow-md transition-all cursor-pointer"
             >
               <span>Về Trang Khóa Học</span>
             </a>
@@ -182,16 +181,32 @@ const AppContent: React.FC = () => {
       return <AdminCMSPage />;
     }
 
-    // Default: Course List Page
     return <CourseListPage />;
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 text-gray-900 font-sans">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-primary-50/30 via-white to-white text-gray-900 font-sans">
       <Navbar currentPath={currentHash} />
       <main className="flex-1 pb-16">{renderCurrentPage()}</main>
-      <footer className="border-t border-gray-200 bg-white py-6 text-center text-xs text-gray-400">
-        <p>© 2026 ChinaEasy - Nền Tảng Học Tiếng Trung Sơ Cấp. Kiến trúc Modular Monolith chuẩn hóa theo báo cáo kỹ thuật.</p>
+      <footer className="border-t border-primary-100 bg-white py-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500">
+          <div className="flex items-center gap-2.5">
+            <span className="w-7 h-7 rounded-xl bg-primary-500 text-white flex items-center justify-center font-chinese font-black text-sm">
+              汉
+            </span>
+            <span className="font-bold text-gray-800">
+              Hanzi<span className="text-primary-500">4u</span>
+            </span>
+            <span className="text-gray-400">• Nền Tảng Học Tiếng Trung Thông Minh Chuẩn HSK 3.0</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <a href="#/courses" className="hover:text-primary-600 font-medium">Lộ trình HSK</a>
+            <a href="#/pinyin" className="hover:text-primary-600 font-medium">Bảng Pinyin</a>
+            <a href="#/characters" className="hover:text-primary-600 font-medium">Bảng Trắng Chữ Hán</a>
+            <a href="#/srs" className="hover:text-primary-600 font-medium">Ôn tập SRS</a>
+          </div>
+          <p className="text-gray-400">© 2026 Hanzi4u (hanzi4u.id.vn). All rights reserved.</p>
+        </div>
       </footer>
     </div>
   );

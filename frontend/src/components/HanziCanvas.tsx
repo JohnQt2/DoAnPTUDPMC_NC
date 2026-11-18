@@ -108,7 +108,7 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({
     ctx.lineWidth = 10;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    ctx.strokeStyle = '#C41E3A'; // Chinese Red brush
+    ctx.strokeStyle = '#E54848'; // Hanzi4u Soft Coral Red brush
     ctx.lineTo(x, y);
     ctx.stroke();
   };
@@ -187,7 +187,7 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({
                     key={idx}
                     d={path}
                     fill="none"
-                    stroke={isCurrent ? '#C41E3A' : isDrawn ? '#333333' : '#e5e7eb'}
+                    stroke={isCurrent ? '#E54848' : isDrawn ? '#333333' : '#e5e7eb'}
                     strokeWidth={isCurrent ? '7' : '5'}
                     strokeLinecap="round"
                     strokeLinejoin="round"

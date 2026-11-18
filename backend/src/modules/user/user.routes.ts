@@ -21,10 +21,54 @@ router.get(
   userController.getProfile
 );
 
+// Legacy PUT (giữ nguyên để không phá frontend cũ)
 router.put(
   '/me',
   authenticate,
   userController.updateProfile
+);
+
+/**
+ * PATCH /users/profile hoặc /users/me
+ * Cập nhật thông tin cá nhân & thông số học tập.
+ * Chặn ghi đè trường nhạy cảm qua Zod .strict().
+ */
+router.patch(
+  '/me',
+  authenticate,
+  userController.patchProfile
+);
+
+router.patch(
+  '/profile',
+  authenticate,
+  userController.patchProfile
+);
+
+router.get(
+  '/profile',
+  authenticate,
+  userController.getProfile
+);
+
+/**
+ * POST /users/survey — Tiếp nhận khảo sát ban đầu (4 trường chính).
+ * Lưu UserLearningSurveys + UserRoadmaps trong 1 transaction.
+ */
+router.post(
+  '/survey',
+  authenticate,
+  userController.submitSurvey
+);
+
+/**
+ * GET /users/roadmap/active — Lộ trình đang hoạt động.
+ * Phải đặt TRƯỚC /me/roadmap để tránh bị route động `/me/*` bắt nhầm.
+ */
+router.get(
+  '/roadmap/active',
+  authenticate,
+  userController.getActiveRoadmap
 );
 
 /**

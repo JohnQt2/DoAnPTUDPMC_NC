@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 /**
- * Cập nhật hồ sơ cá nhân
+ * Cập nhật hồ sơ cá nhân (PUT /users/me — legacy, chỉ cho display_name & avatar)
  */
 export const UpdateProfileDto = z.object({
   display_name: z
@@ -14,6 +14,132 @@ export const UpdateProfileDto = z.object({
 
   avatar_resource_id: z.number().int().positive().optional(),
 });
+
+/**
+ * PATCH /users/profile hoặc PATCH /users/me
+ * Cho phép cập nhật thông tin cá nhân và thông số học tập.
+ * Chặn tuyệt đối các trường nhạy cảm: id, role, password_hash, is_verified, status.
+ */
+export const PatchProfileDto = z
+  .object({
+    display_name: z
+      .string()
+      .min(2, 'Tên hiển thị tối thiểu 2 ký tự.')
+      .max(50, 'Tên hiển thị tối đa 50 ký tự.')
+      .optional(),
+
+    avatar_url: z
+      .string()
+      .url('Đường dẫn ảnh đại diện không hợp lệ.')
+      .optional(),
+
+    phone: z
+      .string()
+      .regex(/^\+?[0-9]{7,15}$/, 'Số điện thoại không hợp lệ.')
+      .optional()
+      .nullable(),
+
+    bio: z
+      .string()
+      .max(500, 'Giới thiệu bản thân tối đa 500 ký tự.')
+      .optional()
+      .nullable(),
+
+    // Thông số học tập có thể cập nhật qua PATCH profile
+    daily_available_minutes: z
+      .number()
+      .int('Thời gian học mỗi ngày phải là số nguyên.')
+      .min(5, 'Thời gian học tối thiểu là 5 phút mỗi ngày.')
+      .max(240, 'Thời gian học tối đa là 240 phút mỗi ngày.')
+      .optional(),
+
+    target_goal: z
+      .enum(['HSK1', 'HSK2', 'HSK3', 'HSK4', 'HSK5', 'HSK6', 'COMMUNICATION', 'HOBBY'])
+      .optional(),
+
+    expected_duration_months: z
+      .number()
+      .int()
+      .min(1)
+      .max(36)
+      .optional(),
+
+    reminder_time: z
+      .string()
+      .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, 'Giờ nhắc học phải có định dạng HH:mm.')
+      .optional(),
+  })
+  .strict(); // Từ chối mọi trường không được khai báo (bảo vệ id, role, password_hash, ...)
+
+export type PatchProfileInput = z.infer<typeof PatchProfileDto>;
+
+/**
+ * POST /users/survey — Khảo sát ban đầu (4 trường chính theo spec)
+ * Tiếp nhận, validate và lưu khảo sát + tạo lộ trình trong 1 transaction.
+ */
+export const SurveyOnboardingDto = z
+  .object({
+    /**
+     * Mục tiêu học tập
+     */
+    goal: z.enum(
+      ['HSK1', 'HSK2', 'HSK3', 'HSK4', 'HSK5', 'HSK6', 'COMMUNICATION', 'HOBBY'],
+      { errorMap: () => ({ message: 'Mục tiêu học tập không hợp lệ.' }) }
+    ),
+
+    /**
+     * Trình độ hiện tại (hỗ trợ người mới bắt đầu và HSK1–HSK6)
+     */
+    current_level: z.enum(
+      ['ZERO', 'HSK1', 'HSK2', 'HSK3', 'HSK4', 'HSK5', 'HSK6'],
+      { errorMap: () => ({ message: 'Trình độ hiện tại không hợp lệ. Giá trị hợp lệ: ZERO, HSK1–HSK6.' }) }
+    ),
+
+    /**
+     * Thời gian học dự kiến (tháng)
+     */
+    expected_duration: z
+      .number({
+        required_error: 'Vui lòng nhập thời gian học dự kiến (tháng).',
+        invalid_type_error: 'Thời gian học dự kiến phải là số nguyên.',
+      })
+      .int('Thời gian học dự kiến phải là số nguyên.')
+      .min(1, 'Thời gian học dự kiến tối thiểu là 1 tháng.')
+      .max(36, 'Thời gian học dự kiến tối đa là 36 tháng.'),
+
+    /**
+     * Thời gian rảnh mỗi ngày (phút) — số nguyên dương
+     */
+    daily_study_minutes: z
+      .number({
+        required_error: 'Vui lòng nhập thời gian rảnh mỗi ngày (phút).',
+        invalid_type_error: 'Thời gian rảnh mỗi ngày phải là số nguyên dương.',
+      })
+      .int('Thời gian rảnh mỗi ngày phải là số nguyên.')
+      .positive('Thời gian rảnh mỗi ngày phải là số nguyên dương.')
+      .min(5, 'Thời gian học tối thiểu là 5 phút mỗi ngày.')
+      .max(240, 'Thời gian học tối đa là 240 phút mỗi ngày.'),
+  })
+  .superRefine((data, ctx) => {
+    // Người mới bắt đầu (ZERO) có thể chọn bất kỳ mục tiêu nào
+    if (data.current_level === 'ZERO') return;
+
+    // Chỉ kiểm tra khi mục tiêu là chứng chỉ HSK
+    if (!data.goal.startsWith('HSK')) return;
+
+    const currentNum = Number(data.current_level.replace('HSK', ''));
+    const goalNum = Number(data.goal.replace('HSK', ''));
+
+    if (goalNum <= currentNum) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['goal'],
+        message: 'Mục tiêu HSK phải cao hơn trình độ hiện tại.',
+      });
+    }
+  });
+
+export type SurveyOnboardingInput = z.infer<typeof SurveyOnboardingDto>;
 
 /**
  * DTO onboarding cũ.

@@ -3,6 +3,8 @@ import { AppError } from '../../shared/errors/app-error';
 import type {
   CreateRoadmapProposalInput,
   LearningSurveyInput,
+  SurveyOnboardingInput,
+  PatchProfileInput,
 } from './user.dto';
 
 export class UserService {
@@ -698,6 +700,301 @@ export class UserService {
     });
 
     return user;
+  }
+  /**
+   * PATCH /users/profile — Cập nhật thông tin cá nhân và thông số học tập.
+   * Chặn ghi đè trường nhạy cảm (id, role, password_hash, status).
+   */
+  async patchProfile(userId: number, data: PatchProfileInput) {
+    const user = await prisma.users.findUnique({
+      where: { user_id: userId },
+      select: { user_id: true, display_name: true, avatar_resource_id: true },
+    });
+
+    if (!user) throw AppError.notFound('Không tìm thấy người dùng.');
+
+    let avatarResourceId: number | undefined;
+
+    if (data.avatar_url) {
+      const timestamp = Date.now();
+      const media = await prisma.mediaResources.create({
+        data: {
+          file_name: `avatar_${userId}_${timestamp}.jpg`,
+          storage_key: `avatars/user_${userId}_${timestamp}`,
+          public_url: data.avatar_url,
+          mime_type: 'image/jpeg',
+          resource_type: 'IMAGE',
+          uploaded_by: userId,
+        },
+      });
+      avatarResourceId = media.resource_id;
+    }
+
+    // Chỉ cập nhật trường Users
+    const updatedUser = await prisma.users.update({
+      where: { user_id: userId },
+      data: {
+        ...(data.display_name !== undefined ? { display_name: data.display_name } : {}),
+        ...(avatarResourceId !== undefined ? { avatar_resource_id: avatarResourceId } : {}),
+      },
+      include: { avatarResource: true },
+    });
+
+    // Cập nhật survey nếu có thay đổi thông số học tập
+    const hasLearningUpdate =
+      data.daily_available_minutes !== undefined ||
+      data.target_goal !== undefined ||
+      data.expected_duration_months !== undefined;
+
+    if (hasLearningUpdate) {
+      await prisma.userLearningSurveys.updateMany({
+        where: { user_id: userId },
+        data: {
+          ...(data.daily_available_minutes !== undefined
+            ? { daily_available_minutes: data.daily_available_minutes }
+            : {}),
+          ...(data.target_goal !== undefined ? { target_goal: data.target_goal } : {}),
+          ...(data.expected_duration_months !== undefined
+            ? { expected_duration_months: data.expected_duration_months }
+            : {}),
+        },
+      });
+
+      // Nếu cập nhật commitment mins → đồng bộ roadmap đang active
+      if (data.daily_available_minutes !== undefined) {
+        await prisma.userRoadmaps.updateMany({
+          where: { user_id: userId, is_active: true },
+          data: { daily_commitment_mins: data.daily_available_minutes },
+        });
+      }
+    }
+
+    // Cập nhật reminder_time nếu được cung cấp
+    if (data.reminder_time !== undefined) {
+      await prisma.notificationSettings.upsert({
+        where: { user_id: userId },
+        create: {
+          user_id: userId,
+          reminder_time: data.reminder_time,
+          notify_email: true,
+          notify_webpush: false,
+        },
+        update: { reminder_time: data.reminder_time },
+      });
+    }
+
+    await prisma.auditLogs.create({
+      data: {
+        user_id: userId,
+        action_type: 'PATCH_PROFILE',
+        target_entity: 'Users',
+        target_id: userId.toString(),
+        new_value: JSON.stringify(data),
+      },
+    });
+
+    return {
+      userId: updatedUser.user_id,
+      displayName: updatedUser.display_name,
+      avatarUrl: updatedUser.avatarResource?.public_url ?? null,
+    };
+  }
+
+  /**
+   * POST /users/survey — Tiếp nhận khảo sát ban đầu (4 trường chính).
+   * Thực hiện trong prisma.$transaction:
+   *   1. Upsert UserLearningSurveys
+   *   2. Deactivate roadmaps cũ
+   *   3. Tạo UserRoadmaps mới dựa trên trình độ hiện tại & mục tiêu
+   */
+  async submitSurveyAndRoadmap(userId: number, data: SurveyOnboardingInput) {
+    const user = await prisma.users.findUnique({
+      where: { user_id: userId },
+      select: { user_id: true, status: true },
+    });
+
+    if (!user) throw AppError.notFound('Không tìm thấy người dùng.');
+    if (user.status !== 'ACTIVE') {
+      throw AppError.forbidden('Tài khoản không ở trạng thái hoạt động.');
+    }
+
+    // Xác định course phù hợp với mục tiêu
+    const targetLevel = data.goal.startsWith('HSK') ? data.goal : 'HSK1';
+    let targetCourse = await prisma.courses.findFirst({
+      where: { level: targetLevel },
+    });
+
+    // Fallback: tìm course cấp độ gần nhất hoặc bất kỳ
+    if (!targetCourse) {
+      const levels = ['HSK1', 'HSK2', 'HSK3', 'HSK4', 'HSK5', 'HSK6'];
+      for (const lvl of levels) {
+        targetCourse = await prisma.courses.findFirst({ where: { level: lvl } });
+        if (targetCourse) break;
+      }
+    }
+
+    if (!targetCourse) {
+      targetCourse = await prisma.courses.findFirst();
+    }
+
+    if (!targetCourse) {
+      throw AppError.notFound(
+        'Hệ thống chưa có khóa học nào. Vui lòng liên hệ quản trị viên.'
+      );
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Upsert khảo sát — lưu đầy đủ 4 trường theo spec
+      const survey = await tx.userLearningSurveys.upsert({
+        where: { user_id: userId },
+        create: {
+          user_id: userId,
+          current_level: data.current_level,
+          target_goal: data.goal,
+          expected_duration_months: data.expected_duration,
+          daily_available_minutes: data.daily_study_minutes,
+          learning_purposes_json: JSON.stringify([]),
+          preferred_skills_json: JSON.stringify([]),
+        },
+        update: {
+          current_level: data.current_level,
+          target_goal: data.goal,
+          expected_duration_months: data.expected_duration,
+          daily_available_minutes: data.daily_study_minutes,
+        },
+      });
+
+      // 2. Deactivate toàn bộ roadmap đang hoạt động
+      await tx.userRoadmaps.updateMany({
+        where: { user_id: userId, is_active: true },
+        data: { is_active: false, status: 'REPLACED' },
+      });
+
+      // 3. Tạo roadmap mới được xác nhận ngay lập tức
+      const roadmap = await tx.userRoadmaps.create({
+        data: {
+          user_id: userId,
+          course_id: targetCourse!.course_id,
+          starting_level: data.current_level,
+          target_goal: data.goal,
+          daily_commitment_mins: data.daily_study_minutes,
+          expected_duration_months: data.expected_duration,
+          status: 'CONFIRMED',
+          is_active: true,
+          confirmed_at: new Date(),
+        },
+        include: { course: true },
+      });
+
+      // 4. Ghi audit log
+      await tx.auditLogs.create({
+        data: {
+          user_id: userId,
+          action_type: 'SURVEY_AND_ROADMAP_CREATED',
+          target_entity: 'UserRoadmaps',
+          target_id: roadmap.roadmap_id.toString(),
+          new_value: JSON.stringify({
+            survey: {
+              current_level: data.current_level,
+              goal: data.goal,
+              expected_duration: data.expected_duration,
+              daily_study_minutes: data.daily_study_minutes,
+            },
+            roadmap: {
+              roadmap_id: roadmap.roadmap_id,
+              course_id: roadmap.course_id,
+              status: roadmap.status,
+            },
+          }),
+        },
+      });
+
+      return { survey, roadmap };
+    });
+
+    return {
+      message: 'Đã lưu khảo sát và tạo lộ trình học tập cá nhân thành công!',
+      survey: {
+        surveyId: result.survey.survey_id,
+        currentLevel: result.survey.current_level,
+        goal: result.survey.target_goal,
+        expectedDurationMonths: result.survey.expected_duration_months,
+        dailyStudyMinutes: result.survey.daily_available_minutes,
+      },
+      roadmap: {
+        roadmapId: result.roadmap.roadmap_id,
+        courseId: result.roadmap.course_id,
+        courseTitle: result.roadmap.course.title,
+        courseLevel: result.roadmap.course.level,
+        startingLevel: result.roadmap.starting_level,
+        targetGoal: result.roadmap.target_goal,
+        dailyCommitmentMins: result.roadmap.daily_commitment_mins,
+        expectedDurationMonths: result.roadmap.expected_duration_months,
+        status: result.roadmap.status,
+        isActive: result.roadmap.is_active,
+        confirmedAt: result.roadmap.confirmed_at,
+      },
+    };
+  }
+
+  /**
+   * GET /users/roadmap/active — Lấy lộ trình đang hoạt động.
+   * Trả về 404 nếu chưa có khảo sát / chưa tạo lộ trình.
+   */
+  async getActiveRoadmap(userId: number) {
+    const roadmap = await prisma.userRoadmaps.findFirst({
+      where: { user_id: userId, is_active: true },
+      orderBy: { created_at: 'desc' },
+      include: { course: true },
+    });
+
+    if (!roadmap) {
+      // Kiểm tra xem học viên đã làm khảo sát chưa
+      const survey = await prisma.userLearningSurveys.findUnique({
+        where: { user_id: userId },
+      });
+
+      if (!survey) {
+        throw AppError.notFound(
+          'Bạn chưa thực hiện khảo sát ban đầu. Vui lòng hoàn thành khảo sát để nhận lộ trình học tập.',
+          'SURVEY_NOT_FOUND'
+        );
+      }
+
+      throw AppError.notFound(
+        'Chưa có lộ trình học tập đang hoạt động. Vui lòng liên hệ quản trị viên.',
+        'ROADMAP_NOT_FOUND'
+      );
+    }
+
+    const survey = await prisma.userLearningSurveys.findUnique({
+      where: { user_id: userId },
+    });
+
+    return {
+      roadmapId: roadmap.roadmap_id,
+      courseId: roadmap.course_id,
+      courseTitle: roadmap.course.title,
+      courseCode: roadmap.course.code,
+      courseLevel: roadmap.course.level,
+      startingLevel: roadmap.starting_level,
+      targetGoal: roadmap.target_goal,
+      dailyCommitmentMins: roadmap.daily_commitment_mins,
+      expectedDurationMonths: roadmap.expected_duration_months,
+      status: roadmap.status,
+      isActive: roadmap.is_active,
+      confirmedAt: roadmap.confirmed_at,
+      createdAt: roadmap.created_at,
+      updatedAt: roadmap.updated_at,
+      survey: survey
+        ? {
+            currentLevel: survey.current_level,
+            goal: survey.target_goal,
+            expectedDurationMonths: survey.expected_duration_months,
+            dailyStudyMinutes: survey.daily_available_minutes,
+          }
+        : null,
+    };
   }
 }
 

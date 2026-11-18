@@ -8,7 +8,9 @@ import { userService } from './user.service';
 
 import {
   UpdateProfileDto,
+  PatchProfileDto,
   OnboardingSurveyDto,
+  SurveyOnboardingDto,
   UpdateNotificationsDto,
   AdminUpdateUserDto,
   UpsertLearningSurveyDto,
@@ -480,6 +482,83 @@ export class UserController {
 
           user: updated,
         },
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  /**
+   * PATCH /users/profile hoặc PATCH /users/me
+   * Cập nhật thông tin cá nhân và thông số học tập.
+   * Chặn ghi đè trường nhạy cảm qua Zod .strict().
+   */
+  patchProfile = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const userId = req.user!.userId;
+
+      const dto = PatchProfileDto.parse(req.body);
+
+      const updated = await userService.patchProfile(userId, dto);
+
+      res.status(200).json({
+        success: true,
+        data: {
+          message: 'Cập nhật hồ sơ thành công.',
+          profile: updated,
+        },
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  /**
+   * POST /users/survey — Tiếp nhận khảo sát ban đầu (4 trường chính).
+   * Lưu UserLearningSurveys + tạo UserRoadmaps trong 1 transaction.
+   */
+  submitSurvey = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const userId = req.user!.userId;
+
+      const dto = SurveyOnboardingDto.parse(req.body);
+
+      const result = await userService.submitSurveyAndRoadmap(userId, dto);
+
+      res.status(200).json({
+        success: true,
+        data: result,
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  /**
+   * GET /users/roadmap/active — Lấy lộ trình đang hoạt động.
+   * Trả về 404 nếu chưa có khảo sát hoặc chưa tạo lộ trình.
+   */
+  getActiveRoadmap = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const userId = req.user!.userId;
+
+      const roadmap = await userService.getActiveRoadmap(userId);
+
+      res.status(200).json({
+        success: true,
+        data: roadmap,
       });
     } catch (err) {
       next(err);

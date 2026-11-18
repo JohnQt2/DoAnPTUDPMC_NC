@@ -33,8 +33,8 @@ export const OnboardingPreviewModal: React.FC<OnboardingPreviewModalProps> = ({
   onEditSurvey,
   onConfirmRoadmap,
 }) => {
-  const levelStyle =
-    HSK_LEVEL_COLORS[previewData.recommendedCourse.level] || HSK_LEVEL_COLORS.HSK1;
+  const courseLevel = previewData?.recommendedCourse?.level || (previewData as any)?.courseLevel || 'HSK1';
+  const levelStyle = HSK_LEVEL_COLORS[courseLevel] || HSK_LEVEL_COLORS.HSK1;
 
   return (
     <div className="space-y-6">

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
+import { useAuth } from '../../context/AuthContext';
 import {
   CheckCircle2,
   Play,
@@ -16,6 +17,7 @@ import { OnboardingSurveyForm } from './OnboardingSurveyForm';
 import { OnboardingPreviewModal } from './OnboardingPreviewModal';
 
 export const OnboardingRoadmapPage: React.FC = () => {
+  const { markOnboardingCompleted } = useAuth();
   const [mode, setMode] = useState<'survey' | 'preview' | 'active_roadmap'>('survey');
   const [surveyStep, setSurveyStep] = useState<1 | 2 | 3 | 4>(1);
 
@@ -65,71 +67,47 @@ export const OnboardingRoadmapPage: React.FC = () => {
     }
   };
 
-  const handleGeneratePreview = async () => {
+  const handleFinishSurvey = async () => {
+    setIsConfirming(true);
     setIsGeneratingPreview(true);
     setErrorMsg(null);
     try {
-      const preview = await api.post<RoadmapPreviewData>('/users/onboarding/preview', {
+      await api.post<any>('/users/onboarding', {
         starting_level: startingLevel,
         target_goal: targetGoal,
         daily_commitment_mins: dailyCommitmentMins,
         target_weeks: targetWeeks,
         reminder_time: reminderTime,
       });
-      setPreviewData(preview);
-      setMode('preview');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Không thể tạo lộ trình đề xuất. Vui lòng thử lại.');
-    } finally {
-      setIsGeneratingPreview(false);
-    }
-  };
-
-  const handleConfirmRoadmap = async (openFirstLessonImmediately = true) => {
-    setIsConfirming(true);
-    setErrorMsg(null);
-    try {
-      const res = await api.post<any>('/users/onboarding', {
-        starting_level: startingLevel,
-        target_goal: targetGoal,
-        daily_commitment_mins: dailyCommitmentMins,
-        target_weeks: targetWeeks,
-        reminder_time: reminderTime,
-      });
-
-      const firstLessonId =
-        res?.recommendedFirstLessonId ||
-        previewData?.recommendedFirstLessonId ||
-        1;
-
-      if (openFirstLessonImmediately && firstLessonId) {
-        window.location.hash = `#/lessons/${firstLessonId}`;
-        return;
-      }
-
-      await checkExistingRoadmap();
+      markOnboardingCompleted();
+      window.location.hash = '#/today';
     } catch (err: any) {
       setErrorMsg(err.message || 'Không thể lưu lộ trình cá nhân. Vui lòng thử lại.');
     } finally {
       setIsConfirming(false);
+      setIsGeneratingPreview(false);
     }
+  };
+
+  const handleConfirmRoadmap = async () => {
+    await handleFinishSurvey();
   };
 
   const handleSkipSurvey = async () => {
     setIsConfirming(true);
     setErrorMsg(null);
     try {
-      const res = await api.post<any>('/users/onboarding', {
+      await api.post<any>('/users/onboarding', {
         starting_level: 'ZERO',
         target_goal: 'HSK1',
         daily_commitment_mins: 15,
         reminder_time: '20:00',
       });
-      const firstLessonId = res?.recommendedFirstLessonId || 1;
-      window.location.hash = `#/lessons/${firstLessonId}`;
+      markOnboardingCompleted();
+      window.location.hash = '#/today';
     } catch {
-      window.location.hash = '#/courses';
+      markOnboardingCompleted();
+      window.location.hash = '#/today';
     } finally {
       setIsConfirming(false);
     }
@@ -184,7 +162,7 @@ export const OnboardingRoadmapPage: React.FC = () => {
           setReminderTime={setReminderTime}
           isGeneratingPreview={isGeneratingPreview}
           isConfirming={isConfirming}
-          onGeneratePreview={handleGeneratePreview}
+          onGeneratePreview={handleFinishSurvey}
           onSkipSurvey={handleSkipSurvey}
         />
       )}
@@ -202,7 +180,7 @@ export const OnboardingRoadmapPage: React.FC = () => {
             setMode('survey');
             setSurveyStep(1);
           }}
-          onConfirmRoadmap={() => handleConfirmRoadmap(true)}
+          onConfirmRoadmap={handleConfirmRoadmap}
         />
       )}
 

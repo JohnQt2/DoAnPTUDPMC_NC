@@ -297,7 +297,7 @@ export const OnboardingSurveyForm: React.FC<OnboardingSurveyFormProps> = ({
             onClick={onGeneratePreview}
             className="w-full sm:w-auto px-6 py-3 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-bold text-sm shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
           >
-            <span>{isGeneratingPreview ? 'Đang tạo lộ trình...' : 'Xem lộ trình đề xuất'}</span>
+            <span>{isGeneratingPreview ? 'Đang lưu lộ trình...' : 'Hoàn tất & Vào trang chủ'}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         )}

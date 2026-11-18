@@ -18,6 +18,7 @@ export class UserService {
           take: 1,
         },
         avatarResource: true,
+        profile: true,
       },
     });
 
@@ -136,17 +137,47 @@ export class UserService {
       };
     }
 
+    const userProfile = user.profile;
+
     return {
+      id: user.user_id,
       userId: user.user_id,
       email: user.email,
+      fullName: user.display_name,
+      full_name: user.display_name,
       displayName: user.display_name,
+      display_name: user.display_name,
       role: user.role,
       status: user.status,
       avatarUrl: user.avatarResource?.public_url || null,
+      avatar_url: user.avatarResource?.public_url || null,
       createdAt: user.created_at,
+      created_at: user.created_at,
       lastLoginAt: user.last_login_at,
+      last_login_at: user.last_login_at,
+      profile: userProfile
+        ? {
+            profileId: userProfile.profile_id,
+            profile_id: userProfile.profile_id,
+            goal: userProfile.goal,
+            current_level: userProfile.current_level,
+            expected_duration: userProfile.expected_duration,
+            daily_study_minutes: userProfile.daily_study_minutes,
+            phone: userProfile.phone,
+            bio: userProfile.bio,
+            createdAt: userProfile.created_at,
+            updatedAt: userProfile.updated_at,
+          }
+        : null,
+      goal: userProfile?.goal || activeRoadmapData?.targetGoal || null,
+      current_level: userProfile?.current_level || activeRoadmapData?.startingLevel || null,
+      expected_duration: userProfile?.expected_duration || null,
+      daily_study_minutes: userProfile?.daily_study_minutes || activeRoadmapData?.dailyCommitmentMins || 15,
+      phone: userProfile?.phone || null,
+      bio: userProfile?.bio || null,
       completedLessonsCount,
       activeRoadmap: activeRoadmapData,
+      active_roadmap: activeRoadmapData,
       notificationSettings: user.notificationSettings
         ? {
             reminderTime: user.notificationSettings.reminder_time,
@@ -422,7 +453,21 @@ export class UserService {
 
   async updateProfile(
     userId: number,
-    data: { display_name?: string; avatar_url?: string; avatar_resource_id?: number }
+    data: {
+      full_name?: string;
+      display_name?: string;
+      avatar_url?: string;
+      avatar_resource_id?: number;
+      phone?: string | null;
+      bio?: string | null;
+      daily_study_minutes?: number;
+      daily_commitment_mins?: number;
+      goal?: string;
+      target_goal?: string;
+      expected_duration?: string;
+      current_level?: string;
+      starting_level?: string;
+    }
   ) {
     let avatarResourceId = data.avatar_resource_id;
 
@@ -440,14 +485,67 @@ export class UserService {
       avatarResourceId = media.resource_id;
     }
 
+    const nameToUpdate = data.full_name || data.display_name;
+
     const user = await prisma.users.update({
       where: { user_id: userId },
       data: {
-        ...(data.display_name !== undefined ? { display_name: data.display_name } : {}),
+        ...(nameToUpdate !== undefined ? { display_name: nameToUpdate } : {}),
         ...(avatarResourceId !== undefined ? { avatar_resource_id: avatarResourceId } : {}),
       },
-      include: { avatarResource: true },
+      include: {
+        avatarResource: true,
+        profile: true,
+      },
     });
+
+    const goal = data.goal || data.target_goal;
+    const level = data.current_level || data.starting_level;
+    const studyMins = data.daily_study_minutes ?? data.daily_commitment_mins;
+    const expectedDuration = data.expected_duration;
+
+    const hasProfileUpdates =
+      data.phone !== undefined ||
+      data.bio !== undefined ||
+      studyMins !== undefined ||
+      goal !== undefined ||
+      expectedDuration !== undefined ||
+      level !== undefined;
+
+    let updatedProfile = user.profile;
+    if (hasProfileUpdates) {
+      updatedProfile = await prisma.userProfiles.upsert({
+        where: { user_id: userId },
+        create: {
+          user_id: userId,
+          phone: data.phone || null,
+          bio: data.bio || null,
+          daily_study_minutes: studyMins || 15,
+          goal: goal || null,
+          expected_duration: expectedDuration || null,
+          current_level: level || null,
+        },
+        update: {
+          ...(data.phone !== undefined ? { phone: data.phone } : {}),
+          ...(data.bio !== undefined ? { bio: data.bio } : {}),
+          ...(studyMins !== undefined ? { daily_study_minutes: studyMins } : {}),
+          ...(goal !== undefined ? { goal } : {}),
+          ...(expectedDuration !== undefined ? { expected_duration: expectedDuration } : {}),
+          ...(level !== undefined ? { current_level: level } : {}),
+        },
+      });
+
+      // If daily study mins or goal was updated, also reflect in active roadmap
+      if (studyMins !== undefined || goal !== undefined) {
+        await prisma.userRoadmaps.updateMany({
+          where: { user_id: userId, is_active: true },
+          data: {
+            ...(studyMins !== undefined ? { daily_commitment_mins: studyMins } : {}),
+            ...(goal !== undefined ? { target_goal: goal } : {}),
+          },
+        });
+      }
+    }
 
     await prisma.auditLogs.create({
       data: {
@@ -460,9 +558,35 @@ export class UserService {
     });
 
     return {
+      id: user.user_id,
       userId: user.user_id,
+      email: user.email,
+      fullName: user.display_name,
+      full_name: user.display_name,
       displayName: user.display_name,
+      display_name: user.display_name,
+      role: user.role,
       avatarUrl: user.avatarResource?.public_url || null,
+      avatar_url: user.avatarResource?.public_url || null,
+      phone: updatedProfile?.phone || null,
+      bio: updatedProfile?.bio || null,
+      goal: updatedProfile?.goal || null,
+      current_level: updatedProfile?.current_level || null,
+      expected_duration: updatedProfile?.expected_duration || null,
+      daily_study_minutes: updatedProfile?.daily_study_minutes || null,
+      profile: updatedProfile
+        ? {
+            profileId: updatedProfile.profile_id,
+            profile_id: updatedProfile.profile_id,
+            phone: updatedProfile.phone,
+            bio: updatedProfile.bio,
+            goal: updatedProfile.goal,
+            current_level: updatedProfile.current_level,
+            expected_duration: updatedProfile.expected_duration,
+            daily_study_minutes: updatedProfile.daily_study_minutes,
+            updatedAt: updatedProfile.updated_at,
+          }
+        : null,
     };
   }
 
@@ -496,6 +620,24 @@ export class UserService {
 
     // 3. Thực thi lưu trữ nguyên tử trong transaction
     const result = await prisma.$transaction(async (tx) => {
+      // 3.0. Lưu / cập nhật (upsert) đầy đủ thông tin khảo sát vào bảng user_profiles theo userId
+      const surveyProfile = await tx.userProfiles.upsert({
+        where: { user_id: userId },
+        create: {
+          user_id: userId,
+          goal: data.goal || data.target_goal,
+          current_level: data.current_level || data.starting_level,
+          expected_duration: data.expected_duration || (data.target_weeks ? `${data.target_weeks} tuần` : '12 tuần'),
+          daily_study_minutes: data.daily_study_minutes || matched.dailyCommitmentMins,
+        },
+        update: {
+          goal: data.goal || data.target_goal,
+          current_level: data.current_level || data.starting_level,
+          expected_duration: data.expected_duration || (data.target_weeks ? `${data.target_weeks} tuần` : '12 tuần'),
+          daily_study_minutes: data.daily_study_minutes || matched.dailyCommitmentMins,
+        },
+      });
+
       // 3.1. Vô hiệu hóa lộ trình đang hoạt động trước đó (nếu có)
       await tx.userRoadmaps.updateMany({
         where: { user_id: userId, is_active: true },
@@ -627,6 +769,14 @@ export class UserService {
       }
 
       return {
+        profile: {
+          profileId: surveyProfile.profile_id,
+          profile_id: surveyProfile.profile_id,
+          goal: surveyProfile.goal,
+          current_level: surveyProfile.current_level,
+          expected_duration: surveyProfile.expected_duration,
+          daily_study_minutes: surveyProfile.daily_study_minutes,
+        },
         roadmap: {
           roadmapId: roadmap.roadmap_id,
           courseId: matched.courseId,

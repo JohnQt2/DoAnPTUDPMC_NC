@@ -15,20 +15,30 @@ const gmailOrSystemEmail = z
     }
   );
 
+export const RegisterDto = z.object({
+  email: z.string().email('Địa chỉ email không đúng định dạng.').trim().toLowerCase(),
+  password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự.'),
+  full_name: z.string().min(2, 'Tên hiển thị tối thiểu 2 ký tự.').max(100).optional(),
+  displayName: z.string().min(2).max(100).optional(),
+  display_name: z.string().min(2).max(100).optional(),
+  phone: z.string().optional(),
+  bio: z.string().optional(),
+});
+
 export const SendOtpDto = z.object({
-  email: gmailOrSystemEmail,
+  email: z.string().email('Địa chỉ email không đúng định dạng.').trim().toLowerCase(),
   password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự.').optional(),
   displayName: z.string().min(2, 'Tên hiển thị tối thiểu 2 ký tự.').max(50).optional(),
   mode: z.enum(['register', 'login']).optional(),
 });
 
 export const VerifyOtpDto = z.object({
-  email: gmailOrSystemEmail,
+  email: z.string().email('Địa chỉ email không đúng định dạng.').trim().toLowerCase(),
   otp: z.string().regex(/^\d{6}$/, 'Mã OTP phải gồm đúng 6 chữ số.'),
 });
 
 export const LoginPasswordDto = z.object({
-  email: gmailOrSystemEmail,
+  email: z.string().email('Địa chỉ email không đúng định dạng.').trim().toLowerCase(),
   password: z.string().min(1, 'Vui lòng nhập mật khẩu.'),
 });
 
@@ -47,6 +57,7 @@ export const RefreshTokenDto = z.object({
   refreshToken: z.string().optional(),
 });
 
+export type RegisterInput = z.infer<typeof RegisterDto>;
 export type SendOtpInput = z.infer<typeof SendOtpDto>;
 export type VerifyOtpInput = z.infer<typeof VerifyOtpDto>;
 export type LoginPasswordInput = z.infer<typeof LoginPasswordDto>;

@@ -21,6 +21,19 @@ export class UserController {
   updateProfile = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userId = req.user!.userId;
+      const FORBIDDEN_FIELDS = ['id', 'user_id', 'role', 'password_hash', 'password', 'is_verified', 'status'];
+      for (const f of FORBIDDEN_FIELDS) {
+        if (req.body && req.body[f] !== undefined) {
+          res.status(400).json({
+            success: false,
+            error: {
+              message: `Không được phép chỉnh sửa trường nhạy cảm: ${f}`,
+              code: 'FORBIDDEN_FIELD_MODIFICATION',
+            },
+          });
+          return;
+        }
+      }
       const dto = UpdateProfileDto.parse(req.body);
       const updated = await userService.updateProfile(userId, dto);
       res.status(200).json({
@@ -71,6 +84,16 @@ export class UserController {
     try {
       const userId = req.user!.userId;
       const roadmap = await userService.getActiveRoadmap(userId);
+      if (!roadmap) {
+        res.status(404).json({
+          success: false,
+          error: {
+            message: 'Học viên chưa thực hiện khảo sát hoặc chưa có lộ trình học tập đang hoạt động.',
+            code: 'ROADMAP_NOT_FOUND',
+          },
+        });
+        return;
+      }
       res.status(200).json({
         success: true,
         data: roadmap,

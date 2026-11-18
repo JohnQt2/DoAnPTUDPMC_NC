@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../../lib/api';
 import { HanziCanvas } from '../../components/HanziCanvas';
+import { PitchVisualizer } from '../../components/PitchVisualizer';
 import {
   BookOpen,
   Volume2,
@@ -16,8 +17,12 @@ import {
   EyeOff,
   Flame,
   Clock,
-  Layers,
-  Award,
+  Play,
+  Pause,
+  RotateCcw,
+  Gauge,
+  HelpCircle,
+  Lightbulb,
 } from 'lucide-react';
 
 interface VocabularyItem {
@@ -81,19 +86,29 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
   // Content Blocks Step-by-Step state
   const [currentBlockIdx, setCurrentBlockIdx] = useState(0);
 
-  // Dialogue toggle states
+  // Dialogue toggle & player states
   const [showPinyin, setShowPinyin] = useState(true);
   const [showTranslation, setShowTranslation] = useState(true);
+  const [speechRate, setSpeechRate] = useState<number>(0.85); // 0.75, 0.85, 1.0
   const [playingDialogueIdx, setPlayingDialogueIdx] = useState<number | null>(null);
+  const [isAutoPlayingDialogue, setIsAutoPlayingDialogue] = useState(false);
+  const autoPlayTimerRef = useRef<any>(null);
 
   // Hanzi practice selection
   const [selectedCharIdx, setSelectedCharIdx] = useState(0);
+
+  // Pinyin Pitch Visualizer interactive state
+  const [selectedPinyinTone, setSelectedPinyinTone] = useState<number>(1);
+  const [selectedPinyinSyllable, setSelectedPinyinSyllable] = useState<string>('mā');
 
   // Flashcard flip states for vocabulary tab
   const [flippedCards, setFlippedCards] = useState<Record<number, boolean>>({});
 
   useEffect(() => {
     loadLesson();
+    return () => {
+      if (autoPlayTimerRef.current) clearTimeout(autoPlayTimerRef.current);
+    };
   }, [lessonId]);
 
   const loadLesson = async () => {
@@ -113,22 +128,23 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
     }
   };
 
-  const playSpeech = (text: string, customAudioUrl?: string | null) => {
+  const playSpeech = (text: string, customAudioUrl?: string | null, customRate?: number) => {
     if (customAudioUrl) {
       const audio = new Audio(customAudioUrl);
-      audio.play().catch(() => playSpeechFallback(text));
+      audio.playbackRate = customRate ?? speechRate;
+      audio.play().catch(() => playSpeechFallback(text, customRate));
     } else {
-      playSpeechFallback(text);
+      playSpeechFallback(text, customRate);
     }
   };
 
-  const playSpeechFallback = (text: string) => {
+  const playSpeechFallback = (text: string, customRate?: number) => {
     try {
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'zh-CN';
-        utterance.rate = 0.85; // Slightly slower for language learners
+        utterance.rate = customRate ?? speechRate;
         window.speechSynthesis.speak(utterance);
       }
     } catch (e) {
@@ -141,6 +157,15 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
       ...prev,
       [idx]: !prev[idx],
     }));
+  };
+
+  const flipAllCards = (flipState: boolean) => {
+    if (!lesson) return;
+    const newFlips: Record<number, boolean> = {};
+    lesson.vocabularies.forEach((_, idx) => {
+      newFlips[idx] = flipState;
+    });
+    setFlippedCards(newFlips);
   };
 
   if (isLoading) {
@@ -206,6 +231,36 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
       ? lesson.vocabularies[selectedCharIdx]
       : null;
 
+  // Handle Dialogue Auto-play sequential
+  const handleToggleAutoPlayDialogue = () => {
+    if (isAutoPlayingDialogue) {
+      setIsAutoPlayingDialogue(false);
+      if (autoPlayTimerRef.current) clearTimeout(autoPlayTimerRef.current);
+      setPlayingDialogueIdx(null);
+      window.speechSynthesis?.cancel();
+    } else {
+      if (allDialogues.length === 0) return;
+      setIsAutoPlayingDialogue(true);
+      playDialogueSequence(0);
+    }
+  };
+
+  const playDialogueSequence = (idx: number) => {
+    if (idx >= allDialogues.length) {
+      setIsAutoPlayingDialogue(false);
+      setPlayingDialogueIdx(null);
+      return;
+    }
+    setPlayingDialogueIdx(idx);
+    playSpeech(allDialogues[idx].hanzi);
+
+    // Approximate duration + pause before next speaker
+    const delay = Math.max(2200, allDialogues[idx].hanzi.length * 400);
+    autoPlayTimerRef.current = setTimeout(() => {
+      playDialogueSequence(idx + 1);
+    }, delay);
+  };
+
   return (
     <div className="max-w-5xl mx-auto py-6 sm:py-8 px-4 sm:px-6 lg:px-8 space-y-6">
       {/* Top Breadcrumb & Status Navigation */}
@@ -239,19 +294,19 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
           {linkedTest && (
             <a
               href={`#/test/${linkedTest.test_id}`}
-              className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
             >
               <FileQuestion className="w-3.5 h-3.5" />
-              <span>Làm bài test củng cố (≥80%)</span>
+              <span>Bài test củng cố (≥80%)</span>
             </a>
           )}
         </div>
       </div>
 
       {/* Lesson Header Banner */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-sm space-y-3">
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-sm space-y-4">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-extrabold uppercase tracking-wider text-primary-600 bg-primary-50 px-2.5 py-0.5 rounded-md">
+          <span className="text-xs font-extrabold uppercase tracking-wider text-primary-600 bg-primary-50 px-2.5 py-0.5 rounded-md border border-primary-100">
             {lesson.chapter.title}
           </span>
           <span className="text-xs text-gray-400 font-semibold">•</span>
@@ -265,8 +320,8 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
           {lesson.title}
         </h1>
 
-        <p className="text-xs sm:text-sm text-gray-500">
-          Không gian học tập tích hợp: Đầy đủ từ vựng Flashcard, ngữ pháp trọng tâm, luyện nghe hội thoại Audio và luyện viết nét chữ Hán SVG theo Unit.
+        <p className="text-xs sm:text-sm text-gray-500 leading-relaxed">
+          Không gian học tập tích hợp đa phương tiện theo Unit: Nắm vững từ vựng qua thẻ Flashcard, làm chủ cấu trúc ngữ pháp trọng tâm, luyện nghe phản xạ hội thoại Audio và luyện viết nét chữ Hán SVG tương tác.
         </p>
 
         {/* Tab Switcher */}
@@ -281,7 +336,7 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
             }`}
           >
             <BookOpen className="w-4 h-4" />
-            <span>Nội dung bài học ({blocks.length} phần)</span>
+            <span>Nội dung bài ({blocks.length} phần)</span>
           </button>
 
           <button
@@ -307,7 +362,7 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
             }`}
           >
             <Sparkles className="w-4 h-4" />
-            <span>Ngữ pháp & Mẫu câu</span>
+            <span>Ngữ pháp & Pinyin</span>
           </button>
 
           <button
@@ -370,7 +425,7 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
                   {currentBlock.blockType === 'AUDIO' && 'Hội Thoại Audio Thực Tế'}
                 </span>
 
-                <span className="text-xs text-gray-400">Thứ tự {currentBlock.orderIndex}</span>
+                <span className="text-xs text-gray-400 font-medium">Thứ tự {currentBlock.orderIndex}</span>
               </div>
 
               {/* 1. THEORY */}
@@ -390,24 +445,30 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
                 <div className="space-y-6">
                   <h3 className="text-lg font-bold text-gray-900">Hướng Dẫn Ngữ Âm & Quy Tắc</h3>
                   {blockContent.rule && (
-                    <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-sm leading-relaxed">
-                      💡 <strong>Quy tắc quan trọng:</strong> {blockContent.rule}
+                    <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-sm leading-relaxed flex items-start gap-3">
+                      <Lightbulb className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                      <div>
+                        <strong>Quy tắc quan trọng:</strong> {blockContent.rule}
+                      </div>
                     </div>
                   )}
 
                   {blockContent.syllables && (
-                    <div className="flex flex-wrap gap-3 justify-center py-4">
-                      {blockContent.syllables.map((syl: string, idx: number) => (
-                        <button
-                          key={idx}
-                          type="button"
-                          onClick={() => playSpeech(syl)}
-                          className="flex items-center gap-2.5 px-5 py-3 rounded-2xl bg-primary-50 hover:bg-primary-100 border border-primary-200 text-primary-800 font-bold text-lg transition-all cursor-pointer"
-                        >
-                          <Volume2 className="w-4 h-4 text-primary-600" />
-                          <span>{syl}</span>
-                        </button>
-                      ))}
+                    <div className="space-y-3">
+                      <p className="text-xs text-gray-500 font-medium">Bấm vào âm tiết để nghe phát âm mẫu:</p>
+                      <div className="flex flex-wrap gap-3 justify-center py-2">
+                        {blockContent.syllables.map((syl: string, idx: number) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => playSpeech(syl)}
+                            className="flex items-center gap-2.5 px-5 py-3 rounded-2xl bg-primary-50 hover:bg-primary-100 border border-primary-200 text-primary-800 font-bold text-lg transition-all cursor-pointer shadow-sm hover:scale-105"
+                          >
+                            <Volume2 className="w-4 h-4 text-primary-600" />
+                            <span>{syl}</span>
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -415,15 +476,15 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
 
               {/* 3. HANZI */}
               {currentBlock.blockType === 'HANZI' && (
-                <div className="space-y-4">
-                  <div className="text-center space-y-1">
-                    <span className="text-5xl font-chinese font-black text-gray-900 block">
+                <div className="space-y-4 text-center">
+                  <div className="py-2">
+                    <span className="text-6xl font-chinese font-black text-gray-900 block hover:scale-105 transition-transform">
                       {blockContent.character}
                     </span>
-                    <p className="text-xs text-gray-500 mt-2">{blockContent.meaning}</p>
+                    <p className="text-sm text-gray-600 mt-2 max-w-md mx-auto">{blockContent.meaning}</p>
                   </div>
 
-                  <div className="text-center pt-2">
+                  <div className="pt-2">
                     <button
                       type="button"
                       onClick={() => setActiveTab('hanzi')}
@@ -448,7 +509,7 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
                       >
                         <div className="space-y-1">
                           <div className="flex items-center gap-2.5">
-                            <span className="w-6 h-6 rounded-full bg-primary-600 text-white font-bold text-xs flex items-center justify-center">
+                            <span className="w-6 h-6 rounded-full bg-primary-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
                               {d.speaker}
                             </span>
                             <span className="text-lg font-bold text-gray-900 font-chinese">{d.hanzi}</span>
@@ -526,6 +587,23 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
                 Bấm vào thẻ để lật xem phiên âm Pinyin, âm Hán Việt và giải nghĩa tiếng Việt
               </p>
             </div>
+
+            <div className="flex items-center gap-2 self-start sm:self-auto">
+              <button
+                type="button"
+                onClick={() => flipAllCards(true)}
+                className="px-3 py-1.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-xs font-semibold text-gray-700 cursor-pointer"
+              >
+                Lật tất cả
+              </button>
+              <button
+                type="button"
+                onClick={() => flipAllCards(false)}
+                className="px-3 py-1.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-xs font-semibold text-gray-700 cursor-pointer"
+              >
+                Thu gọn
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -588,7 +666,7 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
                       className="font-bold text-primary-600 hover:text-primary-700 flex items-center gap-1 cursor-pointer"
                     >
                       <PenTool className="w-3.5 h-3.5" />
-                      <span>Luyện viết</span>
+                      <span>Luyện viết nét</span>
                     </button>
                   </div>
                 </div>
@@ -599,17 +677,18 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
       )}
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          TAB 3: NGỮ PHÁP & MẪU CÂU TRỌNG TÂM
+          TAB 3: NGỮ PHÁP & QUY TẮC PINYIN (CÓ BIỂU ĐỒ CAO ĐỘ F0 CHAO)
          ══════════════════════════════════════════════════════════════════════════ */}
       {activeTab === 'grammar' && (
         <div className="space-y-6">
           <div className="space-y-1">
-            <h2 className="text-xl font-extrabold text-gray-900">Ngữ Pháp & Mẫu Câu Trọng Tâm</h2>
+            <h2 className="text-xl font-extrabold text-gray-900">Ngữ Pháp & Luyện Ngữ Âm Pinyin</h2>
             <p className="text-xs text-gray-500">
-              Quy tắc cấu trúc câu tiếng Trung và các mẫu câu thông dụng trong bài học
+              Quy tắc cấu trúc câu tiếng Trung và trực quan hóa đường cong cao độ thanh điệu F0
             </p>
           </div>
 
+          {/* Grammar theory cards */}
           {grammarBlocks.length > 0 ? (
             <div className="space-y-4">
               {grammarBlocks.map((b) => {
@@ -626,7 +705,7 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
                     <div className="flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full bg-primary-600" />
                       <h3 className="text-lg font-black text-gray-900">
-                        {content.title || 'Chủ điểm ngữ pháp'}
+                        {content.title || 'Chủ điểm ngữ pháp trọng tâm'}
                       </h3>
                     </div>
 
@@ -638,51 +717,120 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
               })}
             </div>
           ) : (
-            <div className="bg-white rounded-3xl p-10 text-center text-gray-500 border border-gray-200">
+            <div className="bg-white rounded-3xl p-8 text-center text-gray-500 border border-gray-200">
               Bài học này tập trung vào làm quen ngữ âm và chữ Hán căn bản.
             </div>
           )}
 
-          {/* Minimal Pairs / Pinyin Rules if present */}
-          {pinyinBlocks.length > 0 && (
-            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-sm space-y-4">
-              <h3 className="text-lg font-black text-gray-900">Quy Tắc Biến Điệu & Ngữ Âm</h3>
-              <div className="space-y-3">
-                {pinyinBlocks.map((b) => {
-                  let pContent: any = {};
-                  try {
-                    pContent = JSON.parse(b.contentJson);
-                  } catch {}
+          {/* Pinyin & F0 Pitch Contour Visualizer */}
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-sm space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
+              <div>
+                <h3 className="text-lg font-black text-gray-900 flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-amber-500" />
+                  Trực Quan Hóa Cao Độ Thanh Điệu F0 (Hệ Thống Chao 5 Bậc)
+                </h3>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Chọn thanh điệu để xem đường cong cao độ phát âm chuẩn và so sánh khẩu hình
+                </p>
+              </div>
 
-                  return (
-                    <div key={b.blockId} className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-sm text-amber-900 space-y-2">
-                      {pContent.rule && <p className="font-semibold leading-relaxed">💡 {pContent.rule}</p>}
-                      {pContent.syllables && (
-                        <div className="flex flex-wrap gap-2 pt-1">
-                          {pContent.syllables.map((s: string, sIdx: number) => (
-                            <button
-                              key={sIdx}
-                              type="button"
-                              onClick={() => playSpeech(s)}
-                              className="px-3 py-1 rounded-lg bg-white border border-amber-300 font-bold text-amber-900 hover:bg-amber-100 cursor-pointer flex items-center gap-1.5"
-                            >
-                              <Volume2 className="w-3.5 h-3.5 text-amber-700" />
-                              <span>{s}</span>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+              {/* Quick Tone Buttons */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {[
+                  { tone: 1, syl: 'mā', label: 'Thanh 1 (55)' },
+                  { tone: 2, syl: 'má', label: 'Thanh 2 (35)' },
+                  { tone: 3, syl: 'mǎ', label: 'Thanh 3 (214)' },
+                  { tone: 4, syl: 'mà', label: 'Thanh 4 (51)' },
+                ].map((item) => (
+                  <button
+                    key={item.tone}
+                    type="button"
+                    onClick={() => {
+                      setSelectedPinyinTone(item.tone);
+                      setSelectedPinyinSyllable(item.syl);
+                      playSpeech(item.syl);
+                    }}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      selectedPinyinTone === item.tone
+                        ? 'bg-primary-600 text-white shadow-sm'
+                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
               </div>
             </div>
-          )}
+
+            {/* Pitch Visualizer Component */}
+            <div className="max-w-md mx-auto">
+              <PitchVisualizer
+                tone={selectedPinyinTone}
+                syllable={selectedPinyinSyllable}
+              />
+              <div className="mt-3 text-center">
+                <button
+                  type="button"
+                  onClick={() => playSpeech(selectedPinyinSyllable)}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary-50 text-primary-700 hover:bg-primary-100 text-xs font-bold transition-colors cursor-pointer"
+                >
+                  <Volume2 className="w-4 h-4" />
+                  <span>Nghe lại âm mẫu ({selectedPinyinSyllable})</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Pinyin Syllables from Lesson Blocks */}
+            {pinyinBlocks.length > 0 && (
+              <div className="pt-4 border-t border-gray-100 space-y-3">
+                <h4 className="text-xs font-extrabold uppercase tracking-wider text-gray-500">
+                  Các âm tiết Pinyin trong bài học
+                </h4>
+                <div className="space-y-3">
+                  {pinyinBlocks.map((b) => {
+                    let pContent: any = {};
+                    try {
+                      pContent = JSON.parse(b.contentJson);
+                    } catch {}
+
+                    return (
+                      <div key={b.blockId} className="space-y-2">
+                        {pContent.rule && (
+                          <p className="text-xs text-amber-800 bg-amber-50 p-3 rounded-xl border border-amber-200">
+                            💡 {pContent.rule}
+                          </p>
+                        )}
+                        {pContent.syllables && (
+                          <div className="flex flex-wrap gap-2">
+                            {pContent.syllables.map((s: string, sIdx: number) => (
+                              <button
+                                key={sIdx}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedPinyinSyllable(s);
+                                  playSpeech(s);
+                                }}
+                                className="px-3.5 py-1.5 rounded-xl bg-gray-50 hover:bg-primary-50 border border-gray-200 hover:border-primary-300 font-bold text-xs text-gray-800 hover:text-primary-700 cursor-pointer flex items-center gap-1.5 transition-colors"
+                              >
+                                <Volume2 className="w-3.5 h-3.5 text-primary-600" />
+                                <span>{s}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
       {/* ══════════════════════════════════════════════════════════════════════════
-          TAB 4: HỘI THOẠI AUDIO THỰC TẾ
+          TAB 4: HỘI THOẠI AUDIO THỰC TẾ (INTERACTIVE LISTENING PLAYER)
          ══════════════════════════════════════════════════════════════════════════ */}
       {activeTab === 'dialogue' && (
         <div className="space-y-6">
@@ -694,8 +842,46 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
               </p>
             </div>
 
-            {/* Display Toggles */}
-            <div className="flex items-center gap-2">
+            {/* Controls Bar: Auto-play, Rate, Display Toggles */}
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* Auto play button */}
+              <button
+                type="button"
+                onClick={handleToggleAutoPlayDialogue}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-sm ${
+                  isAutoPlayingDialogue
+                    ? 'bg-amber-500 hover:bg-amber-600 text-white'
+                    : 'bg-primary-600 hover:bg-primary-700 text-white'
+                }`}
+              >
+                {isAutoPlayingDialogue ? <Pause className="w-3.5 h-3.5 fill-current" /> : <Play className="w-3.5 h-3.5 fill-current" />}
+                <span>{isAutoPlayingDialogue ? 'Dừng phát' : 'Nghe toàn bài'}</span>
+              </button>
+
+              {/* Speed rate selector */}
+              <div className="flex items-center border border-gray-200 rounded-xl bg-white overflow-hidden text-xs font-bold text-gray-600">
+                <span className="px-2 py-1.5 text-gray-400 bg-gray-50 flex items-center gap-1">
+                  <Gauge className="w-3 h-3" />
+                </span>
+                {[
+                  { r: 0.75, l: '0.75x' },
+                  { r: 0.85, l: 'Chuẩn' },
+                  { r: 1.0, l: '1.0x' },
+                ].map((sp) => (
+                  <button
+                    key={sp.r}
+                    type="button"
+                    onClick={() => setSpeechRate(sp.r)}
+                    className={`px-2.5 py-1.5 transition-colors cursor-pointer ${
+                      speechRate === sp.r ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-50'
+                    }`}
+                  >
+                    {sp.l}
+                  </button>
+                ))}
+              </div>
+
+              {/* Pinyin toggle */}
               <button
                 type="button"
                 onClick={() => setShowPinyin(!showPinyin)}
@@ -709,6 +895,7 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
                 <span>Pinyin</span>
               </button>
 
+              {/* Translation toggle */}
               <button
                 type="button"
                 onClick={() => setShowTranslation(!showTranslation)}
@@ -732,7 +919,11 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
                 return (
                   <div
                     key={idx}
-                    className="p-4 sm:p-5 rounded-2xl bg-gray-50/80 border border-gray-200 flex items-start justify-between gap-4 hover:border-primary-200 transition-colors"
+                    className={`p-4 sm:p-5 rounded-2xl border transition-all flex items-start justify-between gap-4 ${
+                      isPlaying
+                        ? 'bg-primary-50/60 border-primary-400 ring-2 ring-primary-500/20'
+                        : 'bg-gray-50/80 border-gray-200 hover:border-gray-300'
+                    }`}
                   >
                     <div className="space-y-1.5">
                       <div className="flex items-center gap-2.5">
@@ -790,13 +981,21 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
          ══════════════════════════════════════════════════════════════════════════ */}
       {activeTab === 'hanzi' && (
         <div className="space-y-6">
-          <div className="space-y-1">
-            <h2 className="text-xl font-extrabold text-gray-900">
-              Bảng Luyện Viết Chữ Hán Theo Nét Bút Thuận
-            </h2>
-            <p className="text-xs text-gray-500">
-              Xem hoạt họa các nét vẽ chuẩn SVG và tự tay tập vẽ trên ô chữ mễ (米字格)
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-extrabold text-gray-900">
+                Bảng Luyện Viết Chữ Hán Theo Nét Bút Thuận
+              </h2>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Xem hoạt họa các nét vẽ chuẩn SVG và tự tay tập vẽ trên ô chữ mễ (米字格)
+              </p>
+            </div>
+
+            {selectedChar && (
+              <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-xl self-start sm:self-auto">
+                Chữ {selectedCharIdx + 1} / {lesson.vocabularies.length}
+              </span>
+            )}
           </div>
 
           {/* Character horizontal selector */}
@@ -823,7 +1022,7 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
 
           {/* Interactive Hanzi Canvas Component */}
           {selectedChar ? (
-            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-sm">
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-sm space-y-6">
               <HanziCanvas
                 character={selectedChar.character}
                 pinyin={selectedChar.pinyin}
@@ -833,6 +1032,20 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
                 strokeOrderSvg={selectedChar.strokeOrderSvg}
                 audioUrl={selectedChar.audioUrl}
               />
+
+              {/* Next Character Shortcut button */}
+              {selectedCharIdx < lesson.vocabularies.length - 1 && (
+                <div className="text-center pt-2 border-t border-gray-100">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedCharIdx((prev) => prev + 1)}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gray-100 hover:bg-primary-50 text-gray-700 hover:text-primary-700 font-bold text-xs transition-colors cursor-pointer"
+                  >
+                    <span>Luyện viết chữ tiếp theo: {lesson.vocabularies[selectedCharIdx + 1].character}</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <div className="bg-white rounded-3xl p-10 text-center text-gray-500 border border-gray-200">
@@ -848,14 +1061,14 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
       {linkedTest && (
         <div className="bg-gradient-to-r from-primary-50 via-white to-amber-50 rounded-3xl p-6 sm:p-8 border border-primary-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="space-y-1.5">
-            <span className="text-xs font-extrabold uppercase tracking-wider text-amber-700 bg-amber-100 px-2.5 py-0.5 rounded-md">
+            <span className="text-xs font-extrabold uppercase tracking-wider text-amber-700 bg-amber-100 px-2.5 py-0.5 rounded-md inline-block">
               Kiểm Tra Hoàn Thành Unit
             </span>
             <h3 className="text-lg sm:text-xl font-extrabold text-gray-900">
               {linkedTest.title}
             </h3>
             <p className="text-xs text-gray-600">
-              Đạt ≥ {linkedTest.passing_score}% để hệ thống tự động ghi nhận hoàn thành bài và mở khóa bài học kế tiếp.
+              Đạt ≥ {linkedTest.passing_score}% để hệ thống tự động ghi nhận hoàn thành bài và mở khóa bài học kế tiếp theo chuỗi tiến độ.
             </p>
           </div>
 

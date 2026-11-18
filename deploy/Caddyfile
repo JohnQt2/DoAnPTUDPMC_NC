@@ -1,0 +1,24 @@
+# Caddy tự xin & gia hạn SSL Let's Encrypt cho các domain dưới đây.
+# Đặt file này tại C:\caddy\Caddyfile trên VPS.
+
+hanzi4u.id.vn, www.hanzi4u.id.vn {
+	encode gzip
+
+	# API -> Node backend
+	handle /api/* {
+		reverse_proxy localhost:5000
+	}
+
+	# Frontend React (SPA)
+	handle {
+		root * C:/hanzi4u/frontend
+		try_files {path} /index.html
+		file_server
+	}
+}
+
+# Giao diện Jenkins + endpoint nhận webhook GitHub
+jenkins.hanzi4u.id.vn {
+	reverse_proxy localhost:8080
+}
+

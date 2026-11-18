@@ -455,6 +455,7 @@ export class CurriculumService {
         sinoVietnamese: v.character.sino_vietnamese,
         meaning: v.character.meaning,
         strokesCount: v.character.strokes_count,
+        strokeOrderSvg: v.character.stroke_order_svg || null,
         audioUrl: v.character.audioResource?.public_url || null,
       })),
       tests: lesson.tests,

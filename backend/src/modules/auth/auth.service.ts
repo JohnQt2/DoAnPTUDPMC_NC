@@ -236,6 +236,11 @@ export class AuthService {
               notify_webpush: false,
             },
           },
+          profile: {
+            create: {
+              daily_study_minutes: 15,
+            },
+          },
         } as any,
       });
 
@@ -305,14 +310,161 @@ export class AuthService {
     return {
       user: {
         userId: user.user_id,
+        id: user.user_id,
         email: user.email,
         displayName: user.display_name,
+        full_name: user.display_name,
         role: user.role,
         status: user.status,
       },
       accessToken,
       refreshToken,
       isNewUser,
+    };
+  }
+
+  /**
+   * Đăng ký tài khoản mới bằng Email và Mật khẩu
+   */
+  async register(
+    input: {
+      email: string;
+      password: string;
+      full_name?: string;
+      displayName?: string;
+      display_name?: string;
+      phone?: string;
+      bio?: string;
+    },
+    clientInfo: ClientInfo
+  ): Promise<{
+    user: any;
+    accessToken: string;
+    refreshToken: string;
+    isNewUser: boolean;
+  }> {
+    const email = input.email.trim().toLowerCase();
+    const existingUser = await prisma.users.findUnique({
+      where: { email },
+    });
+
+    if (existingUser && existingUser.password_hash) {
+      throw AppError.badRequest(
+        'Địa chỉ email này đã được đăng ký tài khoản. Vui lòng chuyển sang tab Đăng nhập.',
+        'EMAIL_ALREADY_REGISTERED'
+      );
+    }
+
+    const passwordHash = await bcrypt.hash(input.password, 10);
+    const defaultName =
+      input.full_name?.trim() ||
+      input.displayName?.trim() ||
+      input.display_name?.trim() ||
+      email.split('@')[0];
+
+    let user: any;
+    if (existingUser) {
+      user = await prisma.users.update({
+        where: { user_id: existingUser.user_id },
+        data: {
+          password_hash: passwordHash,
+          display_name: defaultName,
+          status: 'ACTIVE',
+          is_verified: true,
+          last_login_at: new Date(),
+        },
+      });
+
+      await prisma.userProfiles.upsert({
+        where: { user_id: user.user_id },
+        create: {
+          user_id: user.user_id,
+          phone: input.phone || null,
+          bio: input.bio || null,
+          daily_study_minutes: 15,
+        },
+        update: {
+          phone: input.phone || undefined,
+          bio: input.bio || undefined,
+        },
+      });
+    } else {
+      user = await prisma.users.create({
+        data: {
+          email,
+          password_hash: passwordHash,
+          display_name: defaultName,
+          role: 'STUDENT',
+          status: 'ACTIVE',
+          is_verified: true,
+          notificationSettings: {
+            create: {
+              reminder_time: '20:00',
+              notify_email: true,
+              notify_webpush: false,
+            },
+          },
+          profile: {
+            create: {
+              phone: input.phone || null,
+              bio: input.bio || null,
+              daily_study_minutes: 15,
+            },
+          },
+        },
+      });
+
+      const defaultCourse = await prisma.courses.findFirst({
+        where: { level: 'HSK1' },
+      });
+
+      if (defaultCourse) {
+        await prisma.userRoadmaps.create({
+          data: {
+            user_id: user.user_id,
+            course_id: defaultCourse.course_id,
+            starting_level: 'ZERO',
+            target_goal: 'HSK1',
+            daily_commitment_mins: 15,
+            is_active: true,
+          },
+        });
+      }
+    }
+
+    await prisma.auditLogs.create({
+      data: {
+        user_id: user.user_id,
+        action_type: 'REGISTER_PASSWORD',
+        target_entity: 'Users',
+        target_id: user.user_id.toString(),
+        new_value: JSON.stringify({ email: user.email, role: user.role }),
+        ip_address: clientInfo.ip,
+      },
+    });
+
+    const sessionFamilyId = randomUUID();
+    const { accessToken, refreshToken } = await this.createSession(
+      user.user_id,
+      user.email,
+      user.role,
+      sessionFamilyId,
+      clientInfo
+    );
+
+    return {
+      user: {
+        userId: user.user_id,
+        id: user.user_id,
+        email: user.email,
+        displayName: user.display_name,
+        full_name: user.display_name,
+        role: user.role,
+        status: user.status,
+      },
+      accessToken,
+      refreshToken,
+      isNewUser: true,
     };
   }
 
@@ -377,11 +529,14 @@ export class AuthService {
     return {
       user: {
         userId: user.user_id,
+        id: user.user_id,
         email: user.email,
         displayName: user.display_name,
+        full_name: user.display_name,
         role: user.role,
         status: user.status,
         avatarUrl: user.avatarResource?.public_url || null,
+        avatar_url: user.avatarResource?.public_url || null,
       },
       accessToken,
       refreshToken,
@@ -878,26 +1033,37 @@ export class AuthService {
    */
   async logout(userId: number, sessionId?: number, refreshToken?: string): Promise<void> {
     if (sessionId) {
+      const where: any = { session_id: sessionId };
+      if (userId) where.user_id = userId;
       await prisma.userSessions.updateMany({
-        where: { session_id: sessionId, user_id: userId },
+        where,
         data: { is_revoked: true },
       });
     } else if (refreshToken) {
       const hash = hashString(refreshToken);
+      const where: any = { refresh_token_hash: hash };
+      if (userId) where.user_id = userId;
       await prisma.userSessions.updateMany({
-        where: { refresh_token_hash: hash, user_id: userId },
+        where,
+        data: { is_revoked: true },
+      });
+    } else if (userId) {
+      await prisma.userSessions.updateMany({
+        where: { user_id: userId, is_revoked: false },
         data: { is_revoked: true },
       });
     }
 
-    await prisma.auditLogs.create({
-      data: {
-        user_id: userId,
-        action_type: 'LOGOUT',
-        target_entity: 'UserSessions',
-        target_id: sessionId?.toString() || 'current',
-      },
-    });
+    if (userId) {
+      await prisma.auditLogs.create({
+        data: {
+          user_id: userId,
+          action_type: 'LOGOUT',
+          target_entity: 'UserSessions',
+          target_id: sessionId?.toString() || 'current',
+        },
+      });
+    }
   }
 
   /**

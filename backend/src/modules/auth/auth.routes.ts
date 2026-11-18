@@ -7,6 +7,12 @@ const router = Router();
 
 // Public Authentication Endpoints
 router.post(
+  '/register',
+  rateLimit({ windowSeconds: 60, maxRequests: 10, keyPrefix: 'auth-register' }),
+  authController.register
+);
+
+router.post(
   '/otp/send',
   rateLimit({ windowSeconds: 60, maxRequests: 3, keyPrefix: 'otp-send', message: 'Vui lòng chờ 1 phút trước khi yêu cầu mã OTP tiếp theo.' }),
   authController.sendOtp

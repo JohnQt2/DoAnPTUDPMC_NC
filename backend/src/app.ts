@@ -55,8 +55,11 @@ app.get('/api/v1/health', async (req, res) => {
 
 // Mount Modular Monolith Routes
 app.use('/api/v1/auth', authRoutes);
+app.use('/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
+app.use('/users', userRoutes);
 app.get('/api/v1/progress', authenticate, userController.getUserProgressOverview);
+app.get('/progress', authenticate, userController.getUserProgressOverview);
 app.use('/api/v1/curriculum', curriculumRoutes);
 app.use('/api/v1/learning', learningRoutes);
 app.use('/api/v1/assessment', assessmentRoutes);

@@ -15,6 +15,7 @@ model Users {
   avatar_resource_id Int?
   role               String                 @default("STUDENT") // STUDENT, CONTENT_EDITOR, ADMIN
   status             String                 @default("ACTIVE")  // ACTIVE, BANNED, LOCKED
+  is_verified        Boolean                @default(true)
   created_at         DateTime               @default(now())
   last_login_at      DateTime?
 
@@ -28,6 +29,7 @@ model Users {
   practices          UserSkillPractices[]
   auditLogs          AuditLogs[]
   uploadedMedia      MediaResources[]       @relation("MediaUploader")
+  profile            UserProfiles?
 
   @@map("Users")
 }
@@ -49,6 +51,23 @@ model UserSessions {
   @@index([refresh_token_hash])
   @@index([family_id])
   @@map("UserSessions")
+}
+
+model UserProfiles {
+  profile_id          Int      @id @default(autoincrement())
+  user_id             Int      @unique
+  goal                String?
+  current_level       String?
+  expected_duration   String?
+  daily_study_minutes Int?     @default(15)
+  phone               String?
+  bio                 String?
+  created_at          DateTime @default(now())
+  updated_at          DateTime @default(now()) @updatedAt
+
+  user                Users    @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@map("user_profiles")
 }
 
 model NotificationSettings {

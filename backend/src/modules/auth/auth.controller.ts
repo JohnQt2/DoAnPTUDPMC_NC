@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { authService } from './auth.service';
-import { SendOtpDto, VerifyOtpDto, LoginPasswordDto, GoogleAuthDto, RefreshTokenDto } from './auth.dto';
+import { RegisterDto, SendOtpDto, VerifyOtpDto, LoginPasswordDto, GoogleAuthDto, RefreshTokenDto } from './auth.dto';
 import { env } from '../../config/env';
 
 export class AuthController {
@@ -29,6 +29,29 @@ export class AuthController {
       path: '/',
     });
   }
+
+  register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const dto = RegisterDto.parse(req.body);
+      const clientInfo = this.getClientInfo(req);
+
+      const result = await authService.register(dto, clientInfo);
+      this.setRefreshTokenCookie(res, result.refreshToken);
+
+      res.status(201).json({
+        success: true,
+        data: {
+          user: result.user,
+          accessToken: result.accessToken,
+          refreshToken: result.refreshToken,
+          isNewUser: true,
+          expiresIn: 900,
+        },
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
 
   sendOtp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
@@ -73,6 +96,7 @@ export class AuthController {
         data: {
           user: result.user,
           accessToken: result.accessToken,
+          refreshToken: result.refreshToken,
           isNewUser: result.isNewUser,
           expiresIn: 900,
         },
@@ -130,6 +154,7 @@ export class AuthController {
         data: {
           user: result.user,
           accessToken: result.accessToken,
+          refreshToken: result.refreshToken,
           isNewUser: result.isNewUser,
           expiresIn: 900,
         },
@@ -181,6 +206,16 @@ export class AuthController {
       const tokenFromBody = parsedBody.success ? parsedBody.data.refreshToken : undefined;
 
       const tokenToUse = tokenFromCookie || tokenFromBody;
+      if (!tokenToUse) {
+        res.status(401).json({
+          success: false,
+          error: {
+            message: 'Yêu cầu Refresh Token hợp lệ.',
+            code: 'REFRESH_TOKEN_REQUIRED',
+          },
+        });
+        return;
+      }
       const clientInfo = this.getClientInfo(req);
 
       const result = await authService.rotateRefreshToken(tokenToUse, clientInfo);
@@ -190,6 +225,7 @@ export class AuthController {
         success: true,
         data: {
           accessToken: result.accessToken,
+          refreshToken: result.refreshToken,
           expiresIn: 900,
         },
       });
@@ -203,9 +239,11 @@ export class AuthController {
       const userId = req.user?.userId;
       const sessionId = req.user?.sessionId;
       const tokenFromCookie = req.cookies?.refreshToken;
+      const tokenFromBody = req.body?.refreshToken;
+      const tokenToUse = tokenFromCookie || tokenFromBody;
 
-      if (userId) {
-        await authService.logout(userId, sessionId, tokenFromCookie);
+      if (userId || tokenToUse) {
+        await authService.logout(userId || 0, sessionId, tokenToUse);
       }
 
       this.clearRefreshTokenCookie(res);

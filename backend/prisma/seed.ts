@@ -1,589 +1,814 @@
+/**
+ * seed.ts — Idempotent seed script for HSK 1-6 curriculum content.
+ * Chạy: npm run db:seed  (hoặc: npx tsx prisma/seed.ts)
+ * Idempotent: chạy lại nhiều lần không sinh dữ liệu trùng lặp (upsert).
+ */
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import * as fs from 'fs';
+import * as path from 'path';
 
 const prisma = new PrismaClient();
 
-async function main() {
-  console.log('🌱 Seeding ChinaEasy Database with rich pedagogical content...');
+const SEED_DATA_DIR = path.join(__dirname, 'seed-data');
+const CONTENTS_DIR = path.join(SEED_DATA_DIR, 'contents');
+const COURSES_DIR = path.join(SEED_DATA_DIR, 'Courses');
+const EXERCISE_DIR = path.join(SEED_DATA_DIR, 'Exercise');
+
+function readJson<T>(filePath: string): T {
+  const raw = fs.readFileSync(filePath, 'utf-8');
+  return JSON.parse(raw) as T;
+}
+
+function safeJson(value: unknown): string | null {
+  if (value == null) return null;
+  if (typeof value === 'string') return value;
+  return JSON.stringify(value);
+}
+
+function deriveHskLevel(id: string): string {
+  const match = id.match(/^(hsk\d)/i);
+  if (match) return match[1].toUpperCase();
+  return 'HSK1';
+}
+
+// ─────────────────────────────────────────────
+//  PHASE 0: Seed admin users (from original seed)
+// ─────────────────────────────────────────────
+async function seedUsers() {
+  console.log('  → Seeding default users...');
   const defaultPasswordHash = await bcrypt.hash('123456', 10);
 
-  // 1. Users & Roles (Mật khẩu mặc định: 123456)
-  const admin = await prisma.users.upsert({
+  await prisma.users.upsert({
     where: { email: 'admin@chinaeasy.vn' },
-    update: { password_hash: defaultPasswordHash, role: 'ADMIN', status: 'ACTIVE' },
     create: {
       email: 'admin@chinaeasy.vn',
       password_hash: defaultPasswordHash,
-      display_name: 'Quản Trị Viên (Admin)',
+      display_name: 'Admin ChinaEasy',
       role: 'ADMIN',
       status: 'ACTIVE',
-      notificationSettings: {
-        create: {
-          reminder_time: '19:30',
-          notify_email: true,
-          notify_webpush: true,
-        },
-      },
+      is_verified: true,
     },
+    update: { role: 'ADMIN' },
   });
 
-  const editor = await prisma.users.upsert({
-    where: { email: 'editor@chinaeasy.vn' },
-    update: { password_hash: defaultPasswordHash, role: 'CONTENT_EDITOR', status: 'ACTIVE' },
-    create: {
-      email: 'editor@chinaeasy.vn',
-      password_hash: defaultPasswordHash,
-      display_name: 'Biên Tập Viên (Editor)',
-      role: 'CONTENT_EDITOR',
-      status: 'ACTIVE',
-      notificationSettings: {
-        create: {
-          reminder_time: '20:00',
-          notify_email: true,
-        },
-      },
-    },
-  });
-
-  const student = await prisma.users.upsert({
+  await prisma.users.upsert({
     where: { email: 'student@chinaeasy.vn' },
-    update: { password_hash: defaultPasswordHash, role: 'STUDENT', status: 'ACTIVE' },
     create: {
       email: 'student@chinaeasy.vn',
       password_hash: defaultPasswordHash,
-      display_name: 'Học Viên Demo',
+      display_name: 'Học viên Demo',
       role: 'STUDENT',
       status: 'ACTIVE',
-      notificationSettings: {
-        create: {
-          reminder_time: '20:30',
-          notify_email: true,
-          notify_webpush: false,
-        },
-      },
+      is_verified: true,
     },
+    update: { role: 'STUDENT' },
   });
+  console.log('     ✓ Default users seeded.');
+}
 
-  console.log('✅ Users created: admin, editor, student');
+// ─────────────────────────────────────────────
+//  PHASE 1: Seed Atomic Content Repositories
+// ─────────────────────────────────────────────
 
-  // 2. Characters with SVG Stroke Order
+async function seedVocabularies() {
+  console.log('  → Seeding Vocabulary...');
+  const data = readJson<any[]>(path.join(CONTENTS_DIR, 'vocabularies.json'));
+  let count = 0;
+  for (const item of data) {
+    await prisma.vocabulary.upsert({
+      where: { vocabulary_id: item.vocabulary_id },
+      create: {
+        vocabulary_id: item.vocabulary_id,
+        word: item.word,
+        pinyin: item.pinyin || '',
+        meaning: item.meaning || '',
+        word_type: item.word_type || null,
+        notes: safeJson(item.notes),
+        examples: safeJson(item.examples),
+        word_image_path: item.word_image_path || null,
+        word_audio_path: item.word_audio_path || null,
+        hsk_level: item.hsk_level || deriveHskLevel(item.vocabulary_id),
+      },
+      update: {
+        word: item.word,
+        pinyin: item.pinyin || '',
+        meaning: item.meaning || '',
+        word_type: item.word_type || null,
+        notes: safeJson(item.notes),
+        examples: safeJson(item.examples),
+        word_image_path: item.word_image_path || null,
+        word_audio_path: item.word_audio_path || null,
+        hsk_level: item.hsk_level || deriveHskLevel(item.vocabulary_id),
+      },
+    });
+    count++;
+  }
+  console.log(`     ✓ ${count} vocabularies seeded.`);
+}
+
+async function seedSentencePatterns() {
+  console.log('  → Seeding SentencePattern...');
+  const data = readJson<any[]>(path.join(CONTENTS_DIR, 'sentence-patterns.json'));
+  let count = 0;
+  for (const item of data) {
+    await prisma.sentencePattern.upsert({
+      where: { sentence_pattern_id: item.sentence_pattern_id },
+      create: {
+        sentence_pattern_id: item.sentence_pattern_id,
+        title: item.title || null,
+        pattern: item.pattern || '',
+        explanation: item.explanation || null,
+        notes: safeJson(item.notes),
+        examples: safeJson(item.examples),
+      },
+      update: {
+        title: item.title || null,
+        pattern: item.pattern || '',
+        explanation: item.explanation || null,
+        notes: safeJson(item.notes),
+        examples: safeJson(item.examples),
+      },
+    });
+    count++;
+  }
+  console.log(`     ✓ ${count} sentence patterns seeded.`);
+}
+
+async function seedGrammars() {
+  console.log('  → Seeding Grammar...');
+  const data = readJson<any[]>(path.join(CONTENTS_DIR, 'grammars.json'));
+  let count = 0;
+  for (const item of data) {
+    await prisma.grammar.upsert({
+      where: { grammar_id: item.grammar_id },
+      create: {
+        grammar_id: item.grammar_id,
+        title: item.title || '',
+        structure: item.structure || null,
+        explanation: item.explanation || null,
+        notes: safeJson(item.notes),
+        examples: safeJson(item.examples),
+      },
+      update: {
+        title: item.title || '',
+        structure: item.structure || null,
+        explanation: item.explanation || null,
+        notes: safeJson(item.notes),
+        examples: safeJson(item.examples),
+      },
+    });
+    count++;
+  }
+  console.log(`     ✓ ${count} grammars seeded.`);
+}
+
+async function seedDialogues() {
+  console.log('  → Seeding Dialogue...');
+  const data = readJson<any[]>(path.join(CONTENTS_DIR, 'dialogues.json'));
+  let count = 0;
+  for (const item of data) {
+    const turns = item.turns || item.lines || [];
+    const audioPath = item.audio_path || item.audio_url || null;
+
+    await prisma.dialogue.upsert({
+      where: { dialogue_id: item.dialogue_id },
+      create: {
+        dialogue_id: item.dialogue_id,
+        title: item.title || null,
+        audio_path: audioPath,
+        turns: safeJson(turns),
+      },
+      update: {
+        title: item.title || null,
+        audio_path: audioPath,
+        turns: safeJson(turns),
+      },
+    });
+    count++;
+  }
+  console.log(`     ✓ ${count} dialogues seeded.`);
+}
+
+async function seedPhonetics() {
+  console.log('  → Seeding Phonetic...');
+  const data = readJson<any[]>(path.join(CONTENTS_DIR, 'phonetics.json'));
+  let count = 0;
+  for (const item of data) {
+    await prisma.phonetic.upsert({
+      where: { phonetic_id: item.phonetic_id },
+      create: {
+        phonetic_id: item.phonetic_id,
+        syllables: safeJson(item.syllables),
+        rules: safeJson(item.rules),
+      },
+      update: {
+        syllables: safeJson(item.syllables),
+        rules: safeJson(item.rules),
+      },
+    });
+    count++;
+  }
+  console.log(`     ✓ ${count} phonetics seeded.`);
+}
+
+async function seedHanzi() {
+  console.log('  → Seeding Hanzi...');
+  const data = readJson<any[]>(path.join(CONTENTS_DIR, 'hanzi.json'));
+  let count = 0;
+  for (const item of data) {
+    // Try upsert by hanzi_id first; if character conflict, update by character
+    try {
+      await prisma.hanzi.upsert({
+        where: { hanzi_id: item.hanzi_id },
+        create: {
+          hanzi_id: item.hanzi_id,
+          character: item.character,
+          pinyin: item.pinyin || null,
+          meaning: item.meaning || null,
+          stroke_count: item.stroke_count || null,
+          radical: item.radical || null,
+          notes: safeJson(item.notes),
+          examples: safeJson(item.examples),
+          character_audio_path: item.character_audio_path || null,
+          stroke_svg_path: item.stroke_svg_path || null,
+          svg_content: item.svg_content || null,
+        },
+        update: {
+          pinyin: item.pinyin || null,
+          meaning: item.meaning || null,
+          stroke_count: item.stroke_count || null,
+          radical: item.radical || null,
+          notes: safeJson(item.notes),
+          examples: safeJson(item.examples),
+          character_audio_path: item.character_audio_path || null,
+          stroke_svg_path: item.stroke_svg_path || null,
+          svg_content: item.svg_content || null,
+        },
+      });
+    } catch {
+      // character unique conflict: update existing by character
+      await prisma.hanzi.updateMany({
+        where: { character: item.character },
+        data: {
+          hanzi_id: item.hanzi_id,
+          pinyin: item.pinyin || null,
+          meaning: item.meaning || null,
+          stroke_count: item.stroke_count || null,
+          radical: item.radical || null,
+          notes: safeJson(item.notes),
+          examples: safeJson(item.examples),
+          character_audio_path: item.character_audio_path || null,
+          stroke_svg_path: item.stroke_svg_path || null,
+        },
+      });
+    }
+    count++;
+  }
+  console.log(`     ✓ ${count} hanzi seeded.`);
+}
+
+// ─────────────────────────────────────────────
+//  PHASE 2: Seed Courses HSK1 - HSK6
+// ─────────────────────────────────────────────
+
+const HSK_COURSES = [
+  { level: 'HSK1', code: 'HSK1', title: 'HSK 1 - Sơ cấp', description: 'Tiếng Trung sơ cấp HSK cấp độ 1' },
+  { level: 'HSK2', code: 'HSK2', title: 'HSK 2 - Sơ trung cấp', description: 'Tiếng Trung HSK cấp độ 2' },
+  { level: 'HSK3', code: 'HSK3', title: 'HSK 3 - Trung cấp', description: 'Tiếng Trung HSK cấp độ 3' },
+  { level: 'HSK4', code: 'HSK4', title: 'HSK 4 - Trung thượng cấp', description: 'Tiếng Trung HSK cấp độ 4' },
+  { level: 'HSK5', code: 'HSK5', title: 'HSK 5 - Thượng cấp', description: 'Tiếng Trung HSK cấp độ 5' },
+  { level: 'HSK6', code: 'HSK6', title: 'HSK 6 - Cao cấp', description: 'Tiếng Trung HSK cấp độ 6' },
+];
+
+async function seedCourses(): Promise<Map<string, number>> {
+  console.log('  → Seeding Courses (HSK1-HSK6)...');
+  const courseIdMap = new Map<string, number>(); // "hsk1" -> course_id
+
+  for (const c of HSK_COURSES) {
+    const course = await prisma.courses.upsert({
+      where: { code: c.code },
+      create: {
+        title: c.title,
+        code: c.code,
+        description: c.description,
+        level: c.level,
+        is_published: true,
+      },
+      update: {
+        title: c.title,
+        description: c.description,
+        level: c.level,
+        is_published: true,
+      },
+    });
+    courseIdMap.set(c.code.toLowerCase(), course.course_id);
+  }
+
+  console.log(`     ✓ ${courseIdMap.size} courses seeded.`);
+  return courseIdMap;
+}
+
+// ─────────────────────────────────────────────
+//  PHASE 3: Seed Units (Chapters) & Decompose Content
+// ─────────────────────────────────────────────
+
+async function seedUnitsForCourse(courseKey: string, courseId: number) {
+  const courseDir = path.join(COURSES_DIR, courseKey);
+  if (!fs.existsSync(courseDir)) {
+    console.log(`     ⚠  No course directory for ${courseKey}, skipping.`);
+    return;
+  }
+
+  // Auto-discover all unit*.json files
+  const unitFiles = fs.readdirSync(courseDir)
+    .filter(f => /^unit\d+\.json$/i.test(f))
+    .sort((a, b) => {
+      const na = parseInt(a.match(/\d+/)?.[0] || '0');
+      const nb = parseInt(b.match(/\d+/)?.[0] || '0');
+      return na - nb;
+    });
+
+  if (unitFiles.length === 0) {
+    console.log(`     ⚠  No unit files found in ${courseKey}/`);
+    return;
+  }
+
+  console.log(`  → Seeding ${unitFiles.length} units for ${courseKey.toUpperCase()}...`);
+
+  for (const unitFile of unitFiles) {
+    const unitData = readJson<any>(path.join(courseDir, unitFile));
+    const unitNumber = unitData.order_index || parseInt(unitFile.match(/\d+/)?.[0] || '1');
+    const slug = unitData.chapter_id || `${courseKey}_u${String(unitNumber).padStart(2, '0')}`;
+
+    // Upsert the Chapter (Unit) — find by slug or create
+    let chapter = await prisma.chapters.findFirst({
+      where: { course_id: courseId, slug },
+    });
+
+    if (chapter) {
+      chapter = await prisma.chapters.update({
+        where: { chapter_id: chapter.chapter_id },
+        data: {
+          title: unitData.title || `Unit ${unitNumber}`,
+          order_index: unitNumber,
+          description: unitData.description || null,
+          unit_number: unitNumber,
+          slug,
+        },
+      });
+    } else {
+      chapter = await prisma.chapters.create({
+        data: {
+          course_id: courseId,
+          title: unitData.title || `Unit ${unitNumber}`,
+          order_index: unitNumber,
+          description: unitData.description || null,
+          unit_number: unitNumber,
+          slug,
+        },
+      });
+    }
+
+    const unitId = chapter.chapter_id;
+
+    // ── Seed Lessons inside this Unit ──────────────────────────────
+    const lessons: any[] = unitData.lessons || [];
+    for (const lessonData of lessons) {
+      let lesson = await prisma.lessons.findFirst({
+        where: { chapter_id: unitId, order_index: lessonData.order_index },
+      });
+
+      if (lesson) {
+        lesson = await prisma.lessons.update({
+          where: { lesson_id: lesson.lesson_id },
+          data: {
+            title: lessonData.title || `Lesson ${lessonData.order_index}`,
+            status: 'PUBLISHED',
+          },
+        });
+      } else {
+        lesson = await prisma.lessons.create({
+          data: {
+            chapter_id: unitId,
+            title: lessonData.title || `Lesson ${lessonData.order_index}`,
+            order_index: lessonData.order_index,
+            estimated_duration_mins: 15,
+            status: 'PUBLISHED',
+          },
+        });
+      }
+
+      // ── Process lesson_blocks → collect content references ───────
+      const lessonBlocks: any[] = lessonData.lesson_blocks || [];
+      let globalVocabIdx = 0, globalPatternIdx = 0, globalGrammarIdx = 0;
+      let globalDialogueIdx = 0, globalPhoneticIdx = 0, globalHanziIdx = 0;
+
+      for (const block of lessonBlocks) {
+        // Upsert LessonBlock
+        const blockContentJson = JSON.stringify({
+          lesson_block_id: block.lesson_block_id,
+          block_type: block.block_type,
+          order_index: block.order_index,
+          content_references: block.content_references || [],
+        });
+
+        const existingBlock = await prisma.lessonBlocks.findFirst({
+          where: {
+            lesson_id: lesson.lesson_id,
+            order_index: block.order_index,
+            block_type: block.block_type,
+          },
+        });
+
+        if (!existingBlock) {
+          await prisma.lessonBlocks.create({
+            data: {
+              lesson_id: lesson.lesson_id,
+              block_type: block.block_type,
+              order_index: block.order_index,
+              content_json: blockContentJson,
+            },
+          });
+        } else {
+          await prisma.lessonBlocks.update({
+            where: { block_id: existingBlock.block_id },
+            data: { content_json: blockContentJson },
+          });
+        }
+
+        // ── Decompose content_references into Unit* tables ────────
+        const refs: any[] = block.content_references || [];
+        for (const ref of refs) {
+          if (ref.content_type === 'VOCABULARY') {
+            const vocab = await prisma.vocabulary.findUnique({ where: { vocabulary_id: ref.content_id } });
+            if (vocab) {
+              try {
+                await prisma.unitVocabulary.upsert({
+                  where: { unit_id_vocabulary_id: { unit_id: unitId, vocabulary_id: vocab.id } },
+                  create: { unit_id: unitId, vocabulary_id: vocab.id, order_index: globalVocabIdx++, block_type: block.block_type },
+                  update: { block_type: block.block_type },
+                });
+              } catch { globalVocabIdx++; }
+            }
+          } else if (ref.content_type === 'SENTENCE_PATTERN') {
+            const sp = await prisma.sentencePattern.findUnique({ where: { sentence_pattern_id: ref.content_id } });
+            if (sp) {
+              try {
+                await prisma.unitSentencePattern.upsert({
+                  where: { unit_id_sentence_pattern_id: { unit_id: unitId, sentence_pattern_id: sp.id } },
+                  create: { unit_id: unitId, sentence_pattern_id: sp.id, order_index: globalPatternIdx++, block_type: block.block_type },
+                  update: { block_type: block.block_type },
+                });
+              } catch { globalPatternIdx++; }
+            }
+          } else if (ref.content_type === 'GRAMMAR') {
+            const gr = await prisma.grammar.findUnique({ where: { grammar_id: ref.content_id } });
+            if (gr) {
+              try {
+                await prisma.unitGrammar.upsert({
+                  where: { unit_id_grammar_id: { unit_id: unitId, grammar_id: gr.id } },
+                  create: { unit_id: unitId, grammar_id: gr.id, order_index: globalGrammarIdx++, block_type: block.block_type },
+                  update: { block_type: block.block_type },
+                });
+              } catch { globalGrammarIdx++; }
+            }
+          } else if (ref.content_type === 'DIALOGUE') {
+            const dl = await prisma.dialogue.findUnique({ where: { dialogue_id: ref.content_id } });
+            if (dl) {
+              try {
+                await prisma.unitDialogue.upsert({
+                  where: { unit_id_dialogue_id: { unit_id: unitId, dialogue_id: dl.id } },
+                  create: { unit_id: unitId, dialogue_id: dl.id, order_index: globalDialogueIdx++, block_type: block.block_type },
+                  update: { block_type: block.block_type },
+                });
+              } catch { globalDialogueIdx++; }
+            }
+          } else if (ref.content_type === 'PHONETIC') {
+            const ph = await prisma.phonetic.findUnique({ where: { phonetic_id: ref.content_id } });
+            if (ph) {
+              try {
+                await prisma.unitPhonetic.upsert({
+                  where: { unit_id_phonetic_id: { unit_id: unitId, phonetic_id: ph.id } },
+                  create: { unit_id: unitId, phonetic_id: ph.id, order_index: globalPhoneticIdx++, block_type: block.block_type },
+                  update: { block_type: block.block_type },
+                });
+              } catch { globalPhoneticIdx++; }
+            }
+          } else if (ref.content_type === 'HANZI') {
+            const hz = await prisma.hanzi.findUnique({ where: { hanzi_id: ref.content_id } });
+            if (hz) {
+              try {
+                await prisma.unitHanzi.upsert({
+                  where: { unit_id_hanzi_id: { unit_id: unitId, hanzi_id: hz.id } },
+                  create: { unit_id: unitId, hanzi_id: hz.id, order_index: globalHanziIdx++, block_type: block.block_type },
+                  update: { block_type: block.block_type },
+                });
+              } catch { globalHanziIdx++; }
+            }
+          }
+          // EXERCISE refs handled in Phase 4
+        }
+      }
+    }
+    console.log(`     ✓ ${courseKey.toUpperCase()} Unit ${unitNumber} (chapter_id=${unitId}) seeded.`);
+  }
+}
+
+async function seedAllUnits(courseIdMap: Map<string, number>) {
+  for (const [key, courseId] of courseIdMap.entries()) {
+    await seedUnitsForCourse(key, courseId);
+  }
+}
+
+// ─────────────────────────────────────────────
+//  PHASE 4: Seed Exercises & Answers
+// ─────────────────────────────────────────────
+
+async function seedExercises(courseIdMap: Map<string, number>) {
+  console.log('  → Seeding Exercises...');
+
+  const exercisesRaw = readJson<any[]>(path.join(EXERCISE_DIR, 'Exercise.json'));
+  const answersRaw = readJson<any[]>(path.join(EXERCISE_DIR, 'exercise-answers.json'));
+  const answersMap = new Map<string, any>();
+  for (const ans of answersRaw) {
+    answersMap.set(ans.exercise_id, ans);
+  }
+
+  // Build exercise → unit_id mapping
+  const exerciseToUnit = new Map<string, number>();
+
+  for (const [hskKey, courseId] of courseIdMap.entries()) {
+    const courseDir = path.join(COURSES_DIR, hskKey);
+    if (!fs.existsSync(courseDir)) continue;
+
+    const unitFiles = fs.readdirSync(courseDir).filter(f => /^unit\d+\.json$/i.test(f));
+    for (const unitFile of unitFiles) {
+      const unitData = readJson<any>(path.join(courseDir, unitFile));
+      const unitNumber = unitData.order_index || parseInt(unitFile.match(/\d+/)?.[0] || '1');
+      const slug = unitData.chapter_id || `${hskKey}_u${String(unitNumber).padStart(2, '0')}`;
+
+      const chapter = await prisma.chapters.findFirst({ where: { course_id: courseId, slug } });
+      if (!chapter) continue;
+
+      const lessons: any[] = unitData.lessons || [];
+      for (const lesson of lessons) {
+        for (const block of (lesson.lesson_blocks || [])) {
+          for (const ref of (block.content_references || [])) {
+            if (ref.content_type === 'EXERCISE') {
+              exerciseToUnit.set(ref.content_id, chapter.chapter_id);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  let count = 0;
+  for (const ex of exercisesRaw) {
+    const unitId = exerciseToUnit.get(ex.exercise_id) || null;
+
+    await prisma.exercise.upsert({
+      where: { exercise_id: ex.exercise_id },
+      create: {
+        exercise_id: ex.exercise_id,
+        unit_id: unitId,
+        exercise_type: ex.exercise_type || 'MULTIPLE_CHOICE',
+        instruction: ex.instruction || null,
+        question: safeJson(ex.question),
+        options: safeJson(ex.options),
+        items: safeJson(ex.items),
+        left_items: safeJson(ex.left_items),
+        right_items: safeJson(ex.right_items),
+      },
+      update: {
+        unit_id: unitId,
+        exercise_type: ex.exercise_type || 'MULTIPLE_CHOICE',
+        instruction: ex.instruction || null,
+        question: safeJson(ex.question),
+        options: safeJson(ex.options),
+        items: safeJson(ex.items),
+        left_items: safeJson(ex.left_items),
+        right_items: safeJson(ex.right_items),
+      },
+    });
+
+    // Seed answer
+    const ans = answersMap.get(ex.exercise_id);
+    if (ans) {
+      await prisma.exerciseAnswer.upsert({
+        where: { exercise_id: ex.exercise_id },
+        create: {
+          exercise_id: ex.exercise_id,
+          answer_type: ans.answer_type || 'SINGLE_CHOICE',
+          correct_data: safeJson(ans.correct_data) || '{}',
+          explanation: ans.explanation || null,
+        },
+        update: {
+          answer_type: ans.answer_type || 'SINGLE_CHOICE',
+          correct_data: safeJson(ans.correct_data) || '{}',
+          explanation: ans.explanation || null,
+        },
+      });
+    }
+
+    count++;
+  }
+  console.log(`     ✓ ${count} exercises seeded (${answersMap.size} answers).`);
+}
+
+// ─────────────────────────────────────────────
+//  PHASE 5: Seed Legacy Assessment Data & Characters
+// ─────────────────────────────────────────────
+
+async function seedLegacyAssessment() {
+  console.log('  → Seeding Legacy Assessment & Characters for Testing...');
+
+  // 1. Seed Characters (used by SRS Test 5)
   const charactersData = [
     {
+      char_id: 1,
       character: '你',
       pinyin: 'nǐ',
-      sino_vietnamese: 'Nhĩ',
-      meaning: 'Bạn, anh, chị (ngôi thứ 2 số ít)',
-      radical: '亻 (Nhân đứng)',
+      sino_vietnamese: 'nhĩ',
+      meaning: 'bạn, anh, chị (ngôi thứ 2)',
+      radical: '亻',
       strokes_count: 7,
-      stroke_order_svg: JSON.stringify([
-        'M35,18 c-0.1,5 -1.2,14 -4.8,22 c-4.2,9.3 -11.5,21.8 -21.2,29.7',
-        'M27,42 c0.6,0.6 0.9,1.8 0.9,3.1 c0,13.6 -0.3,42.4 -0.3,49.4',
-        'M58,16 c0.04,0.6 0.17,1.6 -0.08,2.3 c-2.3,6.3 -6.8,14.6 -12.4,20.8',
-        'M54,34 c2.8,0 20.2,-2.7 22.8,-2.7 c2.6,0 3.7,1.8 1.9,3.8 C73.4,41.4 67.5,48.2 60,54',
-        'M50,44 c0.7,0.7 1.1,1.8 1.1,3.1 c0,14.2 -0.4,41.9 -0.4,46.9',
-        'M52,65 c6,-0.8 22,-2.5 28.5,-3.2',
-        'M69,45 c0.8,0.8 1.2,2 1.2,3.3 c0,9.7 -0.2,35.2 -0.2,42.2 c0,9 5.5,8 14.5,8 c8,0 10.5,-1.5 10.5,-7.5',
-      ]),
     },
     {
+      char_id: 2,
       character: '好',
       pinyin: 'hǎo',
-      sino_vietnamese: 'Hảo',
-      meaning: 'Tốt, đẹp, hay, khỏe',
-      radical: '女 (Nữ)',
+      sino_vietnamese: 'hảo',
+      meaning: 'tốt, đẹp, khỏe',
+      radical: '女',
       strokes_count: 6,
-      stroke_order_svg: JSON.stringify([
-        'M28,18 c0.4,1 0.6,2.4 0.4,3.8 C26.7,35 20.3,55.8 15.8,63.2 c-0.9,1.5 -0.2,2.1 0.4,2.2 c7.8,1.4 16.5,5.2 21.8,11.8',
-        'M39.5,33 c0.1,1.1 0.2,3.2 -0.2,4.8 C35.7,52 26.2,74.5 11,85',
-        'M10,48 c0.7,0.3 2.6,0.4 3.7,0.3 c8.8,-0.8 19.3,-2.3 29.8,-3.1 c1.8,-0.1 3.5,0.2 4.5,0.4',
-        'M59,20 c1.2,0.5 2.8,0.7 4.2,0.5 c4.6,-0.7 17.1,-3.5 18.6,-3.7 c2.2,-0.3 3.6,1.4 1.8,3.4 C77.5,27.5 69,38 64,42',
-        'M64,41 c2.2,2.8 10.5,18.8 13.8,38.2 c0.9,5.5 -0.8,9.6 -6.8,9.6 c-5.2,0 -8.5,-5.2 -9.5,-6.2',
-        'M47,52 c1.5,0.8 3.8,0.9 5.5,0.6 c9.2,-1.6 27.5,-3.8 38.5,-4.4 c2.3,-0.1 4.2,0.3 5.5,0.7',
-      ]),
     },
     {
+      char_id: 3,
       character: '我',
       pinyin: 'wǒ',
-      sino_vietnamese: 'Ngã',
-      meaning: 'Tôi, mình, tao (ngôi thứ nhất số ít)',
-      radical: '戈 (Qua)',
+      sino_vietnamese: 'ngã',
+      meaning: 'tôi, mình (ngôi thứ 1)',
+      radical: '戈',
       strokes_count: 7,
-      stroke_order_svg: JSON.stringify([
-        'M36,15 c-0.1,0.9 -0.6,1.9 -1.2,2.4 c-4.6,3.6 -12.4,7.8 -23.8,11.2',
-        'M18,39 c0.7,0.4 2.8,0.6 4.1,0.5 c7.9,-0.6 15.9,-2.4 23.4,-3.6 c1.3,-0.2 2.7,0.1 3.5,0.3',
-        'M32.5,27 c0.9,0.9 1.4,2.2 1.4,3.7 c0,14.3 -0.2,49.2 -0.2,55.1 c0,4.2 -1.2,6.2 -4.2,3.2 c-3,-3 -5.5,-5.5 -7.5,-7.2',
-        'M16,66 c1.5,1.2 2.8,1.2 4.2,0.5 c5.8,-3 14.8,-8.2 21.8,-12.7',
-        'M64,12 c1,1.2 1.5,2.8 1.6,4.5 c1.5,22.5 8,62 23.4,78 c4.5,4.6 4,-2 3.8,-7.5',
-        'M84,38 c0.1,0.9 -0.2,2.3 -0.7,3.3 c-3.5,6.5 -11.5,17.2 -24.8,25.2',
-        'M77,16 c3.5,1.8 8.5,5.8 10.2,8.8',
-      ]),
-    },
-    {
-      character: '是',
-      pinyin: 'shì',
-      sino_vietnamese: 'Thị',
-      meaning: 'Là, phải, đúng',
-      radical: '日 (Nhật)',
-      strokes_count: 9,
-      stroke_order_svg: JSON.stringify([
-        'M29,14 c0.8,0.8 1.3,1.8 1.3,3 c0,10.2 -0.2,23.5 -0.2,27',
-        'M31,16 c4.5,-0.6 34.5,-4 38,-4.2 c2.5,-0.2 3.8,1.2 3.8,3.5 c0,6.2 -0.5,17.5 -0.5,24.5',
-        'M31,30 c6.5,-0.7 33.5,-3.2 40.5,-3.5',
-        'M31,43 c9.5,-0.8 31.5,-2.8 40,-3.2',
-        'M18,57 c1.8,0.6 4.5,0.4 6.5,0.2 c16.5,-1.6 38.5,-3.8 55.5,-4.6 c2.5,-0.1 4.5,0.3 6,0.6',
-        'M49,45 c0.8,0.8 1.2,2 1.2,3.2 c0,6.5 -0.2,21.5 -0.2,27.5',
-        'M32,67 c0.1,0.8 -0.1,1.8 -0.5,2.4 c-2.8,4.2 -8.5,10.8 -18.5,16.2',
-        'M30,76 c4.5,-0.5 12.5,-1.5 17.5,-2.2',
-        'M52,62 c5.5,5.2 21.5,18.5 32.5,24.5 c2.5,1.4 5.2,2.8 8,3.2',
-      ]),
-    },
-    {
-      character: '人',
-      pinyin: 'rén',
-      sino_vietnamese: 'Nhân',
-      meaning: 'Người, con người',
-      radical: '人 (Nhân)',
-      strokes_count: 2,
-      stroke_order_svg: JSON.stringify([
-        'M52,15 c0.2,1.8 0.4,3.5 -0.4,5.2 C46.5,33.5 33.5,63.5 12,82',
-        'M49,38 c6.5,8.8 24.5,31.2 36.5,41.5 c2.8,2.4 5.8,4.8 9.5,6',
-      ]),
     },
   ];
 
   for (const c of charactersData) {
     await prisma.characters.upsert({
       where: { character: c.character },
-      update: c,
       create: c,
+      update: c,
     });
   }
-  console.log('✅ Characters created with SVG strokes: 你, 好, 我, 是, 人');
+  console.log(`     ✓ ${charactersData.length} characters seeded.`);
 
-  // 3. Pinyin Syllables & Minimal Pairs
-  const p1 = await prisma.pinyinSyllables.create({
-    data: {
-      syllable: 'bā',
-      tone: 1,
-      category: 'INITIAL',
-      f0_pitch_contour: '55',
-      mouth_shape_guide: 'Âm môi hai bên khép chặt, không bật hơi, luồng khí nhẹ thoát ra tự nhiên.',
-    },
+  // 2. Find Lesson 1 (first lesson of first chapter of HSK1)
+  const lesson1 = await prisma.lessons.findFirst({
+    where: { order_index: 1 },
+    orderBy: { lesson_id: 'asc' },
   });
 
-  const p2 = await prisma.pinyinSyllables.create({
-    data: {
-      syllable: 'pā',
-      tone: 1,
-      category: 'INITIAL',
-      f0_pitch_contour: '55',
-      mouth_shape_guide: 'Âm môi hai bên khép chặt, BẬT HƠI RẤT MẠNH từ cơ hoành làm rung tờ giấy trước miệng.',
-      contrast_pair_id: p1.syllable_id,
-    },
-  });
-
-  const p3 = await prisma.pinyinSyllables.create({
-    data: {
-      syllable: 'mā',
-      tone: 1,
-      category: 'SYLLABLE',
-      f0_pitch_contour: '55',
-      mouth_shape_guide: 'Thanh 1: Ngân đều đặn ở cao độ bậc 5 (cao bằng), giữ hơi thở ổn định.',
-    },
-  });
-
-  const p4 = await prisma.pinyinSyllables.create({
-    data: {
-      syllable: 'mà',
-      tone: 4,
-      category: 'SYLLABLE',
-      f0_pitch_contour: '51',
-      mouth_shape_guide: 'Thanh 4: Rơi dứt khoát từ bậc 5 xuống bậc 1 (như quát nhẹ hoặc giậm chân).',
-      contrast_pair_id: p3.syllable_id,
-    },
-  });
-
-  console.log('✅ Pinyin Syllables and Minimal Pairs created: bā vs pā, mā vs mà');
-
-  // 4. Course, Chapters & Lessons
-  const course = await prisma.courses.upsert({
-    where: { code: 'HSK1' },
-    update: { is_published: true },
-    create: {
-      title: 'Khóa Học Tiếng Trung Sơ Cấp HSK 1',
-      code: 'HSK1',
-      description: 'Lộ trình chuẩn hóa 150 từ vựng căn bản, làm chủ toàn bộ Pinyin, quy tắc bút thuận chữ Hán và đàm thoại tự tin.',
-      level: 'HSK1',
-      is_published: true,
-    },
-  });
-
-  const chapter1 = await prisma.chapters.create({
-    data: {
-      course_id: course.course_id,
-      title: 'Chương 1: Khởi Động Với Pinyin & Chào Hỏi Căn Bản',
-      order_index: 1,
-    },
-  });
-
-  const chapter2 = await prisma.chapters.create({
-    data: {
-      course_id: course.course_id,
-      title: 'Chương 2: Giới Thiệu Bản Thân & Quốc Tịch',
-      order_index: 2,
-    },
-  });
-
-  // Lesson 1
-  const lesson1 = await prisma.lessons.create({
-    data: {
-      chapter_id: chapter1.chapter_id,
-      title: 'Bài 1: Chào hỏi căn bản (你好 - Nǐ hǎo)',
-      order_index: 1,
-      estimated_duration_mins: 10,
-      status: 'PUBLISHED',
-    },
-  });
-
-  // Link characters to Lesson 1
-  const charNi = await prisma.characters.findUnique({ where: { character: '你' } });
-  const charHao = await prisma.characters.findUnique({ where: { character: '好' } });
-  if (charNi && charHao) {
-    await prisma.lessonVocabularies.createMany({
-      data: [
-        { lesson_id: lesson1.lesson_id, char_id: charNi.char_id },
-        { lesson_id: lesson1.lesson_id, char_id: charHao.char_id },
-      ],
-    });
+  if (!lesson1) {
+    console.log('     ⚠ Lesson 1 not found, skipping assessment seed.');
+    return;
   }
 
-  // Lesson Blocks for Lesson 1
-  await prisma.lessonBlocks.createMany({
-    data: [
-      {
-        lesson_id: lesson1.lesson_id,
-        block_type: 'THEORY',
-        order_index: 1,
-        content_json: JSON.stringify({
-          title: 'Khái niệm Lời chào trong tiếng Trung',
-          content: 'Trong tiếng Trung, câu chào phổ biến nhất là "你好" (Nǐ hǎo), được ghép từ "你" (Bạn) và "好" (Tốt/Khỏe). Nghĩa đen là chúc bạn tốt đẹp, an khang.',
-        }),
-      },
-      {
-        lesson_id: lesson1.lesson_id,
-        block_type: 'PINYIN',
-        order_index: 2,
-        content_json: JSON.stringify({
-          syllables: ['nǐ', 'hǎo'],
-          rule: 'Quy tắc biến điệu hai thanh 3: Khi hai âm mang thanh 3 đi liền nhau (nǐ + hǎo), âm đầu tiên biến thành thanh 2: "ní hǎo".',
-        }),
-      },
-      {
-        lesson_id: lesson1.lesson_id,
-        block_type: 'HANZI',
-        order_index: 3,
-        content_json: JSON.stringify({
-          character: '好',
-          meaning: 'Bộ Nữ (女) đứng cạnh bộ Tử (子). Người xưa quan niệm người phụ nữ có con trai con gái sum vầy là điều TỐT ĐẸP nhất.',
-        }),
-      },
-      {
-        lesson_id: lesson1.lesson_id,
-        block_type: 'AUDIO',
-        order_index: 4,
-        content_json: JSON.stringify({
-          dialogue: [
-            { speaker: 'A', hanzi: '你好！', pinyin: 'Nǐ hǎo!', meaning: 'Xin chào bạn!' },
-            { speaker: 'B', hanzi: '你好！', pinyin: 'Nǐ hǎo!', meaning: 'Chào bạn!' },
-          ],
-        }),
-      },
-    ],
-  });
-
-  // Lesson 2
-  const lesson2 = await prisma.lessons.create({
-    data: {
-      chapter_id: chapter1.chapter_id,
-      title: 'Bài 2: Nhận diện Thanh 1 và Thanh 4',
-      order_index: 2,
-      estimated_duration_mins: 12,
-      status: 'PUBLISHED',
-    },
-  });
-
-  // Lesson 3
-  const lesson3 = await prisma.lessons.create({
-    data: {
-      chapter_id: chapter2.chapter_id,
-      title: 'Bài 3: Đại từ nhân xưng (我，你，他)',
-      order_index: 1,
-      estimated_duration_mins: 15,
-      status: 'PUBLISHED',
-    },
-  });
-
-  // 4B. Seed HSK 2 - HSK 6 Courses & Units (Chuẩn HSK 1-6)
-  const additionalCourses = [
+  // 3. Seed 4 Questions with exact question_id 1..4 and correct answers B, B, B, C (required by Test 4 & Test 9)
+  const questionsData = [
     {
-      code: 'HSK2',
-      level: 'HSK2',
-      title: 'Khóa Học Tiếng Trung Sơ Trung Cấp HSK 2',
-      description: 'Mở rộng lên 300 từ vựng và cấu trúc ngữ pháp giao tiếp đời sống, mua sắm, hỏi đường, thời tiết.',
-      chapters: [
-        {
-          title: 'Unit 1: Kế Hoạch Cuối Tuần & Thời Gian (九月去北京旅游最好)',
-          lessons: [
-            { title: 'Bài 1: Tháng 9 đi Bắc Kinh du lịch là tuyệt nhất', duration: 15 },
-            { title: 'Bài 2: Mỗi ngày tôi đều thức dậy lúc 6 giờ', duration: 15 },
-          ],
-        },
-        {
-          title: 'Unit 2: Sinh Hoạt & Mua Sắm Hằng Ngày',
-          lessons: [
-            { title: 'Bài 3: Chiếc áo màu đỏ bên trái đắt hơn một chút', duration: 18 },
-          ],
-        },
-      ],
+      question_id: 1,
+      question_type: 'MULTIPLE_CHOICE',
+      skill_category: 'READING',
+      difficulty_level: 'HSK1',
+      content: '“你好” 的意思是？',
+      options_json: JSON.stringify(['A. Tạm biệt', 'B. Xin chào', 'C. Cảm ơn', 'D. Xin lỗi']),
+      correct_answer: 'B',
+      explanation: '“你好” có nghĩa là Xin chào trong tiếng Trung.',
     },
     {
-      code: 'HSK3',
-      level: 'HSK3',
-      title: 'Khóa Học Tiếng Trung Trung Cấp HSK 3',
-      description: 'Làm chủ 600 từ vựng HSK 3, câu chữ 把, câu chữ 被, bổ ngữ xu hướng và giao tiếp công việc cơ bản.',
-      chapters: [
-        {
-          title: 'Unit 1: Kế Hoạch Cuộc Sống & Công Việc (周末你有什么打算)',
-          lessons: [
-            { title: 'Bài 1: Cuối tuần bạn có dự định gì?', duration: 20 },
-            { title: 'Bài 2: Khi nào anh ấy quay về?', duration: 20 },
-          ],
-        },
-      ],
+      question_id: 2,
+      question_type: 'MULTIPLE_CHOICE',
+      skill_category: 'READING',
+      difficulty_level: 'HSK1',
+      content: 'Đại từ nhân xưng ngôi thứ nhất số ít “我” có nghĩa là gì?',
+      options_json: JSON.stringify(['A. Bạn', 'B. Tôi', 'C. Anh ấy', 'D. Chúng tôi']),
+      correct_answer: 'B',
+      explanation: '“我” (wǒ) có nghĩa là Tôi.',
     },
     {
-      code: 'HSK4',
-      level: 'HSK4',
-      title: 'Giáo Trình Chuẩn HSK 4 (Quyển Thượng & Quyển Hạ)',
-      description: 'Trọn bộ 1200 từ vựng Chuẩn HSK 4, luyện nghe MP3 thực chiến và đọc hiểu đoạn văn dài phục vụ du học & làm việc.',
-      chapters: [
-        {
-          title: 'Unit 1 (Quyển Hạ - Bài 11): Đọc Sách & Tri Thức (读书好，读好书，好读书)',
-          lessons: [
-            { title: 'Bài 11: Đọc sách tốt, đọc sách hay, thích đọc sách', duration: 25 },
-            { title: 'Bài 12: Dụng tâm phát hiện thế giới xung quanh', duration: 25 },
-          ],
-        },
-        {
-          title: 'Unit 2 (Quyển Hạ - Bài 13-14): Tâm Lý & Nghệ Thuật Sống',
-          lessons: [
-            { title: 'Bài 13: Uống cạn ly cà phê đắng của cuộc đời', duration: 25 },
-            { title: 'Bài 14: Bảo vệ môi trường bắt đầu từ những việc nhỏ', duration: 25 },
-          ],
-        },
-      ],
+      question_id: 3,
+      question_type: 'MULTIPLE_CHOICE',
+      skill_category: 'READING',
+      difficulty_level: 'HSK1',
+      content: 'Chọn phiên âm đúng của chữ “好”:',
+      options_json: JSON.stringify(['A. hē', 'B. hǎo', 'C. hán', 'D. huà']),
+      correct_answer: 'B',
+      explanation: 'Chữ “好” có pinyin là “hǎo”.',
     },
     {
-      code: 'HSK5',
-      level: 'HSK5',
-      title: 'Khóa Học Tiếng Trung Cao Cấp HSK 5',
-      description: 'Chinh phục 2500 từ vựng HSK 5, đọc hiểu báo chí, văn học hiện đại, thuyết trình và viết luận chuyên sâu.',
-      chapters: [
-        {
-          title: 'Unit 1: Văn Hóa & Triết Lý Nhân Sinh (爱的细节)',
-          lessons: [
-            { title: 'Bài 1: Những chi tiết nhỏ của tình yêu thương', duration: 30 },
-            { title: 'Bài 2: Giữ lại một khung cửa sổ cho tâm hồn', duration: 30 },
-          ],
-        },
-      ],
-    },
-    {
-      code: 'HSK6',
-      level: 'HSK6',
-      title: 'Khóa Học Tiếng Trung Thành Thạo HSK 6',
-      description: 'Làm chủ 5000+ từ vựng học thuật, thành ngữ tứ tự (成语), phân tích lỗi câu và tóm tắt văn bản chuyên ngành.',
-      chapters: [
-        {
-          title: 'Unit 1: Tư Duy Học Thuật & Văn Chương Cổ Kim',
-          lessons: [
-            { title: 'Bài 1: Nghệ thuật tóm tắt luận văn (缩写训练)', duration: 35 },
-            { title: 'Bài 2: Phân tích thành ngữ và ngữ pháp học thuật HSK 6', duration: 35 },
-          ],
-        },
-      ],
+      question_id: 4,
+      question_type: 'MULTIPLE_CHOICE',
+      skill_category: 'READING',
+      difficulty_level: 'HSK1',
+      content: 'Khi gặp một người lớn tuổi hoặc cần thể hiện sự tôn trọng, ta dùng:',
+      options_json: JSON.stringify(['A. 你好', 'B. 你们好', 'C. 您好', 'D. 大家好']),
+      correct_answer: 'C',
+      explanation: '“您好” (nín hǎo) thể hiện sự kính trọng hơn “你好”.',
     },
   ];
 
-  for (const cData of additionalCourses) {
-    const existingCourse = await prisma.courses.findUnique({ where: { code: cData.code } });
-    if (!existingCourse) {
-      const createdCourse = await prisma.courses.create({
-        data: {
-          code: cData.code,
-          level: cData.level,
-          title: cData.title,
-          description: cData.description,
-          is_published: true,
-        },
-      });
-
-      for (let cIdx = 0; cIdx < cData.chapters.length; cIdx++) {
-        const ch = cData.chapters[cIdx];
-        const createdChapter = await prisma.chapters.create({
-          data: {
-            course_id: createdCourse.course_id,
-            title: ch.title,
-            order_index: cIdx + 1,
-          },
-        });
-
-        for (let lIdx = 0; lIdx < ch.lessons.length; lIdx++) {
-          const ls = ch.lessons[lIdx];
-          await prisma.lessons.create({
-            data: {
-              chapter_id: createdChapter.chapter_id,
-              title: ls.title,
-              order_index: lIdx + 1,
-              estimated_duration_mins: ls.duration,
-              status: 'PUBLISHED',
-            },
-          });
-        }
-      }
-    }
+  for (const q of questionsData) {
+    await prisma.questions.upsert({
+      where: { question_id: q.question_id },
+      create: q,
+      update: q,
+    });
   }
+  console.log(`     ✓ ${questionsData.length} assessment questions seeded.`);
 
-  console.log('✅ Courses, Chapters & Lessons created with content blocks (HSK 1 - HSK 6)');
-
-  // 5. Question Bank
-  const q1 = await prisma.questions.create({
-    data: {
-      question_type: 'MULTIPLE_CHOICE',
-      skill_category: 'READING',
-      difficulty_level: 'HSK1',
-      content: 'Cụm từ "你好" (nǐ hǎo) có nghĩa tiếng Việt là gì?',
-      options_json: JSON.stringify([
-        { id: 'A', text: 'Tạm biệt' },
-        { id: 'B', text: 'Xin chào' },
-        { id: 'C', text: 'Cảm ơn' },
-        { id: 'D', text: 'Xin lỗi' },
-      ]),
-      correct_answer: 'B',
-      explanation: '你好 (nǐ hǎo) là câu chào hỏi cơ bản nhất trong tiếng Trung, có nghĩa là "Xin chào".',
-    },
-  });
-
-  const q2 = await prisma.questions.create({
-    data: {
-      question_type: 'TONE_PICKER',
-      skill_category: 'TONE',
-      difficulty_level: 'HSK1',
-      content: 'Khi hai thanh 3 đi liền nhau (ví dụ: 你 nǐ + 好 hǎo), thanh điệu của từ đầu tiên biến đổi như thế nào?',
-      options_json: JSON.stringify([
-        { id: 'A', text: 'Biến thành Thanh 1 (Cao bằng)' },
-        { id: 'B', text: 'Biến thành Thanh 2 (Dấu hỏi lướt lên)' },
-        { id: 'C', text: 'Biến thành Thanh 4 (Dứt khoát)' },
-        { id: 'D', text: 'Giữ nguyên không đổi' },
-      ]),
-      correct_answer: 'B',
-      explanation: 'Quy tắc biến điệu hai thanh 3: 3 + 3 → 2 + 3. Do đó 你好 đọc thành "ní hǎo".',
-    },
-  });
-
-  const q3 = await prisma.questions.create({
-    data: {
-      question_type: 'RADICAL_BUILDER',
-      skill_category: 'WRITING',
-      difficulty_level: 'HSK1',
-      content: 'Chữ "好" (hǎo) được cấu tạo từ hai bộ thủ nào ghép lại?',
-      options_json: JSON.stringify([
-        { id: 'A', text: '亻 (Nhân đứng) + 口 (Khẩu)' },
-        { id: 'B', text: '女 (Nữ - phụ nữ) + 子 (Tử - con)' },
-        { id: 'C', text: '日 (Nhật - mặt trời) + 月 (Nguyệt)' },
-        { id: 'D', text: '木 (Mộc - cây) + 目 (Mục - mắt)' },
-      ]),
-      correct_answer: 'B',
-      explanation: 'Chữ 好 (Hảo) gồm bộ Nữ (女) bên trái và bộ Tử (子) bên phải, mang ý nghĩa tốt đẹp trọn vẹn.',
-    },
-  });
-
-  const q4 = await prisma.questions.create({
-    data: {
-      question_type: 'MULTIPLE_CHOICE',
-      skill_category: 'READING',
-      difficulty_level: 'HSK1',
-      content: 'Đại từ nhân xưng ngôi thứ nhất số ít "Tôi, mình" trong tiếng Trung viết là chữ nào?',
-      options_json: JSON.stringify([
-        { id: 'A', text: '你 (nǐ)' },
-        { id: 'B', text: '他 (tā)' },
-        { id: 'C', text: '我 (wǒ)' },
-        { id: 'D', text: '们 (men)' },
-      ]),
-      correct_answer: 'C',
-      explanation: '我 (wǒ) nghĩa là Tôi, tao, mình trong tiếng Trung.',
-    },
-  });
-
-  // 6. Test linked to Lesson 1
-  const test1 = await prisma.tests.create({
-    data: {
+  // 4. Seed Test with test_id = 1 linked to lesson_id = lesson1.lesson_id (1), published = true
+  const test1 = await prisma.tests.upsert({
+    where: { test_id: 1 },
+    create: {
+      test_id: 1,
       lesson_id: lesson1.lesson_id,
-      title: 'Bài Kiểm Tra Củng Cố: Bài 1 (你好)',
+      title: 'Kiểm tra Unit 1 - Bài 1',
       test_type: 'QUIZ',
       passing_score: 80,
-      time_limit_mins: 10,
+      time_limit_mins: 15,
+      is_published: true,
+    },
+    update: {
+      lesson_id: lesson1.lesson_id,
+      title: 'Kiểm tra Unit 1 - Bài 1',
+      test_type: 'QUIZ',
+      passing_score: 80,
+      time_limit_mins: 15,
       is_published: true,
     },
   });
 
-  await prisma.testQuestions.createMany({
-    data: [
-      { test_id: test1.test_id, question_id: q1.question_id, order_index: 1 },
-      { test_id: test1.test_id, question_id: q2.question_id, order_index: 2 },
-      { test_id: test1.test_id, question_id: q3.question_id, order_index: 3 },
-      { test_id: test1.test_id, question_id: q4.question_id, order_index: 4 },
-    ],
-  });
-
-  console.log('✅ Question Bank and Test created with Snapshot capability');
-
-  // 7. Seed Initial SRS Flashcards for demo student
-  if (charNi && charHao) {
-    const existingSrsCount = await prisma.userSrsItems.count({
-      where: { user_id: student.user_id },
+  // Link questions to Test 1
+  for (let i = 0; i < questionsData.length; i++) {
+    const q = questionsData[i];
+    await prisma.testQuestions.upsert({
+      where: {
+        test_id_question_id: {
+          test_id: test1.test_id,
+          question_id: q.question_id,
+        },
+      },
+      create: {
+        test_id: test1.test_id,
+        question_id: q.question_id,
+        order_index: i + 1,
+      },
+      update: {
+        order_index: i + 1,
+      },
     });
-    if (existingSrsCount === 0) {
-      await prisma.userSrsItems.createMany({
-        data: [
-          {
-            user_id: student.user_id,
-            char_id: charNi.char_id,
-            ease_factor: 2.5,
-            interval_days: 1,
-            repetitions: 1,
-            next_review_at: new Date(Date.now() - 3600000), // Due 1 hour ago
-          },
-          {
-            user_id: student.user_id,
-            char_id: charHao.char_id,
-            ease_factor: 2.5,
-            interval_days: 1,
-            repetitions: 2,
-            next_review_at: new Date(Date.now() - 7200000), // Due 2 hours ago
-          },
-        ],
-      });
-    }
-    console.log('✅ Initial SRS review queue seeded for demo student');
   }
+  console.log(`     ✓ Test 1 with ${questionsData.length} questions linked to Lesson ${lesson1.lesson_id}.`);
+}
 
-  console.log('🎉 Database seeding completed successfully!');
+// ─────────────────────────────────────────────
+//  MAIN
+// ─────────────────────────────────────────────
+
+async function main() {
+  console.log('\n🌱 Starting HSK Curriculum Seed...\n');
+
+  console.log('👤 Phase 0: Default Users');
+  await seedUsers();
+
+  console.log('\n📚 Phase 1: Atomic Content Repositories');
+  await seedVocabularies();
+  await seedSentencePatterns();
+  await seedGrammars();
+  await seedDialogues();
+  await seedPhonetics();
+  await seedHanzi();
+
+  console.log('\n🏫 Phase 2: Courses (HSK1-HSK6)');
+  const courseIdMap = await seedCourses();
+
+  console.log('\n📋 Phase 3: Units & Content Decomposition');
+  await seedAllUnits(courseIdMap);
+
+  console.log('\n📝 Phase 4: Exercises & Answers');
+  await seedExercises(courseIdMap);
+
+  console.log('\n🎯 Phase 5: Legacy Assessment & Characters');
+  await seedLegacyAssessment();
+
+  console.log('\n✅ Seed completed successfully!\n');
 }
 
 main()
   .catch((e) => {
-    console.error('Seeding error:', e);
+    console.error('❌ Seed failed:', e);
     process.exit(1);
   })
   .finally(async () => {

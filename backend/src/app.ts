@@ -13,6 +13,7 @@ import { curriculumRoutes } from './modules/curriculum/curriculum.routes';
 import { learningRoutes } from './modules/learning/learning.routes';
 import { assessmentRoutes } from './modules/assessment/assessment.routes';
 import { srsRoutes } from './modules/srs/srs.routes';
+import { contentRoutes } from './modules/content/content.routes';
 import { userController } from './modules/user/user.controller';
 import { authenticate } from './shared/middleware/auth.middleware';
 
@@ -64,6 +65,11 @@ app.use('/api/v1/curriculum', curriculumRoutes);
 app.use('/api/v1/learning', learningRoutes);
 app.use('/api/v1/assessment', assessmentRoutes);
 app.use('/api/v1/srs', srsRoutes);
+
+// Content Module — HSK Curriculum Content APIs (Giai đoạn 4)
+app.use('/api/v1/content', contentRoutes);
+// Shorthand aliases (/api/courses, /api/units, /api/materials) for frontend convenience
+app.use('/api', contentRoutes);
 
 // Global Error Handler
 app.use(errorHandler);

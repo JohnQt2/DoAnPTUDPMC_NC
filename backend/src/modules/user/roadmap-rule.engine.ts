@@ -114,26 +114,30 @@ export class RoadmapRuleEngine {
         desiredLevel = hskLevels[Math.min(hskLevels.length - 1, idx + 1)] || input.starting_level;
       }
 
+      const courseHasLessons = (c: CourseCurriculumItem) =>
+        (c.chapters || []).some((ch) => (ch.lessons || []).some((l) => l.status === 'PUBLISHED'));
+
+      // Ưu tiên chọn khóa khớp desiredLevel có bài học đã phát hành
       selectedCourse = publishedCourses.find(
-        (c) => c.level.toUpperCase() === desiredLevel || c.code.toUpperCase() === desiredLevel
+        (c) => (c.level.toUpperCase() === desiredLevel || c.code.toUpperCase() === desiredLevel) && courseHasLessons(c)
       );
 
-      // Nếu chưa có khóa ở cấp độ desiredLevel (ví dụ trong môi trường test chỉ seed HSK1/HSK2), fallback về khóa gần nhất
+      // Nếu chưa có bài ở cấp độ desiredLevel (ví dụ môi trường mới chỉ có bài HSK1), fallback về khóa có bài gần nhất
       if (!selectedCourse) {
         if (desiredLevel !== 'HSK1') {
           selectedCourse = publishedCourses.find(
-            (c) => c.level.toUpperCase() === 'HSK2' || c.code.toUpperCase() === 'HSK2'
+            (c) => (c.level.toUpperCase() === 'HSK2' || c.code.toUpperCase() === 'HSK2') && courseHasLessons(c)
           );
         }
         if (!selectedCourse) {
           selectedCourse = publishedCourses.find(
-            (c) => c.level.toUpperCase() === 'HSK1' || c.code.toUpperCase() === 'HSK1'
+            (c) => (c.level.toUpperCase() === 'HSK1' || c.code.toUpperCase() === 'HSK1') && courseHasLessons(c)
           );
         }
       }
 
       if (!selectedCourse) {
-        selectedCourse = publishedCourses[0];
+        selectedCourse = publishedCourses.find(courseHasLessons) || publishedCourses[0];
       }
     }
 

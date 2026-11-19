@@ -197,14 +197,26 @@ export const TestPage: React.FC<{ testId: number }> = ({ testId }) => {
 
             {/* Options List */}
             <div className="space-y-3 pt-2">
-              {currentQuestion.options?.map((opt: any) => {
-                const optId = opt.id || opt;
-                const optText = opt.text || opt;
+              {currentQuestion.options?.map((opt: any, optIdx: number) => {
+                let letter = String.fromCharCode(65 + optIdx);
+                let optText = typeof opt === 'string' ? opt : (opt.text || opt.content || String(opt));
+                let optId = letter;
+
+                if (typeof opt === 'string') {
+                  const prefixMatch = opt.match(/^([A-Za-z])[\.\:\)\-\s]+(.*)$/);
+                  if (prefixMatch) {
+                    letter = prefixMatch[1].toUpperCase();
+                    optId = letter;
+                  }
+                } else if (opt.id) {
+                  optId = String(opt.id);
+                }
+
                 const isSelected = answers[currentQuestion.questionId] === optId;
 
                 return (
                   <button
-                    key={optId}
+                    key={optId + '_' + optIdx}
                     onClick={() => handleSelectOption(currentQuestion.questionId, optId)}
                     className={`w-full p-4 rounded-2xl border text-left text-sm font-semibold flex items-center justify-between transition-all ${
                       isSelected
@@ -214,13 +226,13 @@ export const TestPage: React.FC<{ testId: number }> = ({ testId }) => {
                   >
                     <span>{optText}</span>
                     <span
-                      className={`w-5 h-5 rounded-full border flex items-center justify-center text-xs font-bold ${
+                      className={`w-6 h-6 rounded-full border flex items-center justify-center text-xs font-bold shrink-0 ml-3 ${
                         isSelected
                           ? 'border-primary-600 bg-primary-600 text-white'
-                          : 'border-gray-300'
+                          : 'border-gray-300 text-gray-500'
                       }`}
                     >
-                      {isSelected ? '✓' : optId}
+                      {isSelected ? '✓' : letter}
                     </span>
                   </button>
                 );

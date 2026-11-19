@@ -331,6 +331,7 @@ export class AssessmentService {
       question_id: number;
       correct_answer: string;
       explanation: string | null;
+      options_json?: string | null;
     }> = [];
 
     let snapshotJsonString: string | null = null;
@@ -362,6 +363,7 @@ export class AssessmentService {
         question_id: tq.question.question_id,
         correct_answer: tq.question.correct_answer,
         explanation: tq.question.explanation,
+        options_json: tq.question.options_json,
       }));
       snapshotJsonString = JSON.stringify(questionsForGrading);
     }
@@ -402,7 +404,7 @@ export class AssessmentService {
 
     for (const q of questionsForGrading) {
       const userAns = userAnswersMap.get(q.question_id) || '';
-      const isCorrect = userAns.toLowerCase() === (q.correct_answer || '').trim().toLowerCase();
+      const isCorrect = this.checkAnswerMatch(userAns, q.correct_answer, q.options_json);
       if (isCorrect) correctCount++;
 
       evaluatedDetails.push({
@@ -867,6 +869,65 @@ export class AssessmentService {
         mediaUrl: d.question.mediaResource?.public_url || null,
       })),
     };
+  }
+
+  /**
+   * So khớp đáp án người dùng với đáp án đúng, hỗ trợ đa định dạng:
+   * 1. Khớp chính xác chuỗi (e.g. "B" === "B" hoặc "Xin chào" === "Xin chào")
+   * 2. Khớp tiền tố ký tự phương án (e.g. "B. Xin chào" khớp với "B", hoặc ngược lại)
+   * 3. Khớp qua options_json (chuyển đổi giữa index, ký tự A/B/C/D và nội dung phương án)
+   */
+  public checkAnswerMatch(userAns: string, correctAns: string, optionsJson?: string | null): boolean {
+    const normUser = (userAns || '').trim().toLowerCase();
+    const normCorrect = (correctAns || '').trim().toLowerCase();
+
+    if (!normUser && !normCorrect) return true;
+    if (!normUser || !normCorrect) return false;
+
+    // 1. So khớp trực tiếp (bất kể hoa/thường)
+    if (normUser === normCorrect) return true;
+
+    // 2. Khớp tiền tố (user chọn "B. Xin chào" nhưng database lưu "B")
+    const userPrefixMatch = normUser.match(/^([a-z])[\.\:\)\-\s]/);
+    if (userPrefixMatch && userPrefixMatch[1] === normCorrect) return true;
+
+    // 3. Khớp tiền tố nghịch đảo (user chọn "B" nhưng database lưu "B. Xin chào")
+    const correctPrefixMatch = normCorrect.match(/^([a-z])[\.\:\)\-\s]/);
+    if (correctPrefixMatch && correctPrefixMatch[1] === normUser) return true;
+
+    // 4. So khớp thông qua mảng options_json
+    if (optionsJson) {
+      try {
+        const options = JSON.parse(optionsJson);
+        if (Array.isArray(options)) {
+          for (let i = 0; i < options.length; i++) {
+            const opt = options[i];
+            const letter = String.fromCharCode(65 + i).toLowerCase(); // a, b, c, d...
+            const optStr = typeof opt === 'string' ? opt : (opt?.text || opt?.content || String(opt));
+            const optNorm = optStr.trim().toLowerCase();
+            const optTextOnly = optNorm.replace(/^([a-z])[\.\:\)\-\s]+/, '').trim();
+
+            const optMatchesCorrect =
+              normCorrect === letter ||
+              normCorrect === optNorm ||
+              normCorrect === optTextOnly;
+
+            const optMatchesUser =
+              normUser === letter ||
+              normUser === optNorm ||
+              normUser === optTextOnly;
+
+            if (optMatchesCorrect && optMatchesUser) {
+              return true;
+            }
+          }
+        }
+      } catch {
+        // Bỏ qua lỗi parse JSON nếu có
+      }
+    }
+
+    return false;
   }
 }
 

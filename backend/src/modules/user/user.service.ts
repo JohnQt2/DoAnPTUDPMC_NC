@@ -456,8 +456,8 @@ export class UserService {
     data: {
       full_name?: string;
       display_name?: string;
-      avatar_url?: string;
-      avatar_resource_id?: number;
+      avatar_url?: string | null;
+      avatar_resource_id?: number | null;
       phone?: string | null;
       bio?: string | null;
       daily_study_minutes?: number;
@@ -469,15 +469,18 @@ export class UserService {
       starting_level?: string;
     }
   ) {
-    let avatarResourceId = data.avatar_resource_id;
+    let avatarResourceId: number | null | undefined = data.avatar_resource_id;
 
-    if (data.avatar_url && !avatarResourceId) {
+    if (data.avatar_url === '' || data.avatar_url === null) {
+      avatarResourceId = null;
+    } else if (data.avatar_url && !avatarResourceId) {
+      const isDataUrl = data.avatar_url.startsWith('data:image/');
       const media = await prisma.mediaResources.create({
         data: {
           file_name: `avatar_${userId}_${Date.now()}.jpg`,
           storage_key: `avatars/user_${userId}_${Date.now()}`,
           public_url: data.avatar_url,
-          mime_type: 'image/jpeg',
+          mime_type: isDataUrl ? 'image/jpeg' : 'image/jpeg',
           resource_type: 'IMAGE',
           uploaded_by: userId,
         },

@@ -67,6 +67,30 @@ export class CurriculumController {
     }
   };
 
+  deleteCourse = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const courseId = parseInt(req.params.id, 10);
+      const result = await curriculumService.deleteCourse(courseId);
+      res.status(200).json({ success: true, data: result });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  listVocabularies = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { level, search, limit } = req.query;
+      const items = await curriculumService.listVocabularies({
+        level: level as string | undefined,
+        search: search as string | undefined,
+        limit: limit ? parseInt(limit as string, 10) : undefined,
+      });
+      res.status(200).json({ success: true, data: items });
+    } catch (err) {
+      next(err);
+    }
+  };
+
   // ─── Chapters ──────────────────────────────────────────────────────
 
   createChapter = async (req: Request, res: Response, next: NextFunction): Promise<void> => {

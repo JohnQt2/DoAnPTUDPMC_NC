@@ -18,6 +18,7 @@ router.put('/tests/:id', authenticate, authorize('ADMIN', 'CONTENT_EDITOR'), ass
 router.post('/tests/:id/assign-questions', authenticate, authorize('ADMIN', 'CONTENT_EDITOR'), assessmentController.assignQuestions);
 
 // ─── Tests (Taking & Submitting - Protected) ──────────────────────────
+router.get('/tests', authenticate, assessmentController.listTests);
 router.get('/tests/:id', authenticate, assessmentController.getTestDetail);
 router.post('/tests/:id/start', authenticate, assessmentController.startTestSession);
 router.post('/tests/:id/submit', authenticate, idempotency(86400), assessmentController.submitTest);

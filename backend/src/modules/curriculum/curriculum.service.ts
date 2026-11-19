@@ -383,13 +383,7 @@ export class CurriculumService {
           orderBy: { order_index: 'asc' },
           include: { mediaResource: true },
         },
-        vocabularies: {
-          include: {
-            character: {
-              include: { audioResource: true },
-            },
-          },
-        },
+        // LessonVocabularies (Lessons ↔ Characters) hiện rỗng — từ vựng được lấy qua UnitVocabulary bên dưới
         tests: {
           where: { is_published: true },
           select: { test_id: true, title: true, test_type: true, passing_score: true, time_limit_mins: true },
@@ -429,6 +423,158 @@ export class CurriculumService {
       }
     }
 
+    // ── Lấy từ vựng của Unit chứa bài học này (Chapters → UnitVocabulary → Vocabulary) ──
+    // Lesson liên kết với Chapter/Unit qua lesson.chapter_id.
+    // UnitVocabulary liên kết Chapters (unit_id = chapter_id) với Vocabulary.
+    // LessonVocabularies (Lessons ↔ Characters) hiện không được seed, nên luôn rỗng.
+    const unitVocabItems = await prisma.unitVocabulary.findMany({
+      where: { unit_id: lesson.chapter_id },
+      orderBy: { order_index: 'asc' },
+      include: {
+        vocabulary: true,
+      },
+    });
+
+    const vocabularies = unitVocabItems.map((uv) => ({
+      // Frontend VocabularyItem interface dùng charId, character, pinyin, sinoVietnamese, meaning, strokesCount, strokeOrderSvg, audioUrl
+      // Vocabulary model có: id, word (simplified), pinyin, meaning, word_type, notes, examples, word_audio_path, hsk_level
+      charId: uv.vocabulary.id,
+      character: uv.vocabulary.word,
+      pinyin: uv.vocabulary.pinyin,
+      sinoVietnamese: uv.vocabulary.meaning, // Vocabulary không có trường riêng sino_vietnamese — dùng meaning
+      meaning: uv.vocabulary.meaning,
+      strokesCount: 0,                       // Vocabulary không có stroke_count — Hanzi model mới có
+      strokeOrderSvg: null,
+      audioUrl: uv.vocabulary.word_audio_path || null,
+    }));
+
+    // ── Enrich LessonBlocks: giải mã content_references → nội dung thực từ DB ──
+    // DB block_type: VOCABULARY_PRESENTATION | PHONETIC_PRESENTATION | DIALOGUE_PRESENTATION | HANZI_WRITING | QUIZ
+    // Frontend blockType: THEORY | PINYIN | AUDIO | HANZI
+    const enrichedBlocks = await Promise.all(
+      lesson.blocks.map(async (b) => {
+        let rawMeta: any = {};
+        try {
+          rawMeta = JSON.parse(b.content_json ?? '{}');
+        } catch {
+          rawMeta = {};
+        }
+
+        const refs: Array<{ content_type: string; content_id: string }> =
+          Array.isArray(rawMeta.content_references) ? rawMeta.content_references : [];
+
+        let mappedBlockType: string = b.block_type;
+        let enrichedContentJson: string = b.content_json ?? '{}';
+
+        if (b.block_type === 'VOCABULARY_PRESENTATION') {
+          mappedBlockType = 'THEORY';
+          const vocabIds = refs
+            .filter((r) => r.content_type === 'VOCABULARY')
+            .map((r) => r.content_id);
+          const vocabs = vocabIds.length
+            ? await prisma.vocabulary.findMany({ where: { vocabulary_id: { in: vocabIds } } })
+            : [];
+          enrichedContentJson = JSON.stringify({
+            title: 'Từ vựng bài học',
+            content: vocabs
+              .map((v) => `${v.word} (${v.pinyin}) — ${v.meaning}`)
+              .join('\n'),
+            vocabularies: vocabs.map((v) => ({
+              vocabularyId: v.vocabulary_id,
+              word: v.word,
+              pinyin: v.pinyin,
+              meaning: v.meaning,
+              wordType: v.word_type,
+              audioUrl: v.word_audio_path || null,
+            })),
+          });
+        } else if (b.block_type === 'PHONETIC_PRESENTATION') {
+          mappedBlockType = 'PINYIN';
+          const phoneticIds = refs
+            .filter((r) => r.content_type === 'PHONETIC')
+            .map((r) => r.content_id);
+          const phonetics = phoneticIds.length
+            ? await prisma.phonetic.findMany({ where: { phonetic_id: { in: phoneticIds } } })
+            : [];
+          const first = phonetics[0];
+          let syllableStrings: string[] = [];
+          let rule = '';
+          if (first) {
+            try {
+              const sArr = JSON.parse(first.syllables ?? '[]');
+              syllableStrings = Array.isArray(sArr) ? sArr.map((s: any) => s.syllable ?? String(s)) : [];
+            } catch { syllableStrings = []; }
+            try {
+              const rArr = JSON.parse(first.rules ?? '[]');
+              rule = Array.isArray(rArr) && rArr[0] ? (rArr[0].explanation ?? rArr[0].title ?? '') : '';
+            } catch { rule = ''; }
+          }
+          enrichedContentJson = JSON.stringify({
+            rule,
+            syllables: syllableStrings,
+            allPhonetics: phonetics.map((p) => ({ phoneticId: p.phonetic_id })),
+          });
+        } else if (b.block_type === 'DIALOGUE_PRESENTATION') {
+          mappedBlockType = 'AUDIO';
+          const dialogueIds = refs
+            .filter((r) => r.content_type === 'DIALOGUE')
+            .map((r) => r.content_id);
+          const dialogues = dialogueIds.length
+            ? await prisma.dialogue.findMany({ where: { dialogue_id: { in: dialogueIds } } })
+            : [];
+          const allTurns: any[] = [];
+          for (const d of dialogues) {
+            try {
+              const turns = JSON.parse(d.turns ?? '[]');
+              if (Array.isArray(turns)) allTurns.push(...turns);
+            } catch { /* bỏ qua lỗi parse */ }
+          }
+          enrichedContentJson = JSON.stringify({
+            dialogue: allTurns,
+            dialogueTitles: dialogues.map((d) => d.title),
+          });
+        } else if (b.block_type === 'HANZI_WRITING') {
+          mappedBlockType = 'HANZI';
+          const hanziIds = refs
+            .filter((r) => r.content_type === 'HANZI')
+            .map((r) => r.content_id);
+          const hanzis = hanziIds.length
+            ? await prisma.hanzi.findMany({ where: { hanzi_id: { in: hanziIds } } })
+            : [];
+          const first = hanzis[0];
+          enrichedContentJson = JSON.stringify({
+            character: first?.character ?? '',
+            meaning: first?.meaning ?? '',
+            pinyin: first?.pinyin ?? '',
+            strokeCount: first?.stroke_count ?? 0,
+            svgContent: first?.svg_content ?? null,
+            allHanzi: hanzis.map((h) => ({
+              hanziId: h.hanzi_id,
+              character: h.character,
+              pinyin: h.pinyin,
+              meaning: h.meaning,
+              strokeCount: h.stroke_count,
+              svgContent: h.svg_content ?? null,
+            })),
+          });
+        } else if (b.block_type === 'QUIZ') {
+          mappedBlockType = 'THEORY';
+          enrichedContentJson = JSON.stringify({
+            title: 'Bài kiểm tra',
+            content: 'Hoàn thành các bài tập để kiểm tra kiến thức.',
+          });
+        }
+
+        return {
+          blockId: b.block_id,
+          blockType: mappedBlockType,
+          orderIndex: b.order_index,
+          contentJson: enrichedContentJson,
+          mediaUrl: b.mediaResource?.public_url || null,
+        };
+      })
+    );
+
     return {
       lessonId: lesson.lesson_id,
       title: lesson.title,
@@ -441,23 +587,8 @@ export class CurriculumService {
         title: lesson.chapter.title,
         course: lesson.chapter.course,
       },
-      blocks: lesson.blocks.map((b) => ({
-        blockId: b.block_id,
-        blockType: b.block_type,
-        orderIndex: b.order_index,
-        contentJson: b.content_json,
-        mediaUrl: b.mediaResource?.public_url || null,
-      })),
-      vocabularies: lesson.vocabularies.map((v) => ({
-        charId: v.character.char_id,
-        character: v.character.character,
-        pinyin: v.character.pinyin,
-        sinoVietnamese: v.character.sino_vietnamese,
-        meaning: v.character.meaning,
-        strokesCount: v.character.strokes_count,
-        strokeOrderSvg: v.character.stroke_order_svg || null,
-        audioUrl: v.character.audioResource?.public_url || null,
-      })),
+      blocks: enrichedBlocks,
+      vocabularies,
       tests: lesson.tests,
     };
   }

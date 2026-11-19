@@ -14,6 +14,36 @@ export const TestResultPage: React.FC<{ submissionId: number }> = ({ submissionI
   const [result, setResult] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const formatAnswerText = (val: string | null | undefined, options?: any[]): string => {
+    if (!val) return '(Bỏ trống)';
+    const cleanVal = val.trim();
+    if (!options || !Array.isArray(options) || options.length === 0) return cleanVal;
+
+    // Nếu val là ký tự A, B, C, D đơn lẻ
+    if (/^[A-Za-z]$/.test(cleanVal)) {
+      const idx = cleanVal.toUpperCase().charCodeAt(0) - 65;
+      if (idx >= 0 && idx < options.length) {
+        const opt = options[idx];
+        const optStr = typeof opt === 'string' ? opt : (opt?.text || opt?.content || String(opt));
+        if (/^[A-Za-z][\.\:\)\-\s]/.test(optStr)) return optStr;
+        return `${cleanVal.toUpperCase()}. ${optStr}`;
+      }
+    }
+
+    // Nếu val là chuỗi, tìm option khớp
+    const matchedOpt = options.find((opt) => {
+      const optStr = typeof opt === 'string' ? opt : (opt?.text || opt?.content || String(opt));
+      return optStr.toLowerCase() === cleanVal.toLowerCase() ||
+        optStr.toLowerCase().startsWith(cleanVal.toLowerCase() + '.');
+    });
+
+    if (matchedOpt) {
+      return typeof matchedOpt === 'string' ? matchedOpt : (matchedOpt?.text || matchedOpt?.content || String(matchedOpt));
+    }
+
+    return cleanVal;
+  };
+
   useEffect(() => {
     loadSubmission();
   }, [submissionId]);
@@ -137,12 +167,12 @@ export const TestResultPage: React.FC<{ submissionId: number }> = ({ submissionI
                   }`}
                 >
                   <span className="text-gray-400 block mb-0.5">Lựa chọn của bạn:</span>
-                  <span className="font-bold text-sm">{detail.userAnswer || '(Bỏ trống)'}</span>
+                  <span className="font-bold text-sm">{formatAnswerText(detail.userAnswer, detail.options)}</span>
                 </div>
 
                 <div className="p-3 rounded-xl bg-gray-50 border border-gray-100 text-gray-900">
                   <span className="text-gray-400 block mb-0.5">Đáp án chính xác:</span>
-                  <span className="font-bold text-sm text-emerald-700">{detail.correctAnswer}</span>
+                  <span className="font-bold text-sm text-emerald-700">{formatAnswerText(detail.correctAnswer, detail.options)}</span>
                 </div>
               </div>
 

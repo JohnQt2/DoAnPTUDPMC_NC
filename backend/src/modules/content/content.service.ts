@@ -47,8 +47,16 @@ export class ContentService {
     const course = await prisma.courses.findUnique({ where: { course_id: courseId } });
     if (!course) throw AppError.notFound('Không tìm thấy khóa học này.');
 
+    // Prefer chapters with slug (curriculum units) if available
+    const hasUnitsWithSlug = await prisma.chapters.count({
+      where: { course_id: courseId, slug: { not: null } },
+    });
+
     const chapters = await prisma.chapters.findMany({
-      where: { course_id: courseId },
+      where: {
+        course_id: courseId,
+        ...(hasUnitsWithSlug > 0 ? { slug: { not: null } } : {}),
+      },
       orderBy: { order_index: 'asc' },
       include: {
         _count: {

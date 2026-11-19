@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
+import { celebrateSuccess } from '../../lib/celebration';
+import { GlassCard, BorderBeam, NumberTicker, ShimmerButton } from '../../components/ui';
 import {
   CheckCircle2,
   XCircle,
-  Award,
   ArrowRight,
-  RotateCcw,
   BookOpen,
-  HelpCircle,
 } from 'lucide-react';
 
 export const TestResultPage: React.FC<{ submissionId: number }> = ({ submissionId }) => {
@@ -52,6 +51,14 @@ export const TestResultPage: React.FC<{ submissionId: number }> = ({ submissionI
     try {
       const data = await api.get<any>(`/assessment/submissions/${submissionId}`);
       setResult(data);
+      const passedThreshold = data?.passingScore || 60;
+      if (data && data.score >= passedThreshold) {
+        celebrateSuccess(
+          `Chúc mừng bạn đạt ${Math.round(data.score)}%`,
+          'fireworks',
+          'Bạn đã vượt qua bài kiểm tra.'
+        );
+      }
     } catch (err) {
       console.error('Failed to load submission:', err);
     } finally {
@@ -79,64 +86,76 @@ export const TestResultPage: React.FC<{ submissionId: number }> = ({ submissionI
     );
   }
 
-  const isPassed = result.score >= (result.passingScore || 80);
+  const passThreshold = result.passingScore || 60;
+  const isPassed = result.score >= passThreshold;
 
   return (
     <div className="max-w-3xl mx-auto py-10 px-4 sm:px-6 space-y-8">
-      {/* Result Hero Banner */}
+      {/* Result Hero Banner (Liquid Glass + BorderBeam + NumberTicker) */}
       <div
-        className={`rounded-3xl p-8 sm:p-10 text-center space-y-4 shadow-xl border ${
+        className={`relative overflow-hidden rounded-[30px] p-8 sm:p-10 text-center space-y-4 shadow-2xl border ${
           isPassed
-            ? 'bg-gradient-to-b from-emerald-500 to-emerald-700 text-white border-emerald-400'
-            : 'bg-gradient-to-b from-red-500 to-red-700 text-white border-red-400'
+            ? 'bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-600 text-white border-white/40'
+            : 'bg-gradient-to-br from-rose-500 via-primary-600 to-amber-600 text-white border-white/40'
         }`}
       >
-        <div className="inline-flex w-20 h-20 rounded-full bg-white/20 backdrop-blur-md items-center justify-center text-4xl shadow-inner mb-2">
-          {isPassed ? '🎉' : '💪'}
-        </div>
+        <BorderBeam duration={7} colorFrom="#ffffff" colorTo="#fde047" />
+        <div className="relative z-10 space-y-4">
+          <div className="inline-flex w-20 h-20 rounded-full bg-white/20 backdrop-blur-md border border-white/40 items-center justify-center text-4xl shadow-inner mb-1">
+            {isPassed ? '🏆' : '💪'}
+          </div>
 
-        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-          {isPassed ? 'Chúc Mừng! Bạn Đã Đạt Chuẩn' : 'Chưa Đạt Ngưỡng 80%'}
-        </h1>
+          <h1 className="text-3xl sm:text-4xl font-black tracking-tight">
+            {isPassed ? 'Chúc Mừng! Bạn Đã Đạt Chuẩn' : `Chưa Đạt Ngưỡng ${passThreshold}%`}
+          </h1>
 
-        <div className="text-6xl font-black tracking-tight font-mono">
-          {result.score}%
-        </div>
+          <div className="text-6xl font-black tracking-tight font-mono">
+            <NumberTicker value={Math.round(result.score)} suffix="%" />
+          </div>
 
-        <p className="text-sm text-white/90 max-w-md mx-auto leading-relaxed">
-          {isPassed
-            ? 'Bạn đã hoàn thành xuất sắc bài kiểm tra và mở khóa thành công bài học tiếp theo trên lộ trình!'
-            : 'Hãy xem lại các câu trả lời sai bên dưới để củng cố kiến thức và thử làm lại nhé.'}
-        </p>
+          <p className="text-sm text-white/90 max-w-md mx-auto leading-relaxed">
+            {isPassed
+              ? 'Bạn đã hoàn thành xuất sắc bài kiểm tra và mở khóa thành công chặng tiếp theo trên lộ trình!'
+              : 'Hãy xem lại lời giải chi tiết tiếng Việt bên dưới để củng cố kiến thức và thử lại nhé.'}
+          </p>
 
-        <div className="pt-4 flex items-center justify-center gap-3">
-          <a
-            href="#/courses"
-            className="px-6 py-3 rounded-2xl bg-white text-gray-900 font-extrabold text-xs shadow-md hover:bg-gray-100 transition-all flex items-center gap-2"
-          >
-            <BookOpen className="w-4 h-4" />
-            Tiếp tục lộ trình
-          </a>
+          <div className="pt-3 flex flex-wrap items-center justify-center gap-3">
+            <ShimmerButton
+              href="#/exams"
+              variant="glass-light"
+              className="bg-white text-gray-900 border-white shadow-xl"
+            >
+              <BookOpen className="w-4 h-4 text-primary-600" />
+              <span>Quay lại phòng thi</span>
+            </ShimmerButton>
+            <a
+              href="#/courses"
+              className="px-6 py-3 rounded-2xl bg-black/20 hover:bg-black/30 backdrop-blur-md text-white font-extrabold text-sm transition-all flex items-center gap-2"
+            >
+              <span>Tiếp tục lộ trình</span>
+              <ArrowRight className="w-4 h-4" />
+            </a>
+          </div>
         </div>
       </div>
 
       {/* Detailed Breakdown of Questions */}
       <div className="space-y-4">
-        <h2 className="text-lg font-bold text-gray-900">
-          Chi Tiết Đánh Giá Từng Câu Hỏi
+        <h2 className="text-lg font-display font-bold text-gray-900">
+          Chi tiết từng câu hỏi
         </h2>
 
         <div className="space-y-4">
           {result.details?.map((detail: any, idx: number) => (
-            <div
+            <GlassCard
               key={detail.questionId}
-              className={`p-6 rounded-3xl border bg-white shadow-sm space-y-4 ${
-                detail.isCorrect ? 'border-emerald-200' : 'border-red-200'
+              className={`p-6 rounded-[26px] space-y-4 ${
+                detail.isCorrect ? 'ring-1 ring-emerald-300/60' : 'ring-1 ring-rose-300/60'
               }`}
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1">
-                  <span className="text-xs font-bold text-gray-400 uppercase">
+                  <span className="text-xs font-bold text-gray-500 uppercase">
                     Câu {idx + 1}
                   </span>
                   <h3 className="text-base font-bold text-gray-900">{detail.content}</h3>
@@ -144,13 +163,13 @@ export const TestResultPage: React.FC<{ submissionId: number }> = ({ submissionI
 
                 <div className="shrink-0 mt-1">
                   {detail.isCorrect ? (
-                    <span className="flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full">
+                    <span className="flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50/90 border border-emerald-200/70 px-3 py-1 rounded-full">
                       <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                       Chính xác
                     </span>
                   ) : (
-                    <span className="flex items-center gap-1 text-xs font-bold text-red-700 bg-red-50 px-3 py-1 rounded-full">
-                      <XCircle className="w-4 h-4 text-red-500" />
+                    <span className="flex items-center gap-1 text-xs font-bold text-rose-700 bg-rose-50/90 border border-rose-200/70 px-3 py-1 rounded-full">
+                      <XCircle className="w-4 h-4 text-rose-500" />
                       Chưa đúng
                     </span>
                   )}
@@ -160,29 +179,29 @@ export const TestResultPage: React.FC<{ submissionId: number }> = ({ submissionI
               {/* Answers comparison */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 <div
-                  className={`p-3 rounded-xl border ${
+                  className={`p-3.5 rounded-2xl border ${
                     detail.isCorrect
-                      ? 'bg-emerald-50/50 border-emerald-100 text-emerald-900'
-                      : 'bg-red-50/50 border-red-100 text-red-900'
+                      ? 'bg-emerald-50/60 border-emerald-200/70 text-emerald-900'
+                      : 'bg-rose-50/60 border-rose-200/70 text-rose-900'
                   }`}
                 >
-                  <span className="text-gray-400 block mb-0.5">Lựa chọn của bạn:</span>
+                  <span className="text-gray-500 block mb-0.5">Lựa chọn của bạn:</span>
                   <span className="font-bold text-sm">{formatAnswerText(detail.userAnswer, detail.options)}</span>
                 </div>
 
-                <div className="p-3 rounded-xl bg-gray-50 border border-gray-100 text-gray-900">
-                  <span className="text-gray-400 block mb-0.5">Đáp án chính xác:</span>
+                <div className="p-3.5 rounded-2xl bg-white/60 border border-white/85 text-gray-900">
+                  <span className="text-gray-500 block mb-0.5">Đáp án đúng:</span>
                   <span className="font-bold text-sm text-emerald-700">{formatAnswerText(detail.correctAnswer, detail.options)}</span>
                 </div>
               </div>
 
-              {/* Pedagogical Explanation */}
+              {/* Explanation */}
               {detail.explanation && (
-                <div className="p-3.5 rounded-xl bg-amber-50/60 border border-amber-100 text-xs text-amber-900 leading-relaxed">
-                  💡 <strong>Giải thích sư phạm:</strong> {detail.explanation}
+                <div className="p-3.5 rounded-2xl bg-amber-50/65 border border-amber-200/70 text-xs text-amber-950 leading-relaxed">
+                  <strong>Giải thích:</strong> {detail.explanation}
                 </div>
               )}
-            </div>
+            </GlassCard>
           ))}
         </div>
       </div>

@@ -1,0 +1,242 @@
+[
+  {
+    "phonetic_id": "hsk1_phonetic01",
+    "syllables": [
+      {
+        "syllable": "bā",
+        "tone": 1,
+        "category": "SYLLABLE",
+        "f0_pitch_contour": null,
+        "mouth_shape_guide": null
+      },
+      {
+        "syllable": "pā",
+        "tone": 1,
+        "category": "SYLLABLE",
+        "f0_pitch_contour": null,
+        "mouth_shape_guide": null
+      },
+      {
+        "syllable": "mā",
+        "tone": 1,
+        "category": "SYLLABLE",
+        "f0_pitch_contour": null,
+        "mouth_shape_guide": null
+      },
+      {
+        "syllable": "tǎ",
+        "tone": 3,
+        "category": "SYLLABLE",
+        "f0_pitch_contour": null,
+        "mouth_shape_guide": null
+      },
+      {
+        "syllable": "dǎ",
+        "tone": 3,
+        "category": "SYLLABLE",
+        "f0_pitch_contour": null,
+        "mouth_shape_guide": null
+      },
+      {
+        "syllable": "nǎ",
+        "tone": 3,
+        "category": "SYLLABLE",
+        "f0_pitch_contour": null,
+        "mouth_shape_guide": null
+      }
+    ],
+    "rules": [
+      {
+        "rule_id": "hsk1_phonetic01_rule01",
+        "title": "Quy tắc biến điệu",
+        "explanation": "Khi hai từ mang thanh 3 (như 你 nǐ và 好 hǎo) đi liền nhau, từ thứ nhất sẽ đổi âm đọc thành thanh 2 (ní).",
+        "example": "你 (nǐ) + 好 (hǎo) ➔ Đọc là: 你好 (ní hǎo)",
+        "audio_path": "audio/hsk1/lesson01/phonetics/rule_tone33.mp3"
+      }
+    ]
+  },
+  
+  {
+    "phonetic_id": "hsk1_phonetic02",
+    "syllables": [
+      {
+        "syllable": "妈妈",
+        "pinyin": "māma",
+        "meaning": "mẹ",
+        "tone": null,
+        "category": "NEUTRAL_TONE",
+        "f0_pitch_contour": null,
+        "mouth_shape_guide": "Âm tiết mang thanh nhẹ được đọc ngắn và nhẹ, không ghi dấu thanh.",
+        "audio_path": "tone_neutral_mama.mp3"
+      },
+      {
+        "syllable": "爸爸",
+        "pinyin": "bàba",
+        "meaning": "bố",
+        "tone": null,
+        "category": "NEUTRAL_TONE",
+        "f0_pitch_contour": null,
+        "mouth_shape_guide": "Âm tiết mang thanh nhẹ được đọc ngắn và nhẹ, không ghi dấu thanh.",
+        "audio_path": "tone_neutral_baba.mp3"
+      },
+      {
+        "syllable": "谢谢",
+        "pinyin": "xièxie",
+        "meaning": "cảm ơn",
+        "tone": null,
+        "category": "NEUTRAL_TONE",
+        "f0_pitch_contour": null,
+        "mouth_shape_guide": "Âm tiết mang thanh nhẹ được đọc ngắn và nhẹ, không ghi dấu thanh.",
+        "audio_path": "tone_neutral_xiexie.mp3"
+      },
+      {
+        "syllable": "客气",
+        "pinyin": "kèqi",
+        "meaning": "khách sáo",
+        "tone": null,
+        "category": "NEUTRAL_TONE",
+        "f0_pitch_contour": null,
+        "mouth_shape_guide": "Âm tiết mang thanh nhẹ được đọc ngắn và nhẹ, không ghi dấu thanh.",
+        "audio_path": "tone_neutral_keqi.mp3"
+      }
+    ],
+    "rules": [
+      {
+        "rule_id": "hsk1_phonetic02_rule01",
+        "title": "Mẹo ghi dấu thanh",
+        "explanation": "Dấu thanh được đặt trên nguyên âm theo thứ tự ưu tiên: a → o → e → i → u → ü. Với “iu”, dấu thanh đặt trên “u”. Âm tiết thanh nhẹ không ghi dấu.",
+        "examples": [
+          "xuéxiào",
+          "lángqiú",
+          "shuǐguǒ",
+          "xièxie"
+        ],
+        "audio_path": "pinyin_rule_examples_b2.mp3"
+      },
+      {
+        "rule_id": "hsk1_phonetic02_rule02",
+        "title": "Mẹo biến điệu của 不",
+        "explanation": "不 đọc là bù trước thanh 1, 2, 3; đọc thành bú trước thanh 4.",
+        "examples": [
+          "不谢 đọc bú xiè",
+          "不客气 đọc bú kèqi"
+        ],
+        "audio_path": "tone_change_bu_b2.mp3"
+      }
+    ]
+  },
+  
+  {
+    "phonetic_id": "hsk1_phonetic03",
+    "syllables": [
+      {
+        "syllable": "j",
+        "tone": null,
+        "category": "INITIAL",
+        "f0_pitch_contour": null,
+        "mouth_shape_guide": "Âm mặt lưỡi. Mặt lưỡi chạm vòm miệng cứng, không bật hơi mạnh."
+      },
+      {
+        "syllable": "q",
+        "tone": null,
+        "category": "INITIAL",
+        "f0_pitch_contour": null,
+        "mouth_shape_guide": "Âm mặt lưỡi. Mặt lưỡi chạm vòm miệng cứng, bật hơi mạnh hơn j."
+      },
+      {
+        "syllable": "x",
+        "tone": null,
+        "category": "INITIAL",
+        "f0_pitch_contour": null,
+        "mouth_shape_guide": "Âm mặt lưỡi. Mặt lưỡi tiến gần vòm miệng nhưng vẫn để luồng hơi đi qua."
+      },
+      {
+        "syllable": "z",
+        "tone": null,
+        "category": "INITIAL",
+        "f0_pitch_contour": null,
+        "mouth_shape_guide": "Âm đầu lưỡi, không bật hơi mạnh."
+      },
+      {
+        "syllable": "c",
+        "tone": null,
+        "category": "INITIAL",
+        "f0_pitch_contour": null,
+        "mouth_shape_guide": "Âm đầu lưỡi, bật hơi rõ."
+      },
+      {
+        "syllable": "s",
+        "tone": null,
+        "category": "INITIAL",
+        "f0_pitch_contour": null,
+        "mouth_shape_guide": "Đọc qua khe hẹp giữa đầu lưỡi và mặt trong răng trên."
+      },
+      {
+        "syllable": "i",
+        "tone": null,
+        "category": "FINAL",
+        "f0_pitch_contour": null,
+        "mouth_shape_guide": "Môi dẹt."
+      },
+      {
+        "syllable": "u",
+        "tone": null,
+        "category": "FINAL",
+        "f0_pitch_contour": null,
+        "mouth_shape_guide": "Môi tròn, lưỡi lùi về sau."
+      },
+      {
+        "syllable": "ü",
+        "tone": null,
+        "category": "FINAL",
+        "f0_pitch_contour": null,
+        "mouth_shape_guide": "Môi tròn như u nhưng lưỡi giữ ở phía trước như khi đọc i."
+      }
+    ],
+    "rules": [
+      {
+        "rule_id": "hsk1_phonetic03_rule01",
+        "title": "Phân biệt j, q, x và z, c, s",
+        "explanation": "j, q, x là âm mặt lưỡi. z, c, s là âm đầu lưỡi.",
+        "examples": [],
+        "audio_path": "pronunciation_b3_jqx.mp3"
+      },
+      {
+        "rule_id": "hsk1_phonetic03_rule02",
+        "title": "Phân biệt i, u, ü",
+        "explanation": "i: môi dẹt. u: môi tròn, lưỡi lùi về sau. ü: môi tròn như u nhưng lưỡi giữ ở phía trước như khi đọc i.",
+        "examples": [],
+        "audio_path": "pronunciation_b3_iuu.mp3"
+      },
+      {
+        "rule_id": "hsk1_phonetic03_rule03",
+        "title": "Quy tắc viết ü với j, q, x",
+        "explanation": "Khi ü hoặc vận mẫu bắt đầu bằng ü ghép với j, q, x, hai dấu chấm được lược bỏ. Khi ghép với l, n, vẫn giữ dấu chấm.",
+        "examples": [
+          "ju",
+          "qu",
+          "xu",
+          "jue",
+          "que",
+          "xue",
+          "lü",
+          "nü"
+        ],
+        "audio_path": "pronunciation_b3_umlaut_rule.mp3"
+      },
+      {
+        "rule_id": "hsk1_phonetic03_rule04",
+        "title": "Biến điệu của 不",
+        "explanation": "不 đọc bù trước thanh 1, 2, 3; chuyển thành bú trước thanh 4.",
+        "examples": [
+          "bù hǎo",
+          "bù néng",
+          "bú shì",
+          "bú kàn"
+        ],
+        "audio_path": "grammar_b3_bu_tone.mp3"
+      }
+    ]
+  }
+
+]

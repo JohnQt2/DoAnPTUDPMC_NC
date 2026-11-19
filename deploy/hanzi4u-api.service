@@ -1,0 +1,16 @@
+[Unit]
+Description=Hanzi4u API (Node.js backend)
+After=network.target
+
+[Service]
+Type=simple
+User=jenkins
+WorkingDirectory=/var/www/hanzi4u/backend
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node dist/server.js
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+

@@ -1,0 +1,61 @@
+[
+  {
+    "grammar_id": "hsk1_gram01",
+    "title": "Đại từ nghi vấn 什么",
+    "structure": "什么",
+    "explanation": "什么 dùng để hỏi “gì/cái gì”.",
+    "notes": [],
+    "examples": [
+      {
+        "example_id": "hsk1_gram01_ex01",
+        "text": "你叫什么名字？",
+        "pinyin": "Nǐ jiào shénme míngzi?",
+        "meaning": "Bạn tên là gì?",
+        "image_path": null,
+        "audio_path": null
+      }
+    ]
+  },
+  {
+    "grammar_id": "hsk1_gram02",
+    "title": "Câu chữ 是",
+    "structure": "Chủ ngữ + 是 / 不是 + danh từ",
+    "explanation": "是 dùng để xác nhận thân phận hoặc phân loại. Dạng phủ định dùng 不是.",
+    "notes": [],
+    "examples": [
+      {
+        "example_id": "hsk1_gram02_ex01",
+        "text": "我是学生。",
+        "pinyin": "Wǒ shì xuésheng.",
+        "meaning": "Tôi là học sinh.",
+        "image_path": null,
+        "audio_path": null
+      },
+      {
+        "example_id": "hsk1_gram02_ex02",
+        "text": "我不是老师。",
+        "pinyin": "Wǒ bú shì lǎoshī.",
+        "meaning": "Tôi không phải giáo viên.",
+        "image_path": null,
+        "audio_path": null
+      }
+    ]
+  },
+  {
+    "grammar_id": "hsk1_gram03",
+    "title": "Câu hỏi với 吗",
+    "structure": "Câu trần thuật + 吗？",
+    "explanation": "吗 đặt cuối câu trần thuật để tạo câu hỏi Có/Không.",
+    "notes": [],
+    "examples": [
+      {
+        "example_id": "hsk1_gram03_ex01",
+        "text": "你是美国人吗？",
+        "pinyin": "Nǐ shì Měiguó rén ma?",
+        "meaning": "Bạn là người Mỹ phải không?",
+        "image_path": null,
+        "audio_path": null
+      }
+    ]
+  }
+]

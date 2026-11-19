@@ -1,0 +1,214 @@
+[
+  {
+    "dialogue_id": "hsk1_dialogue01",
+    "title": "Chào hỏi cơ bản",
+    "audio_path": "audio/hsk1/lesson01/dialogue/dlg1.mp3",
+    "turns": [
+      {
+        "speaker": "A",
+        "hanzi": "你好！",
+        "pinyin": "Nǐ hǎo!",
+        "meaning": "Chào bạn!"
+      },
+      {
+        "speaker": "B",
+        "hanzi": "你好！",
+        "pinyin": "Nǐ hǎo!",
+        "meaning": "Chào bạn!"
+      }
+    ]
+  },
+  {
+    "dialogue_id": "hsk1_dialogue02",
+    "title": "Chào người lớn tuổi / số đông",
+    "audio_path": "audio/hsk1/lesson01/dialogue/dlg2.mp3",
+    "turns": [
+      {
+        "speaker": "A",
+        "hanzi": "您好！",
+        "pinyin": "Nín hǎo!",
+        "meaning": "Chào ngài / Chào thầy!"
+      },
+      {
+        "speaker": "B",
+        "hanzi": "你们好！",
+        "pinyin": "Nǐmen hǎo!",
+        "meaning": "Chào các em / Chào các bạn!"
+      }
+    ]
+  },
+  {
+    "dialogue_id": "hsk1_dialogue03",
+    "title": "Xin lỗi & Đáp lại",
+    "audio_path": "audio/hsk1/lesson01/dialogue/dlg3.mp3",
+    "turns": [
+      {
+        "speaker": "A",
+        "hanzi": "对不起！",
+        "pinyin": "Duìbuqǐ!",
+        "meaning": "Xin lỗi!"
+      },
+      {
+        "speaker": "B",
+        "hanzi": "没关系！",
+        "pinyin": "Méi guānxi!",
+        "meaning": "Không sao đâu!"
+      }
+    ]
+  },
+  
+  {
+    "dialogue_id": "hsk1_dialogue04",
+    "title": "Cảm ơn và đáp lại",
+    "turns": [
+      {
+        "turn_id": "hsk1_dialogue04_turn01",
+        "speaker": "A",
+        "hanzi": "谢谢！",
+        "pinyin": "Xièxie!",
+        "meaning": "Cảm ơn!",
+        "audio_path": "dialogue_b2_01_a.mp3"
+      },
+      {
+        "turn_id": "hsk1_dialogue04_turn02",
+        "speaker": "B",
+        "hanzi": "不谢！",
+        "pinyin": "Bú xiè!",
+        "meaning": "Không cần cảm ơn đâu!",
+        "audio_path": "dialogue_b2_01_b.mp3"
+      }
+    ]
+  },
+  {
+    "dialogue_id": "hsk1_dialogue05",
+    "title": "Cảm ơn lịch sự",
+    "turns": [
+      {
+        "turn_id": "hsk1_dialogue05_turn01",
+        "speaker": "A",
+        "hanzi": "谢谢你！",
+        "pinyin": "Xièxie nǐ!",
+        "meaning": "Cảm ơn bạn!",
+        "audio_path": "dialogue_b2_02_a.mp3"
+      },
+      {
+        "turn_id": "hsk1_dialogue05_turn02",
+        "speaker": "B",
+        "hanzi": "不客气！",
+        "pinyin": "Bú kèqi!",
+        "meaning": "Đừng khách sáo!",
+        "audio_path": "dialogue_b2_02_b.mp3"
+      }
+    ]
+  },
+  {
+    "dialogue_id": "hsk1_dialogue06",
+    "title": "Tạm biệt",
+    "turns": [
+      {
+        "turn_id": "hsk1_dialogue06_turn01",
+        "speaker": "A",
+        "hanzi": "再见！",
+        "pinyin": "Zàijiàn!",
+        "meaning": "Tạm biệt!",
+        "audio_path": "dialogue_b2_03_a.mp3"
+      },
+      {
+        "turn_id": "hsk1_dialogue06_turn02",
+        "speaker": "B",
+        "hanzi": "再见！",
+        "pinyin": "Zàijiàn!",
+        "meaning": "Tạm biệt!",
+        "audio_path": "dialogue_b2_03_b.mp3"
+      }
+    ]
+  },
+  {
+    "dialogue_id": "hsk1_dialogue07",
+    "title": "Ở trường",
+    "turns": [
+      {
+        "turn_id": "hsk1_dialogue07_turn01",
+        "speaker": "A",
+        "hanzi": "你叫什么名字？",
+        "pinyin": "Nǐ jiào shénme míngzi?",
+        "meaning": "Bạn tên là gì?",
+        "audio_path": "dialogue_b3_01_01.mp3"
+      },
+      {
+        "turn_id": "hsk1_dialogue07_turn02",
+        "speaker": "B",
+        "hanzi": "我叫李月。",
+        "pinyin": "Wǒ jiào Lǐ Yuè.",
+        "meaning": "Tôi tên là Lý Nguyệt.",
+        "audio_path": "dialogue_b3_01_02.mp3"
+      }
+    ]
+  },
+  {
+    "dialogue_id": "hsk1_dialogue08",
+    "title": "Trong lớp học",
+    "turns": [
+      {
+        "turn_id": "hsk1_dialogue08_turn01",
+        "speaker": "A",
+        "hanzi": "你是老师吗？",
+        "pinyin": "Nǐ shì lǎoshī ma?",
+        "meaning": "Bạn là giáo viên phải không?",
+        "audio_path": "dialogue_b3_02_01.mp3"
+      },
+      {
+        "turn_id": "hsk1_dialogue08_turn02",
+        "speaker": "B",
+        "hanzi": "我不是老师，我是学生。",
+        "pinyin": "Wǒ bú shì lǎoshī, wǒ shì xuésheng.",
+        "meaning": "Tôi không phải giáo viên, tôi là học sinh.",
+        "audio_path": "dialogue_b3_02_02.mp3"
+      }
+    ]
+  },
+  {
+    "dialogue_id": "hsk1_dialogue09",
+    "title": "Hỏi quốc tịch",
+    "turns": [
+      {
+        "turn_id": "hsk1_dialogue09_turn01",
+        "speaker": "A",
+        "hanzi": "你是中国人吗？",
+        "pinyin": "Nǐ shì Zhōngguó rén ma?",
+        "meaning": "Bạn là người Trung Quốc phải không?",
+        "audio_path": "dialogue_b3_03_01.mp3"
+      },
+      {
+        "turn_id": "hsk1_dialogue09_turn02",
+        "speaker": "B",
+        "hanzi": "我不是中国人，我是美国人。",
+        "pinyin": "Wǒ bú shì Zhōngguó rén, wǒ shì Měiguó rén.",
+        "meaning": "Tôi không phải người Trung Quốc, tôi là người Mỹ.",
+        "audio_path": "dialogue_b3_03_02.mp3"
+      }
+    ]
+  },
+  {
+    "dialogue_id": "hsk1_dialogue10",
+    "title": "Vận dụng tự giới thiệu",
+    "turns": [
+      {
+        "turn_id": "hsk1_dialogue10_turn01",
+        "speaker": "A",
+        "hanzi": "我叫李月，我是中国人，我是老师。",
+        "pinyin": "Wǒ jiào Lǐ Yuè, wǒ shì Zhōngguó rén, wǒ shì lǎoshī.",
+        "meaning": "Tôi tên Lý Nguyệt, tôi là người Trung Quốc, tôi là giáo viên.",
+        "audio_path": "application_b3_intro_01.mp3"
+      },
+      {
+        "turn_id": "hsk1_dialogue10_turn02",
+        "speaker": "B",
+        "hanzi": "我叫大卫，我是美国人，我是学生。",
+        "pinyin": "Wǒ jiào Dàwèi, wǒ shì Měiguó rén, wǒ shì xuésheng.",
+        "meaning": "Tôi tên David, tôi là người Mỹ, tôi là học sinh.",
+        "audio_path": "application_b3_intro_02.mp3"
+      }
+    ]
+  }
+]

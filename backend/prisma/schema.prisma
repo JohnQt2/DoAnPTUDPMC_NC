@@ -1,0 +1,682 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Users {
+  user_id            Int                    @id @default(autoincrement())
+  email              String                 @unique
+  password_hash      String?
+  display_name       String
+  avatar_resource_id Int?
+  role               String                 @default("STUDENT") // STUDENT, CONTENT_EDITOR, ADMIN
+  status             String                 @default("ACTIVE")  // ACTIVE, BANNED, LOCKED
+  is_verified        Boolean                @default(true)
+  created_at         DateTime               @default(now())
+  last_login_at      DateTime?
+
+  avatarResource     MediaResources?        @relation("UserAvatar", fields: [avatar_resource_id], references: [resource_id], onDelete: SetNull)
+  sessions           UserSessions[]
+  notificationSettings NotificationSettings?
+  roadmaps           UserRoadmaps[]
+  lessonProgress     UserLessonProgress[]
+  submissions        TestSubmissions[]
+  srsItems           UserSrsItems[]
+  practices          UserSkillPractices[]
+  auditLogs          AuditLogs[]
+  uploadedMedia      MediaResources[]       @relation("MediaUploader")
+  profile            UserProfiles?
+
+  @@map("Users")
+}
+
+model UserSessions {
+  session_id         Int       @id @default(autoincrement())
+  user_id            Int
+  refresh_token_hash String
+  family_id          String    @default(uuid())
+  ip_address         String?
+  user_agent         String?
+  is_revoked         Boolean   @default(false)
+  expires_at         DateTime
+  created_at         DateTime  @default(now())
+
+  user               Users     @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([refresh_token_hash])
+  @@index([family_id])
+  @@map("UserSessions")
+}
+
+model UserProfiles {
+  profile_id          Int      @id @default(autoincrement())
+  user_id             Int      @unique
+  goal                String?
+  current_level       String?
+  expected_duration   String?
+  daily_study_minutes Int?     @default(15)
+  phone               String?
+  bio                 String?
+  created_at          DateTime @default(now())
+  updated_at          DateTime @default(now()) @updatedAt
+
+  user                Users    @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+model NotificationSettings {
+  setting_id     Int      @id @default(autoincrement())
+  user_id        Int      @unique
+  reminder_time  String   @default("20:00")
+  notify_email   Boolean  @default(true)
+  notify_webpush Boolean  @default(false)
+  updated_at     DateTime @default(now()) @updatedAt
+
+  user           Users    @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@map("NotificationSettings")
+}
+
+model Courses {
+  course_id    Int            @id @default(autoincrement())
+  title        String
+  code         String         @unique
+  description  String?
+  level        String         @default("HSK1")
+  is_published Boolean        @default(false)
+  created_at   DateTime       @default(now())
+
+  chapters     Chapters[]
+  roadmaps     UserRoadmaps[]
+
+  @@map("Courses")
+}
+
+model Chapters {
+  chapter_id  Int       @id @default(autoincrement())
+  course_id   Int
+  title       String
+  order_index Int
+  description String?
+  objective   String?
+  thumbnail_url String?
+  unit_number Int?      // Thứ tự Unit trong khóa học (alias cho order_index)
+  slug        String?   // e.g. "hsk1_u01"
+
+  course      Courses   @relation(fields: [course_id], references: [course_id], onDelete: Cascade)
+  lessons     Lessons[]
+
+  // Unit decomposition relations
+  unitVocabularies     UnitVocabulary[]
+  unitSentencePatterns UnitSentencePattern[]
+  unitGrammars         UnitGrammar[]
+  unitDialogues        UnitDialogue[]
+  unitPhonetics        UnitPhonetic[]
+  unitHanzis           UnitHanzi[]
+  exercises            Exercise[]
+
+  @@index([course_id, order_index])
+  @@map("Chapters")
+}
+
+model Lessons {
+  lesson_id               Int                  @id @default(autoincrement())
+  chapter_id              Int
+  title                   String
+  order_index             Int
+  estimated_duration_mins Int                  @default(10)
+  status                  String               @default("DRAFT") // DRAFT, PUBLISHED
+  created_at              DateTime             @default(now())
+  updated_at              DateTime             @default(now()) @updatedAt
+
+  chapter                 Chapters             @relation(fields: [chapter_id], references: [chapter_id], onDelete: Cascade)
+  blocks                  LessonBlocks[]
+  vocabularies            LessonVocabularies[]
+  tests                   Tests[]
+  progress                UserLessonProgress[]
+
+  @@index([chapter_id, order_index])
+  @@map("Lessons")
+}
+
+model LessonBlocks {
+  block_id          Int             @id @default(autoincrement())
+  lesson_id         Int
+  block_type        String          // THEORY, PINYIN, HANZI, AUDIO, EXAMPLE, VOCABULARY
+  order_index       Int
+  content_json      String          // Structured JSON
+  media_resource_id Int?
+
+  lesson            Lessons         @relation(fields: [lesson_id], references: [lesson_id], onDelete: Cascade)
+  mediaResource     MediaResources? @relation(fields: [media_resource_id], references: [resource_id], onDelete: SetNull)
+
+  @@index([lesson_id, order_index])
+  @@map("LessonBlocks")
+}
+
+model Characters {
+  char_id           Int                  @id @default(autoincrement())
+  character         String               @unique
+  pinyin            String
+  sino_vietnamese   String
+  meaning           String
+  radical           String?
+  strokes_count     Int                  @default(1)
+  stroke_order_svg  String?              // SVG vector paths or JSON strokes
+  audio_resource_id Int?
+  created_at        DateTime             @default(now())
+
+  audioResource     MediaResources?      @relation(fields: [audio_resource_id], references: [resource_id], onDelete: SetNull)
+  vocabularies      LessonVocabularies[]
+  srsItems          UserSrsItems[]
+  practices         UserSkillPractices[]
+
+  @@index([character])
+  @@map("Characters")
+}
+
+model LessonVocabularies {
+  lesson_id Int
+  char_id   Int
+
+  lesson    Lessons    @relation(fields: [lesson_id], references: [lesson_id], onDelete: Cascade)
+  character Characters @relation(fields: [char_id], references: [char_id], onDelete: Cascade)
+
+  @@id([lesson_id, char_id])
+  @@map("LessonVocabularies")
+}
+
+model PinyinSyllables {
+  syllable_id        Int                  @id @default(autoincrement())
+  syllable           String
+  tone               Int                  // 0 (neutral), 1, 2, 3, 4
+  category           String               // INITIAL, FINAL, SYLLABLE
+  f0_pitch_contour   String?              // Pitch contour description / Chao numbers e.g. "55", "35", "214", "51"
+  mouth_shape_guide  String?              // Physiological articulation instructions
+  audio_resource_id  Int?
+  contrast_pair_id   Int?                 // Minimal pair contrast reference
+
+  audioResource      MediaResources?      @relation(fields: [audio_resource_id], references: [resource_id], onDelete: SetNull)
+  contrastPair       PinyinSyllables?     @relation("ContrastPair", fields: [contrast_pair_id], references: [syllable_id], onDelete: SetNull)
+  contrastingWith    PinyinSyllables[]    @relation("ContrastPair")
+  practices          UserSkillPractices[]
+
+  @@index([syllable, tone])
+  @@map("PinyinSyllables")
+}
+
+model MediaResources {
+  resource_id     Int               @id @default(autoincrement())
+  file_name       String
+  storage_key     String
+  public_url      String
+  mime_type       String
+  file_size_bytes Int               @default(0)
+  resource_type   String            // AUDIO, IMAGE, VIDEO, SVG, DOCUMENT
+  uploaded_by     Int?
+  created_at      DateTime          @default(now())
+
+  uploader        Users?            @relation("MediaUploader", fields: [uploaded_by], references: [user_id], onDelete: SetNull)
+  avatarUsers     Users[]           @relation("UserAvatar")
+  lessonBlocks    LessonBlocks[]
+  characters      Characters[]
+  pinyinSyllables PinyinSyllables[]
+  questions       Questions[]
+
+  @@map("MediaResources")
+}
+
+model Questions {
+  question_id       Int                     @id @default(autoincrement())
+  question_type     String                  // TONE_PICKER, RADICAL_BUILDER, SYNTAX_SCRAMBLE, AUDIO_CLOZE, SPEED_MATCH, MULTIPLE_CHOICE
+  skill_category    String                  // PINYIN, TONE, READING, LISTENING, WRITING
+  difficulty_level  String                  // HSK1, HSK2, EASY, MEDIUM, HARD
+  content           String
+  options_json      String                  // JSON array of options
+  correct_answer    String
+  explanation       String?
+  media_resource_id Int?
+  created_at        DateTime                @default(now())
+
+  mediaResource     MediaResources?         @relation(fields: [media_resource_id], references: [resource_id], onDelete: SetNull)
+  testQuestions     TestQuestions[]
+  submissionDetails TestSubmissionDetails[]
+
+  @@map("Questions")
+}
+
+model Tests {
+  test_id          Int               @id @default(autoincrement())
+  lesson_id        Int?
+  title            String
+  test_type        String            @default("QUIZ") // QUIZ, CHECKPOINT, MOCK_EXAM
+  passing_score    Int               @default(80)     // Passing threshold percentage (e.g. 80%)
+  time_limit_mins  Int               @default(15)
+  is_published     Boolean           @default(false)
+  created_at       DateTime          @default(now())
+
+  lesson           Lessons?          @relation(fields: [lesson_id], references: [lesson_id], onDelete: SetNull)
+  testQuestions    TestQuestions[]
+  submissions      TestSubmissions[]
+
+  @@map("Tests")
+}
+
+model TestQuestions {
+  test_id     Int
+  question_id Int
+  order_index Int
+
+  test        Tests     @relation(fields: [test_id], references: [test_id], onDelete: Cascade)
+  question    Questions @relation(fields: [question_id], references: [question_id], onDelete: Cascade)
+
+  @@id([test_id, question_id])
+  @@map("TestQuestions")
+}
+
+model TestSubmissions {
+  submission_id    Int                     @id @default(autoincrement())
+  user_id          Int
+  test_id          Int
+  score            Float
+  is_passed        Boolean
+  duration_seconds Int
+  idempotency_key  String?                 @unique
+  snapshot_data    String?                 // JSON snapshot of questions at test time
+  submitted_at     DateTime                @default(now())
+
+  user             Users                   @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  test             Tests                   @relation(fields: [test_id], references: [test_id], onDelete: Cascade)
+  details          TestSubmissionDetails[]
+
+  @@index([user_id, submitted_at])
+  @@map("TestSubmissions")
+}
+
+model TestSubmissionDetails {
+  detail_id     Int             @id @default(autoincrement())
+  submission_id Int
+  question_id   Int
+  user_answer   String
+  is_correct    Boolean
+
+  submission    TestSubmissions @relation(fields: [submission_id], references: [submission_id], onDelete: Cascade)
+  question      Questions       @relation(fields: [question_id], references: [question_id], onDelete: Cascade)
+
+  @@map("TestSubmissionDetails")
+}
+
+model UserLessonProgress {
+  progress_id     Int       @id @default(autoincrement())
+  user_id         Int
+  lesson_id       Int
+  status          String?   @default("LOCKED") // "LOCKED" | "UNLOCKED" | "IN_PROGRESS" | "COMPLETED"
+  is_completed    Boolean   @default(false)
+  highest_score   Float?    @default(0)
+  completed_at    DateTime?
+  last_studied_at DateTime  @default(now())
+
+  user            Users     @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  lesson          Lessons   @relation(fields: [lesson_id], references: [lesson_id], onDelete: Cascade)
+
+  @@unique([user_id, lesson_id])
+  @@map("UserLessonProgress")
+}
+
+model UserRoadmaps {
+  roadmap_id            Int      @id @default(autoincrement())
+  user_id               Int
+  course_id             Int
+  starting_level        String
+  target_goal           String
+  daily_commitment_mins Int      @default(15)
+  is_active             Boolean  @default(true)
+  created_at            DateTime @default(now())
+
+  user                  Users    @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  course                Courses  @relation(fields: [course_id], references: [course_id], onDelete: Cascade)
+
+  @@index([user_id, is_active])
+  @@map("UserRoadmaps")
+}
+
+model UserSkillPractices {
+  practice_id    Int              @id @default(autoincrement())
+  user_id        Int
+  practice_type  String           // PINYIN, TONE, MINIMAL_PAIR, HANZI_STROKE
+  char_id        Int?
+  syllable_id    Int?
+  is_successful  Boolean
+  mistakes_count Int              @default(0)
+  practiced_at   DateTime         @default(now())
+
+  user           Users            @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  character      Characters?      @relation(fields: [char_id], references: [char_id], onDelete: SetNull)
+  syllable       PinyinSyllables? @relation(fields: [syllable_id], references: [syllable_id], onDelete: SetNull)
+
+  @@index([user_id, practice_type, practiced_at])
+  @@map("UserSkillPractices")
+}
+
+model UserSrsItems {
+  srs_id           Int        @id @default(autoincrement())
+  user_id          Int
+  char_id          Int
+  ease_factor      Float      @default(2.5) // Minimum 1.3
+  interval_days    Int        @default(1)
+  repetitions      Int        @default(0)
+  next_review_at   DateTime
+  last_reviewed_at DateTime?
+
+  user             Users      @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  character        Characters @relation(fields: [char_id], references: [char_id], onDelete: Cascade)
+
+  @@unique([user_id, char_id], name: "UQ_User_Char_SRS")
+  @@index([user_id, next_review_at])
+  @@map("UserSrsItems")
+}
+
+model AuditLogs {
+  log_id        Int      @id @default(autoincrement())
+  user_id       Int?
+  action_type   String   // LOGIN, LOGOUT, PROFILE_UPDATE, SUBMIT_TEST, CREATE_LESSON, PUBLISH_LESSON, etc.
+  target_entity String
+  target_id     String
+  old_value     String?
+  new_value     String?
+  ip_address    String?
+  created_at    DateTime @default(now())
+
+  user          Users?   @relation(fields: [user_id], references: [user_id], onDelete: SetNull)
+
+  @@index([created_at])
+  @@index([user_id])
+  @@map("AuditLogs")
+}
+
+model DatabaseBackups {
+  backup_id        Int       @id @default(autoincrement())
+  backup_file_name String
+  storage_r2_url   String?
+  file_size_bytes  Int?
+  checksum_sha256  String?
+  status           String    @default("COMPLETED")
+  started_at       DateTime  @default(now())
+  completed_at     DateTime?
+
+  @@map("DatabaseBackups")
+}
+
+model OutboxMessages {
+  id             String    @id @default(uuid())
+  aggregate_type String    // e.g. "LESSON_PROGRESS", "ONBOARDING", "USER"
+  aggregate_id   String    // e.g. userId hoặc lessonId
+  event_type     String    // e.g. "LESSON_COMPLETED", "ROADMAP_CREATED"
+  payload        String    // JSON string lưu payload dữ liệu sự kiện
+  status         String    @default("PENDING") // "PENDING", "PROCESSED", "FAILED"
+  retry_count    Int       @default(0)
+  error_message  String?
+  created_at     DateTime  @default(now())
+  processed_at   DateTime?
+
+  @@index([status, created_at])
+  @@map("OutboxMessages")
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  CURRICULUM CONTENT LIBRARY — Atomic Content Repositories
+// ═══════════════════════════════════════════════════════════════
+
+/// Kho từ vựng dùng chung (vocabulary_id khớp với seed-data/contents/vocabularies.json)
+model Vocabulary {
+  id              Int               @id @default(autoincrement())
+  vocabulary_id   String            @unique // e.g. "hsk1_vocab01"
+  word            String
+  pinyin          String
+  meaning         String
+  word_type       String?
+  notes           String?           // JSON array string
+  examples        String?           // JSON array string
+  word_image_path String?
+  word_audio_path String?
+  hsk_level       String?           // "HSK1".."HSK6"
+  created_at      DateTime          @default(now())
+
+  unitVocabularies UnitVocabulary[]
+
+  @@index([vocabulary_id])
+  @@index([hsk_level])
+  @@map("Vocabulary")
+}
+
+/// Kho mẫu câu dùng chung (sentence_pattern_id khớp với seed-data/contents/sentence-patterns.json)
+model SentencePattern {
+  id                  Int                    @id @default(autoincrement())
+  sentence_pattern_id String                 @unique // e.g. "hsk1_pattern03"
+  title               String?
+  pattern             String
+  explanation         String?
+  notes               String?                // JSON array string
+  examples            String?                // JSON array string
+  created_at          DateTime               @default(now())
+
+  unitSentencePatterns UnitSentencePattern[]
+
+  @@index([sentence_pattern_id])
+  @@map("SentencePattern")
+}
+
+/// Kho điểm ngữ pháp dùng chung (grammar_id khớp với seed-data/contents/grammars.json)
+model Grammar {
+  id           Int            @id @default(autoincrement())
+  grammar_id   String         @unique // e.g. "hsk1_gram01"
+  title        String
+  structure    String?
+  explanation  String?
+  notes        String?        // JSON array string
+  examples     String?        // JSON array string
+  created_at   DateTime       @default(now())
+
+  unitGrammars UnitGrammar[]
+
+  @@index([grammar_id])
+  @@map("Grammar")
+}
+
+/// Kho bài hội thoại dùng chung (dialogue_id khớp với seed-data/contents/dialogues.json)
+model Dialogue {
+  id           Int             @id @default(autoincrement())
+  dialogue_id  String          @unique // e.g. "hsk1_dialogue01"
+  title        String?
+  audio_path   String?
+  turns        String?         // JSON array string: [{speaker, hanzi, pinyin, meaning, ...}]
+  created_at   DateTime        @default(now())
+
+  unitDialogues UnitDialogue[]
+
+  @@index([dialogue_id])
+  @@map("Dialogue")
+}
+
+/// Kho kiến thức ngữ âm dùng chung (phonetic_id khớp với seed-data/contents/phonetics.json)
+model Phonetic {
+  id           Int             @id @default(autoincrement())
+  phonetic_id  String          @unique // e.g. "hsk1_phonetic01"
+  syllables    String?         // JSON array string
+  rules        String?         // JSON array string: [{rule_id, title, explanation, examples, audio_path}]
+  created_at   DateTime        @default(now())
+
+  unitPhonetics UnitPhonetic[]
+
+  @@index([phonetic_id])
+  @@map("Phonetic")
+}
+
+/// Kho chữ Hán dùng chung (hanzi_id khớp với seed-data/contents/hanzi.json)
+model Hanzi {
+  id                   Int          @id @default(autoincrement())
+  hanzi_id             String       @unique // e.g. "hsk1_hanzi01"
+  character            String       @unique
+  pinyin               String?
+  meaning              String?
+  stroke_count         Int?
+  radical              String?
+  notes                String?      // JSON array string
+  examples             String?      // JSON array string
+  character_audio_path String?
+  stroke_svg_path      String?      // path to SVG file or inline SVG content
+  svg_content          String?      // inline SVG nét viết
+  created_at           DateTime     @default(now())
+
+  unitHanzis UnitHanzi[]
+
+  @@index([hanzi_id])
+  @@index([character])
+  @@map("Hanzi")
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  UNIT DECOMPOSITION TABLES — Phân rã học liệu theo Unit
+// ═══════════════════════════════════════════════════════════════
+
+/// Bảng phân rã: Vocabulary thuộc Unit nào (kèm thứ tự hiển thị)
+model UnitVocabulary {
+  id             Int        @id @default(autoincrement())
+  unit_id        Int
+  vocabulary_id  Int
+  order_index    Int        @default(0)
+  block_type     String?    // e.g. "VOCABULARY_PRESENTATION"
+
+  unit           Chapters   @relation(fields: [unit_id], references: [chapter_id], onDelete: Cascade)
+  vocabulary     Vocabulary @relation(fields: [vocabulary_id], references: [id], onDelete: Cascade)
+
+  @@unique([unit_id, vocabulary_id])
+  @@index([unit_id, order_index])
+  @@map("UnitVocabulary")
+}
+
+/// Bảng phân rã: SentencePattern thuộc Unit nào
+model UnitSentencePattern {
+  id                  Int             @id @default(autoincrement())
+  unit_id             Int
+  sentence_pattern_id Int
+  order_index         Int             @default(0)
+  block_type          String?
+
+  unit                Chapters        @relation(fields: [unit_id], references: [chapter_id], onDelete: Cascade)
+  sentencePattern     SentencePattern @relation(fields: [sentence_pattern_id], references: [id], onDelete: Cascade)
+
+  @@unique([unit_id, sentence_pattern_id])
+  @@index([unit_id, order_index])
+  @@map("UnitSentencePattern")
+}
+
+/// Bảng phân rã: Grammar thuộc Unit nào
+model UnitGrammar {
+  id          Int      @id @default(autoincrement())
+  unit_id     Int
+  grammar_id  Int
+  order_index Int      @default(0)
+  block_type  String?
+
+  unit        Chapters @relation(fields: [unit_id], references: [chapter_id], onDelete: Cascade)
+  grammar     Grammar  @relation(fields: [grammar_id], references: [id], onDelete: Cascade)
+
+  @@unique([unit_id, grammar_id])
+  @@index([unit_id, order_index])
+  @@map("UnitGrammar")
+}
+
+/// Bảng phân rã: Dialogue thuộc Unit nào
+model UnitDialogue {
+  id          Int      @id @default(autoincrement())
+  unit_id     Int
+  dialogue_id Int
+  order_index Int      @default(0)
+  block_type  String?
+
+  unit        Chapters @relation(fields: [unit_id], references: [chapter_id], onDelete: Cascade)
+  dialogue    Dialogue @relation(fields: [dialogue_id], references: [id], onDelete: Cascade)
+
+  @@unique([unit_id, dialogue_id])
+  @@index([unit_id, order_index])
+  @@map("UnitDialogue")
+}
+
+/// Bảng phân rã: Phonetic thuộc Unit nào
+model UnitPhonetic {
+  id          Int      @id @default(autoincrement())
+  unit_id     Int
+  phonetic_id Int
+  order_index Int      @default(0)
+  block_type  String?
+
+  unit        Chapters @relation(fields: [unit_id], references: [chapter_id], onDelete: Cascade)
+  phonetic    Phonetic @relation(fields: [phonetic_id], references: [id], onDelete: Cascade)
+
+  @@unique([unit_id, phonetic_id])
+  @@index([unit_id, order_index])
+  @@map("UnitPhonetic")
+}
+
+/// Bảng phân rã: Hanzi thuộc Unit nào
+model UnitHanzi {
+  id          Int      @id @default(autoincrement())
+  unit_id     Int
+  hanzi_id    Int
+  order_index Int      @default(0)
+  block_type  String?
+
+  unit        Chapters @relation(fields: [unit_id], references: [chapter_id], onDelete: Cascade)
+  hanzi       Hanzi    @relation(fields: [hanzi_id], references: [id], onDelete: Cascade)
+
+  @@unique([unit_id, hanzi_id])
+  @@index([unit_id, order_index])
+  @@map("UnitHanzi")
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  EXERCISE REPOSITORY — Kho bài tập gắn với Unit (Chapter)
+// ═══════════════════════════════════════════════════════════════
+
+/// Kho bài tập (exercise_id khớp với seed-data/Exercise/Exercise.json)
+model Exercise {
+  exercise_id    String           @unique
+  id             Int              @id @default(autoincrement())
+  unit_id        Int?             // liên kết tới chapter_id (Unit)
+  exercise_type  String           // AUDIO_MULTIPLE_CHOICE, MULTIPLE_CHOICE, SENTENCE_ORDERING, MATCHING, IMAGE_MULTIPLE_CHOICE
+  instruction    String?
+  question       String?          // JSON object: {text, image_path, audio_path, content_reference}
+  options        String?          // JSON array: for MULTIPLE_CHOICE, AUDIO_MC, IMAGE_MC
+  items          String?          // JSON array: for SENTENCE_ORDERING
+  left_items     String?          // JSON array: for MATCHING
+  right_items    String?          // JSON array: for MATCHING
+  created_at     DateTime         @default(now())
+
+  unit           Chapters?        @relation(fields: [unit_id], references: [chapter_id], onDelete: SetNull)
+  answer         ExerciseAnswer?
+
+  @@index([exercise_id])
+  @@index([unit_id])
+  @@map("Exercise")
+}
+
+/// Đáp án bài tập (exercise_id khớp với seed-data/Exercise/exercise-answers.json)
+model ExerciseAnswer {
+  id           Int      @id @default(autoincrement())
+  exercise_id  String   @unique
+  answer_type  String   // SINGLE_CHOICE, ORDERED_ITEMS, MATCHING
+  correct_data String   // JSON: correct_option_id | correct_item_ids | correct_pairs
+  explanation  String?
+  created_at   DateTime @default(now())
+
+  exercise     Exercise @relation(fields: [exercise_id], references: [exercise_id], onDelete: Cascade)
+
+  @@map("ExerciseAnswer")
+}

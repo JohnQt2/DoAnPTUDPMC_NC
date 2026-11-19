@@ -1,0 +1,856 @@
+import { prisma } from '../../shared/database/prisma.client';
+import { AppError } from '../../shared/errors/app-error';
+import { assessmentService } from '../assessment/assessment.service';
+import {
+  CreateCourseInput,
+  UpdateCourseInput,
+  CreateChapterInput,
+  UpdateChapterInput,
+  CreateLessonInput,
+  UpdateLessonInput,
+  CreateLessonBlockInput,
+  UpdateLessonBlockInput,
+} from './curriculum.dto';
+
+export class CurriculumService {
+  // ─── Courses ───────────────────────────────────────────────────────
+
+  async listCourses(publishedOnly: boolean) {
+    const where = publishedOnly ? { is_published: true } : {};
+
+    const courses = await prisma.courses.findMany({
+      where,
+      include: {
+        _count: { select: { chapters: true } },
+      },
+      orderBy: { created_at: 'desc' },
+    });
+
+    return courses.map((c) => ({
+      courseId: c.course_id,
+      title: c.title,
+      code: c.code,
+      description: c.description,
+      level: c.level,
+      isPublished: c.is_published,
+      chaptersCount: c._count.chapters,
+      createdAt: c.created_at,
+    }));
+  }
+
+  async getCourseDetail(courseId: number, userId?: number) {
+    const course = await prisma.courses.findUnique({
+      where: { course_id: courseId },
+      include: {
+        chapters: {
+          orderBy: { order_index: 'asc' },
+          include: {
+            lessons: {
+              orderBy: { order_index: 'asc' },
+              include: {
+                _count: { select: { blocks: true, vocabularies: true, tests: true } },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!course) {
+      throw AppError.notFound('Không tìm thấy khóa học này.');
+    }
+
+    // Flatten all published lessons in sequential order to determine lock/unlock chain
+    const orderedLessons: Array<{
+      lesson_id: number;
+      chapter_id: number;
+      title: string;
+      order_index: number;
+    }> = [];
+
+    for (const ch of course.chapters) {
+      for (const l of ch.lessons) {
+        if (l.status === 'PUBLISHED') {
+          orderedLessons.push({
+            lesson_id: l.lesson_id,
+            chapter_id: ch.chapter_id,
+            title: l.title,
+            order_index: l.order_index,
+          });
+        }
+      }
+    }
+
+    // If userId provided, fetch user lesson progress for this course's lessons
+    const progressMap = new Map<
+      number,
+      { isCompleted: boolean; status: string; highestScore: number; completedAt: Date | null }
+    >();
+
+    if (userId && orderedLessons.length > 0) {
+      const lessonIds = orderedLessons.map((l) => l.lesson_id);
+      const progressRecords = await prisma.userLessonProgress.findMany({
+        where: { user_id: userId, lesson_id: { in: lessonIds } },
+      });
+      for (const p of progressRecords) {
+        progressMap.set(p.lesson_id, {
+          isCompleted: p.is_completed,
+          status: p.status || (p.is_completed ? 'COMPLETED' : 'LOCKED'),
+          highestScore: p.highest_score || 0,
+          completedAt: p.completed_at || null,
+        });
+      }
+    }
+
+    // Compute is_unlocked and status chain for each lesson
+    const unlockMap = new Map<number, boolean>();
+    const statusMap = new Map<number, string>();
+
+    for (let i = 0; i < orderedLessons.length; i++) {
+      const cur = orderedLessons[i];
+      const prog = progressMap.get(cur.lesson_id);
+
+      let isUnlocked = false;
+      if (i === 0) {
+        isUnlocked = true;
+      } else if (
+        prog?.isCompleted ||
+        (prog?.status && ['UNLOCKED', 'IN_PROGRESS', 'COMPLETED'].includes(prog.status.toUpperCase()))
+      ) {
+        isUnlocked = true;
+      } else {
+        const prev = orderedLessons[i - 1];
+        const prevProg = progressMap.get(prev.lesson_id);
+        if (prevProg?.isCompleted) {
+          isUnlocked = true;
+        }
+      }
+
+      unlockMap.set(cur.lesson_id, isUnlocked);
+
+      let computedStatus = 'LOCKED';
+      if (prog?.isCompleted) {
+        computedStatus = 'COMPLETED';
+      } else if (prog?.status === 'IN_PROGRESS') {
+        computedStatus = 'IN_PROGRESS';
+      } else if (prog?.status === 'UNLOCKED' || isUnlocked) {
+        computedStatus = 'UNLOCKED';
+      } else {
+        computedStatus = 'LOCKED';
+      }
+
+      statusMap.set(cur.lesson_id, computedStatus);
+    }
+
+    return {
+      courseId: course.course_id,
+      title: course.title,
+      code: course.code,
+      description: course.description,
+      level: course.level,
+      isPublished: course.is_published,
+      createdAt: course.created_at,
+      chapters: course.chapters.map((ch) => ({
+        chapterId: ch.chapter_id,
+        title: ch.title,
+        orderIndex: ch.order_index,
+        lessons: ch.lessons.map((l) => {
+          const prog = progressMap.get(l.lesson_id);
+          const isUnlocked = unlockMap.get(l.lesson_id) ?? false;
+          const status = statusMap.get(l.lesson_id) ?? 'LOCKED';
+          const isCompleted = prog?.isCompleted ?? false;
+          const highestScore = prog?.highestScore ?? 0;
+          const completedAt = prog?.completedAt ?? null;
+
+          return {
+            lessonId: l.lesson_id,
+            title: l.title,
+            orderIndex: l.order_index,
+            estimatedDurationMins: l.estimated_duration_mins,
+            blocksCount: l._count.blocks,
+            vocabulariesCount: l._count.vocabularies,
+            testsCount: l._count.tests,
+            publishStatus: l.status,
+            ...(userId
+              ? {
+                  status,
+                  progressStatus: status,
+                  isUnlocked,
+                  is_unlocked: isUnlocked,
+                  isCompleted,
+                  is_completed: isCompleted,
+                  highestScore,
+                  highest_score: highestScore,
+                  completedAt,
+                  completed_at: completedAt,
+                }
+              : {
+                  status: l.status,
+                }),
+          };
+        }),
+      })),
+    };
+  }
+
+  async createCourse(data: CreateCourseInput) {
+    const existing = await prisma.courses.findUnique({ where: { code: data.code } });
+    if (existing) {
+      throw AppError.conflict(`Khóa học với mã "${data.code}" đã tồn tại.`);
+    }
+
+    const course = await prisma.courses.create({
+      data: {
+        title: data.title,
+        code: data.code,
+        description: data.description,
+        level: data.level,
+        is_published: data.is_published,
+      },
+    });
+
+    return {
+      courseId: course.course_id,
+      title: course.title,
+      code: course.code,
+      level: course.level,
+      isPublished: course.is_published,
+      createdAt: course.created_at,
+    };
+  }
+
+  async updateCourse(courseId: number, data: UpdateCourseInput) {
+    const course = await prisma.courses.findUnique({ where: { course_id: courseId } });
+    if (!course) {
+      throw AppError.notFound('Không tìm thấy khóa học này.');
+    }
+
+    if (data.code && data.code !== course.code) {
+      const existing = await prisma.courses.findUnique({ where: { code: data.code } });
+      if (existing) {
+        throw AppError.conflict(`Khóa học với mã "${data.code}" đã tồn tại.`);
+      }
+    }
+
+    const updated = await prisma.courses.update({
+      where: { course_id: courseId },
+      data: {
+        ...(data.title !== undefined && { title: data.title }),
+        ...(data.code !== undefined && { code: data.code }),
+        ...(data.description !== undefined && { description: data.description }),
+        ...(data.level !== undefined && { level: data.level }),
+        ...(data.is_published !== undefined && { is_published: data.is_published }),
+      },
+    });
+
+    return {
+      courseId: updated.course_id,
+      title: updated.title,
+      code: updated.code,
+      level: updated.level,
+      isPublished: updated.is_published,
+    };
+  }
+
+  // ─── Chapters ──────────────────────────────────────────────────────
+
+  async createChapter(data: CreateChapterInput) {
+    const course = await prisma.courses.findUnique({ where: { course_id: data.course_id } });
+    if (!course) {
+      throw AppError.notFound('Không tìm thấy khóa học để thêm chương.');
+    }
+
+    const chapter = await prisma.chapters.create({
+      data: {
+        course_id: data.course_id,
+        title: data.title,
+        order_index: data.order_index,
+      },
+    });
+
+    return {
+      chapterId: chapter.chapter_id,
+      courseId: chapter.course_id,
+      title: chapter.title,
+      orderIndex: chapter.order_index,
+    };
+  }
+
+  async updateChapter(chapterId: number, data: UpdateChapterInput) {
+    const chapter = await prisma.chapters.findUnique({ where: { chapter_id: chapterId } });
+    if (!chapter) {
+      throw AppError.notFound('Không tìm thấy chương này.');
+    }
+
+    const updated = await prisma.chapters.update({
+      where: { chapter_id: chapterId },
+      data: {
+        ...(data.title !== undefined && { title: data.title }),
+        ...(data.order_index !== undefined && { order_index: data.order_index }),
+      },
+    });
+
+    return {
+      chapterId: updated.chapter_id,
+      courseId: updated.course_id,
+      title: updated.title,
+      orderIndex: updated.order_index,
+    };
+  }
+
+  async deleteChapter(chapterId: number) {
+    const chapter = await prisma.chapters.findUnique({ where: { chapter_id: chapterId } });
+    if (!chapter) {
+      throw AppError.notFound('Không tìm thấy chương này.');
+    }
+
+    await prisma.chapters.delete({ where: { chapter_id: chapterId } });
+    return { message: 'Đã xóa chương thành công.' };
+  }
+
+  // ─── Lessons ───────────────────────────────────────────────────────
+
+  async createLesson(data: CreateLessonInput) {
+    const chapter = await prisma.chapters.findUnique({ where: { chapter_id: data.chapter_id } });
+    if (!chapter) {
+      throw AppError.notFound('Không tìm thấy chương để thêm bài học.');
+    }
+
+    const lesson = await prisma.lessons.create({
+      data: {
+        chapter_id: data.chapter_id,
+        title: data.title,
+        order_index: data.order_index,
+        estimated_duration_mins: data.estimated_duration_mins,
+        status: data.status,
+      },
+    });
+
+    return {
+      lessonId: lesson.lesson_id,
+      chapterId: lesson.chapter_id,
+      title: lesson.title,
+      orderIndex: lesson.order_index,
+      estimatedDurationMins: lesson.estimated_duration_mins,
+      status: lesson.status,
+    };
+  }
+
+  async updateLesson(lessonId: number, data: UpdateLessonInput) {
+    const lesson = await prisma.lessons.findUnique({ where: { lesson_id: lessonId } });
+    if (!lesson) {
+      throw AppError.notFound('Không tìm thấy bài học này.');
+    }
+
+    const updated = await prisma.lessons.update({
+      where: { lesson_id: lessonId },
+      data: {
+        ...(data.title !== undefined && { title: data.title }),
+        ...(data.order_index !== undefined && { order_index: data.order_index }),
+        ...(data.estimated_duration_mins !== undefined && { estimated_duration_mins: data.estimated_duration_mins }),
+        ...(data.status !== undefined && { status: data.status }),
+      },
+    });
+
+    return {
+      lessonId: updated.lesson_id,
+      chapterId: updated.chapter_id,
+      title: updated.title,
+      orderIndex: updated.order_index,
+      estimatedDurationMins: updated.estimated_duration_mins,
+      status: updated.status,
+    };
+  }
+
+  async deleteLesson(lessonId: number) {
+    const lesson = await prisma.lessons.findUnique({ where: { lesson_id: lessonId } });
+    if (!lesson) {
+      throw AppError.notFound('Không tìm thấy bài học này.');
+    }
+
+    await prisma.lessons.delete({ where: { lesson_id: lessonId } });
+    return { message: 'Đã xóa bài học thành công.' };
+  }
+
+  async getLessonDetail(lessonId: number, userId?: number, userRole?: string) {
+    const lesson = await prisma.lessons.findUnique({
+      where: { lesson_id: lessonId },
+      include: {
+        chapter: {
+          include: { course: { select: { course_id: true, title: true, code: true } } },
+        },
+        blocks: {
+          orderBy: { order_index: 'asc' },
+          include: { mediaResource: true },
+        },
+        // LessonVocabularies (Lessons ↔ Characters) hiện rỗng — từ vựng được lấy qua UnitVocabulary bên dưới
+        tests: {
+          where: { is_published: true },
+          select: { test_id: true, title: true, test_type: true, passing_score: true, time_limit_mins: true },
+        },
+      },
+    });
+
+    if (!lesson) {
+      throw AppError.notFound('Không tìm thấy bài học này.');
+    }
+
+    // Kiểm tra điều kiện mở khóa bài học nếu là học viên (STUDENT)
+    if (userId && (!userRole || userRole === 'STUDENT')) {
+      const unlockStatus = await assessmentService.checkLessonUnlockStatus(userId, lessonId);
+      if (!unlockStatus.isUnlocked) {
+        throw AppError.forbidden(
+          unlockStatus.reason || 'Bài học này đang bị khóa. Bạn cần hoàn thành bài học tiên quyết để mở khóa.',
+          'LESSON_LOCKED',
+          unlockStatus
+        );
+      }
+    }
+
+    let userProgress: any = null;
+    if (userId) {
+      const prog = await prisma.userLessonProgress.findUnique({
+        where: { user_id_lesson_id: { user_id: userId, lesson_id: lessonId } },
+      });
+      if (prog) {
+        userProgress = {
+          status: prog.status || (prog.is_completed ? 'COMPLETED' : 'UNLOCKED'),
+          isCompleted: prog.is_completed,
+          highestScore: prog.highest_score || 0,
+          completedAt: prog.completed_at,
+          lastStudiedAt: prog.last_studied_at,
+        };
+      }
+    }
+
+    // ── Lấy từ vựng của Unit chứa bài học này (Chapters → UnitVocabulary → Vocabulary) ──
+    // Lesson liên kết với Chapter/Unit qua lesson.chapter_id.
+    // UnitVocabulary liên kết Chapters (unit_id = chapter_id) với Vocabulary.
+    // LessonVocabularies (Lessons ↔ Characters) hiện không được seed, nên luôn rỗng.
+    const unitVocabItems = await prisma.unitVocabulary.findMany({
+      where: { unit_id: lesson.chapter_id },
+      orderBy: { order_index: 'asc' },
+      include: {
+        vocabulary: true,
+      },
+    });
+
+    const vocabularies = unitVocabItems.map((uv) => ({
+      // Frontend VocabularyItem interface dùng charId, character, pinyin, sinoVietnamese, meaning, strokesCount, strokeOrderSvg, audioUrl
+      // Vocabulary model có: id, word (simplified), pinyin, meaning, word_type, notes, examples, word_audio_path, hsk_level
+      charId: uv.vocabulary.id,
+      character: uv.vocabulary.word,
+      pinyin: uv.vocabulary.pinyin,
+      sinoVietnamese: uv.vocabulary.meaning, // Vocabulary không có trường riêng sino_vietnamese — dùng meaning
+      meaning: uv.vocabulary.meaning,
+      strokesCount: 0,                       // Vocabulary không có stroke_count — Hanzi model mới có
+      strokeOrderSvg: null,
+      audioUrl: uv.vocabulary.word_audio_path || null,
+    }));
+
+    // ── Enrich LessonBlocks: giải mã content_references → nội dung thực từ DB ──
+    // DB block_type: VOCABULARY_PRESENTATION | PHONETIC_PRESENTATION | DIALOGUE_PRESENTATION | HANZI_WRITING | QUIZ
+    // Frontend blockType: THEORY | PINYIN | AUDIO | HANZI
+    const enrichedBlocks = await Promise.all(
+      lesson.blocks.map(async (b) => {
+        let rawMeta: any = {};
+        try {
+          rawMeta = JSON.parse(b.content_json ?? '{}');
+        } catch {
+          rawMeta = {};
+        }
+
+        const refs: Array<{ content_type: string; content_id: string }> =
+          Array.isArray(rawMeta.content_references) ? rawMeta.content_references : [];
+
+        let mappedBlockType: string = b.block_type;
+        let enrichedContentJson: string = b.content_json ?? '{}';
+
+        if (b.block_type === 'VOCABULARY_PRESENTATION') {
+          mappedBlockType = 'THEORY';
+          const vocabIds = refs
+            .filter((r) => r.content_type === 'VOCABULARY')
+            .map((r) => r.content_id);
+          const vocabs = vocabIds.length
+            ? await prisma.vocabulary.findMany({ where: { vocabulary_id: { in: vocabIds } } })
+            : [];
+          enrichedContentJson = JSON.stringify({
+            title: 'Từ vựng bài học',
+            content: vocabs
+              .map((v) => `${v.word} (${v.pinyin}) — ${v.meaning}`)
+              .join('\n'),
+            vocabularies: vocabs.map((v) => ({
+              vocabularyId: v.vocabulary_id,
+              word: v.word,
+              pinyin: v.pinyin,
+              meaning: v.meaning,
+              wordType: v.word_type,
+              audioUrl: v.word_audio_path || null,
+            })),
+          });
+        } else if (b.block_type === 'PHONETIC_PRESENTATION') {
+          mappedBlockType = 'PINYIN';
+          const phoneticIds = refs
+            .filter((r) => r.content_type === 'PHONETIC')
+            .map((r) => r.content_id);
+          const phonetics = phoneticIds.length
+            ? await prisma.phonetic.findMany({ where: { phonetic_id: { in: phoneticIds } } })
+            : [];
+          const first = phonetics[0];
+          let syllableStrings: string[] = [];
+          let rule = '';
+          if (first) {
+            try {
+              const sArr = JSON.parse(first.syllables ?? '[]');
+              syllableStrings = Array.isArray(sArr) ? sArr.map((s: any) => s.syllable ?? String(s)) : [];
+            } catch { syllableStrings = []; }
+            try {
+              const rArr = JSON.parse(first.rules ?? '[]');
+              rule = Array.isArray(rArr) && rArr[0] ? (rArr[0].explanation ?? rArr[0].title ?? '') : '';
+            } catch { rule = ''; }
+          }
+          enrichedContentJson = JSON.stringify({
+            rule,
+            syllables: syllableStrings,
+            allPhonetics: phonetics.map((p) => ({ phoneticId: p.phonetic_id })),
+          });
+        } else if (b.block_type === 'DIALOGUE_PRESENTATION') {
+          mappedBlockType = 'AUDIO';
+          const dialogueIds = refs
+            .filter((r) => r.content_type === 'DIALOGUE')
+            .map((r) => r.content_id);
+          const dialogues = dialogueIds.length
+            ? await prisma.dialogue.findMany({ where: { dialogue_id: { in: dialogueIds } } })
+            : [];
+          const allTurns: any[] = [];
+          for (const d of dialogues) {
+            try {
+              const turns = JSON.parse(d.turns ?? '[]');
+              if (Array.isArray(turns)) allTurns.push(...turns);
+            } catch { /* bỏ qua lỗi parse */ }
+          }
+          enrichedContentJson = JSON.stringify({
+            dialogue: allTurns,
+            dialogueTitles: dialogues.map((d) => d.title),
+          });
+        } else if (b.block_type === 'HANZI_WRITING') {
+          mappedBlockType = 'HANZI';
+          const hanziIds = refs
+            .filter((r) => r.content_type === 'HANZI')
+            .map((r) => r.content_id);
+          const hanzis = hanziIds.length
+            ? await prisma.hanzi.findMany({ where: { hanzi_id: { in: hanziIds } } })
+            : [];
+          const first = hanzis[0];
+          enrichedContentJson = JSON.stringify({
+            character: first?.character ?? '',
+            meaning: first?.meaning ?? '',
+            pinyin: first?.pinyin ?? '',
+            strokeCount: first?.stroke_count ?? 0,
+            svgContent: first?.svg_content ?? null,
+            allHanzi: hanzis.map((h) => ({
+              hanziId: h.hanzi_id,
+              character: h.character,
+              pinyin: h.pinyin,
+              meaning: h.meaning,
+              strokeCount: h.stroke_count,
+              svgContent: h.svg_content ?? null,
+            })),
+          });
+        } else if (b.block_type === 'QUIZ') {
+          mappedBlockType = 'THEORY';
+          enrichedContentJson = JSON.stringify({
+            title: 'Bài kiểm tra',
+            content: 'Hoàn thành các bài tập để kiểm tra kiến thức.',
+          });
+        }
+
+        return {
+          blockId: b.block_id,
+          blockType: mappedBlockType,
+          orderIndex: b.order_index,
+          contentJson: enrichedContentJson,
+          mediaUrl: b.mediaResource?.public_url || null,
+        };
+      })
+    );
+
+    return {
+      lessonId: lesson.lesson_id,
+      title: lesson.title,
+      orderIndex: lesson.order_index,
+      estimatedDurationMins: lesson.estimated_duration_mins,
+      status: lesson.status,
+      userProgress,
+      chapter: {
+        chapterId: lesson.chapter.chapter_id,
+        title: lesson.chapter.title,
+        course: lesson.chapter.course,
+      },
+      blocks: enrichedBlocks,
+      vocabularies,
+      tests: lesson.tests,
+    };
+  }
+
+  /**
+   * Ghi nhận tiến độ hoạt động học bài (nghe audio, xem từ vựng, luyện Pinyin, viết chữ Hán,...)
+   * Nếu bài chưa mở khóa -> 403 LESSON_LOCKED
+   * Nếu đã mở khóa nhưng chưa COMPLETED -> status = 'IN_PROGRESS'
+   */
+  async recordLessonProgress(userId: number, lessonId: number) {
+    const lesson = await prisma.lessons.findUnique({
+      where: { lesson_id: lessonId },
+      include: {
+        chapter: {
+          include: { course: true },
+        },
+      },
+    });
+
+    if (!lesson) {
+      throw AppError.notFound('Bài học không tồn tại.');
+    }
+
+    if (lesson.status !== 'PUBLISHED') {
+      throw AppError.badRequest('Không thể ghi nhận tiến độ cho bài học chưa xuất bản.');
+    }
+
+    // 1. Kiểm tra điều kiện mở khóa bài học: nếu chưa mở khóa -> 403 LESSON_LOCKED
+    const unlockStatus = await assessmentService.checkLessonUnlockStatus(userId, lessonId);
+    if (!unlockStatus.isUnlocked) {
+      throw AppError.forbidden(
+        unlockStatus.reason || 'Bài học này đang bị khóa. Bạn không thể ghi nhận tiến độ học.',
+        'LESSON_LOCKED',
+        unlockStatus
+      );
+    }
+
+    // 2. Kiểm tra tiến độ hiện tại
+    const existing = await prisma.userLessonProgress.findUnique({
+      where: {
+        user_id_lesson_id: {
+          user_id: userId,
+          lesson_id: lessonId,
+        },
+      },
+    });
+
+    // Nếu bài học đã hoàn thành -> giữ nguyên status: 'COMPLETED', chỉ cập nhật last_studied_at
+    if (existing && existing.is_completed) {
+      const updated = await prisma.userLessonProgress.update({
+        where: { progress_id: existing.progress_id },
+        data: {
+          last_studied_at: new Date(),
+        },
+      });
+
+      return {
+        lessonId: updated.lesson_id,
+        status: updated.status || 'COMPLETED',
+        isCompleted: updated.is_completed,
+        highestScore: updated.highest_score || 0,
+        lastStudiedAt: updated.last_studied_at,
+        completedAt: updated.completed_at,
+      };
+    }
+
+    // Nếu bài học đã mở khóa nhưng chưa COMPLETED -> Upsert status = 'IN_PROGRESS'
+    const updated = await prisma.userLessonProgress.upsert({
+      where: {
+        user_id_lesson_id: {
+          user_id: userId,
+          lesson_id: lessonId,
+        },
+      },
+      create: {
+        user_id: userId,
+        lesson_id: lessonId,
+        status: 'IN_PROGRESS',
+        is_completed: false,
+        highest_score: 0,
+        last_studied_at: new Date(),
+      },
+      update: {
+        status: 'IN_PROGRESS',
+        last_studied_at: new Date(),
+      },
+    });
+
+    return {
+      lessonId: updated.lesson_id,
+      status: updated.status,
+      isCompleted: updated.is_completed,
+      highestScore: updated.highest_score || 0,
+      lastStudiedAt: updated.last_studied_at,
+      completedAt: updated.completed_at,
+    };
+  }
+
+  // ─── Lesson Blocks ─────────────────────────────────────────────────
+
+  async createLessonBlock(data: CreateLessonBlockInput) {
+    const lesson = await prisma.lessons.findUnique({ where: { lesson_id: data.lesson_id } });
+    if (!lesson) {
+      throw AppError.notFound('Không tìm thấy bài học để thêm block.');
+    }
+
+    // Validate content_json is valid JSON
+    try {
+      JSON.parse(data.content_json);
+    } catch {
+      throw AppError.badRequest('Nội dung content_json không phải là JSON hợp lệ.');
+    }
+
+    const block = await prisma.lessonBlocks.create({
+      data: {
+        lesson_id: data.lesson_id,
+        block_type: data.block_type,
+        order_index: data.order_index,
+        content_json: data.content_json,
+        media_resource_id: data.media_resource_id || null,
+      },
+    });
+
+    return {
+      blockId: block.block_id,
+      lessonId: block.lesson_id,
+      blockType: block.block_type,
+      orderIndex: block.order_index,
+      contentJson: block.content_json,
+    };
+  }
+
+  async updateLessonBlock(blockId: number, data: UpdateLessonBlockInput) {
+    const block = await prisma.lessonBlocks.findUnique({ where: { block_id: blockId } });
+    if (!block) {
+      throw AppError.notFound('Không tìm thấy block này.');
+    }
+
+    if (data.content_json) {
+      try {
+        JSON.parse(data.content_json);
+      } catch {
+        throw AppError.badRequest('Nội dung content_json không phải là JSON hợp lệ.');
+      }
+    }
+
+    const updated = await prisma.lessonBlocks.update({
+      where: { block_id: blockId },
+      data: {
+        ...(data.block_type !== undefined && { block_type: data.block_type }),
+        ...(data.order_index !== undefined && { order_index: data.order_index }),
+        ...(data.content_json !== undefined && { content_json: data.content_json }),
+        ...(data.media_resource_id !== undefined && { media_resource_id: data.media_resource_id }),
+      },
+    });
+
+    return {
+      blockId: updated.block_id,
+      lessonId: updated.lesson_id,
+      blockType: updated.block_type,
+      orderIndex: updated.order_index,
+      contentJson: updated.content_json,
+    };
+  }
+
+  async deleteLessonBlock(blockId: number) {
+    const block = await prisma.lessonBlocks.findUnique({ where: { block_id: blockId } });
+    if (!block) {
+      throw AppError.notFound('Không tìm thấy block này.');
+    }
+
+    await prisma.lessonBlocks.delete({ where: { block_id: blockId } });
+    return { message: 'Đã xóa block thành công.' };
+  }
+
+  // ─── Publishing ────────────────────────────────────────────────────
+
+  async publishLesson(lessonId: number) {
+    const lesson = await prisma.lessons.findUnique({
+      where: { lesson_id: lessonId },
+      include: { _count: { select: { blocks: true } } },
+    });
+
+    if (!lesson) {
+      throw AppError.notFound('Không tìm thấy bài học này.');
+    }
+
+    if (lesson.status === 'PUBLISHED') {
+      throw AppError.badRequest('Bài học này đã được xuất bản.');
+    }
+
+    if (lesson._count.blocks === 0) {
+      throw AppError.badRequest('Bài học phải có ít nhất 1 block nội dung trước khi xuất bản.');
+    }
+
+    const updated = await prisma.lessons.update({
+      where: { lesson_id: lessonId },
+      data: { status: 'PUBLISHED' },
+    });
+
+    return {
+      lessonId: updated.lesson_id,
+      title: updated.title,
+      status: updated.status,
+      message: 'Đã xuất bản bài học thành công.',
+    };
+  }
+
+  async publishCourse(courseId: number) {
+    const course = await prisma.courses.findUnique({
+      where: { course_id: courseId },
+      include: {
+        chapters: {
+          include: {
+            lessons: { select: { lesson_id: true, status: true, title: true } },
+          },
+        },
+      },
+    });
+
+    if (!course) {
+      throw AppError.notFound('Không tìm thấy khóa học này.');
+    }
+
+    if (course.is_published) {
+      const unpublished = await prisma.courses.update({
+        where: { course_id: courseId },
+        data: { is_published: false },
+      });
+      return {
+        courseId: unpublished.course_id,
+        title: unpublished.title,
+        isPublished: unpublished.is_published,
+        message: 'Đã chuyển khóa học về trạng thái bản nháp (DRAFT).',
+      };
+    }
+
+    // Validate all lessons are published when chapters exist
+    const unpublishedLessons = course.chapters
+      .flatMap((ch) => ch.lessons)
+      .filter((l) => l.status !== 'PUBLISHED');
+
+    if (unpublishedLessons.length > 0) {
+      throw AppError.badRequest(
+        `Không thể xuất bản khóa học. ${unpublishedLessons.length} bài học chưa được xuất bản: ${unpublishedLessons.map((l) => l.title).join(', ')}`,
+        'UNPUBLISHED_LESSONS',
+        { unpublishedLessons: unpublishedLessons.map((l) => ({ lessonId: l.lesson_id, title: l.title })) }
+      );
+    }
+
+    const updated = await prisma.courses.update({
+      where: { course_id: courseId },
+      data: { is_published: true },
+    });
+
+    return {
+      courseId: updated.course_id,
+      title: updated.title,
+      isPublished: updated.is_published,
+      message: 'Đã xuất bản khóa học thành công.',
+    };
+  }
+}
+
+export const curriculumService = new CurriculumService();

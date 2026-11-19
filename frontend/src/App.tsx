@@ -2,6 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
+import {
+  MeshBackground,
+  PageTransition,
+  GlassCard,
+  ShimmerButton,
+  CelebrationOverlay,
+  CustomCursor,
+  DialogOverlay,
+} from './components/ui';
 
 // Pages
 import { LandingPage } from './pages/landing/LandingPage';
@@ -41,93 +50,91 @@ const AppContent: React.FC = () => {
 
   if (isLoading || (isStudent && hasCompletedOnboarding === null)) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="flex flex-col items-center gap-3">
+      <MeshBackground variant="light" showHanzi={false} className="flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3.5">
           <span
             aria-hidden="true"
-            className="w-12 h-12 rounded-2xl bg-primary-500 text-white flex items-center justify-center font-chinese font-black text-2xl shadow-lg motion-safe:animate-pulse"
+            className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-primary-600 via-primary-500 to-secondary-500 text-white flex items-center justify-center font-chinese font-black text-2xl shadow-xl shadow-primary-500/25 motion-safe:animate-pulse"
           >
             汉
           </span>
-          <span className="text-sm font-bold text-gray-600">Đang tải Hanzi4u...</span>
+          <span className="text-sm font-bold text-gray-600">Đang tải Hanzi4U...</span>
         </div>
-      </div>
+      </MeshBackground>
     );
   }
 
   const basePath = currentHash.split('?')[0] || '#/';
 
   // ──────────────────────────────────────────────────────────────────────────
-  // 1. GUEST / UNAUTHENTICATED ROUTES
+  // 1. GUEST / UNAUTHENTICATED ROUTES (DARK GLASSMORPHISM)
   // ──────────────────────────────────────────────────────────────────────────
   if (!user) {
     if (basePath === '#/' || basePath === '' || basePath === '#/landing') {
       return (
-        <div className="min-h-screen flex flex-col bg-white">
-          <Navbar currentPath={currentHash} />
+        <MeshBackground variant="dark" className="min-h-screen flex flex-col">
+          <Navbar currentPath={currentHash} theme="dark" />
           <main className="flex-1">
             <LandingPage />
           </main>
-          <footer className="border-t border-gray-100 bg-white py-6 text-center text-xs text-gray-400">
-            © 2026 Hanzi4u (hanzi4u.id.vn)
+          <footer className="border-t border-white/[0.08] bg-black/20 backdrop-blur-md py-6 text-center text-xs text-white/40">
+            © 2026 Hanzi4U (hanzi4u.id.vn) — Nền tảng học tiếng Trung HSK cho người Việt
           </footer>
-        </div>
+        </MeshBackground>
       );
     }
 
     if (basePath === '#/login') {
       return (
-        <div className="min-h-screen flex flex-col bg-gray-50">
-          <Navbar currentPath={currentHash} />
-          <main className="flex-1">
+        <MeshBackground variant="dark" className="min-h-screen flex flex-col">
+          <Navbar currentPath={currentHash} theme="dark" />
+          <main className="flex-1 flex flex-col">
             <LoginPage />
           </main>
-        </div>
+        </MeshBackground>
       );
     }
 
     const redirectUrl = `#/login?redirect=${encodeURIComponent(currentHash)}`;
     return (
-      <div className="min-h-screen flex flex-col bg-gray-50">
-        <Navbar currentPath={currentHash} />
-        <div className="max-w-md mx-auto my-20 px-4">
-          <div className="bg-white rounded-3xl p-8 border border-gray-200 shadow-lg text-center space-y-5">
-            <div className="w-14 h-14 rounded-2xl bg-primary-50 text-primary-600 mx-auto flex items-center justify-center">
+      <MeshBackground variant="dark" className="min-h-screen flex flex-col">
+        <Navbar currentPath={currentHash} theme="dark" />
+        <div className="flex-1 flex items-center justify-center px-4 py-16">
+          <GlassCard variant="dark" className="max-w-md w-full p-8 text-center space-y-5">
+            <div className="w-14 h-14 rounded-2xl bg-primary-500/20 border border-primary-400/30 text-primary-300 mx-auto flex items-center justify-center">
               <Lock className="w-7 h-7" />
             </div>
-            <h2 className="text-xl font-black text-gray-900">Vui lòng đăng nhập</h2>
-            <p className="text-sm text-gray-500">
-              Đăng nhập tài khoản Hanzi4u để tiếp tục học và lưu tiến độ của bạn.
+            <h2 className="text-xl font-black text-white">Vui lòng đăng nhập</h2>
+            <p className="text-sm text-white/60 leading-relaxed">
+              Đăng nhập tài khoản Hanzi4U để tiếp tục học và lưu tiến độ cá nhân hóa của bạn.
             </p>
-            <div className="space-y-2.5 pt-1">
-              <a
-                href={redirectUrl}
-                className="w-full flex items-center justify-center gap-2 py-3 px-5 rounded-2xl bg-primary-500 hover:bg-primary-600 text-white font-bold text-sm"
-              >
+            <div className="space-y-2.5 pt-2">
+              <ShimmerButton href={redirectUrl} className="w-full">
                 <span>Đăng nhập ngay</span>
                 <ArrowRight className="w-4 h-4" />
-              </a>
+              </ShimmerButton>
               <a
                 href="#/"
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-5 rounded-2xl border border-gray-200 hover:bg-gray-50 text-gray-700 font-semibold text-xs"
+                className="w-full flex items-center justify-center gap-2 py-3 px-5 rounded-2xl border border-white/15 hover:bg-white/10 text-white/75 font-semibold text-xs transition-colors"
               >
-                <Home className="w-4 h-4 text-gray-400" />
+                <Home className="w-4 h-4 text-white/50" />
                 <span>Về trang chủ</span>
               </a>
             </div>
-          </div>
+          </GlassCard>
         </div>
-      </div>
+      </MeshBackground>
     );
   }
 
   const isAdminRole = user.role === 'ADMIN' || user.role === 'CONTENT_EDITOR';
 
   // ──────────────────────────────────────────────────────────────────────────
-  // 2. ADMIN / CONTENT_EDITOR: DEDICATED ADMIN-ONLY WORKSPACE
-  // Admin chỉ dùng để quản trị, không sử dụng các chức năng học tập của học viên.
+  // 2. ADMIN / CONTENT_EDITOR: DEDICATED ADMIN-ONLY WORKSPACE (LIGHT GLASS)
   // ──────────────────────────────────────────────────────────────────────────
   if (isAdminRole) {
+    const isAdminProfile = basePath.startsWith('#/profile');
+    const isAdminLessonPreview = basePath.startsWith('#/lessons/');
     const adminTab: 'courses' | 'questions' | 'rbac' = basePath.startsWith('#/admin/questions')
       ? 'questions'
       : basePath.startsWith('#/admin/users') && user.role === 'ADMIN'
@@ -135,43 +142,54 @@ const AppContent: React.FC = () => {
         : 'courses';
 
     return (
-      <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
+      <MeshBackground variant="light" showHanzi={false} className="text-gray-900 font-sans">
         <Sidebar currentPath={currentHash} />
-        <div className="lg:pl-64 min-h-screen flex flex-col">
+        <div className="lg:pl-[17.25rem] min-h-screen flex flex-col">
           <main className="flex-1 pb-16">
-            <AdminCMSPage initialTab={adminTab} />
+            <PageTransition
+              routeKey={isAdminProfile ? 'admin-profile' : isAdminLessonPreview ? basePath : adminTab}
+            >
+              {isAdminProfile ? (
+                <ProfilePage />
+              ) : isAdminLessonPreview ? (
+                <LessonPage lessonId={parseInt(basePath.replace('#/lessons/', ''), 10) || 1} />
+              ) : (
+                <AdminCMSPage initialTab={adminTab} />
+              )}
+            </PageTransition>
           </main>
         </div>
-      </div>
+      </MeshBackground>
     );
   }
 
   // ──────────────────────────────────────────────────────────────────────────
-  // 3. FIRST-TIME LOGIN ONLY (STUDENTS): SHOW ROADMAP ONBOARDING QUESTIONS
-  // From 2nd login onwards, hasCompletedOnboarding === true so this is skipped!
+  // 3. FIRST-TIME LOGIN ONLY (STUDENTS): ROADMAP ONBOARDING (LIGHT GLASS)
   // ──────────────────────────────────────────────────────────────────────────
   if (hasCompletedOnboarding === false) {
     return (
-      <div className="min-h-screen flex flex-col bg-gray-50">
-        <header className="bg-white border-b border-gray-100 h-16 px-4 sm:px-6 flex items-center justify-center">
+      <MeshBackground variant="light" showHanzi={false} className="flex flex-col">
+        <header className="sticky top-0 z-40 bg-white/70 backdrop-blur-xl border-b border-white/80 h-16 px-4 sm:px-6 flex items-center justify-center shadow-sm shadow-gray-900/[0.02]">
           <div className="flex items-center gap-2.5">
-            <span className="w-9 h-9 rounded-xl bg-primary-500 text-white flex items-center justify-center font-chinese font-black text-lg">
+            <span className="w-9 h-9 rounded-xl bg-gradient-to-tr from-primary-600 via-primary-500 to-secondary-500 text-white flex items-center justify-center font-chinese font-black text-lg shadow-sm">
               汉
             </span>
             <span className="font-extrabold text-xl tracking-tight text-gray-900">
-              Hanzi<span className="text-primary-500">4u</span>
+              Hanzi<span className="text-primary-600">4U</span>
             </span>
           </div>
         </header>
         <main className="flex-1 pb-12">
-          <OnboardingRoadmapPage />
+          <PageTransition routeKey="onboarding-initial">
+            <OnboardingRoadmapPage />
+          </PageTransition>
         </main>
-      </div>
+      </MeshBackground>
     );
   }
 
   // ──────────────────────────────────────────────────────────────────────────
-  // 3. MAIN AUTHENTICATED WORKSPACE (8-ITEM LEFT SIDEBAR MATCHING IMAGE 2)
+  // 4. MAIN AUTHENTICATED WORKSPACE (LIGHT GLASSMORPHISM + SIDEBAR)
   // ──────────────────────────────────────────────────────────────────────────
   const renderCurrentPage = () => {
     if (
@@ -198,7 +216,11 @@ const AppContent: React.FC = () => {
       return <LessonPage lessonId={id || 1} />;
     }
 
-    if (basePath === '#/vocab' || basePath === '#/srs') {
+    if (basePath === '#/vocab') {
+      return <VocabPage initialTab="bank" />;
+    }
+
+    if (basePath === '#/srs') {
       return <VocabPage initialTab="srs" />;
     }
 
@@ -248,17 +270,14 @@ const AppContent: React.FC = () => {
       const canAccessCMS = user.role === 'ADMIN' || user.role === 'CONTENT_EDITOR';
       if (!canAccessCMS) {
         return (
-          <div className="max-w-lg mx-auto my-20 px-4 text-center space-y-5">
-            <div className="w-16 h-16 rounded-3xl bg-red-50 text-red-600 mx-auto flex items-center justify-center">
-              <ShieldAlert className="w-8 h-8" />
-            </div>
-            <h2 className="text-2xl font-black text-gray-900">403 - Không Có Quyền Truy Cập</h2>
-            <a
-              href="#/today"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-primary-500 hover:bg-primary-600 text-white font-bold text-sm"
-            >
-              Về trang Hôm nay
-            </a>
+          <div className="max-w-lg mx-auto my-20 px-4">
+            <GlassCard className="p-8 text-center space-y-5">
+              <div className="w-16 h-16 rounded-3xl bg-red-50 text-red-600 mx-auto flex items-center justify-center">
+                <ShieldAlert className="w-8 h-8" />
+              </div>
+              <h2 className="text-2xl font-black text-gray-900">403 - Không Có Quyền Truy Cập</h2>
+              <ShimmerButton href="#/today">Về trang Hôm nay</ShimmerButton>
+            </GlassCard>
           </div>
         );
       }
@@ -269,18 +288,23 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
+    <MeshBackground variant="light" showHanzi={false} className="text-gray-900 font-sans">
       <Sidebar currentPath={currentHash} />
-      <div className="lg:pl-64 min-h-screen flex flex-col">
-        <main className="flex-1 pb-16">{renderCurrentPage()}</main>
+      <div className="lg:pl-[17.25rem] min-h-screen flex flex-col">
+        <main className="flex-1 pb-16">
+          <PageTransition routeKey={basePath}>{renderCurrentPage()}</PageTransition>
+        </main>
       </div>
-    </div>
+    </MeshBackground>
   );
 };
 
 export const App: React.FC = () => {
   return (
     <AuthProvider>
+      <CustomCursor />
+      <CelebrationOverlay />
+      <DialogOverlay />
       <AppContent />
     </AuthProvider>
   );

@@ -7,6 +7,7 @@ import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import * as fs from 'fs';
 import * as path from 'path';
+import { runComprehensiveHskSeed } from './seed-hsk-full';
 
 const prisma = new PrismaClient();
 
@@ -802,6 +803,9 @@ async function main() {
 
   console.log('\n🎯 Phase 5: Legacy Assessment & Characters');
   await seedLegacyAssessment();
+
+  console.log('\n🌟 Phase 6: Comprehensive HSK 1–6 Enrichment (Vocab, Pinyin, Lessons, 30 Mock Exams & 18 Workbooks)');
+  await runComprehensiveHskSeed(prisma);
 
   console.log('\n✅ Seed completed successfully!\n');
 }

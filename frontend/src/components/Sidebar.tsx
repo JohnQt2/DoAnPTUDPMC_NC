@@ -10,12 +10,13 @@ import {
   Trophy,
   TrendingUp,
   LogOut,
-  Shield,
+  FileQuestion,
+  Users,
   Menu,
   X,
 } from 'lucide-react';
 
-export const SIDEBAR_ITEMS = [
+export const STUDENT_SIDEBAR_ITEMS = [
   { label: 'Hôm nay', hash: '#/today', icon: Home },
   { label: 'Lộ trình', hash: '#/courses', icon: Route },
   { label: 'Từ vựng', hash: '#/vocab', icon: BookOpen },
@@ -30,10 +31,30 @@ export const Sidebar: React.FC<{ currentPath: string }> = ({ currentPath }) => {
   const { user, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const basePath = currentPath.split('?')[0] || '#/today';
   const isAdmin = user?.role === 'ADMIN' || user?.role === 'CONTENT_EDITOR';
+  const isSuperAdmin = user?.role === 'ADMIN';
+  const basePath = currentPath.split('?')[0] || (isAdmin ? '#/admin/courses' : '#/today');
+
+  const adminItems = [
+    { label: 'Quản lý khóa học', hash: '#/admin/courses', icon: BookOpen },
+    { label: 'Ngân hàng câu hỏi', hash: '#/admin/questions', icon: FileQuestion },
+    ...(isSuperAdmin ? [{ label: 'Người dùng & Phân quyền', hash: '#/admin/users', icon: Users }] : []),
+  ];
+
+  const menuItems = isAdmin ? adminItems : STUDENT_SIDEBAR_ITEMS;
 
   const isItemActive = (hash: string) => {
+    if (isAdmin) {
+      if (hash === '#/admin/courses') {
+        return (
+          basePath === '#/admin/courses' ||
+          basePath === '#/admin' ||
+          !basePath.startsWith('#/admin/')
+        );
+      }
+      return basePath.startsWith(hash);
+    }
+
     if (hash === '#/today') {
       return basePath === '#/today' || basePath === '#/' || basePath === '';
     }
@@ -56,20 +77,17 @@ export const Sidebar: React.FC<{ currentPath: string }> = ({ currentPath }) => {
       return basePath.startsWith('#/speak-learn') || basePath === '#/pinyin';
     }
     if (hash === '#/exams') {
-      return (
-        basePath.startsWith('#/exams') ||
-        basePath.startsWith('#/test')
-      );
+      return basePath.startsWith('#/exams') || basePath.startsWith('#/test');
     }
     return basePath.startsWith(hash);
   };
 
   const renderNavContent = (onSelect?: () => void) => (
     <div className="flex flex-col h-full">
-      {/* Brand Logo - Clean, no HSK 3.0 badge */}
+      {/* Brand Logo */}
       <div className="px-5 py-6">
         <a
-          href="#/today"
+          href={isAdmin ? '#/admin/courses' : '#/today'}
           onClick={onSelect}
           className="flex items-center gap-3 group"
         >
@@ -79,15 +97,25 @@ export const Sidebar: React.FC<{ currentPath: string }> = ({ currentPath }) => {
           >
             汉
           </span>
-          <span className="font-extrabold text-2xl tracking-tight text-gray-900">
-            Hanzi<span className="text-primary-500">4u</span>
-          </span>
+          <div className="flex flex-col">
+            <span className="font-extrabold text-2xl tracking-tight text-gray-900 leading-none">
+              Hanzi<span className="text-primary-500">4u</span>
+            </span>
+            {isAdmin && (
+              <span className="text-[11px] font-bold text-primary-600 uppercase tracking-wider mt-1">
+                Trang quản trị
+              </span>
+            )}
+          </div>
         </a>
       </div>
 
-      {/* 8 Main Menu Items (matching Image 2) */}
-      <nav className="flex-1 px-3 space-y-1 overflow-y-auto" aria-label="Menu học tập">
-        {SIDEBAR_ITEMS.map((item) => {
+      {/* Menu Items: Admin-only OR Student-only */}
+      <nav
+        className="flex-1 px-3 space-y-1 overflow-y-auto"
+        aria-label={isAdmin ? 'Menu quản trị' : 'Menu học tập'}
+      >
+        {menuItems.map((item) => {
           const Icon = item.icon;
           const active = isItemActive(item.hash);
           return (
@@ -110,40 +138,39 @@ export const Sidebar: React.FC<{ currentPath: string }> = ({ currentPath }) => {
             </a>
           );
         })}
-
-        {isAdmin && (
-          <a
-            href="#/admin/courses"
-            onClick={onSelect}
-            className={`flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[15px] transition-all mt-2 ${
-              basePath.startsWith('#/admin')
-                ? 'bg-amber-50 text-amber-700 font-bold'
-                : 'text-gray-600 font-semibold hover:bg-amber-50/60 hover:text-amber-700'
-            }`}
-          >
-            <Shield aria-hidden="true" className="w-5 h-5 shrink-0 text-amber-600" />
-            <span>Quản trị</span>
-          </a>
-        )}
       </nav>
 
       {/* Bottom User Profile & Logout */}
       {user && (
         <div className="p-3 border-t border-gray-100">
           <div className="flex items-center justify-between gap-2 px-2 py-2 rounded-2xl hover:bg-gray-50 transition-colors">
-            <a
-              href="#/profile"
-              onClick={onSelect}
-              className="flex items-center gap-2.5 min-w-0 flex-1"
-            >
-              <div className="w-9 h-9 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center font-bold text-sm uppercase shrink-0">
-                {user.displayName.charAt(0)}
+            {isAdmin ? (
+              <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                <div className="w-9 h-9 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center font-bold text-sm uppercase shrink-0">
+                  {user.displayName.charAt(0)}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-gray-900 truncate">{user.displayName}</p>
+                  <p className="text-[11px] text-primary-600 font-semibold truncate">
+                    {isSuperAdmin ? 'Quản trị viên' : 'Biên tập nội dung'}
+                  </p>
+                </div>
               </div>
-              <div className="min-w-0">
-                <p className="text-sm font-bold text-gray-900 truncate">{user.displayName}</p>
-                <p className="text-[11px] text-gray-500 truncate">Tài khoản cá nhân</p>
-              </div>
-            </a>
+            ) : (
+              <a
+                href="#/profile"
+                onClick={onSelect}
+                className="flex items-center gap-2.5 min-w-0 flex-1"
+              >
+                <div className="w-9 h-9 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center font-bold text-sm uppercase shrink-0">
+                  {user.displayName.charAt(0)}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-gray-900 truncate">{user.displayName}</p>
+                  <p className="text-[11px] text-gray-500 truncate">Tài khoản cá nhân</p>
+                </div>
+              </a>
+            )}
 
             <button
               type="button"
@@ -172,13 +199,18 @@ export const Sidebar: React.FC<{ currentPath: string }> = ({ currentPath }) => {
 
       {/* Mobile Top Bar */}
       <header className="lg:hidden sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-200 px-4 h-14 flex items-center justify-between">
-        <a href="#/today" className="flex items-center gap-2">
+        <a href={isAdmin ? '#/admin/courses' : '#/today'} className="flex items-center gap-2">
           <span className="w-8 h-8 rounded-lg bg-primary-500 text-white flex items-center justify-center font-chinese font-black text-base">
             汉
           </span>
           <span className="font-extrabold text-lg tracking-tight text-gray-900">
             Hanzi<span className="text-primary-500">4u</span>
           </span>
+          {isAdmin && (
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-primary-50 text-primary-600 uppercase">
+              Admin
+            </span>
+          )}
         </a>
 
         <button
@@ -214,4 +246,3 @@ export const Sidebar: React.FC<{ currentPath: string }> = ({ currentPath }) => {
     </>
   );
 };
-

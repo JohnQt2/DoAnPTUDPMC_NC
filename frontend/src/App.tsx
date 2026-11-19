@@ -37,7 +37,9 @@ const AppContent: React.FC = () => {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
-  if (isLoading || (user && hasCompletedOnboarding === null)) {
+  const isStudent = user?.role === 'STUDENT';
+
+  if (isLoading || (isStudent && hasCompletedOnboarding === null)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="flex flex-col items-center gap-3">
@@ -119,8 +121,33 @@ const AppContent: React.FC = () => {
     );
   }
 
+  const isAdminRole = user.role === 'ADMIN' || user.role === 'CONTENT_EDITOR';
+
   // ──────────────────────────────────────────────────────────────────────────
-  // 2. FIRST-TIME LOGIN ONLY: SHOW ROADMAP ONBOARDING QUESTIONS
+  // 2. ADMIN / CONTENT_EDITOR: DEDICATED ADMIN-ONLY WORKSPACE
+  // Admin chỉ dùng để quản trị, không sử dụng các chức năng học tập của học viên.
+  // ──────────────────────────────────────────────────────────────────────────
+  if (isAdminRole) {
+    const adminTab: 'courses' | 'questions' | 'rbac' = basePath.startsWith('#/admin/questions')
+      ? 'questions'
+      : basePath.startsWith('#/admin/users') && user.role === 'ADMIN'
+        ? 'rbac'
+        : 'courses';
+
+    return (
+      <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
+        <Sidebar currentPath={currentHash} />
+        <div className="lg:pl-64 min-h-screen flex flex-col">
+          <main className="flex-1 pb-16">
+            <AdminCMSPage initialTab={adminTab} />
+          </main>
+        </div>
+      </div>
+    );
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // 3. FIRST-TIME LOGIN ONLY (STUDENTS): SHOW ROADMAP ONBOARDING QUESTIONS
   // From 2nd login onwards, hasCompletedOnboarding === true so this is skipped!
   // ──────────────────────────────────────────────────────────────────────────
   if (hasCompletedOnboarding === false) {

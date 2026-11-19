@@ -17,11 +17,17 @@ import {
   AlertCircle,
 } from 'lucide-react';
 
-export const AdminCMSPage: React.FC = () => {
+export const AdminCMSPage: React.FC<{ initialTab?: 'courses' | 'questions' | 'rbac' }> = ({
+  initialTab = 'courses',
+}) => {
   const { user } = useAuth();
   const isSuperAdmin = user?.role === 'ADMIN';
 
-  const [tab, setTab] = useState<'courses' | 'questions' | 'rbac'>('courses');
+  const [tab, setTab] = useState<'courses' | 'questions' | 'rbac'>(initialTab);
+
+  useEffect(() => {
+    setTab(initialTab);
+  }, [initialTab]);
   const [courses, setCourses] = useState<any[]>([]);
   const [questions, setQuestions] = useState<any[]>([]);
   const [adminUsers, setAdminUsers] = useState<any[]>([]);
@@ -242,11 +248,10 @@ export const AdminCMSPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setTab('courses')}
-          className={`min-h-[40px] flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-            tab === 'courses'
+          className={`min-h-[40px] flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${tab === 'courses'
               ? 'bg-primary-50 text-primary-600 border border-primary-100'
               : 'text-gray-600 hover:bg-gray-100'
-          }`}
+            }`}
         >
           <BookOpen className="w-4 h-4" aria-hidden="true" />
           Khóa Học & Bài Học ({courses.length})
@@ -255,11 +260,10 @@ export const AdminCMSPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setTab('questions')}
-          className={`min-h-[40px] flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-            tab === 'questions'
+          className={`min-h-[40px] flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${tab === 'questions'
               ? 'bg-primary-50 text-primary-600 border border-primary-100'
               : 'text-gray-600 hover:bg-gray-100'
-          }`}
+            }`}
         >
           <FileQuestion className="w-4 h-4" aria-hidden="true" />
           Ngân Hàng Câu Hỏi ({questions.length})
@@ -269,11 +273,10 @@ export const AdminCMSPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setTab('rbac')}
-            className={`min-h-[40px] flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              tab === 'rbac'
+            className={`min-h-[40px] flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${tab === 'rbac'
                 ? 'bg-amber-50 text-amber-800 border border-amber-200'
                 : 'text-gray-600 hover:bg-gray-100'
-            }`}
+              }`}
           >
             <Users className="w-4 h-4 text-amber-600" aria-hidden="true" />
             Phân Quyền RBAC & Nhật Ký Bảo Mật
@@ -328,11 +331,10 @@ export const AdminCMSPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => handleTogglePublishCourse(id)}
-                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold text-[10px] transition-all cursor-pointer ${
-                            isPublished
+                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold text-[10px] transition-all cursor-pointer ${isPublished
                               ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
                               : 'bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100'
-                          }`}
+                            }`}
                         >
                           {isPublished ? (
                             <>
@@ -575,13 +577,12 @@ export const AdminCMSPage: React.FC = () => {
                       </td>
                       <td className="p-3.5">
                         <span
-                          className={`px-2.5 py-0.5 rounded-full font-mono font-bold text-[10px] ${
-                            log.actionType.includes('REUSE') || log.actionType.includes('REVOKE')
+                          className={`px-2.5 py-0.5 rounded-full font-mono font-bold text-[10px] ${log.actionType.includes('REUSE') || log.actionType.includes('REVOKE')
                               ? 'bg-red-50 text-red-700'
                               : log.actionType.includes('ADMIN')
                                 ? 'bg-amber-50 text-amber-800'
                                 : 'bg-blue-50 text-blue-700'
-                          }`}
+                            }`}
                         >
                           {log.actionType}
                         </span>

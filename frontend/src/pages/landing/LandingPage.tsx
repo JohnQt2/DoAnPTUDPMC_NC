@@ -8,32 +8,27 @@ import {
   RotateCw,
   CheckCircle2,
   XCircle,
-  Share2,
-  Check,
-  User,
   Move,
-  Sparkles,
   Volume2,
 } from 'lucide-react';
 import { ThreeMinimalZenSculpture } from '../../components/three/ThreeMinimalZenSculpture';
 import { ThreeStudyDioramaStage } from '../../components/three/ThreeStudyDioramaStage';
-import { ThreeAmbientSealRings } from '../../components/three/ThreeAmbientSealRings';
-import { HanziLogoMark } from '../../components/HanziLogo';
+import { HanziLogo, HanziLogoMark } from '../../components/HanziLogo';
 import {
   ArchitecturalBlueprintGrid,
-  DiamondCrosshairFrame,
-  FiligreeCinemaFrame,
-  LotusVoiceButton,
+  EditorialPaperFrame,
+  MuseumExhibitionFrame,
+  PronunciationPlayButton,
   EqualizerBars,
 } from '../../components/landing/ArchitecturalOrnaments';
 
-/* ── CHAPTER & SHOWCASE DATA ── */
+/* ── CHAPTERS & AUTHENTIC CHINESE LINGUISTIC CONTENT ── */
 const CHAPTERS = [
-  { id: 0, code: '壹', label: 'Khởi Đầu' },
-  { id: 1, code: '贰', label: 'Thanh Điệu 3D' },
-  { id: 2, code: '叁', label: 'Thư Pháp 3D' },
-  { id: 3, code: '肆', label: 'Chương Trình HSK' },
-  { id: 4, code: '伍', label: 'Không Gian 3D' },
+  { id: 0, code: '序', label: 'Mở đầu', zhCaption: '汉语入门' },
+  { id: 1, code: '一', label: 'Thanh điệu & Pinyin', zhCaption: '第一课 · 声调' },
+  { id: 2, code: '二', label: 'Nét chữ Điền Tự Cách', zhCaption: '第二课 · 书写' },
+  { id: 3, code: '三', label: 'Chương trình HSK', zhCaption: '第三课 · 课程' },
+  { id: 4, code: '四', label: 'Thẻ nhớ & Lộ trình', zhCaption: '第四课 · 记忆' },
 ];
 
 const SPECIMEN_TONES = [
@@ -41,65 +36,60 @@ const SPECIMEN_TONES = [
     hanzi: '妈',
     pinyin: 'mā',
     title: 'Thanh 1 · mā',
-    cipher: '阴 平 · 声 调 五 五',
-    pitchCode: 'Cao độ 55',
+    phonetic: '阴平 · Cao độ 55 (Ngang cao)',
     sino: 'Hán-Việt: Mẫu (Mẹ)',
-    lore: 'Giữ âm cao, phẳng và trong như một nét mực ngang kéo đều tay. Nền tảng để phân biệt rạch ròi mọi thanh điệu trong tiếng Phổ thông.',
-    accent: '#00A86B',
-    wash: 'linear-gradient(180deg, rgba(0, 145, 92, 0.52) 0%, rgba(12, 168, 112, 0.22) 34%, rgba(236, 232, 226, 0) 68%)',
-    badgeBg: 'bg-[#00A86B]/15 text-[#00744A] border-[#00A86B]/40',
+    compound: '妈妈 (māma) · Mẹ',
+    lore: 'Giữ cao độ ổn định và đều hơi từ đầu đến cuối âm tiết. Nền tảng để người Việt phân biệt rõ ràng các thanh điệu ngay từ buổi học đầu tiên.',
+    accent: '#157A57',
+    wash: 'radial-gradient(ellipse 75% 55% at 72% 14%, rgba(21, 122, 87, 0.14) 0%, rgba(245, 242, 236, 0) 70%)',
     toneIdx: 0,
   },
   {
     hanzi: '麻',
     pinyin: 'má',
     title: 'Thanh 2 · má',
-    cipher: '阳 平 · 声 调 三 五',
-    pitchCode: 'Cao độ 35',
-    sino: 'Hán-Việt: Ma (Cây gai)',
-    lore: 'Âm vút lên dứt khoát từ quãng giữa lên cao như dấu sắc tiếng Việt, tạo sắc thái hỏi nhẹ đầy biểu cảm trong giao tiếp hằng ngày.',
+    phonetic: '阳平 · Cao độ 35 (Đi lên)',
+    sino: 'Hán-Việt: Ma (Cây gai · Tê)',
+    compound: '麻烦 (máfán) · Phiền phức',
+    lore: 'Lên giọng dứt khoát từ quãng giữa lên cao, gần với dấu sắc tiếng Việt nhưng thoáng và đều hơi hơn, không ngắt đột ngột ở cuối âm.',
     accent: '#C41E3A',
-    wash: 'linear-gradient(180deg, rgba(196, 30, 58, 0.56) 0%, rgba(196, 30, 58, 0.24) 34%, rgba(236, 232, 226, 0) 68%)',
-    badgeBg: 'bg-[#C41E3A]/15 text-[#9E162E] border-[#C41E3A]/40',
+    wash: 'radial-gradient(ellipse 75% 55% at 72% 14%, rgba(196, 30, 58, 0.13) 0%, rgba(245, 242, 236, 0) 70%)',
     toneIdx: 1,
   },
   {
     hanzi: '马',
     pinyin: 'mǎ',
     title: 'Thanh 3 · mǎ',
-    cipher: '上 声 · 声 调 二 一 四',
-    pitchCode: 'Cao độ 214',
+    phonetic: '上声 · Cao độ 214 (Trầm rồi lên)',
     sino: 'Hán-Việt: Mã (Con ngựa)',
-    lore: 'Hạ trầm xuống đáy giọng rồi uốn cong vút nhẹ lên — thanh điệu giàu nhạc tính nhất, là chìa khóa giúp phát âm tự nhiên như người bản xứ.',
-    accent: '#C48B0A',
-    wash: 'linear-gradient(180deg, rgba(202, 144, 18, 0.55) 0%, rgba(212, 160, 23, 0.24) 34%, rgba(236, 232, 226, 0) 68%)',
-    badgeBg: 'bg-[#D4A017]/15 text-[#8F6504] border-[#D4A017]/45',
+    compound: '马上 (mǎshàng) · Ngay lập tức',
+    lore: 'Hạ trầm xuống đáy giọng rồi uốn nhẹ lên ở cuối. Khi đi liền hai thanh 3, âm đầu tự biến điệu sang thanh 2 giúp câu nói tự nhiên hơn.',
+    accent: '#B5841A',
+    wash: 'radial-gradient(ellipse 75% 55% at 72% 14%, rgba(181, 132, 26, 0.15) 0%, rgba(245, 242, 236, 0) 70%)',
     toneIdx: 2,
   },
   {
     hanzi: '骂',
     pinyin: 'mà',
     title: 'Thanh 4 · mà',
-    cipher: '去 声 · 声 调 五 一',
-    pitchCode: 'Cao độ 51',
-    sino: 'Hán-Việt: Mạ (Mắng)',
-    lore: 'Rơi nhanh, mạnh và gọn từ đỉnh cao xuống thấp trong một nhịp thở dứt khoát — mang lại độ sắc nét và uy lực cho câu nói tiếng Trung.',
-    accent: '#9F1239',
-    wash: 'linear-gradient(180deg, rgba(136, 19, 55, 0.62) 0%, rgba(159, 18, 57, 0.25) 34%, rgba(236, 232, 226, 0) 68%)',
-    badgeBg: 'bg-[#9F1239]/15 text-[#881337] border-[#9F1239]/40',
+    phonetic: '去声 · Cao độ 51 (Xuống mạnh)',
+    sino: 'Hán-Việt: Mạ (Trách mắng)',
+    compound: '谢谢 (xièxie) · Cảm ơn',
+    lore: 'Rơi nhanh, gọn và dứt khoát từ quãng cao xuống thấp trong một nhịp ngắn, mang lại độ chắc và rõ ràng cho âm tiết tiếng Phổ thông.',
+    accent: '#7F1D1D',
+    wash: 'radial-gradient(ellipse 75% 55% at 72% 14%, rgba(127, 29, 29, 0.13) 0%, rgba(245, 242, 236, 0) 70%)',
     toneIdx: 3,
   },
   {
     hanzi: '汉',
     pinyin: 'hàn',
-    title: 'Hán Tự · hàn',
-    cipher: '汉 语 · 六 十 三 拼 音',
-    pitchCode: '63 Âm Pinyin',
+    title: 'Hán tự · hàn',
+    phonetic: '汉语 · Hệ thống 63 âm Pinyin',
     sino: 'Hán-Việt: Hán (Chữ Hán)',
-    lore: 'Chinh phục đầy đủ 23 thanh mẫu, 24 vận mẫu và 16 âm tiết đọc thẳng — kết nối trực tiếp giữa mặt chữ tượng hình, thanh điệu và âm Hán-Việt.',
-    accent: '#181415',
-    wash: 'linear-gradient(180deg, rgba(38, 22, 27, 0.68) 0%, rgba(158, 22, 46, 0.22) 34%, rgba(236, 232, 226, 0) 68%)',
-    badgeBg: 'bg-[#181415]/10 text-[#181415] border-[#181415]/30',
+    compound: '汉语 (Hànyǔ) · Tiếng Hán',
+    lore: 'Hệ thống đủ 23 thanh mẫu, 24 vận mẫu và 16 âm tiết đọc thẳng — kết nối trực tiếp mặt chữ tượng hình, cách phát âm và âm Hán-Việt quen thuộc.',
+    accent: '#1C1917',
+    wash: 'radial-gradient(ellipse 75% 55% at 72% 14%, rgba(28, 25, 23, 0.1) 0%, rgba(245, 242, 236, 0) 70%)',
     toneIdx: 3,
   },
 ];
@@ -110,84 +100,84 @@ const CALLIGRAPHY_SPECIMENS = [
     pinyin: 'yǒng',
     sino: 'Vĩnh',
     strokes: 5,
-    title: 'Vĩnh Tự Bát Pháp',
-    desc: 'Chữ 永 hội tụ trọn vẹn 8 quy tắc bút pháp căn bản của thư pháp Trung Hoa: chấm, ngang, sổ, móc, hất, phẩy dài, phẩy ngắn và mác.',
+    title: 'Chữ 永 · 8 nét căn bản',
+    desc: 'Một chữ duy nhất hội tụ đầy đủ quy tắc viết chữ Hán: chấm, ngang, sổ, móc, hất, phẩy dài, phẩy ngắn và mác — nền tảng trước khi luyện viết mọi bộ thủ.',
   },
   {
     char: '学',
     pinyin: 'xué',
     sino: 'Học',
     strokes: 8,
-    title: 'Học Tập Khai Trí',
-    desc: 'Viết theo trình tự từ trên xuống dưới, bộ Tử (子) nâng đỡ phía dưới mái nhà — giúp người Việt ghi nhớ hình tự ngay từ lần đầu tập viết.',
+    title: 'Chữ 学 · Chiết tự dễ nhớ',
+    desc: 'Viết theo thứ tự từ trên xuống dưới, ba nét chấm mở đầu rồi đến bộ Mịch (冖) và bộ Tử (子) — giúp người học ghi nhớ cấu trúc chữ thay vì học thuộc lòng.',
   },
   {
     char: '好',
     pinyin: 'hǎo',
     sino: 'Hảo',
     strokes: 6,
-    title: 'Hội Ý Tốt Đẹp',
-    desc: 'Kết hợp bộ Nữ (女) bên trái và bộ Tử (子) bên phải — ví dụ kinh điển cho phương pháp học chiết tự bộ thủ thay vì học vẹt máy móc.',
+    title: 'Chữ 好 · Kết cấu trái – phải',
+    desc: 'Ghép từ bộ Nữ (女) bên trái và bộ Tử (子) bên phải. Ô Điền Tự Cách giúp canh chính xác tỷ lệ hai vế để nét viết cân đối và đẹp mắt.',
   },
   {
     char: '中',
     pinyin: 'zhōng',
     sino: 'Trung',
     strokes: 4,
-    title: 'Trung Chính Cân Bằng',
-    desc: 'Nét sổ thẳng cuối cùng chia đôi khung Điền Tự Cách một cách chuẩn xác — rèn cảm giác tỷ lệ cân đối cho hơn 9.500 chữ Hán tiếp theo.',
+    title: 'Chữ 中 · Trục đối xứng giữa',
+    desc: 'Viết khung 口 trước rồi kéo nét sổ thẳng chia đôi tâm ô vuông sau cùng — quy tắc kinh điển "vào trước đóng sau, sổ giữa sau cùng".',
   },
 ];
 
 const CURRICULUM_SLIDES = [
   {
-    id: 'hall',
-    tag: '01 · LỘ TRÌNH TOÀN DIỆN',
-    title: 'Học Viện Hán Ngữ HSK 1 — 6',
-    image: '/images/wuwa-academy-hall.webp',
-    thumbLabel: 'Học viện HSK',
+    id: 'desk',
+    tag: '01 · GIÁO TRÌNH BÀI BẢN',
+    title: 'Lộ trình từ con số 0 đến HSK 6',
+    image: '/images/login-study-desk.webp',
+    thumbLabel: 'Giáo trình HSK',
     summary:
-      'Khởi đầu từ con số 0 với khảo sát xếp trình độ cá nhân hóa. Hệ thống tự sắp xếp từng Unit ngữ âm, từ vựng, ngữ pháp và hội thoại thực tế.',
-    highlights: ['63 âm Pinyin chuẩn', '5.000+ từ vựng HSK 1–6', 'Đồng bộ đa thiết bị'],
+      'Làm khảo sát nhanh để xếp đúng trình độ hiện tại. Mỗi bài học gói gọn hội thoại thực tế, từ vựng kèm âm Hán-Việt, ngữ pháp cốt lõi và bài tập ngắn.',
+    points: ['63 âm Pinyin đầy đủ', '5.000+ từ vựng HSK 1–6', 'Đồng bộ tiến độ đa thiết bị'],
   },
   {
     id: 'notebook',
-    tag: '02 · THƯ PHÁP & HÁN-VIỆT',
-    title: 'Tập Viết Ô Điền Tự Cách',
+    tag: '02 · LUYỆN VIẾT CHỮ HÁN',
+    title: 'Ô Điền Tự Cách & thứ tự nét chuẩn',
     image: '/images/intro-hanzi-notebook.webp',
     thumbLabel: 'Điền Tự Cách',
     summary:
-      'Mô phỏng sống động thứ tự từng nét bút cho hơn 9.500 chữ Hán, hỗ trợ vẽ tay trực tiếp trên cảm ứng và máy tính kèm giải nghĩa âm Hán-Việt.',
-    highlights: ['9.500+ chữ có thứ tự nét', 'Phân tích bộ thủ', 'Âm Hán-Việt chuẩn'],
+      'Hơn 9.500 chữ Hán có hướng dẫn thứ tự nét động, hỗ trợ tự viết tay bằng chuột hoặc màn hình cảm ứng và nhận diện nét đúng ngay lập tức.',
+    points: ['9.500+ chữ Hán chuẩn nét', 'Phân tích bộ thủ trực quan', 'Kết nối âm Hán-Việt'],
   },
   {
     id: 'study',
-    tag: '03 · NHỊP HỌC 15 PHÚT',
-    title: 'Ôn Luyện Lặp Lại Thông Minh SM-2',
+    tag: '03 · PHƯƠNG PHÁP 15 PHÚT',
+    title: 'Nhịp tự học đều đặn mỗi ngày',
     image: '/images/hero-chinese-study.webp',
     thumbLabel: 'Nhịp 15 phút',
     summary:
-      'Thuật toán SM-2 tự nhắc lại từ vựng ngay trước thời điểm bạn sắp quên — giữ thói quen nhẹ nhàng 15 phút mỗi ngày mà nhớ sâu bền vững.',
-    highlights: ['Lịch ôn tự động SM-2', 'Nghe giọng đọc bản xứ', 'Không quảng cáo'],
+      'Thuật toán lặp lại ngắt quãng SM-2 tự lên lịch ôn từ vựng đúng thời điểm chuẩn bị quên, giúp giữ thói quen nhẹ nhàng mà không bị quá tải.',
+    points: ['Nhắc lịch ôn SM-2 tự động', 'Phát âm chuẩn phổ thông', 'Không quảng cáo làm phiền'],
   },
   {
     id: 'exam',
-    tag: '04 · PHÒNG THI THỰC CHIẾN',
-    title: '48+ Bộ Đề Thi & Sách Bài Tập HSK',
-    image: '/images/login-study-desk.webp',
+    tag: '04 · PHÒNG THI MÔ PHỎNG',
+    title: '48+ Bộ đề thi & sách bài tập',
+    image: '/images/editorial-hero-chinese.webp',
     thumbLabel: '48+ Bộ đề',
     summary:
-      '30 đề thi thử mô phỏng chuẩn thời gian thực và 18 bộ sách bài tập chấm điểm tức thì, giải thích cặn kẽ từng đáp án giúp tăng tốc đạt chứng chỉ.',
-    highlights: ['30 Đề thi mô phỏng', '18 Sách bài tập SBT', 'Chấm điểm tức thì'],
+      'Gồm 30 đề thi thử HSK bấm giờ chuẩn và 18 bộ sách bài tập theo từng cấp độ, chấm điểm ngay kèm lời giải chi tiết cho từng câu.',
+    points: ['30 Đề thi mô phỏng', '18 Bộ sách bài tập', 'Chấm điểm & giải thích ngay'],
   },
   {
     id: 'quiz',
-    tag: '05 · THỬ THÁCH 10 GIÂY',
-    title: 'Kiểm Tra Nhanh Phản Xạ HSK 1',
-    image: '/images/wuwa-academy-hall.webp',
+    tag: '05 · THỬ NHANH 10 GIÂY',
+    title: 'Kiểm tra phản xạ HSK 1',
+    image: '/images/login-study-desk.webp',
     thumbLabel: 'Thử nhanh HSK',
-    summary: 'Thử ngay câu hỏi giao tiếp HSK 1 kinh điển ngay trên khung chiếu này.',
-    highlights: [],
+    summary: 'Chọn nhanh nghĩa đúng của câu chào hỏi cơ bản dưới đây.',
+    points: [],
   },
 ];
 
@@ -222,41 +212,37 @@ const FLASHCARD_DECK = [
 ];
 
 const HSK_LEVELS = [
-  { level: 1, words: '150 từ', note: 'Chào hỏi & giao tiếp căn bản' },
-  { level: 2, words: '300 từ', note: 'Hội thoại đời sống hằng ngày' },
-  { level: 3, words: '600 từ', note: 'Du lịch, học tập & công việc' },
-  { level: 4, words: '1.200 từ', note: 'Thảo luận lưu loát nhiều chủ đề' },
-  { level: 5, words: '2.500 từ', note: 'Đọc báo & xem phim bản xứ' },
-  { level: 6, words: '5.000+ từ', note: 'Học thuật & chuyên nghiệp' },
+  { level: 1, words: '150 từ', note: 'Chào hỏi & giao tiếp câu ngắn căn bản' },
+  { level: 2, words: '300 từ', note: 'Hội thoại chủ đề đời sống thường ngày' },
+  { level: 3, words: '600 từ', note: 'Du lịch, học tập & công việc cơ bản' },
+  { level: 4, words: '1.200 từ', note: 'Trao đổi lưu loát nhiều chủ đề xã hội' },
+  { level: 5, words: '2.500 từ', note: 'Đọc báo chí & xem phim bản xứ' },
+  { level: 6, words: '5.000+ từ', note: 'Sử dụng học thuật & làm việc chuyên sâu' },
 ];
 
 export const LandingPage: React.FC = () => {
-  // Full-viewport 5-chapter fade engine + Slide-up Footer (WuWa 3.8 architecture)
   const [activeSlide, setActiveSlide] = useState<number>(0);
   const [showFooter, setShowFooter] = useState<boolean>(false);
   const [audioEnabled, setAudioEnabled] = useState<boolean>(true);
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
-  const [copiedLink, setCopiedLink] = useState<boolean>(false);
-
-  // Subtle Hero mouse parallax
   const [heroParallax, setHeroParallax] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
-  // Slide 2 (Reactive 3D Tone & Hanzi Showcase)
-  const [specimenIdx, setSpecimenIdx] = useState<number>(1); // Imperial Crimson '麻 má' default!
-  const [slide2Mode, setSlide2Mode] = useState<'seal' | 'ribbons'>('seal');
+  // Slide 1 (Phonetics & 4 Tones)
+  const [specimenIdx, setSpecimenIdx] = useState<number>(1);
+  const [slide1Mode, setSlide1Mode] = useState<'medallion' | 'curves'>('medallion');
 
-  // Slide 3 (Calligraphy & 3D TianZiGe Tablet)
+  // Slide 2 (Calligraphy & TianZiGe)
   const [calligraphyIdx, setCalligraphyIdx] = useState<number>(0);
 
-  // Slide 4 (Filigree Curriculum Carousel + Filmstrip)
+  // Slide 3 (Curriculum Gallery)
   const [curriculumIdx, setCurriculumIdx] = useState<number>(0);
   const [quizChoice, setQuizChoice] = useState<string | null>(null);
 
-  // Slide 5 (3D Sanctuary: Flashcard Flip vs HSK 1-6 Tower)
-  const [sanctuaryMode, setSanctuaryMode] = useState<'cards' | 'pagoda'>('cards');
+  // Slide 4 (Tactile 3D Flashcards & HSK 1-6 Steps)
+  const [studioMode, setStudioMode] = useState<'cards' | 'hsk'>('cards');
   const [activeCardIdx, setActiveCardIdx] = useState<number>(0);
   const [flippedCards, setFlippedCards] = useState<Record<string, boolean>>({});
-  const [activeHskLevel, setActiveHskLevel] = useState<number>(4);
+  const [activeHskLevel, setActiveHskLevel] = useState<number>(3);
 
   const wheelLockRef = useRef<number>(0);
   const touchStartYRef = useRef<number | null>(null);
@@ -289,7 +275,7 @@ export const LandingPage: React.FC = () => {
   const stepChapter = useCallback((dir: 1 | -1) => {
     const now = performance.now();
     if (now < wheelLockRef.current) return;
-    wheelLockRef.current = now + 520;
+    wheelLockRef.current = now + 480;
 
     if (dir === 1) {
       setActiveSlide((prev) => {
@@ -309,21 +295,20 @@ export const LandingPage: React.FC = () => {
     }
   }, []);
 
-  // Preload inner chapter key visuals on mount so cross-fading slides is 0ms instant
+  // Preload all 4 editorial photographs on mount so chapter transitions are 0ms instant
   useEffect(() => {
     [
-      '/images/wuwa-calligraphy-ink.webp',
-      '/images/wuwa-academy-hall.webp',
+      '/images/editorial-hero-chinese.webp',
       '/images/intro-hanzi-notebook.webp',
-      '/images/hero-chinese-study.webp',
       '/images/login-study-desk.webp',
+      '/images/hero-chinese-study.webp',
     ].forEach((src) => {
       const img = new Image();
       img.src = src;
     });
   }, []);
 
-  // Desktop Full-Viewport Wheel & Keyboard Chapter Switching
+  // Full-viewport wheel & keyboard chapter navigation
   useEffect(() => {
     const onWheel = (e: WheelEvent) => {
       if (window.innerWidth < 1024) return;
@@ -351,26 +336,17 @@ export const LandingPage: React.FC = () => {
     };
   }, [stepChapter]);
 
-  // Subtle pointer parallax on Slide 0 Hero key visual
   const handleHeroPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    const nx = (e.clientX / window.innerWidth - 0.5) * -16;
-    const ny = (e.clientY / window.innerHeight - 0.5) * -10;
+    const nx = (e.clientX / window.innerWidth - 0.5) * -10;
+    const ny = (e.clientY / window.innerHeight - 0.5) * -6;
     setHeroParallax({ x: nx, y: ny });
-  };
-
-  const handleShare = () => {
-    if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      navigator.clipboard.writeText(window.location.href).catch(() => {});
-    }
-    setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 1800);
   };
 
   const isHero = activeSlide === 0;
 
   return (
     <div
-      className="relative w-screen h-screen overflow-hidden bg-[#141112] text-[#181415] select-none"
+      className="relative w-screen h-screen overflow-hidden bg-[#F5F2EC] text-[#1C1917] select-none"
       onTouchStart={(e) => {
         touchStartYRef.current = e.touches[0]?.clientY ?? null;
       }}
@@ -382,59 +358,41 @@ export const LandingPage: React.FC = () => {
       }}
     >
       {/* ═══════════════════════════════════════════════════════════════════
-          PERSISTENT FLOATING AAA CHROME (ZERO GENERIC SAAS NAVBAR!)
+          QUIET FLOATING EDITORIAL CHROME (NO GAME HUD, NO BULKY SAAS BAR)
       ═══════════════════════════════════════════════════════════════════ */}
 
-      {/* TOP-LEFT: Hero Floating Wordmark → Inner Slides Vertical Chinese Seal Tag */}
-      <div className="fixed top-6 left-6 sm:left-8 z-40 flex items-start gap-3">
+      {/* TOP-LEFT: Clean Hanzi4U Seal Mark → Vertical Lesson Tag on Inner Chapters */}
+      <div className="fixed top-6 left-6 sm:left-8 z-40">
         {isHero ? (
           <button
             type="button"
             onClick={() => goToSlide(0)}
-            className="group flex items-center gap-2.5 text-left cursor-pointer focus-visible:outline-none"
+            className="cursor-pointer focus-visible:outline-none"
           >
-            <HanziLogoMark variant="dark" className="w-9 h-9" />
-            <div className="flex flex-col leading-none">
-              <span className="font-display font-extrabold text-[15px] tracking-[0.18em] text-white uppercase drop-shadow">
-                HANZI<span className="text-[#E6BE4C]">4U</span>
-              </span>
-              <span className="font-mono text-[9px] tracking-[0.26em] text-white/70 uppercase mt-1">
-                汉语学院 · 3D
-              </span>
-            </div>
+            <HanziLogo variant="light" size="md" subtitle="HỌC TIẾNG TRUNG HSK" />
           </button>
         ) : (
           <button
             type="button"
             onClick={() => goToSlide(0)}
-            title="Về màn hình khởi đầu"
-            className="group flex flex-col items-center gap-1.5 cursor-pointer focus-visible:outline-none"
+            title="Về trang mở đầu"
+            className="group flex flex-col items-center gap-2 cursor-pointer focus-visible:outline-none"
           >
-            <span className="w-7 h-7 border border-white/60 bg-[#C41E3A] text-white font-hanzi-serif text-sm font-bold flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
+            <span className="w-8 h-8 rounded-[6px] bg-[#C41E3A] text-white font-hanzi-serif text-base font-bold flex items-center justify-center shadow-xs group-hover:bg-[#A51730] transition-colors">
               汉
             </span>
             <span
-              className="text-[10px] font-hanzi-serif tracking-[0.28em] text-white/85 drop-shadow-[0_1px_4px_rgba(0,0,0,0.45)]"
+              className="text-[10.5px] font-hanzi-serif tracking-[0.26em] text-[#57534E]"
               style={{ writingMode: 'vertical-rl' }}
             >
-              第{CHAPTERS[activeSlide].code}章 · 汉语
+              {CHAPTERS[activeSlide].zhCaption}
             </span>
           </button>
         )}
       </div>
 
-      {/* TOP-RIGHT: Compact Floating Frosted Glass HUD ([Share] [Audio Eq] [Login] [ĐĂNG KÝ]) */}
-      <div className="fixed top-5 right-5 sm:right-8 z-40 flex items-center gap-2">
-        <button
-          type="button"
-          onClick={handleShare}
-          aria-label="Sao chép liên kết trang"
-          title="Sao chép liên kết"
-          className="w-9 h-9 rounded-full bg-white/85 hover:bg-white text-[#181415] border border-white/90 shadow-md backdrop-blur-md flex items-center justify-center transition-transform hover:scale-105 cursor-pointer"
-        >
-          {copiedLink ? <Check className="w-4 h-4 text-[#00A86B]" /> : <Share2 className="w-4 h-4" />}
-        </button>
-
+      {/* TOP-RIGHT: Minimal Calm Action Cluster */}
+      <div className="fixed top-5 right-6 sm:right-8 z-40 flex items-center gap-2.5">
         <button
           type="button"
           onClick={() => {
@@ -445,39 +403,37 @@ export const LandingPage: React.FC = () => {
               return !prev;
             });
           }}
-          aria-label={audioEnabled ? 'Tắt phát âm mẫu' : 'Bật phát âm mẫu'}
-          title={audioEnabled ? 'Âm thanh phát âm: Bật' : 'Âm thanh phát âm: Tắt'}
-          className="w-9 h-9 rounded-full bg-white/85 hover:bg-white text-[#181415] border border-white/90 shadow-md backdrop-blur-md flex items-center justify-center transition-transform hover:scale-105 cursor-pointer"
+          aria-label={audioEnabled ? 'Tắt giọng đọc mẫu' : 'Bật giọng đọc mẫu'}
+          title={audioEnabled ? 'Giọng đọc mẫu: Bật' : 'Giọng đọc mẫu: Tắt'}
+          className="w-9 h-9 rounded-full bg-white/90 hover:bg-white text-[#1C1917] border border-[#1C1917]/15 shadow-xs backdrop-blur-sm flex items-center justify-center cursor-pointer transition-colors"
         >
           <EqualizerBars active={audioEnabled} />
         </button>
 
         <a
           href="#/login"
-          aria-label="Đăng nhập"
-          title="Đăng nhập tài khoản"
-          className="w-9 h-9 rounded-full bg-white/85 hover:bg-white text-[#181415] border border-white/90 shadow-md backdrop-blur-md flex items-center justify-center transition-transform hover:scale-105"
+          className="h-9 px-4 rounded-full bg-white/90 hover:bg-white text-[#1C1917] hover:text-[#C41E3A] border border-[#1C1917]/15 shadow-xs backdrop-blur-sm text-xs font-semibold inline-flex items-center justify-center transition-colors"
         >
-          <User className="w-4 h-4" />
+          Đăng nhập
         </a>
 
         <a
           href="#/login?tab=register"
-          className="h-9 px-5 rounded-full bg-white/90 hover:bg-[#C41E3A] text-[#181415] hover:text-white border border-white shadow-md backdrop-blur-md font-display text-xs font-extrabold tracking-[0.14em] uppercase inline-flex items-center justify-center transition-colors"
+          className="h-9 px-5 rounded-full bg-[#C41E3A] hover:bg-[#A51730] text-white text-xs font-semibold inline-flex items-center justify-center shadow-xs transition-colors"
         >
-          ĐĂNG KÝ
+          Đăng ký miễn phí
         </a>
       </div>
 
-      {/* LEFT MARGIN VERTICAL TICK RAIL (Hidden on Hero Slide 0, fades in on Slides 1–4) */}
+      {/* LEFT VERTICAL CHAPTER NAVIGATION RAIL (Hidden on Hero, appears calmly on Slides 1–4) */}
       <AnimatePresence>
         {!isHero && (
           <motion.nav
-            initial={{ opacity: 0, x: -12 }}
+            initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -12 }}
-            transition={{ duration: 0.3 }}
-            aria-label="Điều hướng chương"
+            exit={{ opacity: 0, x: -10 }}
+            transition={{ duration: 0.25 }}
+            aria-label="Chuyển mục nội dung"
             className="fixed left-5 sm:left-7 top-1/2 -translate-y-1/2 z-40 hidden sm:flex flex-col items-center gap-3"
           >
             {CHAPTERS.map((chap) => {
@@ -491,14 +447,13 @@ export const LandingPage: React.FC = () => {
                   className="group relative py-1 px-2 flex items-center cursor-pointer focus-visible:outline-none"
                 >
                   <span
-                    className={`block rounded-full transition-all duration-300 ${
+                    className={`block rounded-full transition-all duration-200 ${
                       active
-                        ? 'w-[4px] h-8 bg-[#C41E3A] shadow-[0_0_12px_rgba(196,30,58,0.6)]'
-                        : 'w-[3px] h-3.5 bg-[#181415]/35 group-hover:bg-[#181415]/75 group-hover:h-5'
+                        ? 'w-[3px] h-7 bg-[#C41E3A]'
+                        : 'w-[2.5px] h-3.5 bg-[#1C1917]/25 group-hover:bg-[#1C1917]/65 group-hover:h-5'
                     }`}
                   />
-                  {/* Hover Chapter Label */}
-                  <span className="pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-150 absolute left-6 px-2.5 py-1 bg-[#181415]/90 text-white text-[10.5px] font-mono tracking-wider uppercase whitespace-nowrap shadow-lg">
+                  <span className="pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-150 absolute left-6 px-2.5 py-1 bg-[#1C1917] text-[#FCFBF8] text-[10.5px] font-medium whitespace-nowrap shadow-md">
                     0{chap.id + 1} · {chap.label}
                   </span>
                 </button>
@@ -509,16 +464,16 @@ export const LandingPage: React.FC = () => {
       </AnimatePresence>
 
       {/* ═══════════════════════════════════════════════════════════════════
-          MAIN 5-CHAPTER FULL-VIEWPORT FADE STAGE (Translates up when Footer opens)
+          MAIN 5-CHAPTER FULL-VIEWPORT EDITORIAL STAGE (Translates up for Footer)
       ═══════════════════════════════════════════════════════════════════ */}
       <motion.div
-        animate={{ y: showFooter ? -144 : 0 }}
-        transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
+        animate={{ y: showFooter ? -136 : 0 }}
+        transition={{ duration: 0.36, ease: [0.22, 1, 0.36, 1] }}
         className="relative w-full h-full will-change-transform"
       >
         <AnimatePresence initial={false}>
           {/* ────────────────────────────────────────────────────────────────
-              SLIDE 0: FULL-BLEED CINEMATIC GUOCHAO KEY VISUAL HERO
+              SLIDE 0: CALM DAYLIGHT EDITORIAL HERO (Kinfolk × Chinese Study)
           ──────────────────────────────────────────────────────────────── */}
           {activeSlide === 0 && (
             <motion.section
@@ -526,150 +481,108 @@ export const LandingPage: React.FC = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
               onPointerMove={handleHeroPointerMove}
-              className="absolute inset-0 w-full h-full overflow-hidden bg-[#131118]"
+              className="absolute inset-0 w-full h-full overflow-hidden bg-[#F3EFE8]"
             >
-              {/* Full-Bleed Custom Guochao Key Visual with Subtle Pointer Parallax */}
+              {/* Authentic Morning-Light Chinese Study Photograph with Whisper-Subtle Parallax */}
               <div
                 aria-hidden="true"
                 style={{
-                  transform: `translate3d(${heroParallax.x.toFixed(1)}px, ${heroParallax.y.toFixed(1)}px, 0) scale(1.04)`,
+                  transform: `translate3d(${heroParallax.x.toFixed(1)}px, ${heroParallax.y.toFixed(1)}px, 0) scale(1.03)`,
                 }}
                 className="pointer-events-none absolute inset-0 transition-transform duration-300 ease-out will-change-transform"
               >
                 <img
-                  src="/images/wuwa-hero-guochao.webp"
+                  src="/images/editorial-hero-chinese.webp"
                   alt=""
                   decoding="async"
-                  className="w-full h-full object-cover object-center"
+                  className="w-full h-full object-cover object-right"
                 />
               </div>
 
-              {/* Transparent Live 3D Orbital Gold/Crimson Particles drifting over the courtyard */}
-              <ThreeAmbientSealRings className="absolute inset-0 w-full h-full opacity-55" />
-
-              {/* Dual Cinematic Gradient Masks preserving luminous scroll center & crisp bottom contrast */}
+              {/* Delicate Left Linen Veil ensuring effortless dark-ink readability on all screens */}
               <div
                 aria-hidden="true"
-                className="pointer-events-none absolute inset-x-0 top-0 h-36 bg-gradient-to-b from-[#131118]/65 to-transparent"
-              />
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-x-0 bottom-0 h-[54%] bg-gradient-to-t from-[#120E14] via-[#140F16]/75 to-transparent"
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  background:
+                    'linear-gradient(95deg, rgba(246, 243, 237, 0.94) 0%, rgba(246, 243, 237, 0.84) 38%, rgba(246, 243, 237, 0.18) 64%, rgba(246, 243, 237, 0) 100%)',
+                }}
               />
 
-              {/* Bottom-Center Monumental Engraved Title Lockup & Action Strip */}
-              <div className="relative z-20 h-full flex flex-col items-center justify-end pb-10 sm:pb-12 px-5 text-center">
+              {/* Subtle Architectural Folio Hairline */}
+              <ArchitecturalBlueprintGrid className="opacity-65" />
+
+              {/* Left-Anchored Calm Editorial Typography Lockup */}
+              <div className="relative z-20 h-full max-w-[1380px] mx-auto px-6 sm:px-12 lg:px-20 flex flex-col justify-center">
                 <motion.div
-                  initial={{ opacity: 0, y: 18 }}
+                  initial={{ opacity: 0, y: 14 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.65, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
-                  className="max-w-3xl w-full space-y-4"
+                  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                  className="max-w-xl space-y-6"
                 >
-                  {/* Engraved Title + Flanking Crimson-Gold 3D Preview Play Emblem */}
-                  <div className="relative inline-flex items-center justify-center gap-4 sm:gap-6">
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-center gap-3 text-[11px] font-mono uppercase tracking-[0.28em] text-[#F2D16B]">
-                        <span className="w-8 h-[1px] bg-gradient-to-r from-transparent to-[#E6BE4C]" />
-                        <span>汉语之境 · HỌC VIỆN 3D</span>
-                        <span className="w-8 h-[1px] bg-gradient-to-l from-transparent to-[#E6BE4C]" />
-                      </div>
-
-                      <h1 className="font-display font-extrabold text-5xl sm:text-7xl lg:text-[78px] tracking-[0.08em] leading-none text-transparent bg-clip-text bg-gradient-to-b from-[#FFFFFF] via-[#FFF6EC] to-[#E9C8B8] drop-shadow-[0_6px_32px_rgba(196,30,58,0.45)]">
-                        HANZI4U
-                      </h1>
-
-                      <p className="font-hanzi-serif text-base sm:text-xl tracking-[0.16em] text-white/90 pt-1">
-                        Mỗi Nét Mực · Mở Một Thế Giới Tiếng Trung
-                      </p>
-                    </div>
-
-                    {/* Signature Circular Luminous Play / Enter 3D Emblem (echoing WuWa Hero PV button) */}
-                    <button
-                      type="button"
-                      onClick={() => goToSlide(1)}
-                      aria-label="Khám phá không gian học 3D"
-                      title="Khám phá Phòng Học 3D"
-                      className="hidden sm:flex group relative w-14 h-14 rounded-full border border-[#E6BE4C]/80 bg-[#C41E3A]/80 hover:bg-[#C41E3A] text-white items-center justify-center shadow-[0_0_28px_rgba(196,30,58,0.75)] transition-transform duration-300 hover:scale-110 cursor-pointer"
-                    >
-                      <span className="absolute -inset-2 rounded-full border border-[#E6BE4C]/35 animate-ping opacity-40" />
-                      <svg viewBox="0 0 24 24" className="w-5 h-5 translate-x-0.5 fill-current">
-                        <path d="M6 4l15 8-15 8V4z" />
-                      </svg>
-                    </button>
+                  <div className="inline-flex items-center gap-3 text-[11px] font-mono font-semibold uppercase tracking-[0.2em] text-[#C41E3A]">
+                    <span className="w-6 h-[1.5px] bg-[#C41E3A]" />
+                    <span>HỌC TIẾNG TRUNG CHUẨN HSK 1 — 6</span>
                   </div>
 
-                  {/* Release / Curriculum Subtitle Line */}
-                  <p className="text-xs sm:text-sm font-mono tracking-[0.16em] text-white/80">
-                    Lộ trình chuẩn <span className="text-[#F2D16B] font-bold">HSK 1 — 6</span> · 63 Âm Pinyin · 9.500+ Nét Chữ · 48+ Bộ Đề
+                  <h1 className="font-display font-extrabold text-4xl sm:text-5xl lg:text-[56px] text-[#1C1917] leading-[1.1] tracking-[-0.028em]">
+                    Học tiếng Trung bài bản từ{' '}
+                    <span className="text-[#C41E3A]">những nét chữ đầu tiên</span>
+                  </h1>
+
+                  <p className="text-base sm:text-[17px] text-[#44403C] leading-relaxed max-w-lg">
+                    Luyện phát âm chuẩn đủ <strong>63 âm Pinyin</strong>, tập viết thứ tự từng nét
+                    trên ô Điền Tự Cách, ôn thẻ từ vựng SM-2 và 48+ bộ đề HSK trong không gian yên
+                    tĩnh, chỉ 15 phút mỗi ngày.
                   </p>
 
-                  {/* Crisp AAA Dark-Lacquer & Imperial Crimson Action Bar (zero generic SaaS pills) */}
-                  <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
+                  {/* Clean Editorial Action Pair */}
+                  <div className="pt-2 flex flex-wrap items-center gap-3.5">
                     <a
                       href="#/login?tab=register"
-                      className="h-12 px-8 bg-[#C41E3A] hover:bg-[#A51730] text-white border border-[#E6BE4C]/65 font-display text-xs sm:text-[13px] font-extrabold tracking-[0.14em] uppercase inline-flex items-center gap-2.5 shadow-[0_12px_34px_-6px_rgba(196,30,58,0.75)] transition-all active:scale-[0.98]"
+                      className="h-12 px-7 rounded-lg bg-[#C41E3A] hover:bg-[#A51730] text-white font-semibold text-sm inline-flex items-center gap-2 shadow-[0_10px_24px_-8px_rgba(196,30,58,0.45)] transition-colors"
                     >
-                      <span>ĐĂNG KÝ MIỄN PHÍ</span>
-                      <ArrowRight className="w-4 h-4 text-[#F2D16B]" />
+                      <span>Bắt đầu học miễn phí</span>
+                      <ArrowRight className="w-4 h-4" />
                     </a>
 
                     <button
                       type="button"
                       onClick={() => goToSlide(1)}
-                      className="h-12 px-7 bg-[#141112]/80 hover:bg-[#1E191B] text-white border border-white/30 hover:border-[#E6BE4C]/70 backdrop-blur-md font-display text-xs sm:text-[13px] font-bold tracking-[0.12em] uppercase inline-flex items-center gap-2 transition-all cursor-pointer"
+                      className="h-12 px-6 rounded-lg bg-white/85 hover:bg-white text-[#1C1917] border border-[#1C1917]/20 hover:border-[#C41E3A]/50 font-semibold text-sm inline-flex items-center gap-2 transition-colors cursor-pointer"
                     >
-                      <Sparkles className="w-4 h-4 text-[#E6BE4C]" />
-                      <span>KHÁM PHÁ 3D</span>
+                      <span>Xem thử bài học</span>
+                      <ChevronDown className="w-4 h-4 text-[#C41E3A]" />
                     </button>
-
-                    <a
-                      href="#/login"
-                      className="h-12 px-6 bg-[#141112]/70 hover:bg-[#1E191B] text-white/90 hover:text-white border border-white/20 hover:border-white/45 backdrop-blur-md font-display text-xs sm:text-[13px] font-bold tracking-[0.12em] uppercase inline-flex items-center justify-center transition-all"
-                    >
-                      ĐĂNG NHẬP
-                    </a>
                   </div>
 
-                  {/* Subtle Scroll-Down Cue */}
-                  <button
-                    type="button"
-                    onClick={() => goToSlide(1)}
-                    className="pt-2 inline-flex flex-col items-center gap-1 text-[10px] font-mono uppercase tracking-[0.24em] text-white/55 hover:text-[#F2D16B] transition-colors cursor-pointer"
-                  >
-                    <span>Cuộn xuống để mở chương tiếp theo</span>
-                    <ChevronDown className="w-4 h-4 animate-bounce" />
-                  </button>
+                  {/* Quiet Scholarly Footer Rule (zero SaaS metric boxes) */}
+                  <div className="pt-6 border-t border-[#1C1917]/15 flex flex-wrap items-center gap-x-6 gap-y-1.5 text-xs font-mono text-[#57534E]">
+                    <span>63 Âm Pinyin chuẩn</span>
+                    <span className="text-[#C41E3A]">·</span>
+                    <span>9.500+ Nét chữ Hán</span>
+                    <span className="text-[#C41E3A]">·</span>
+                    <span>Miễn phí khởi đầu</span>
+                  </div>
                 </motion.div>
               </div>
 
-              {/* Bottom-Right Edge-Peeking Quick-Entry Card (Signature WuWa micro-detail!) */}
-              <a
-                href="#/login?tab=register"
-                className="hidden xl:flex group fixed right-0 bottom-10 z-30 items-center gap-3 pl-3 pr-5 py-2.5 bg-[#141112]/90 border-y border-l border-[#E6BE4C]/55 backdrop-blur-md shadow-2xl translate-x-2 hover:translate-x-0 transition-transform duration-300"
+              {/* Subtle Bottom-Center Scroll Prompt */}
+              <button
+                type="button"
+                onClick={() => goToSlide(1)}
+                className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/85 hover:bg-white border border-[#1C1917]/15 text-[11px] font-mono text-[#57534E] hover:text-[#C41E3A] backdrop-blur-sm transition-colors cursor-pointer"
               >
-                <img
-                  src="/images/wuwa-academy-hall.webp"
-                  alt=""
-                  className="w-14 h-10 object-cover border border-[#E6BE4C]/40"
-                />
-                <div className="leading-tight">
-                  <p className="text-[10px] font-mono uppercase tracking-[0.16em] text-[#E6BE4C] font-bold">
-                    MIỄN PHÍ 100%
-                  </p>
-                  <p className="text-xs font-display font-bold text-white flex items-center gap-1 mt-0.5">
-                    <span>Xếp lộ trình HSK</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-[#C41E3A] group-hover:translate-x-0.5 transition-transform" />
-                  </p>
-                </div>
-              </a>
+                <span>Cuộn xuống · Bài 01 Thanh điệu</span>
+                <ChevronDown className="w-3.5 h-3.5" />
+              </button>
             </motion.section>
           )}
 
           {/* ────────────────────────────────────────────────────────────────
-              SLIDE 1: REACTIVE 3D TONE & HANZI SHOWCASE (WuWa 'RESONATORS' DNA)
-              Open Stone-Parchment Canvas + Reactive Atmospheric Wash + Open 3D!
+              SLIDE 1: 4 TONES & 63 PINYIN — CALM WATERCOLOR + PORCELAIN 3D
           ──────────────────────────────────────────────────────────────── */}
           {activeSlide === 1 && (
             <motion.section
@@ -678,90 +591,76 @@ export const LandingPage: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-              className="absolute inset-0 w-full h-full overflow-hidden bg-[#ECE8E2]"
+              className="absolute inset-0 w-full h-full overflow-hidden bg-[#F5F2EC]"
             >
-              {/* Reactive Top-Down Atmospheric Color Wash (morphs smoothly per selected Hanzi/Tone!) */}
+              {/* Delicate Watercolor Wash tinting gently per selected tone */}
               <div
                 aria-hidden="true"
                 className="pointer-events-none absolute inset-0 transition-all duration-500 ease-out"
                 style={{ backgroundImage: activeSpecimen.wash }}
               />
-
-              {/* Subtle Architectural Drafting-Compass Blueprint Hairlines */}
               <ArchitecturalBlueprintGrid />
 
-              {/* Main Split Stage (Zero Rounded SaaS Cards — Pure Editorial & Open 3D Canvas!) */}
-              <div className="relative z-10 h-full max-w-[1380px] mx-auto px-6 sm:px-14 lg:pl-24 lg:pr-14 pt-14 pb-16 grid grid-cols-1 lg:grid-cols-12 items-center gap-4">
-                {/* LEFT COLUMN: Editorial Header, Watermark Cipher, Lotus Voice Play, Lore & 5 Seal Avatars */}
-                <div className="lg:col-span-5 flex flex-col justify-between h-full max-h-[640px] py-2">
-                  {/* Top Engraved Section Title */}
+              <div className="relative z-10 h-full max-w-[1360px] mx-auto px-6 sm:px-14 lg:pl-24 lg:pr-14 pt-14 pb-16 grid grid-cols-1 lg:grid-cols-12 items-center gap-6">
+                {/* LEFT COLUMN: Clean Linguistic Explanation & 5 Ceramic Seal Selectors */}
+                <div className="lg:col-span-5 flex flex-col justify-between h-full max-h-[600px] py-2">
                   <div>
-                    <h2 className="font-display font-extrabold text-3xl sm:text-4xl lg:text-[42px] uppercase tracking-[0.1em] text-white drop-shadow-[0_3px_14px_rgba(24,20,21,0.35)]">
-                      THANH ĐIỆU
+                    <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-[#C41E3A]">
+                      01 · NGỮ ÂM PHỔ THÔNG
+                    </span>
+                    <h2 className="font-display font-extrabold text-3xl sm:text-4xl text-[#1C1917] tracking-tight mt-1">
+                      4 Thanh điệu & Pinyin
                     </h2>
                   </div>
 
-                  {/* Center Specimen Lockup (Instant smooth swap with zero blank gap) */}
+                  {/* Active Specimen Linguistic Breakdown */}
                   <motion.div
                     key={activeSpecimen.hanzi}
-                    initial={{ opacity: 0, y: 8 }}
+                    initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                    transition={{ duration: 0.22 }}
                     className="space-y-4 my-auto py-4"
                   >
-                      {/* Faint Diegetic Chinese Cipher Watermark */}
-                      <p className="font-hanzi-serif text-lg sm:text-xl tracking-[0.34em] text-[#181415]/20 select-none">
-                        {activeSpecimen.cipher}
-                      </p>
+                    <p className="font-hanzi-serif text-sm tracking-[0.18em] text-[#78716C]">
+                      {activeSpecimen.phonetic}
+                    </p>
 
-                      {/* Bespoke 4-Petal Lotus Audio Emblem + Specimen Title */}
-                      <div className="flex items-center gap-3.5">
-                        <LotusVoiceButton
-                          onClick={() => speakChinese(activeSpecimen.hanzi, 0.72)}
-                          active={isSpeaking}
-                          accentColor={activeSpecimen.accent}
-                          label={`Nghe phát âm ${activeSpecimen.pinyin}`}
-                        />
-                        <div>
-                          <h3 className="font-display font-extrabold text-3xl sm:text-4xl text-[#181415] tracking-tight leading-none">
-                            {activeSpecimen.title}
-                          </h3>
-                          {/* 5 Luminous Gold Diamond Rarity/Mastery Pips */}
-                          <div className="flex items-center gap-2 mt-2.5" aria-hidden="true">
-                            {[0, 1, 2, 3, 4].map((d) => (
-                              <span
-                                key={d}
-                                className="w-2.5 h-2.5 rotate-45 bg-gradient-to-br from-[#F7E08A] to-[#D4A017] shadow-[0_0_8px_rgba(212,160,23,0.65)]"
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Dual Sleek Reactive Metadata Pills */}
-                      <div className="flex flex-wrap items-center gap-2.5 pt-1">
-                        <span
-                          className={`px-3.5 py-1 rounded-full border text-xs font-mono font-bold ${activeSpecimen.badgeBg}`}
-                        >
-                          {activeSpecimen.pitchCode}
-                        </span>
-                        <span className="px-3.5 py-1 rounded-full border border-[#181415]/20 bg-white/65 text-xs font-semibold text-[#181415]">
+                    <div className="flex items-center gap-3.5">
+                      <PronunciationPlayButton
+                        onClick={() => speakChinese(activeSpecimen.hanzi, 0.72)}
+                        active={isSpeaking}
+                        accentColor={activeSpecimen.accent}
+                        label={`Nghe phát âm ${activeSpecimen.pinyin}`}
+                      />
+                      <div>
+                        <h3 className="font-display font-extrabold text-3xl sm:text-[34px] text-[#1C1917] leading-none">
+                          {activeSpecimen.title}
+                        </h3>
+                        <p className="text-xs font-medium text-[#57534E] mt-1.5">
                           {activeSpecimen.sino}
-                        </span>
+                        </p>
                       </div>
+                    </div>
 
-                      {/* Concise High-Contrast Editorial Lore Copy */}
-                      <p className="text-[13.5px] sm:text-sm text-[#262123] leading-relaxed max-w-md font-medium">
-                        {activeSpecimen.lore}
-                      </p>
+                    {/* Real Compound Vocabulary Example Strip (replaces game rarity stars!) */}
+                    <div className="inline-flex items-center gap-2.5 px-3.5 py-2 bg-white/85 border border-[#1C1917]/15 text-xs">
+                      <span className="font-mono text-[10.5px] uppercase tracking-wider text-[#78716C]">
+                        Từ ghép:
+                      </span>
+                      <span className="font-semibold text-[#1C1917]">{activeSpecimen.compound}</span>
+                    </div>
+
+                    <p className="text-sm text-[#44403C] leading-relaxed max-w-md">
+                      {activeSpecimen.lore}
+                    </p>
                   </motion.div>
 
-                  {/* Bottom 5 Circular Ink-Seal Specimen Selectors (WuWa Resonator Avatar Row!) */}
-                  <div className="space-y-2">
-                    <p className="text-[10px] font-mono uppercase tracking-[0.22em] text-[#5F5658]">
-                      Chọn mẫu thanh điệu & chữ Hán
+                  {/* 5 Minimal Ceramic Character Selectors */}
+                  <div className="space-y-2.5">
+                    <p className="text-[10.5px] font-mono uppercase tracking-[0.18em] text-[#78716C]">
+                      Bấm vào chữ để nghe phát âm
                     </p>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2.5">
                       {SPECIMEN_TONES.map((spec, idx) => {
                         const selected = idx === specimenIdx;
                         return (
@@ -772,20 +671,20 @@ export const LandingPage: React.FC = () => {
                               setSpecimenIdx(idx);
                               speakChinese(spec.hanzi, 0.72);
                             }}
-                            className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-full flex flex-col items-center justify-center transition-transform duration-150 cursor-pointer border-2 ${
-                              selected
-                                ? 'scale-110 bg-[#181415] text-white shadow-lg'
-                                : 'bg-white/85 hover:bg-white text-[#181415] border-[#181415]/20 hover:border-[#C41E3A]/60'
-                            }`}
-                            style={selected ? { borderColor: spec.accent } : undefined}
+                            className="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex flex-col items-center justify-center cursor-pointer border transition-transform duration-150"
+                            style={{
+                              backgroundColor: selected ? '#1C1917' : 'rgba(255,255,255,0.9)',
+                              borderColor: selected ? spec.accent : 'rgba(28,25,23,0.16)',
+                              color: selected ? '#FFFFFF' : '#1C1917',
+                              transform: selected ? 'scale(1.08)' : 'scale(1)',
+                            }}
                           >
-                            <span className="font-hanzi-serif text-xl sm:text-2xl font-bold leading-none">
+                            <span className="font-hanzi-serif text-xl font-bold leading-none">
                               {spec.hanzi}
                             </span>
                             <span
-                              className={`text-[9px] font-mono font-bold mt-0.5 ${
-                                selected ? 'text-[#F2D16B]' : 'text-[#5F5658]'
-                              }`}
+                              className="text-[9px] font-mono font-semibold mt-0.5"
+                              style={{ color: selected ? '#F2D16B' : '#78716C' }}
                             >
                               {spec.pinyin}
                             </span>
@@ -796,22 +695,14 @@ export const LandingPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* RIGHT COLUMN: OPEN-CANVAS TRANSPARENT 3D STAGE (ZERO BOX!) + 2-MODE VERTICAL SWITCHER */}
-                <div className="lg:col-span-7 relative h-[360px] sm:h-[460px] lg:h-[620px] flex items-center justify-center">
-                  {/* Subtle radial ink-aura behind the floating 3D object */}
-                  <div
-                    aria-hidden="true"
-                    className="pointer-events-none absolute inset-12 rounded-full blur-3xl opacity-25 transition-colors duration-500"
-                    style={{ backgroundColor: activeSpecimen.accent }}
-                  />
-
-                  {/* Live Open-Canvas Transparent 3D Artifact */}
+                {/* RIGHT COLUMN: OPEN-CANVAS MATTE CERAMIC 3D SCULPTURE + CLEAN 2-MODE TOGGLE */}
+                <div className="lg:col-span-7 relative h-[360px] sm:h-[460px] lg:h-[580px] flex items-center justify-center">
                   <div className="relative z-10 w-full h-full">
-                    {slide2Mode === 'seal' ? (
+                    {slide1Mode === 'medallion' ? (
                       <ThreeMinimalZenSculpture
                         activeHanzi={activeSpecimen.hanzi}
                         activePinyin={activeSpecimen.pinyin}
-                        tone="porcelain"
+                        accentHex={activeSpecimen.accent}
                         className="w-full h-full"
                       />
                     ) : (
@@ -830,45 +721,37 @@ export const LandingPage: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Subtle Drag Hint floating bottom-center under open 3D object */}
-                  <span className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 text-[10.5px] font-mono uppercase tracking-[0.18em] text-[#5F5658]">
+                  <span className="pointer-events-none absolute bottom-2 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 text-[10.5px] font-mono text-[#78716C]">
                     <Move className="w-3.5 h-3.5 text-[#C41E3A]" />
-                    Kéo trực tiếp để xoay 3D 360°
+                    Kéo để xoay mặt trước & mặt sau 3D
                   </span>
 
-                  {/* Far-Right Vertical 2-Mode Switcher (echoing WuWa .display-mode-switch!) */}
-                  <div className="hidden sm:flex flex-col gap-2 absolute right-0 top-1/2 -translate-y-1/2 z-20">
+                  {/* Clean Vertical Hairline Mode Switcher */}
+                  <div className="hidden sm:flex flex-col gap-1.5 absolute right-0 top-1/2 -translate-y-1/2 z-20">
                     {[
-                      { id: 'seal' as const, label: 'Ấn Triện 3D', glyph: '印' },
-                      { id: 'ribbons' as const, label: 'Sóng Thanh 3D', glyph: '声' },
+                      { id: 'medallion' as const, label: 'Thẻ sứ 3D', glyph: '字' },
+                      { id: 'curves' as const, label: 'Đường thanh', glyph: '声' },
                     ].map((m) => {
-                      const active = slide2Mode === m.id;
+                      const active = slide1Mode === m.id;
                       return (
                         <button
                           key={m.id}
                           type="button"
-                          onClick={() => setSlide2Mode(m.id)}
-                          className={`w-[68px] py-3 px-1.5 border flex flex-col items-center justify-center gap-1 cursor-pointer ${
-                            active
-                              ? 'border-[#D4A017] shadow-lg'
-                              : 'border-[#181415]/20 hover:border-[#C41E3A]'
-                          }`}
+                          onClick={() => setSlide1Mode(m.id)}
+                          className="w-[74px] py-2.5 px-1.5 border flex flex-col items-center justify-center gap-1 cursor-pointer"
                           style={{
-                            backgroundColor: active ? '#181415' : 'rgba(255, 255, 255, 0.94)',
+                            backgroundColor: active ? '#1C1917' : 'rgba(255, 255, 255, 0.92)',
+                            borderColor: active ? '#1C1917' : 'rgba(28, 25, 23, 0.16)',
+                            color: active ? '#FFFFFF' : '#1C1917',
                           }}
                         >
                           <span
-                            className={`font-hanzi-serif text-lg font-bold leading-none ${
-                              active ? 'text-[#E6BE4C]' : 'text-[#C41E3A]'
-                            }`}
+                            className="font-hanzi-serif text-base font-bold leading-none"
+                            style={{ color: active ? '#F2D16B' : '#C41E3A' }}
                           >
                             {m.glyph}
                           </span>
-                          <span
-                            className={`text-[9.5px] font-mono font-bold tracking-tight text-center leading-tight ${
-                              active ? 'text-white' : 'text-[#181415]'
-                            }`}
-                          >
+                          <span className="text-[9.5px] font-mono font-semibold text-center leading-tight">
                             {m.label}
                           </span>
                         </button>
@@ -881,7 +764,7 @@ export const LandingPage: React.FC = () => {
           )}
 
           {/* ────────────────────────────────────────────────────────────────
-              SLIDE 2: INK-MASKED CALLIGRAPHY ARTISTRY & 3D TIANZIGE (WuWa 'NEW OUTFIT' DNA)
+              SLIDE 2: CALLIGRAPHY & STROKE ORDER — REAL XUAN PAPER + 3D SLAB
           ──────────────────────────────────────────────────────────────── */}
           {activeSlide === 2 && (
             <motion.section
@@ -890,61 +773,55 @@ export const LandingPage: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-              className="absolute inset-0 w-full h-full overflow-hidden bg-[#ECE8E2]"
+              className="absolute inset-0 w-full h-full overflow-hidden bg-[#F5F2EC]"
             >
-              {/* Deep Obsidian-Crimson Top Atmospheric Wash */}
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-0"
-                style={{
-                  background:
-                    'linear-gradient(180deg, rgba(34, 18, 22, 0.78) 0%, rgba(120, 26, 42, 0.25) 32%, rgba(236, 232, 226, 0) 62%)',
-                }}
-              />
               <ArchitecturalBlueprintGrid />
 
-              {/* Right-Weighted Dramatic Ink-Splash Calligraphy Visual seamlessly feathered into stone canvas */}
+              {/* Real Sunlit Macro Calligraphy Notebook Photograph feathered seamlessly on right */}
               <div
                 aria-hidden="true"
-                className="pointer-events-none absolute inset-y-0 right-0 w-full lg:w-[76%] overflow-hidden"
+                className="pointer-events-none absolute inset-y-0 right-0 w-full lg:w-[68%] overflow-hidden"
                 style={{
                   WebkitMaskImage:
-                    'linear-gradient(96deg, transparent 0%, rgba(0,0,0,0.45) 22%, rgba(0,0,0,0.96) 44%, #000 100%)',
+                    'linear-gradient(96deg, transparent 0%, rgba(0,0,0,0.35) 22%, rgba(0,0,0,0.92) 48%, #000 100%)',
                   maskImage:
-                    'linear-gradient(96deg, transparent 0%, rgba(0,0,0,0.45) 22%, rgba(0,0,0,0.96) 44%, #000 100%)',
+                    'linear-gradient(96deg, transparent 0%, rgba(0,0,0,0.35) 22%, rgba(0,0,0,0.92) 48%, #000 100%)',
                 }}
               >
                 <img
-                  src="/images/wuwa-calligraphy-ink.webp"
+                  src="/images/intro-hanzi-notebook.webp"
                   alt=""
                   decoding="async"
-                  className="w-full h-full object-cover object-right"
+                  className="w-full h-full object-cover object-center opacity-90"
                 />
               </div>
 
-              {/* Left Diamond Crosshair Frame (4 cols) + Center Floating 3D TianZiGe Tablet (4 cols) + Right Unobstructed Ink Brush Artwork (4 cols) */}
-              <div className="relative z-10 h-full max-w-[1380px] mx-auto px-6 sm:px-14 lg:pl-24 lg:pr-10 pt-14 pb-16 grid grid-cols-1 lg:grid-cols-12 items-center gap-6">
-                <div className="lg:col-span-4 space-y-5">
-                  <h2 className="font-display font-extrabold text-3xl sm:text-4xl lg:text-[42px] uppercase tracking-[0.1em] text-white drop-shadow-[0_3px_14px_rgba(20,14,16,0.45)]">
-                    THƯ PHÁP 3D
-                  </h2>
+              <div className="relative z-10 h-full max-w-[1360px] mx-auto px-6 sm:px-14 lg:pl-24 lg:pr-10 pt-14 pb-16 grid grid-cols-1 lg:grid-cols-12 items-center gap-6">
+                {/* Left Editorial Paper Frame (5 cols) */}
+                <div className="lg:col-span-5 space-y-5">
+                  <div>
+                    <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-[#C41E3A]">
+                      02 · THỨ TỰ NÉT CHỮ HÁN
+                    </span>
+                    <h2 className="font-display font-extrabold text-3xl sm:text-4xl text-[#1C1917] tracking-tight mt-1">
+                      Ô Điền Tự Cách
+                    </h2>
+                  </div>
 
-                  {/* Signature 4-Corner Diamond Crosshair Frame (Zero rounded-2xl SaaS box!) */}
-                  <DiamondCrosshairFrame className="p-6 sm:p-7 max-w-md shadow-[0_24px_56px_-24px_rgba(24,20,21,0.28)]">
-                    <div className="flex items-start justify-between gap-4 pb-4 border-b border-[#181415]/15">
+                  <EditorialPaperFrame className="p-6 max-w-md shadow-[0_20px_48px_-24px_rgba(28,25,23,0.18)]">
+                    <div className="flex items-start justify-between gap-4 pb-4 border-b border-[#1C1917]/10">
                       <div>
-                        <span className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-[#C41E3A]">
-                          ĐIỀN TỰ CÁCH · {activeCalligraphy.strokes} NÉT CHUẨN
+                        <span className="text-[10.5px] font-mono font-semibold text-[#C41E3A]">
+                          {activeCalligraphy.strokes} NÉT CHUẨN · HÁN-VIỆT: {activeCalligraphy.sino.toUpperCase()}
                         </span>
-                        <h3 className="font-display text-2xl sm:text-3xl font-extrabold text-[#181415] mt-1">
+                        <h3 className="font-display text-2xl font-bold text-[#1C1917] mt-1">
                           {activeCalligraphy.title}
                         </h3>
-                        <p className="text-xs font-mono font-semibold text-[#5F5658] mt-1">
-                          {activeCalligraphy.char} ({activeCalligraphy.pinyin}) · Hán-Việt:{' '}
-                          <span className="text-[#C41E3A] font-bold">{activeCalligraphy.sino}</span>
+                        <p className="text-xs font-mono text-[#57534E] mt-0.5">
+                          {activeCalligraphy.char} ({activeCalligraphy.pinyin})
                         </p>
                       </div>
-                      <LotusVoiceButton
+                      <PronunciationPlayButton
                         onClick={() => speakChinese(activeCalligraphy.char, 0.75)}
                         active={isSpeaking}
                         accentColor="#C41E3A"
@@ -952,14 +829,13 @@ export const LandingPage: React.FC = () => {
                       />
                     </div>
 
-                    <p className="text-[13.5px] text-[#262123] leading-relaxed py-4">
+                    <p className="text-sm text-[#44403C] leading-relaxed py-4">
                       {activeCalligraphy.desc}
                     </p>
 
-                    {/* 4 Sharp Architectural Seal Stamps */}
-                    <div className="pt-2 border-t border-[#181415]/15">
-                      <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-[#5F5658] mb-2.5">
-                        Đổi chữ khắc trên bia sứ 3D
+                    <div className="pt-3 border-t border-[#1C1917]/10">
+                      <p className="text-[10.5px] font-mono uppercase tracking-[0.16em] text-[#78716C] mb-2.5">
+                        Chọn chữ mẫu xem trên bia sứ 3D
                       </p>
                       <div className="grid grid-cols-4 gap-2">
                         {CALLIGRAPHY_SPECIMENS.map((item, idx) => {
@@ -972,19 +848,19 @@ export const LandingPage: React.FC = () => {
                                 setCalligraphyIdx(idx);
                                 speakChinese(item.char, 0.75);
                               }}
-                              className={`py-2.5 border text-center cursor-pointer ${
-                                selected
-                                  ? 'bg-[#C41E3A] text-white border-[#C41E3A] shadow-md'
-                                  : 'bg-white/85 hover:bg-white text-[#181415] border-[#181415]/20 hover:border-[#C41E3A]'
-                              }`}
+                              className="py-2.5 border text-center cursor-pointer"
+                              style={{
+                                backgroundColor: selected ? '#C41E3A' : '#FFFFFF',
+                                borderColor: selected ? '#C41E3A' : 'rgba(28,25,23,0.16)',
+                                color: selected ? '#FFFFFF' : '#1C1917',
+                              }}
                             >
                               <span className="font-hanzi-serif text-2xl font-bold block leading-none">
                                 {item.char}
                               </span>
                               <span
-                                className={`text-[10px] font-mono mt-1 block ${
-                                  selected ? 'text-[#F2D16B]' : 'text-[#5F5658]'
-                                }`}
+                                className="text-[10px] font-mono mt-1 block"
+                                style={{ color: selected ? '#FDE68A' : '#78716C' }}
                               >
                                 {item.pinyin}
                               </span>
@@ -993,12 +869,12 @@ export const LandingPage: React.FC = () => {
                         })}
                       </div>
                     </div>
-                  </DiamondCrosshairFrame>
+                  </EditorialPaperFrame>
                 </div>
 
-                {/* Center Floating Open-Canvas 3D TianZiGe Stone Tablet & Animated 3D Brush leaving right inkstone splash unobstructed */}
-                <div className="lg:col-span-5 relative h-[300px] sm:h-[400px] lg:h-[470px] flex items-center justify-center">
-                  <div className="w-full max-w-[390px] h-full">
+                {/* Center-Right Matte Porcelain & Walnut 3D TianZiGe Tablet */}
+                <div className="lg:col-span-5 relative h-[320px] sm:h-[420px] lg:h-[470px] flex items-center justify-center">
+                  <div className="w-full max-w-[400px] h-full">
                     <ThreeStudyDioramaStage
                       activeScene={1}
                       activeToneIdx={0}
@@ -1018,7 +894,7 @@ export const LandingPage: React.FC = () => {
           )}
 
           {/* ────────────────────────────────────────────────────────────────
-              SLIDE 3: FILIGREE-FRAMED CURRICULUM & FILMSTRIP (WuWa 'EVENT INFO' DNA)
+              SLIDE 3: EDITORIAL CURRICULUM GALLERY & FILMSTRIP (0% GAME)
           ──────────────────────────────────────────────────────────────── */}
           {activeSlide === 3 && (
             <motion.section
@@ -1027,30 +903,24 @@ export const LandingPage: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-              className="absolute inset-0 w-full h-full overflow-hidden bg-[#ECE8E2]"
+              className="absolute inset-0 w-full h-full overflow-hidden bg-[#F5F2EC]"
             >
-              {/* Crimson-Plum Top Atmospheric Wash */}
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-0"
-                style={{
-                  background:
-                    'linear-gradient(180deg, rgba(118, 22, 42, 0.72) 0%, rgba(168, 42, 62, 0.28) 36%, rgba(236, 232, 226, 0) 68%)',
-                }}
-              />
               <ArchitecturalBlueprintGrid />
 
-              <div className="relative z-10 h-full max-w-[1120px] mx-auto px-6 sm:px-14 pt-12 pb-16 flex flex-col items-center justify-center gap-5">
-                {/* Ornate Gold-Crimson Filigree Cinema Frame with Boundary-Breaking Title */}
-                <FiligreeCinemaFrame title="CHƯƠNG TRÌNH HSK" className="w-full">
-                  <div className="relative h-[380px] sm:h-[440px] lg:h-[470px] w-full bg-[#141112]">
+              <div className="relative z-10 h-full max-w-[1080px] mx-auto px-6 sm:px-14 pt-12 pb-16 flex flex-col justify-center gap-4">
+                <MuseumExhibitionFrame
+                  chapterLabel="03 · CHƯƠNG TRÌNH HỌC"
+                  title="Hệ thống bài học HSK chuẩn cho người Việt"
+                  className="w-full"
+                >
+                  <div className="relative h-[370px] sm:h-[420px] lg:h-[450px] w-full bg-[#1C1917]">
                     <AnimatePresence mode="wait">
                       <motion.div
                         key={activeCurriculum.id}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        transition={{ duration: 0.32 }}
+                        transition={{ duration: 0.25 }}
                         className="absolute inset-0 w-full h-full"
                       >
                         <img
@@ -1059,58 +929,55 @@ export const LandingPage: React.FC = () => {
                           decoding="async"
                           className="w-full h-full object-cover object-center"
                         />
-                        {/* Rich Cinema Gradient Overlay anchoring right-side editorial panel */}
                         <div
                           aria-hidden="true"
-                          className="absolute inset-0 bg-gradient-to-r from-[#141112]/30 via-[#141112]/55 to-[#141112]/95"
+                          className="absolute inset-0 bg-gradient-to-r from-[#1C1917]/25 via-[#1C1917]/65 to-[#1C1917]/95"
                         />
 
-                        {/* Right Editorial Feature Overlay inside Cinema Frame */}
                         <div className="absolute inset-0 flex items-center justify-end p-6 sm:p-10">
                           <div className="max-w-md w-full space-y-4 text-white">
-                            <span className="inline-block px-2.5 py-0.5 bg-[#C41E3A] text-white font-mono text-[10.5px] font-bold tracking-[0.18em] uppercase">
+                            <span className="inline-block px-2.5 py-0.5 bg-[#C41E3A] text-white font-mono text-[10.5px] font-semibold tracking-[0.14em] uppercase">
                               {activeCurriculum.tag}
                             </span>
 
-                            <h3 className="font-display text-2xl sm:text-3xl font-extrabold leading-tight">
+                            <h3 className="font-display text-2xl sm:text-3xl font-bold leading-tight">
                               {activeCurriculum.title}
                             </h3>
 
-                            <p className="text-xs sm:text-sm text-white/80 leading-relaxed">
+                            <p className="text-xs sm:text-sm text-white/85 leading-relaxed">
                               {activeCurriculum.summary}
                             </p>
 
                             {activeCurriculum.id !== 'quiz' ? (
                               <div className="pt-2 space-y-3">
                                 <div className="grid grid-cols-3 gap-2">
-                                  {activeCurriculum.highlights.map((h) => (
+                                  {activeCurriculum.points.map((pt) => (
                                     <div
-                                      key={h}
-                                      className="px-2.5 py-2 border border-[#E6BE4C]/40 bg-black/45 backdrop-blur-sm text-[11px] font-semibold text-[#F7E8C3] text-center"
+                                      key={pt}
+                                      className="px-2.5 py-2 border border-white/20 bg-black/35 backdrop-blur-sm text-[11px] font-medium text-white/95 text-center"
                                     >
-                                      {h}
+                                      {pt}
                                     </div>
                                   ))}
                                 </div>
                                 <a
                                   href="#/login?tab=register"
-                                  className="inline-flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-[0.16em] text-[#F2D16B] hover:text-white transition-colors pt-1"
+                                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#FDE68A] hover:text-white transition-colors pt-1"
                                 >
-                                  <span>Mở khóa học miễn phí</span>
+                                  <span>Đăng ký mở khóa miễn phí</span>
                                   <ArrowRight className="w-3.5 h-3.5" />
                                 </a>
                               </div>
                             ) : (
-                              /* Live Interactive 10-Second HSK 1 Mini-Quiz right inside Slide 05 */
                               <div className="space-y-3 pt-1">
                                 <div className="flex items-center justify-between border-b border-white/15 pb-2">
-                                  <p className="text-sm font-bold">
-                                    Câu <span className="font-hanzi-serif text-lg text-[#F2D16B]">「你好吗？」</span> nghĩa là gì?
+                                  <p className="text-sm font-semibold">
+                                    Câu <span className="font-hanzi-serif text-lg text-[#FDE68A]">「你好吗？」</span> nghĩa là gì?
                                   </p>
                                   <button
                                     type="button"
                                     onClick={() => speakChinese('你好吗', 0.78)}
-                                    className="inline-flex items-center gap-1 text-xs font-mono text-[#F2D16B] hover:text-white cursor-pointer"
+                                    className="inline-flex items-center gap-1 text-xs font-mono text-[#FDE68A] hover:text-white cursor-pointer"
                                   >
                                     <Volume2 className="w-3.5 h-3.5" />
                                     <span>Nghe</span>
@@ -1134,11 +1001,11 @@ export const LandingPage: React.FC = () => {
                                         className={`px-3 py-2 border text-left text-xs font-medium transition-colors cursor-pointer flex items-center justify-between ${
                                           answered
                                             ? opt.ok
-                                              ? 'bg-[#00A86B] border-[#00A86B] text-white'
+                                              ? 'bg-[#157A57] border-[#157A57] text-white'
                                               : picked
                                                 ? 'bg-[#C41E3A] border-[#C41E3A] text-white'
                                                 : 'bg-white/10 border-white/15 text-white/50'
-                                            : 'bg-black/50 hover:bg-white/15 border-white/25 hover:border-[#E6BE4C] text-white'
+                                            : 'bg-black/45 hover:bg-white/15 border-white/25 text-white'
                                         }`}
                                       >
                                         <span>
@@ -1158,14 +1025,13 @@ export const LandingPage: React.FC = () => {
                       </motion.div>
                     </AnimatePresence>
 
-                    {/* Prev / Next Filigree Navigation Arrows */}
                     <button
                       type="button"
                       onClick={() =>
                         setCurriculumIdx((p) => (p - 1 + CURRICULUM_SLIDES.length) % CURRICULUM_SLIDES.length)
                       }
                       aria-label="Mục trước"
-                      className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 bg-black/55 hover:bg-[#C41E3A] text-white border border-[#E6BE4C]/45 flex items-center justify-center transition-colors cursor-pointer"
+                      className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 bg-black/50 hover:bg-[#C41E3A] text-white border border-white/25 flex items-center justify-center transition-colors cursor-pointer"
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
@@ -1173,14 +1039,14 @@ export const LandingPage: React.FC = () => {
                       type="button"
                       onClick={() => setCurriculumIdx((p) => (p + 1) % CURRICULUM_SLIDES.length)}
                       aria-label="Mục tiếp theo"
-                      className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 bg-black/55 hover:bg-[#C41E3A] text-white border border-[#E6BE4C]/45 flex items-center justify-center transition-colors cursor-pointer"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 bg-black/50 hover:bg-[#C41E3A] text-white border border-white/25 flex items-center justify-center transition-colors cursor-pointer"
                     >
                       <ChevronRight className="w-4 h-4" />
                     </button>
                   </div>
-                </FiligreeCinemaFrame>
+                </MuseumExhibitionFrame>
 
-                {/* Bottom 5-Thumbnail Filmstrip (Exact WuWa Event Info Filmstrip!) */}
+                {/* Crisp Editorial Thumbnail Strip */}
                 <div className="flex items-center justify-center gap-3 w-full overflow-x-auto no-scrollbar py-1">
                   {CURRICULUM_SLIDES.map((slide, idx) => {
                     const active = idx === curriculumIdx;
@@ -1189,10 +1055,10 @@ export const LandingPage: React.FC = () => {
                         key={slide.id}
                         type="button"
                         onClick={() => setCurriculumIdx(idx)}
-                        className={`group relative w-32 sm:w-36 h-[68px] sm:h-[76px] shrink-0 overflow-hidden border-2 transition-all cursor-pointer ${
+                        className={`relative w-32 sm:w-36 h-[64px] sm:h-[72px] shrink-0 overflow-hidden border-2 transition-all cursor-pointer ${
                           active
-                            ? 'border-[#D4A017] shadow-[0_0_18px_rgba(212,160,23,0.55)] scale-[1.03]'
-                            : 'border-[#181415]/25 opacity-75 hover:opacity-100 hover:border-[#C41E3A]'
+                            ? 'border-[#C41E3A] shadow-md'
+                            : 'border-[#1C1917]/15 opacity-75 hover:opacity-100 hover:border-[#1C1917]/40'
                         }`}
                       >
                         <img
@@ -1200,8 +1066,8 @@ export const LandingPage: React.FC = () => {
                           alt={slide.thumbLabel}
                           className="w-full h-full object-cover"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
-                        <span className="absolute bottom-1.5 inset-x-2 text-[10px] font-mono font-bold text-white truncate text-left">
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-transparent" />
+                        <span className="absolute bottom-1.5 inset-x-2 text-[10px] font-mono font-semibold text-white truncate text-left">
                           0{idx + 1} · {slide.thumbLabel}
                         </span>
                       </button>
@@ -1213,68 +1079,65 @@ export const LandingPage: React.FC = () => {
           )}
 
           {/* ────────────────────────────────────────────────────────────────
-              SLIDE 4: FILIGREE 3D SANCTUARY — 3D FLASHCARDS & HSK 1–6 PAGODA
+              SLIDE 4: DAYLIGHT PORCELAIN 3D STUDIO — FLASHCARDS & HSK 1–6
           ──────────────────────────────────────────────────────────────── */}
           {activeSlide === 4 && (
             <motion.section
-              key="slide-sanctuary"
+              key="slide-studio"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-              className="absolute inset-0 w-full h-full overflow-hidden bg-[#ECE8E2]"
+              className="absolute inset-0 w-full h-full overflow-hidden bg-[#F5F2EC]"
             >
-              {/* Deep Obsidian-Gold Top Atmospheric Wash */}
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-0"
-                style={{
-                  background:
-                    'linear-gradient(180deg, rgba(24, 17, 20, 0.82) 0%, rgba(140, 96, 16, 0.25) 36%, rgba(236, 232, 226, 0) 68%)',
-                }}
-              />
               <ArchitecturalBlueprintGrid />
 
-              <div className="relative z-10 h-full max-w-[1120px] mx-auto px-6 sm:px-14 pt-12 pb-16 flex flex-col items-center justify-center gap-4">
-                <FiligreeCinemaFrame title="KHÔNG GIAN 3D" className="w-full">
-                  <div className="relative h-[400px] sm:h-[460px] lg:h-[490px] w-full bg-[#141112] flex flex-col">
-                    {/* Top Minimal Mode Switcher Strip inside Cinema Frame */}
-                    <div className="relative z-20 flex flex-wrap items-center justify-between gap-2 px-5 pt-4 pb-2 border-b border-white/10 bg-black/35">
+              <div className="relative z-10 h-full max-w-[1080px] mx-auto px-6 sm:px-14 pt-12 pb-16 flex flex-col justify-center gap-4">
+                <MuseumExhibitionFrame
+                  chapterLabel="04 · TRẢI NGHIỆM TRỰC QUAN"
+                  title="Thẻ từ vựng lật 3D & Lộ trình 6 cấp HSK"
+                  className="w-full"
+                >
+                  <div className="relative h-[390px] sm:h-[440px] lg:h-[470px] w-full bg-[#EFECE5] flex flex-col">
+                    {/* Minimal Editorial Mode Tabs */}
+                    <div className="relative z-20 flex flex-wrap items-center justify-between gap-2 px-5 py-3 border-b border-[#1C1917]/10 bg-[#FAF8F4]">
                       <div className="flex items-center gap-2">
                         <button
                           type="button"
-                          onClick={() => setSanctuaryMode('cards')}
-                          className={`px-3.5 py-1.5 text-xs font-mono font-bold uppercase tracking-wider border transition-colors cursor-pointer ${
-                            sanctuaryMode === 'cards'
-                              ? 'bg-[#C41E3A] text-white border-[#E6BE4C]/70'
-                              : 'bg-white/5 text-white/70 border-white/15 hover:text-white'
-                          }`}
+                          onClick={() => setStudioMode('cards')}
+                          className="px-3.5 py-1.5 text-xs font-semibold border cursor-pointer"
+                          style={{
+                            backgroundColor: studioMode === 'cards' ? '#1C1917' : '#FFFFFF',
+                            borderColor: studioMode === 'cards' ? '#1C1917' : 'rgba(28,25,23,0.16)',
+                            color: studioMode === 'cards' ? '#FFFFFF' : '#44403C',
+                          }}
                         >
-                          Thẻ Nhớ Lật 3D SM-2
+                          Thẻ nhớ lật 3D (SM-2)
                         </button>
                         <button
                           type="button"
-                          onClick={() => setSanctuaryMode('pagoda')}
-                          className={`px-3.5 py-1.5 text-xs font-mono font-bold uppercase tracking-wider border transition-colors cursor-pointer ${
-                            sanctuaryMode === 'pagoda'
-                              ? 'bg-[#C41E3A] text-white border-[#E6BE4C]/70'
-                              : 'bg-white/5 text-white/70 border-white/15 hover:text-white'
-                          }`}
+                          onClick={() => setStudioMode('hsk')}
+                          className="px-3.5 py-1.5 text-xs font-semibold border cursor-pointer"
+                          style={{
+                            backgroundColor: studioMode === 'hsk' ? '#1C1917' : '#FFFFFF',
+                            borderColor: studioMode === 'hsk' ? '#1C1917' : 'rgba(28,25,23,0.16)',
+                            color: studioMode === 'hsk' ? '#FFFFFF' : '#44403C',
+                          }}
                         >
-                          Tháp HSK 1 → 6 3D
+                          Bậc cấp độ HSK 1 → 6
                         </button>
                       </div>
 
-                      <span className="hidden sm:inline-flex items-center gap-1.5 text-[10.5px] font-mono text-white/60">
-                        <Move className="w-3.5 h-3.5 text-[#E6BE4C]" />
-                        Kéo xoay tự do trong khung 3D
+                      <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-mono text-[#78716C]">
+                        <Move className="w-3.5 h-3.5 text-[#C41E3A]" />
+                        Kéo để xoay góc nhìn 3D
                       </span>
                     </div>
 
-                    {/* Full-Stage Live Interactive 3D WebGL Sanctuary */}
+                    {/* Daylight Porcelain 3D Canvas */}
                     <div className="flex-1 relative w-full min-h-0">
                       <ThreeStudyDioramaStage
-                        activeScene={sanctuaryMode === 'cards' ? 2 : 3}
+                        activeScene={studioMode === 'cards' ? 2 : 3}
                         activeToneIdx={0}
                         activeStrokeChar="汉"
                         activeStrokePinyin="hàn"
@@ -1282,14 +1145,14 @@ export const LandingPage: React.FC = () => {
                         flippedCards={flippedCards}
                         activeCardIdx={activeCardIdx}
                         activeHskLevel={activeHskLevel}
-                        theme="dark"
+                        theme="light"
                         className="w-full h-full"
                       />
                     </div>
 
-                    {/* Bottom Interactive Controls inside Cinema Frame */}
-                    <div className="relative z-20 px-5 py-3 border-t border-white/10 bg-black/55 backdrop-blur-sm">
-                      {sanctuaryMode === 'cards' ? (
+                    {/* Bottom Clean Interactive Control Bar */}
+                    <div className="relative z-20 px-5 py-3 border-t border-[#1C1917]/10 bg-[#FAF8F4]">
+                      {studioMode === 'cards' ? (
                         <div className="flex flex-wrap items-center justify-between gap-2.5">
                           <div className="flex flex-wrap items-center gap-2">
                             {FLASHCARD_DECK.map((card, idx) => {
@@ -1304,16 +1167,20 @@ export const LandingPage: React.FC = () => {
                                     setFlippedCards((p) => ({ ...p, [card.id]: !p[card.id] }));
                                     speakChinese(flipped ? card.hanzi : card.exampleCn, 0.8);
                                   }}
-                                  className={`px-3 py-1.5 border text-xs font-semibold inline-flex items-center gap-2 transition-colors cursor-pointer ${
-                                    focused
-                                      ? 'bg-[#C41E3A] border-[#E6BE4C] text-white'
-                                      : 'bg-white/10 hover:bg-white/15 border-white/20 text-white/85'
-                                  }`}
+                                  className="px-3 py-1.5 border text-xs font-semibold inline-flex items-center gap-2 cursor-pointer"
+                                  style={{
+                                    backgroundColor: focused ? '#C41E3A' : '#FFFFFF',
+                                    borderColor: focused ? '#C41E3A' : 'rgba(28,25,23,0.16)',
+                                    color: focused ? '#FFFFFF' : '#1C1917',
+                                  }}
                                 >
                                   <span className="font-hanzi-serif text-base font-bold">
                                     {card.hanzi}
                                   </span>
-                                  <span className="font-mono text-[11px] text-[#F2D16B]">
+                                  <span
+                                    className="font-mono text-[11px]"
+                                    style={{ color: focused ? '#FDE68A' : '#78716C' }}
+                                  >
                                     {card.pinyin}
                                   </span>
                                   <RotateCw className="w-3 h-3" />
@@ -1325,11 +1192,11 @@ export const LandingPage: React.FC = () => {
                             })}
                           </div>
 
-                          <p className="text-[11px] text-white/75 hidden md:block">
-                            {FLASHCARD_DECK[activeCardIdx].exampleCn} —{' '}
-                            <span className="text-[#F2D16B]">
-                              {FLASHCARD_DECK[activeCardIdx].exampleVi}
-                            </span>
+                          <p className="text-xs text-[#44403C] hidden md:block">
+                            <span className="font-hanzi-serif font-semibold text-[#1C1917]">
+                              {FLASHCARD_DECK[activeCardIdx].exampleCn}
+                            </span>{' '}
+                            — {FLASHCARD_DECK[activeCardIdx].exampleVi}
                           </p>
                         </div>
                       ) : (
@@ -1340,18 +1207,20 @@ export const LandingPage: React.FC = () => {
                                 key={lv.level}
                                 type="button"
                                 onClick={() => setActiveHskLevel(lv.level)}
-                                className={`px-3 py-1.5 font-mono text-xs font-bold border transition-colors cursor-pointer ${
-                                  activeHskLevel === lv.level
-                                    ? 'bg-[#C41E3A] border-[#E6BE4C] text-white'
-                                    : 'bg-white/10 hover:bg-white/15 border-white/20 text-white/80'
-                                }`}
+                                className="px-3 py-1.5 font-mono text-xs font-semibold border cursor-pointer"
+                                style={{
+                                  backgroundColor: activeHskLevel === lv.level ? '#C41E3A' : '#FFFFFF',
+                                  borderColor:
+                                    activeHskLevel === lv.level ? '#C41E3A' : 'rgba(28,25,23,0.16)',
+                                  color: activeHskLevel === lv.level ? '#FFFFFF' : '#1C1917',
+                                }}
                               >
                                 HSK {lv.level}
                               </button>
                             ))}
                           </div>
-                          <p className="text-xs text-white/85">
-                            <strong className="text-[#F2D16B]">
+                          <p className="text-xs text-[#44403C]">
+                            <strong className="text-[#1C1917]">
                               HSK {activeHskLevel} ({HSK_LEVELS[activeHskLevel - 1].words}):
                             </strong>{' '}
                             {HSK_LEVELS[activeHskLevel - 1].note}
@@ -1360,19 +1229,19 @@ export const LandingPage: React.FC = () => {
                       )}
                     </div>
                   </div>
-                </FiligreeCinemaFrame>
+                </MuseumExhibitionFrame>
 
-                {/* Crisp Conversion Prompt beneath Final Frame */}
-                <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-[#262123]">
-                  <span className="font-medium">
-                    Miễn phí mở khóa toàn bộ 63 âm Pinyin & bài học HSK 1 ngay sau khi đăng ký
+                {/* Quiet Final CTA Line */}
+                <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-[#57534E] px-1">
+                  <span>
+                    Đăng ký miễn phí trong 10 giây bằng Google hoặc Gmail OTP · Không yêu cầu thẻ thanh toán
                   </span>
                   <button
                     type="button"
                     onClick={() => setShowFooter((v) => !v)}
-                    className="font-mono text-[11px] uppercase tracking-wider text-[#C41E3A] hover:underline cursor-pointer"
+                    className="font-mono text-[11px] font-semibold text-[#C41E3A] hover:underline cursor-pointer"
                   >
-                    {showFooter ? 'Ẩn chân trang ↓' : 'Thông tin học viện ↑'}
+                    {showFooter ? 'Ẩn thông tin chân trang ↓' : 'Thông tin học viện ↑'}
                   </button>
                 </div>
               </div>
@@ -1380,67 +1249,63 @@ export const LandingPage: React.FC = () => {
           )}
         </AnimatePresence>
 
-        {/* ── PERSISTENT BOTTOM STONE PRE-REGISTRATION RIBBON (Slides 1–4, WuWa signature!) ── */}
+        {/* ── QUIET EDITORIAL CHAPTER STATUS BAR (Slides 1–4, zero gamey pre-register vibe!) ── */}
         <AnimatePresence>
           {!isHero && (
             <motion.div
-              initial={{ opacity: 0, y: 24 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 24 }}
-              transition={{ duration: 0.3 }}
-              className="fixed bottom-0 inset-x-0 z-30 h-12 bg-[#EAE6DF]/95 backdrop-blur-md border-t border-[#181415]/15 px-5 sm:px-8 flex items-center justify-between gap-4"
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.25 }}
+              className="fixed bottom-0 inset-x-0 z-30 h-11 bg-[#F4F0E9]/95 backdrop-blur-md border-t border-[#1C1917]/10 px-6 sm:px-10 flex items-center justify-between gap-4"
             >
-              <div className="flex items-center gap-3 shrink-0">
-                <span className="font-display font-extrabold text-xs tracking-[0.18em] text-[#181415]">
-                  HANZI<span className="text-[#C41E3A]">4U</span>
+              <div className="flex items-center gap-3 text-[11px] font-mono text-[#57534E]">
+                <span className="font-bold text-[#C41E3A]">0{activeSlide + 1} / 05</span>
+                <span className="hidden sm:inline text-[#1C1917]/25">|</span>
+                <span className="hidden sm:inline font-medium text-[#1C1917]">
+                  {CHAPTERS[activeSlide].label}
                 </span>
-                <span className="hidden sm:inline-block w-12 h-[1px] bg-[#181415]/25" />
-                <span className="hidden sm:inline-block w-2 h-2 rotate-45 bg-[#C41E3A]" />
               </div>
 
-              <p className="text-[11px] sm:text-xs font-display font-bold tracking-[0.08em] text-[#181415] uppercase truncate text-center">
-                Học Trọn Bộ 63 Âm Pinyin · Tập Viết Hán Tự & Lộ Trình HSK 1–6 Miễn Phí
-              </p>
+              <span className="hidden md:inline text-[11px] text-[#78716C]">
+                Lăn chuột hoặc dùng phím ↑ ↓ để chuyển bài giới thiệu
+              </span>
 
-              <div className="flex items-center gap-3 shrink-0">
-                <span className="hidden md:inline-block w-2 h-2 rotate-45 bg-[#D4A017]" />
-                <span className="hidden md:inline-block w-10 h-[1px] bg-[#181415]/25" />
-                <a
-                  href="#/login?tab=register"
-                  className="h-8 px-4 bg-[#181415] hover:bg-[#C41E3A] text-white border border-[#D4A017]/70 font-display text-[11px] font-extrabold tracking-[0.14em] uppercase inline-flex items-center gap-1.5 transition-colors"
-                >
-                  <span>ĐĂNG KÝ NGAY</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-[#E6BE4C]" />
-                </a>
-              </div>
+              <a
+                href="#/login?tab=register"
+                className="text-xs font-semibold text-[#C41E3A] hover:text-[#9E162E] inline-flex items-center gap-1.5 transition-colors"
+              >
+                <span>Bắt đầu học miễn phí</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </a>
             </motion.div>
           )}
         </AnimatePresence>
       </motion.div>
 
       {/* ═══════════════════════════════════════════════════════════════════
-          SLIDE-UP COMPACT STONE FOOTER DRAWER (Revealed on scroll past Slide 5)
+          SLIDE-UP EDITORIAL FOOTER DRAWER
       ═══════════════════════════════════════════════════════════════════ */}
       <motion.footer
         initial={false}
-        animate={{ y: showFooter ? 0 : 160 }}
-        transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
-        className="fixed bottom-0 inset-x-0 h-[144px] z-50 bg-[#F3EFE9] text-[#181415] border-t-2 border-[#C41E3A] px-6 sm:px-10 flex items-center"
+        animate={{ y: showFooter ? 0 : 150 }}
+        transition={{ duration: 0.36, ease: [0.22, 1, 0.36, 1] }}
+        className="fixed bottom-0 inset-x-0 h-[136px] z-50 bg-[#FCFBF8] text-[#1C1917] border-t border-[#1C1917]/15 px-6 sm:px-10 flex items-center"
       >
         <div className="max-w-7xl mx-auto w-full flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <HanziLogoMark variant="light" className="w-9 h-9" />
             <div className="leading-tight">
-              <p className="font-display font-extrabold text-sm tracking-tight text-[#181415]">
-                Hanzi<span className="text-[#C41E3A]">4U</span> · Học Viện Hán Ngữ Trực Tuyến
+              <p className="font-display font-bold text-sm text-[#1C1917]">
+                Hanzi<span className="text-[#C41E3A]">4U</span> · Nền tảng tự học tiếng Trung HSK 1–6
               </p>
-              <p className="text-[11px] text-[#5F5658]">
-                © 2026 Hanzi4U (hanzi4u.id.vn) — Lộ trình chuẩn HSK 1–6 · 63 Âm Pinyin · Thẻ Nhớ SM-2
+              <p className="text-[11px] text-[#57534E]">
+                © 2026 Hanzi4U (hanzi4u.id.vn) · 63 Âm Pinyin · Ô Điền Tự Cách · Thẻ Nhớ SM-2
               </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-5 text-xs font-semibold text-[#181415]">
+          <div className="flex flex-wrap items-center gap-5 text-xs font-semibold text-[#1C1917]">
             <a href="#/login?tab=register" className="hover:text-[#C41E3A] transition-colors">
               Đăng ký miễn phí
             </a>
@@ -1450,7 +1315,7 @@ export const LandingPage: React.FC = () => {
             <button
               type="button"
               onClick={() => goToSlide(0)}
-              className="text-[#5F5658] hover:text-[#C41E3A] transition-colors cursor-pointer"
+              className="text-[#57534E] hover:text-[#C41E3A] transition-colors cursor-pointer"
             >
               Về đầu trang ↑
             </button>

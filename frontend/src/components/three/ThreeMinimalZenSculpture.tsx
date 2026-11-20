@@ -2,147 +2,122 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 
 interface ThreeMinimalZenSculptureProps {
-  /** Active Chinese character carved on the 3D Imperial Lacquer Seal */
+  /** Active Chinese character etched on the Matte Porcelain Medallion */
   activeHanzi?: string;
-  /** Pinyin etched subtly beneath the character */
+  /** Pinyin etched cleanly beneath the character */
   activePinyin?: string;
-  /** 'porcelain' (light studio) or 'obsidian' (dark lacquer stage) */
+  /** Optional tone/accent hex color for subtle inner seal ring */
+  accentHex?: string;
   tone?: 'porcelain' | 'obsidian';
   className?: string;
 }
 
 /**
- * Procedural Hanzi4U Studio Softbox Environment (zero external HDR fetch).
- * Casts crisp porcelain highlights, imperial crimson rim reflections, and warm gold bounce.
+ * Soft Natural Daylight Studio Softbox Environment (Muji / ceramic product photography feel).
  */
-function buildHanziStudioEnv(renderer: THREE.WebGLRenderer, isDark: boolean): THREE.Texture {
+function buildPorcelainStudioEnv(renderer: THREE.WebGLRenderer): THREE.Texture {
   const pmrem = new THREE.PMREMGenerator(renderer);
   const envScene = new THREE.Scene();
-  envScene.background = new THREE.Color(isDark ? 0x141112 : 0xfaf8f6);
+  envScene.background = new THREE.Color(0xf4f0ea);
 
-  const topLight = new THREE.Mesh(
-    new THREE.PlaneGeometry(22, 22),
+  const overhead = new THREE.Mesh(
+    new THREE.PlaneGeometry(24, 24),
     new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })
   );
-  topLight.position.set(0, 10, 3);
-  topLight.rotation.x = Math.PI / 2;
-  envScene.add(topLight);
+  overhead.position.set(0, 10, 4);
+  overhead.rotation.x = Math.PI / 2;
+  envScene.add(overhead);
 
-  // Imperial Gold left studio softbox
-  const leftGold = new THREE.Mesh(
-    new THREE.PlaneGeometry(14, 12),
-    new THREE.MeshBasicMaterial({ color: 0xe6be4c, side: THREE.DoubleSide })
+  const warmSide = new THREE.Mesh(
+    new THREE.PlaneGeometry(16, 14),
+    new THREE.MeshBasicMaterial({ color: 0xf6ead8, side: THREE.DoubleSide })
   );
-  leftGold.position.set(-10, 2, 3);
-  leftGold.rotation.y = Math.PI / 2;
-  envScene.add(leftGold);
+  warmSide.position.set(-10, 2, 3);
+  warmSide.rotation.y = Math.PI / 2;
+  envScene.add(warmSide);
 
-  // Imperial Crimson right rim strip
-  const rightCrimson = new THREE.Mesh(
-    new THREE.PlaneGeometry(12, 12),
-    new THREE.MeshBasicMaterial({ color: 0xc41e3a, side: THREE.DoubleSide })
+  const coolFill = new THREE.Mesh(
+    new THREE.PlaneGeometry(16, 14),
+    new THREE.MeshBasicMaterial({ color: 0xeae5de, side: THREE.DoubleSide })
   );
-  rightCrimson.position.set(10, -1, 1);
-  rightCrimson.rotation.y = -Math.PI / 2;
-  envScene.add(rightCrimson);
+  coolFill.position.set(10, 0, 2);
+  coolFill.rotation.y = -Math.PI / 2;
+  envScene.add(coolFill);
 
-  // Jade subtle under-bounce
-  const bottomBounce = new THREE.Mesh(
-    new THREE.PlaneGeometry(16, 16),
-    new THREE.MeshBasicMaterial({ color: isDark ? 0x0a3d2b : 0xf2ece8, side: THREE.DoubleSide })
-  );
-  bottomBounce.position.set(0, -9, 1);
-  bottomBounce.rotation.x = -Math.PI / 2;
-  envScene.add(bottomBounce);
-
-  const rt = pmrem.fromScene(envScene, 0.04);
+  const rt = pmrem.fromScene(envScene, 0.05);
   pmrem.dispose();
   return rt.texture;
 }
 
 /**
- * Generates a razor-sharp 512x512 procedural lacquer seal face texture
- * (Imperial Crimson stamp border + inlaid gold double hairline + sculptural Song-serif Hanzi + Pinyin).
+ * Generates an editorial matte Xuan-porcelain circular medallion face:
+ * Fine TianZiGe hairlines, crisp calligraphic Song-serif Hanzi in sumi ink,
+ * delicate vermilion seal dot, and Pinyin subtitle.
  */
-function createSealFaceTexture(char: string, pinyin: string): THREE.CanvasTexture {
+function createPorcelainFrontTexture(
+  char: string,
+  pinyin: string,
+  accentHex: string
+): THREE.CanvasTexture {
   const size = 512;
   const canvas = document.createElement('canvas');
   canvas.width = size;
   canvas.height = size;
   const ctx = canvas.getContext('2d')!;
 
-  // Rich Imperial Crimson lacquer gradient
-  const grad = ctx.createLinearGradient(0, 0, size, size);
-  grad.addColorStop(0, '#D42240');
-  grad.addColorStop(0.55, '#C41E3A');
-  grad.addColorStop(1, '#93122A');
-  ctx.fillStyle = grad;
+  // Matte Xuan porcelain disc surface
+  const bg = ctx.createRadialGradient(220, 200, 20, 256, 256, 260);
+  bg.addColorStop(0, '#FFFFFF');
+  bg.addColorStop(0.7, '#FAF7F2');
+  bg.addColorStop(1, '#EFEAE2');
+  ctx.fillStyle = bg;
   ctx.fillRect(0, 0, size, size);
 
-  // Subtle TianZiGe hairlines etched into the lacquer
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.09)';
+  // Subtle concentric hairline circle
+  ctx.strokeStyle = 'rgba(28, 25, 23, 0.14)';
   ctx.lineWidth = 2;
-  ctx.setLineDash([8, 8]);
   ctx.beginPath();
-  ctx.moveTo(size / 2, 46);
-  ctx.lineTo(size / 2, size - 46);
-  ctx.moveTo(46, size / 2);
-  ctx.lineTo(size - 46, size / 2);
+  ctx.arc(256, 256, 224, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Accent inner hairline circle
+  ctx.strokeStyle = `${accentHex}55`;
+  ctx.lineWidth = 1.6;
+  ctx.beginPath();
+  ctx.arc(256, 256, 208, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Whisper-thin TianZiGe cross behind the Hanzi
+  ctx.strokeStyle = 'rgba(196, 30, 58, 0.14)';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([6, 6]);
+  ctx.beginPath();
+  ctx.moveTo(256, 72);
+  ctx.lineTo(256, 440);
+  ctx.moveTo(72, 256);
+  ctx.lineTo(440, 256);
   ctx.stroke();
   ctx.setLineDash([]);
 
-  // Inlaid Imperial Gold double seal border
-  ctx.strokeStyle = 'rgba(230, 190, 76, 0.85)';
-  ctx.lineWidth = 5;
-  ctx.strokeRect(32, 32, size - 64, size - 64);
-
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
-  ctx.lineWidth = 1.5;
-  ctx.strokeRect(46, 46, size - 92, size - 92);
-
-  // Corner gold seal dots
-  ctx.fillStyle = '#F2D16B';
-  [
-    [58, 58],
-    [size - 58, 58],
-    [58, size - 58],
-    [size - 58, size - 58],
-  ].forEach(([cx, cy]) => {
-    ctx.beginPath();
-    ctx.arc(cx, cy, 4.5, 0, Math.PI * 2);
-    ctx.fill();
-  });
-
-  // Top micro-label
-  ctx.fillStyle = 'rgba(242, 209, 107, 0.9)';
-  ctx.font = '700 22px "JetBrains Mono", monospace';
+  // Small scholarly vermilion seal square at 12 o'clock
+  ctx.fillStyle = accentHex;
+  ctx.fillRect(246, 66, 20, 20);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '700 12px "Noto Serif SC", serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText('HANZI4U · 印', size / 2, 84);
+  ctx.fillText('汉', 256, 76);
 
-  // Sculptural Calligraphic Hanzi in luminous porcelain white
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.28)';
-  ctx.shadowBlur = 18;
-  ctx.shadowOffsetY = 6;
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = '700 236px "Noto Serif SC", "Songti SC", "STSong", serif';
-  ctx.fillText(char, size / 2, size / 2 + 6);
-  ctx.shadowBlur = 0;
-  ctx.shadowOffsetY = 0;
+  // Sculptural Calligraphic Hanzi in deep sumi ink
+  ctx.fillStyle = '#1C1917';
+  ctx.font = '700 226px "Noto Serif SC", "Songti SC", "STSong", serif';
+  ctx.fillText(char, 256, 252);
 
-  // Bottom etched Pinyin badge
+  // Clean Pinyin beneath
   if (pinyin) {
-    ctx.fillStyle = 'rgba(20, 17, 18, 0.34)';
-    ctx.beginPath();
-    ctx.roundRect(size / 2 - 86, size - 108, 172, 42, 21);
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(230, 190, 76, 0.55)';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    ctx.fillStyle = '#FFF7DB';
-    ctx.font = '700 24px "JetBrains Mono", monospace';
-    ctx.fillText(pinyin, size / 2, size - 87);
+    ctx.fillStyle = accentHex;
+    ctx.font = '700 32px "JetBrains Mono", monospace';
+    ctx.fillText(pinyin, 256, 404);
   }
 
   const tex = new THREE.CanvasTexture(canvas);
@@ -153,62 +128,78 @@ function createSealFaceTexture(char: string, pinyin: string): THREE.CanvasTextur
 }
 
 /**
- * Generates an embossed gold-on-obsidian lacquer side pattern for the seal cube.
+ * Generates the reverse side: Traditional Vermilion Lacquer Seal Stamp (印章)
+ * so rotating the ceramic disc 180° reveals an authentic red scholar stamp!
  */
-function createSealSideTexture(): THREE.CanvasTexture {
-  const size = 256;
+function createVermilionBackTexture(char: string, pinyin: string): THREE.CanvasTexture {
+  const size = 512;
   const canvas = document.createElement('canvas');
   canvas.width = size;
   canvas.height = size;
   const ctx = canvas.getContext('2d')!;
 
-  ctx.fillStyle = '#1B1517';
+  ctx.fillStyle = '#B81D36';
   ctx.fillRect(0, 0, size, size);
 
-  ctx.strokeStyle = 'rgba(212, 160, 23, 0.55)';
-  ctx.lineWidth = 4;
-  ctx.strokeRect(20, 20, size - 40, size - 40);
+  ctx.strokeStyle = 'rgba(252, 249, 245, 0.55)';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(256, 256, 212, 0, Math.PI * 2);
+  ctx.stroke();
 
-  ctx.strokeStyle = 'rgba(196, 30, 58, 0.65)';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(32, 32, size - 64, size - 64);
+  ctx.fillStyle = '#FCF9F5';
+  ctx.font = '700 218px "Noto Serif SC", "Songti SC", serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(char, 256, 246);
+
+  if (pinyin) {
+    ctx.fillStyle = 'rgba(252, 249, 245, 0.85)';
+    ctx.font = '600 28px "JetBrains Mono", monospace';
+    ctx.fillText(pinyin, 256, 400);
+  }
 
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
   tex.needsUpdate = true;
   return tex;
 }
 
 /**
- * Hero 3D Interactive Artifact — Hanzi4U Imperial Lacquer Seal Pavilion (印章):
- * - Real 3D sculpted Crimson Lacquer & Obsidian Seal Cube with carved live Hanzi front/back faces
- * - Single-pass translucent porcelain crystal halo + tilted brushed gold meridian rings
- * - 4 orbiting gemstone satellites (Crimson Ruby, Gold, Jade Emerald, Obsidian)
- * - 72 single-draw-call InstancedMesh gold & crimson ink motes
- * - Full 360° inertial drag rotation + smooth hover parallax + character-switch spring impulse
+ * Refined Museum-Grade 3D Ceramic & Brushed-Brass Hanzi Medallion:
+ * - Matte Xuan-Porcelain circular disc (Sumi Ink Hanzi front, Vermilion Seal back)
+ * - Brushed champagne-brass collar + 2 whisper-thin architectural orbital hairlines
+ * - ZERO gamey neon particles, ZERO floating ruby/emerald RPG gems
+ * - Tactile 360° pointer drag + calm breathing motion + synchronous frame-0 render
  */
 export const ThreeMinimalZenSculpture: React.FC<ThreeMinimalZenSculptureProps> = ({
   activeHanzi = '汉',
   activePinyin = 'hàn',
-  tone = 'porcelain',
+  accentHex = '#C41E3A',
   className = '',
 }) => {
   const mountRef = useRef<HTMLDivElement | null>(null);
-  const sealFaceMatRef = useRef<THREE.MeshStandardMaterial | null>(null);
+  const frontMatRef = useRef<THREE.MeshStandardMaterial | null>(null);
+  const backMatRef = useRef<THREE.MeshStandardMaterial | null>(null);
   const impulseRef = useRef<number>(0);
   const [webglUnsupported, setWebglUnsupported] = useState(false);
-  const isDark = tone === 'obsidian';
 
-  // Live-update carved Hanzi face texture + trigger satisfying spring spin impulse
   useEffect(() => {
-    const mat = sealFaceMatRef.current;
-    if (!mat) return;
-    const prev = mat.map;
-    mat.map = createSealFaceTexture(activeHanzi, activePinyin);
-    mat.needsUpdate = true;
-    prev?.dispose();
-    impulseRef.current = 2.6;
-  }, [activeHanzi, activePinyin]);
+    if (frontMatRef.current) {
+      const prev = frontMatRef.current.map;
+      frontMatRef.current.map = createPorcelainFrontTexture(activeHanzi, activePinyin, accentHex);
+      frontMatRef.current.needsUpdate = true;
+      prev?.dispose();
+    }
+    if (backMatRef.current) {
+      const prev = backMatRef.current.map;
+      backMatRef.current.map = createVermilionBackTexture(activeHanzi, activePinyin);
+      backMatRef.current.needsUpdate = true;
+      prev?.dispose();
+    }
+    impulseRef.current = 2.0;
+  }, [activeHanzi, activePinyin, accentHex]);
 
   useEffect(() => {
     const container = mountRef.current;
@@ -233,195 +224,102 @@ export const ThreeMinimalZenSculpture: React.FC<ThreeMinimalZenSculptureProps> =
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
     renderer.setSize(width, height);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.1;
+    renderer.toneMappingExposure = 1.04;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     container.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
-    const envTex = buildHanziStudioEnv(renderer, isDark);
+    const envTex = buildPorcelainStudioEnv(renderer);
     scene.environment = envTex;
 
-    const camera = new THREE.PerspectiveCamera(34, width / height, 0.1, 100);
-    camera.position.set(0, 0.15, 7.6);
+    const camera = new THREE.PerspectiveCamera(32, width / height, 0.1, 100);
+    camera.position.set(0, 0.08, 7.2);
 
-    // Sculptural 3-point gallery lighting
-    const ambient = new THREE.AmbientLight(0xfff9f5, 0.9);
+    // Calm daylight studio lighting
+    const ambient = new THREE.AmbientLight(0xfffbf6, 1.15);
     scene.add(ambient);
 
-    const keyLight = new THREE.DirectionalLight(0xffffff, 2.1);
-    keyLight.position.set(4.5, 6.2, 6.5);
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.45);
+    keyLight.position.set(4.5, 6.5, 6);
     scene.add(keyLight);
 
-    const crimsonLight = new THREE.PointLight(0xc41e3a, 3.6, 16);
-    crimsonLight.position.set(-3.8, -1.8, 3.5);
-    scene.add(crimsonLight);
-
-    const goldLight = new THREE.PointLight(0xe6be4c, 3.2, 16);
-    goldLight.position.set(3.8, 2.8, 3.2);
-    scene.add(goldLight);
+    const rimLight = new THREE.DirectionalLight(0xf6e6cc, 0.9);
+    rimLight.position.set(-4.5, -2.5, 4);
+    scene.add(rimLight);
 
     const masterGroup = new THREE.Group();
     scene.add(masterGroup);
 
-    const orbitGroup = new THREE.Group();
-    masterGroup.add(orbitGroup);
+    const discGroup = new THREE.Group();
+    masterGroup.add(discGroup);
 
-    // ── MATERIALS ──
-    const goldMat = new THREE.MeshStandardMaterial({
-      color: 0xd4a017,
-      metalness: 0.9,
-      roughness: 0.2,
-    });
-
-    const obsidianMat = new THREE.MeshStandardMaterial({
-      color: 0x1a1517,
-      metalness: 0.42,
+    // Materials — Tactile matte ceramic & satin brushed brass
+    const brassMat = new THREE.MeshStandardMaterial({
+      color: 0xc59b42,
+      metalness: 0.78,
       roughness: 0.28,
     });
-
-    const jadeMat = new THREE.MeshStandardMaterial({
-      color: 0x00a86b,
-      metalness: 0.32,
-      roughness: 0.22,
-    });
-
-    const crimsonGemMat = new THREE.MeshStandardMaterial({
-      color: 0xc41e3a,
+    const inkWireMat = new THREE.MeshStandardMaterial({
+      color: 0x2a2524,
       metalness: 0.35,
-      roughness: 0.2,
-    });
-
-    // Single-pass translucent porcelain crystal halo (ultra-fast 120fps)
-    const porcelainHaloMat = new THREE.MeshPhysicalMaterial({
-      color: isDark ? 0xfbf8f6 : 0xffffff,
-      opacity: isDark ? 0.42 : 0.62,
+      roughness: 0.45,
       transparent: true,
-      roughness: 0.08,
-      metalness: 0.1,
-      clearcoat: 1.0,
-      clearcoatRoughness: 0.05,
-      iridescence: 0.45,
-      sheen: 0.6,
-      sheenColor: new THREE.Color(0xe6be4c),
-      envMapIntensity: 1.5,
+      opacity: 0.45,
     });
 
-    // ── 1. CENTERPIECE: 3D SCULPTED IMPERIAL CRIMSON LACQUER SEAL MONOLITH ──
-    const sealGroup = new THREE.Group();
-    masterGroup.add(sealGroup);
+    const frontTex = createPorcelainFrontTexture(activeHanzi, activePinyin, accentHex);
+    const backTex = createVermilionBackTexture(activeHanzi, activePinyin);
 
-    const faceTex = createSealFaceTexture(activeHanzi, activePinyin);
-    const sideTex = createSealSideTexture();
-
-    const sealFaceMat = new THREE.MeshStandardMaterial({
-      map: faceTex,
-      roughness: 0.26,
-      metalness: 0.12,
+    const frontMat = new THREE.MeshStandardMaterial({
+      map: frontTex,
+      roughness: 0.42,
+      metalness: 0.04,
     });
-    sealFaceMatRef.current = sealFaceMat;
-
-    const sealSideMat = new THREE.MeshStandardMaterial({
-      map: sideTex,
-      roughness: 0.32,
-      metalness: 0.38,
+    const backMat = new THREE.MeshStandardMaterial({
+      map: backTex,
+      roughness: 0.36,
+      metalness: 0.08,
     });
+    frontMatRef.current = frontMat;
+    backMatRef.current = backMat;
 
-    // 6-face material array: [+x, -x, +y, -y, +z (front), -z (back)]
-    const sealBodyGeo = new THREE.BoxGeometry(1.92, 1.92, 0.56);
-    const sealBody = new THREE.Mesh(sealBodyGeo, [
-      sealSideMat,
-      sealSideMat,
-      sealSideMat,
-      sealSideMat,
-      sealFaceMat,
-      sealFaceMat,
-    ]);
-    sealGroup.add(sealBody);
+    // 1. Matte Ceramic Disc Body (rotated so circular caps face +Z / -Z)
+    const rimGeo = new THREE.CylinderGeometry(1.58, 1.58, 0.26, 72);
+    const rimMesh = new THREE.Mesh(rimGeo, brassMat);
+    rimMesh.rotation.x = Math.PI / 2;
+    discGroup.add(rimMesh);
 
-    // Brushed gold chamfered collar framing the seal cube
-    const collarGeo = new THREE.BoxGeometry(2.02, 2.02, 0.26);
-    const collarMesh = new THREE.Mesh(collarGeo, goldMat);
-    sealGroup.add(collarMesh);
+    const faceGeo = new THREE.CircleGeometry(1.52, 72);
+    const frontFace = new THREE.Mesh(faceGeo, frontMat);
+    frontFace.position.z = 0.132;
+    discGroup.add(frontFace);
 
-    // Sculptural stepped obsidian-and-gold scholar crown finial on top of seal
-    const finialBaseGeo = new THREE.CylinderGeometry(0.24, 0.34, 0.18, 8);
-    const finialBase = new THREE.Mesh(finialBaseGeo, obsidianMat);
-    finialBase.position.set(0, 1.08, 0);
-    sealGroup.add(finialBase);
+    const backFace = new THREE.Mesh(faceGeo, backMat);
+    backFace.rotation.y = Math.PI;
+    backFace.position.z = -0.132;
+    discGroup.add(backFace);
 
-    const finialRingGeo = new THREE.TorusGeometry(0.22, 0.045, 16, 48);
-    const finialRing = new THREE.Mesh(finialRingGeo, goldMat);
-    finialRing.position.set(0, 1.32, 0);
-    sealGroup.add(finialRing);
+    // 2. Two Whisper-Thin Architectural Meridian Rings (minimalist museum sculpture)
+    const brassRingGeo = new THREE.TorusGeometry(2.04, 0.016, 16, 128);
+    const brassRing = new THREE.Mesh(brassRingGeo, brassMat);
+    brassRing.rotation.set(0.32, -0.25, 0);
+    masterGroup.add(brassRing);
 
-    // ── 2. ORBITAL ARCHITECTURE: PORCELAIN CRYSTAL HALO & GOLD MERIDIANS ──
-    const haloGeo = new THREE.TorusGeometry(2.15, 0.14, 32, 112);
-    const haloRing = new THREE.Mesh(haloGeo, porcelainHaloMat);
-    haloRing.rotation.x = 0.42;
-    haloRing.rotation.y = -0.3;
-    orbitGroup.add(haloRing);
+    const inkRingGeo = new THREE.TorusGeometry(2.34, 0.01, 12, 128);
+    const inkRing = new THREE.Mesh(inkRingGeo, inkWireMat);
+    inkRing.rotation.set(-0.28, 0.42, 0.12);
+    masterGroup.add(inkRing);
 
-    const goldOrbit1Geo = new THREE.TorusGeometry(2.48, 0.028, 16, 120);
-    const goldOrbit1 = new THREE.Mesh(goldOrbit1Geo, goldMat);
-    goldOrbit1.rotation.x = Math.PI * 0.36;
-    goldOrbit1.rotation.y = 0.24;
-    orbitGroup.add(goldOrbit1);
+    // Single subtle brushed-brass calibration bead gliding quietly on the outer ring
+    const beadGeo = new THREE.SphereGeometry(0.055, 20, 20);
+    const bead = new THREE.Mesh(beadGeo, brassMat);
+    masterGroup.add(bead);
 
-    const crimsonOrbitGeo = new THREE.TorusGeometry(1.82, 0.022, 16, 108);
-    const crimsonOrbit = new THREE.Mesh(crimsonOrbitGeo, crimsonGemMat);
-    crimsonOrbit.rotation.x = -Math.PI * 0.32;
-    crimsonOrbit.rotation.y = -0.28;
-    orbitGroup.add(crimsonOrbit);
-
-    // ── 3. FOUR ORBITING FACETED GEMSTONE NODES (CRIMSON, GOLD, JADE, OBSIDIAN) ──
-    const gemGeo = new THREE.OctahedronGeometry(0.14, 0);
-    const beadGeo = new THREE.SphereGeometry(0.085, 20, 20);
-    const satellites = [
-      { mesh: new THREE.Mesh(gemGeo, crimsonGemMat), radius: 2.48, angle: 0.3, speed: 0.38, yTilt: 0.42 },
-      { mesh: new THREE.Mesh(gemGeo, jadeMat), radius: 2.15, angle: 2.1, speed: -0.3, yTilt: -0.36 },
-      { mesh: new THREE.Mesh(beadGeo, goldMat), radius: 2.48, angle: 3.9, speed: 0.38, yTilt: 0.25 },
-      { mesh: new THREE.Mesh(beadGeo, obsidianMat), radius: 1.9, angle: 5.4, speed: -0.26, yTilt: -0.22 },
-    ];
-    satellites.forEach((s) => orbitGroup.add(s.mesh));
-
-    // ── 4. SINGLE-DRAW-CALL INSTANCED GOLD & CRIMSON INK MOTES (72 PARTICLES) ──
-    const PARTICLE_COUNT = 72;
-    const dotGeo = new THREE.IcosahedronGeometry(0.024, 0);
-    const dotMat = new THREE.MeshStandardMaterial({
-      color: 0xffffff,
-      metalness: 0.72,
-      roughness: 0.28,
-      transparent: true,
-      opacity: 0.72,
-    });
-    const instancedDots = new THREE.InstancedMesh(dotGeo, dotMat, PARTICLE_COUNT);
-    const dummy = new THREE.Object3D();
-    const goldColor = new THREE.Color(0xd4a017);
-    const crimsonColor = new THREE.Color(0xc41e3a);
-    const jadeColor = new THREE.Color(0x00a86b);
-    for (let idx = 0; idx < PARTICLE_COUNT; idx++) {
-      const phi = Math.acos(1 - (2 * (idx + 0.5)) / PARTICLE_COUNT);
-      const theta = Math.PI * (1 + Math.sqrt(5)) * idx;
-      const r = 2.65 + (idx % 5) * 0.22;
-      dummy.position.set(
-        r * Math.sin(phi) * Math.cos(theta),
-        r * Math.cos(phi) * 0.85,
-        r * Math.sin(phi) * Math.sin(theta) - 0.35
-      );
-      dummy.scale.setScalar(0.55 + (idx % 4) * 0.25);
-      dummy.updateMatrix();
-      instancedDots.setMatrixAt(idx, dummy.matrix);
-      instancedDots.setColorAt(idx, idx % 3 === 0 ? crimsonColor : idx % 5 === 0 ? jadeColor : goldColor);
-    }
-    instancedDots.instanceMatrix.needsUpdate = true;
-    if (instancedDots.instanceColor) instancedDots.instanceColor.needsUpdate = true;
-    masterGroup.add(instancedDots);
-
-    // ── INTERACTIVE 360° DRAG + SMOOTH PARALLAX PHYSICS ──
+    // Interactive 360° drag + subtle inertial damping
     let targetTiltX = 0;
     let targetTiltY = 0;
-    let dragRotX = -0.06;
-    let dragRotY = 0.26;
+    let dragRotX = -0.04;
+    let dragRotY = 0.22;
     let dragVelX = 0;
     let dragVelY = 0;
     let isDragging = false;
@@ -444,16 +342,16 @@ export const ThreeMinimalZenSculpture: React.FC<ThreeMinimalZenSculptureProps> =
       const rect = container.getBoundingClientRect();
       const nx = ((e.clientX - rect.left) / Math.max(1, rect.width) - 0.5) * 2;
       const ny = ((e.clientY - rect.top) / Math.max(1, rect.height) - 0.5) * 2;
-      targetTiltY = THREE.MathUtils.clamp(nx, -1, 1) * 0.26;
-      targetTiltX = THREE.MathUtils.clamp(ny, -1, 1) * 0.18;
+      targetTiltY = THREE.MathUtils.clamp(nx, -1, 1) * 0.2;
+      targetTiltX = THREE.MathUtils.clamp(ny, -1, 1) * 0.14;
 
       if (isDragging) {
         const dx = (e.clientX - prevX) * 0.009;
         const dy = (e.clientY - prevY) * 0.007;
         dragRotY += dx;
         dragRotX = THREE.MathUtils.clamp(dragRotX + dy, -0.75, 0.75);
-        dragVelY = dx * 18;
-        dragVelX = dy * 14;
+        dragVelY = dx * 16;
+        dragVelX = dy * 12;
         prevX = e.clientX;
         prevY = e.clientY;
       }
@@ -494,10 +392,8 @@ export const ThreeMinimalZenSculpture: React.FC<ThreeMinimalZenSculptureProps> =
     );
     intersectionObserver.observe(container);
 
-    // Paint frame 0 synchronously so cross-fading slides never flash a blank canvas
+    // Synchronous frame 0 paint
     renderer.render(scene, camera);
-
-    let spinAccum = 0;
 
     const animate = () => {
       rafId = requestAnimationFrame(animate);
@@ -505,51 +401,36 @@ export const ThreeMinimalZenSculpture: React.FC<ThreeMinimalZenSculptureProps> =
 
       const dt = Math.min(clock.getDelta(), 0.05);
       const t = clock.elapsedTime;
-      const motion = reducedMotion ? 0 : 1;
+      const m = reducedMotion ? 0 : 1;
 
       impulseRef.current *= Math.pow(0.06, dt);
-      spinAccum += dt * (0.28 * motion + impulseRef.current);
 
       if (!isDragging) {
         dragRotY += dragVelY * dt;
         dragRotX = THREE.MathUtils.clamp(dragRotX + dragVelX * dt, -0.75, 0.75);
         dragVelY *= Math.pow(0.08, dt);
         dragVelX *= Math.pow(0.08, dt);
-        // Gently breathe back toward sculptural hero 3/4 view
-        const restY = 0.24 + Math.sin(t * 0.55) * 0.16 * motion;
-        const restX = -0.05 + Math.cos(t * 0.45) * 0.06 * motion;
-        dragRotY += (restY - dragRotY) * Math.min(1, dt * 1.15);
-        dragRotX += (restX - dragRotX) * Math.min(1, dt * 1.15);
+        const restY = 0.18 + Math.sin(t * 0.45) * 0.14 * m;
+        const restX = -0.04 + Math.cos(t * 0.35) * 0.05 * m;
+        dragRotY += (restY - dragRotY) * Math.min(1, dt * 1.1);
+        dragRotX += (restX - dragRotX) * Math.min(1, dt * 1.1);
       }
 
-      // Apply character-switch spring spin impulse smoothly to seal Y rotation
-      const targetSealY = dragRotY + targetTiltY + impulseRef.current * 0.55;
-      const targetSealX = dragRotX + targetTiltX;
-      sealGroup.rotation.y += (targetSealY - sealGroup.rotation.y) * Math.min(1, dt * 8);
-      sealGroup.rotation.x += (targetSealX - sealGroup.rotation.x) * Math.min(1, dt * 8);
-      sealGroup.position.y = Math.sin(t * 1.35) * 0.09 * motion;
-      sealGroup.scale.setScalar(1 + Math.min(impulseRef.current * 0.032, 0.07));
+      const targetY = dragRotY + targetTiltY + impulseRef.current * 0.48;
+      const targetX = dragRotX + targetTiltX;
+      discGroup.rotation.y += (targetY - discGroup.rotation.y) * Math.min(1, dt * 7);
+      discGroup.rotation.x += (targetX - discGroup.rotation.x) * Math.min(1, dt * 7);
+      discGroup.position.y = Math.sin(t * 1.1) * 0.06 * m;
 
-      // Orbit rings & satellites
-      haloRing.rotation.z = spinAccum * 0.45;
-      haloRing.rotation.x = 0.42 + Math.sin(t * 0.5) * 0.12 * motion;
-      goldOrbit1.rotation.z = -spinAccum * 0.35;
-      crimsonOrbit.rotation.z = spinAccum * 0.58;
+      brassRing.rotation.z = t * 0.14 * m;
+      inkRing.rotation.z = -t * 0.1 * m;
 
-      satellites.forEach((s, idx) => {
-        const a = s.angle + t * s.speed * motion + spinAccum * 0.32;
-        s.mesh.position.set(
-          Math.cos(a) * s.radius,
-          Math.sin(a * 1.25) * s.radius * s.yTilt,
-          Math.sin(a) * s.radius * 0.58
-        );
-        s.mesh.rotation.x = t * 0.8 * motion + idx;
-        s.mesh.rotation.y = t * 1.0 * motion;
-      });
-
-      orbitGroup.rotation.y += (targetTiltY * 0.7 - orbitGroup.rotation.y) * Math.min(1, dt * 5);
-      orbitGroup.rotation.x += (targetTiltX * 0.7 - orbitGroup.rotation.x) * Math.min(1, dt * 5);
-      instancedDots.rotation.y = t * 0.055 * motion;
+      const angle = t * 0.38 * m;
+      bead.position.set(
+        Math.cos(angle) * 2.04,
+        Math.sin(angle) * 2.04 * 0.62,
+        Math.sin(angle) * 0.9
+      );
 
       renderer.render(scene, camera);
     };
@@ -564,29 +445,20 @@ export const ThreeMinimalZenSculpture: React.FC<ThreeMinimalZenSculptureProps> =
       container.removeEventListener('pointerleave', onPointerLeave);
       resizeObserver.disconnect();
       intersectionObserver.disconnect();
-      sealFaceMatRef.current = null;
+      frontMatRef.current = null;
+      backMatRef.current = null;
 
-      sealBodyGeo.dispose();
-      collarGeo.dispose();
-      finialBaseGeo.dispose();
-      finialRingGeo.dispose();
-      haloGeo.dispose();
-      goldOrbit1Geo.dispose();
-      crimsonOrbitGeo.dispose();
-      gemGeo.dispose();
+      rimGeo.dispose();
+      faceGeo.dispose();
+      brassRingGeo.dispose();
+      inkRingGeo.dispose();
       beadGeo.dispose();
-      dotGeo.dispose();
-
-      sealFaceMat.map?.dispose();
-      sealFaceMat.dispose();
-      sealSideMat.map?.dispose();
-      sealSideMat.dispose();
-      goldMat.dispose();
-      obsidianMat.dispose();
-      jadeMat.dispose();
-      crimsonGemMat.dispose();
-      porcelainHaloMat.dispose();
-      dotMat.dispose();
+      brassMat.dispose();
+      inkWireMat.dispose();
+      frontMat.map?.dispose();
+      frontMat.dispose();
+      backMat.map?.dispose();
+      backMat.dispose();
       envTex.dispose();
       renderer.dispose();
 
@@ -594,14 +466,14 @@ export const ThreeMinimalZenSculpture: React.FC<ThreeMinimalZenSculptureProps> =
         container.removeChild(renderer.domElement);
       }
     };
-  }, [isDark]);
+  }, []);
 
   if (webglUnsupported) {
     return (
       <div className={`flex items-center justify-center ${className}`}>
-        <div className="w-52 h-52 rounded-3xl bg-[#C41E3A] border-2 border-[#D4A017] flex flex-col items-center justify-center shadow-xl text-white">
-          <span className="font-hanzi-serif text-8xl font-bold">{activeHanzi}</span>
-          <span className="font-mono text-sm text-[#F2D16B] mt-1">{activePinyin}</span>
+        <div className="w-52 h-52 rounded-full bg-white border border-[#C41E3A]/40 flex flex-col items-center justify-center shadow-md">
+          <span className="font-hanzi-serif text-8xl font-bold text-[#1C1917]">{activeHanzi}</span>
+          <span className="font-mono text-sm text-[#C41E3A] mt-1">{activePinyin}</span>
         </div>
       </div>
     );
@@ -611,7 +483,7 @@ export const ThreeMinimalZenSculpture: React.FC<ThreeMinimalZenSculptureProps> =
     <div
       ref={mountRef}
       role="img"
-      aria-label={`Ấn triện chữ Hán 3D ${activeHanzi}`}
+      aria-label={`Mô hình 3D chữ Hán ${activeHanzi}`}
       className={`relative w-full h-full select-none touch-pan-y ${className}`}
     />
   );

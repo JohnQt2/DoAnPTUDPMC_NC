@@ -8,6 +8,8 @@ interface ThreeMinimalZenSculptureProps {
   activePinyin?: string;
   /** Optional tone/accent hex color for subtle inner seal ring */
   accentHex?: string;
+  /** When false, keeps WebGL context warm in memory while pausing rAF render work */
+  isActive?: boolean;
   tone?: 'porcelain' | 'obsidian';
   className?: string;
 }
@@ -177,12 +179,15 @@ export const ThreeMinimalZenSculpture: React.FC<ThreeMinimalZenSculptureProps> =
   activeHanzi = '汉',
   activePinyin = 'hàn',
   accentHex = '#C41E3A',
+  isActive = true,
   className = '',
 }) => {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const frontMatRef = useRef<THREE.MeshStandardMaterial | null>(null);
   const backMatRef = useRef<THREE.MeshStandardMaterial | null>(null);
   const impulseRef = useRef<number>(0);
+  const isActiveRef = useRef<boolean>(isActive);
+  isActiveRef.current = isActive;
   const [webglUnsupported, setWebglUnsupported] = useState(false);
 
   useEffect(() => {
@@ -397,7 +402,10 @@ export const ThreeMinimalZenSculpture: React.FC<ThreeMinimalZenSculptureProps> =
 
     const animate = () => {
       rafId = requestAnimationFrame(animate);
-      if (!isVisible || document.hidden) return;
+      if (!isActiveRef.current || !isVisible || document.hidden) {
+        clock.getDelta();
+        return;
+      }
 
       const dt = Math.min(clock.getDelta(), 0.05);
       const t = clock.elapsedTime;

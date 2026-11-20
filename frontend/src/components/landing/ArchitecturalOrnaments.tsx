@@ -116,24 +116,28 @@ export const PronunciationPlayButton: React.FC<{
 );
 
 /**
- * Minimal 3-Bar Audio Indicator for top-right utility cluster.
+ * Minimal 3-Bar Audio Indicator for top-right BGM toggle button.
+ * Gently animates bar heights when chill ambient music is playing.
  */
 export const EqualizerBars: React.FC<{ active: boolean }> = ({ active }) => (
-  <span className="inline-flex items-end gap-[2.5px] h-3.5" aria-hidden="true">
+  <span className="relative inline-flex items-end gap-[2.5px] h-3.5" aria-hidden="true">
     <span
       className={`w-[2px] rounded-full bg-current transition-all duration-300 ${
-        active ? 'h-3.5' : 'h-1.5 opacity-45'
+        active ? 'h-3.5 animate-[pulse_1.1s_ease-in-out_infinite]' : 'h-1.5 opacity-40'
       }`}
     />
     <span
       className={`w-[2px] rounded-full bg-current transition-all duration-300 ${
-        active ? 'h-2' : 'h-2.5 opacity-45'
+        active ? 'h-2.5 animate-[pulse_0.85s_ease-in-out_0.25s_infinite]' : 'h-2 opacity-40'
       }`}
     />
     <span
       className={`w-[2px] rounded-full bg-current transition-all duration-300 ${
-        active ? 'h-3' : 'h-1.5 opacity-45'
+        active ? 'h-3 animate-[pulse_1.25s_ease-in-out_0.45s_infinite]' : 'h-1.5 opacity-40'
       }`}
     />
+    {!active && (
+      <span className="pointer-events-none absolute inset-x-[-2px] top-1/2 h-[1.5px] -rotate-45 bg-[#C41E3A] rounded-full" />
+    )}
   </span>
 );

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 
 export interface ThreeStudyDioramaStageProps {
-  /** 0 = 4 Tones 3D Curves, 1 = TianZiGe Porcelain Stone, 2 = 3D Flashcards, 3 = HSK 1–6 Steps */
+  /** 0 = 4 Tones 3D Curves, 1 = TianZiGe Porcelain Stone, 2 = 3D Flashcards, 3 = 3D HSK 1–6 Real Textbooks */
   activeScene: 0 | 1 | 2 | 3;
   activeToneIdx: number;
   activeStrokeChar: string;
@@ -11,6 +11,12 @@ export interface ThreeStudyDioramaStageProps {
   flippedCards: Record<string, boolean>;
   activeCardIdx: number;
   activeHskLevel: number;
+  /** When false, keeps WebGL context warm in memory while pausing rAF render work */
+  isActive?: boolean;
+  /** Called when the user clicks directly on a 3D flashcard mesh in Scene 2 */
+  onCardClick?: (cardId: string, cardIdx: number) => void;
+  /** Called when the user clicks directly on a 3D HSK textbook mesh in Scene 3 */
+  onBookClick?: (level: number) => void;
   theme?: 'dark' | 'light';
   className?: string;
 }
@@ -23,6 +29,7 @@ const CARD_SPECS = [
     sino: 'Nhĩ hảo',
     meaning: 'Xin chào',
     example: '你好，很高兴认识你！',
+    exampleVi: 'Xin chào, rất vui được làm quen với bạn!',
     accent: '#C41E3A',
     cover: '#FFFFFF',
     ink: '#1C1917',
@@ -34,6 +41,7 @@ const CARD_SPECS = [
     sino: 'Học tập',
     meaning: 'Học tập',
     example: '我每天学习中文。',
+    exampleVi: 'Mỗi ngày tôi đều học tiếng Trung.',
     accent: '#157A57',
     cover: '#FAF7F2',
     ink: '#1C1917',
@@ -45,9 +53,49 @@ const CARD_SPECS = [
     sino: 'Tạ tạ',
     meaning: 'Cảm ơn',
     example: '谢谢你的帮助！',
+    exampleVi: 'Cảm ơn sự giúp đỡ của bạn!',
     accent: '#B5841A',
     cover: '#FFFFFF',
     ink: '#1C1917',
+  },
+];
+
+const HSK_BOOK_SPECS = [
+  {
+    level: 1,
+    coverUrl: '/images/books/hsk1.webp',
+    spineHex: '#E57C23',
+    jacketColor: 0xe57c23,
+  },
+  {
+    level: 2,
+    coverUrl: '/images/books/hsk2.webp',
+    spineHex: '#1F7A68',
+    jacketColor: 0x1f7a68,
+  },
+  {
+    level: 3,
+    coverUrl: '/images/books/hsk3.webp',
+    spineHex: '#D95B18',
+    jacketColor: 0xd95b18,
+  },
+  {
+    level: 4,
+    coverUrl: '/images/books/hsk4.webp',
+    spineHex: '#B61F24',
+    jacketColor: 0xb61f24,
+  },
+  {
+    level: 5,
+    coverUrl: '/images/books/hsk5.webp',
+    spineHex: '#184375',
+    jacketColor: 0x184375,
+  },
+  {
+    level: 6,
+    coverUrl: '/images/books/hsk6.webp',
+    spineHex: '#5A1063',
+    jacketColor: 0x5a1063,
   },
 ];
 
@@ -143,10 +191,10 @@ function createTianZiGeTexture(char: string, pinyin: string, strokes: number): T
   return tex;
 }
 
-/** Tactile Linen Paper Flashcard Front Texture (editorial typography — zero game neon) */
+/** High-DPI Tactile Linen Paper Flashcard Front Texture */
 function createCardFrontTexture(spec: (typeof CARD_SPECS)[number]): THREE.CanvasTexture {
-  const w = 384;
-  const h = 512;
+  const w = 512;
+  const h = 680;
   const canvas = document.createElement('canvas');
   canvas.width = w;
   canvas.height = h;
@@ -155,33 +203,38 @@ function createCardFrontTexture(spec: (typeof CARD_SPECS)[number]): THREE.Canvas
   ctx.fillStyle = spec.cover;
   ctx.fillRect(0, 0, w, h);
 
-  // Top 8px subtle pigment bar
+  // Top 14px accent pigment bar
   ctx.fillStyle = spec.accent;
-  ctx.fillRect(0, 0, w, 10);
+  ctx.fillRect(0, 0, w, 14);
 
   // Minimal hairline inner frame
-  ctx.strokeStyle = 'rgba(28, 25, 23, 0.12)';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(20, 26, w - 40, h - 46);
+  ctx.strokeStyle = 'rgba(28, 25, 23, 0.14)';
+  ctx.lineWidth = 2.5;
+  ctx.strokeRect(26, 36, w - 52, h - 64);
 
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
   ctx.fillStyle = '#78716C';
-  ctx.font = '600 16px "JetBrains Mono", monospace';
-  ctx.fillText('HSK 1 · TỪ VỰNG', w / 2, 66);
+  ctx.font = '600 20px "JetBrains Mono", monospace';
+  ctx.fillText('HSK 1 · THẺ LẬT TỪ', w / 2, 88);
 
   ctx.fillStyle = spec.ink;
-  ctx.font = '700 124px "Noto Serif SC", serif';
-  ctx.fillText(spec.hanzi, w / 2, h / 2 - 20);
+  ctx.font = '700 164px "Noto Serif SC", serif';
+  ctx.fillText(spec.hanzi, w / 2, h / 2 - 28);
 
   ctx.fillStyle = spec.accent;
-  ctx.font = '700 30px "JetBrains Mono", monospace';
-  ctx.fillText(spec.pinyin, w / 2, h / 2 + 92);
+  ctx.font = '700 40px "JetBrains Mono", monospace';
+  ctx.fillText(spec.pinyin, w / 2, h / 2 + 114);
 
-  ctx.fillStyle = '#57534E';
-  ctx.font = '500 22px "Be Vietnam Pro", sans-serif';
-  ctx.fillText(spec.meaning, w / 2, h - 78);
+  ctx.fillStyle = '#44403C';
+  ctx.font = '600 30px "Be Vietnam Pro", sans-serif';
+  ctx.fillText(spec.meaning, w / 2, h - 122);
+
+  // Subtle interactive click prompt on bottom of card face
+  ctx.fillStyle = 'rgba(28, 25, 23, 0.42)';
+  ctx.font = '500 16px "JetBrains Mono", monospace';
+  ctx.fillText('↻ BẤM VÀO THẺ ĐỂ LẬT', w / 2, h - 62);
 
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
@@ -190,10 +243,10 @@ function createCardFrontTexture(spec: (typeof CARD_SPECS)[number]): THREE.Canvas
   return tex;
 }
 
-/** Tactile Vermilion & Ink Reverse Flashcard Texture (Study Notes + Example) */
+/** High-DPI Tactile Reverse Flashcard Texture (Hán-Việt + Example Sentence) */
 function createCardBackTexture(spec: (typeof CARD_SPECS)[number]): THREE.CanvasTexture {
-  const w = 384;
-  const h = 512;
+  const w = 512;
+  const h = 680;
   const canvas = document.createElement('canvas');
   canvas.width = w;
   canvas.height = h;
@@ -203,43 +256,43 @@ function createCardBackTexture(spec: (typeof CARD_SPECS)[number]): THREE.CanvasT
   ctx.fillRect(0, 0, w, h);
 
   ctx.fillStyle = spec.accent;
-  ctx.fillRect(0, 0, w, 10);
+  ctx.fillRect(0, 0, w, 14);
 
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.14)';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(20, 26, w - 40, h - 46);
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
+  ctx.lineWidth = 2.5;
+  ctx.strokeRect(26, 36, w - 52, h - 64);
 
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
-  ctx.fillStyle = '#E6BE4C';
-  ctx.font = '600 18px "JetBrains Mono", monospace';
-  ctx.fillText(`HÁN-VIỆT: ${spec.sino.toUpperCase()}`, w / 2, 80);
+  ctx.fillStyle = '#F2C94C';
+  ctx.font = '600 22px "JetBrains Mono", monospace';
+  ctx.fillText(`HÁN-VIỆT: ${spec.sino.toUpperCase()}`, w / 2, 102);
 
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '700 66px "Noto Serif SC", serif';
-  ctx.fillText(spec.hanzi, w / 2, 166);
+  ctx.font = '700 92px "Noto Serif SC", serif';
+  ctx.fillText(spec.hanzi, w / 2, 214);
 
   ctx.fillStyle = '#F5EFE6';
-  ctx.font = '600 24px "Be Vietnam Pro", sans-serif';
-  ctx.fillText(spec.meaning, w / 2, 236);
+  ctx.font = '600 32px "Be Vietnam Pro", sans-serif';
+  ctx.fillText(spec.meaning, w / 2, 306);
 
   ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
   ctx.beginPath();
-  ctx.roundRect(32, 290, w - 64, 126, 10);
+  ctx.roundRect(40, 368, w - 80, 178, 12);
   ctx.fill();
 
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '600 25px "Noto Serif SC", serif';
-  ctx.fillText(spec.example, w / 2, 336);
+  ctx.font = '600 32px "Noto Serif SC", serif';
+  ctx.fillText(spec.example, w / 2, 426);
 
   ctx.fillStyle = '#D6D0C8';
-  ctx.font = '500 17px "JetBrains Mono", monospace';
-  ctx.fillText(spec.pinyin, w / 2, 382);
+  ctx.font = '500 20px "Be Vietnam Pro", sans-serif';
+  ctx.fillText(spec.exampleVi, w / 2, 494);
 
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
-  ctx.font = '500 15px "JetBrains Mono", monospace';
-  ctx.fillText('ÔN LẠI THEO LỊCH SM-2', w / 2, h - 48);
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+  ctx.font = '500 16px "JetBrains Mono", monospace';
+  ctx.fillText('↻ BẤM ĐỂ LẬT MẶT TRƯỚC', w / 2, h - 62);
 
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
@@ -248,30 +301,62 @@ function createCardBackTexture(spec: (typeof CARD_SPECS)[number]): THREE.CanvasT
   return tex;
 }
 
-/** Clean Ceramic HSK Plinth Top Label */
-function createHskLabelTexture(level: number, words: string, accent: string): THREE.CanvasTexture {
-  const size = 256;
+/** Realistic Book Spine Texture (`HSK 1..6 · 标准教程`) */
+function createBookSpineTexture(level: number, spineHex: string): THREE.CanvasTexture {
+  const w = 96;
+  const h = 512;
   const canvas = document.createElement('canvas');
-  canvas.width = size;
-  canvas.height = size;
+  canvas.width = w;
+  canvas.height = h;
   const ctx = canvas.getContext('2d')!;
 
-  ctx.fillStyle = '#FAF7F2';
-  ctx.fillRect(0, 0, size, size);
+  ctx.fillStyle = spineHex;
+  ctx.fillRect(0, 0, w, h);
 
-  ctx.strokeStyle = accent;
-  ctx.lineWidth = 10;
-  ctx.strokeRect(10, 10, size - 20, size - 20);
+  // Subtle top & bottom publisher bands
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.16)';
+  ctx.fillRect(0, 26, w, 6);
+  ctx.fillRect(0, h - 64, w, 4);
 
+  // Level badge on spine
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '800 28px "Plus Jakarta Sans", sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillStyle = '#1C1917';
-  ctx.font = '800 54px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText(`HSK ${level}`, size / 2, size / 2 - 22);
+  ctx.fillText(`HSK`, w / 2, 74);
+  ctx.font = '800 36px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText(`${level}`, w / 2, 112);
 
-  ctx.fillStyle = accent;
-  ctx.font = '700 24px "JetBrains Mono", monospace';
-  ctx.fillText(words, size / 2, size / 2 + 40);
+  // Vertical Chinese spine title
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
+  ctx.font = '700 26px "Noto Serif SC", serif';
+  const chars = ['标', '准', '教', '程'];
+  chars.forEach((c, idx) => {
+    ctx.fillText(c, w / 2, 200 + idx * 46);
+  });
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.needsUpdate = true;
+  return tex;
+}
+
+/** Realistic Stacked Paper Page-Edge Texture for 3D Books */
+function createBookPageEdgeTexture(): THREE.CanvasTexture {
+  const w = 128;
+  const h = 256;
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d')!;
+
+  ctx.fillStyle = '#F7F3EA';
+  ctx.fillRect(0, 0, w, h);
+
+  ctx.fillStyle = 'rgba(28, 25, 23, 0.08)';
+  for (let x = 4; x < w; x += 5) {
+    ctx.fillRect(x, 0, 1.5, h);
+  }
 
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
@@ -288,12 +373,21 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
   flippedCards,
   activeCardIdx,
   activeHskLevel,
+  isActive = true,
+  onCardClick,
+  onBookClick,
   theme = 'light',
   className = '',
 }) => {
   const isLight = theme === 'light';
   const mountRef = useRef<HTMLDivElement | null>(null);
   const [webglUnsupported, setWebglUnsupported] = useState(false);
+
+  const isActiveRef = useRef<boolean>(isActive);
+  isActiveRef.current = isActive;
+
+  const callbacksRef = useRef({ onCardClick, onBookClick });
+  callbacksRef.current = { onCardClick, onBookClick };
 
   const stateRef = useRef({
     activeScene,
@@ -363,7 +457,7 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
     keyLight.position.set(4.5, 7, 6.5);
     scene.add(keyLight);
 
-    const fillLight = new THREE.DirectionalLight(0xf2e8db, 0.75);
+    const fillLight = new THREE.DirectionalLight(0xf2e8db, 0.78);
     fillLight.position.set(-5, 2, 4);
     scene.add(fillLight);
 
@@ -380,11 +474,6 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
       metalness: 0.75,
       roughness: 0.28,
     });
-    const crimsonMat = new THREE.MeshStandardMaterial({
-      color: 0xc41e3a,
-      metalness: 0.15,
-      roughness: 0.34,
-    });
     const porcelainEdgeMat = new THREE.MeshStandardMaterial({
       color: 0xe6dfd6,
       metalness: 0.05,
@@ -392,15 +481,15 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
     });
 
     // Subtle hairline circular calibration ring beneath exhibits
-    const baseRingGeo = new THREE.TorusGeometry(2.65, 0.012, 12, 112);
+    const baseRingGeo = new THREE.TorusGeometry(2.85, 0.012, 12, 112);
     const baseRingMat = new THREE.MeshBasicMaterial({
       color: isLight ? 0x1c1917 : 0xd4a017,
       transparent: true,
-      opacity: isLight ? 0.14 : 0.24,
+      opacity: isLight ? 0.11 : 0.22,
     });
     const baseRing = new THREE.Mesh(baseRingGeo, baseRingMat);
     baseRing.rotation.x = Math.PI / 2;
-    baseRing.position.y = -2.0;
+    baseRing.position.y = -2.05;
     rootRig.add(baseRing);
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -448,7 +537,6 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
       ]),
     ];
 
-    // Refined academic pigments (Muted Jade, Imperial Crimson, Warm Ochre, Sumi Ink)
     const toneColors = [0x157a57, 0xc41e3a, 0xb8860b, 0x2c2524];
     const toneMeshes: Array<{
       mesh: THREE.Mesh;
@@ -471,7 +559,6 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
       toneMeshes.push({ mesh, mat, baseZ, curve });
     });
 
-    // Clean matte ivory bead tracing along the active pitch contour
     const orbGeo = new THREE.SphereGeometry(0.18, 24, 24);
     const orbMat = new THREE.MeshStandardMaterial({
       color: 0xffffff,
@@ -510,36 +597,34 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
     ]);
     strokeGroup.add(tabletMesh);
 
-    // Thin handcrafted walnut-wood outer frame (zero clunky cartoon yellow corners!)
     const bezelGeo = new THREE.BoxGeometry(3.12, 3.12, 0.14);
     const bezelMesh = new THREE.Mesh(bezelGeo, walnutMat);
     bezelMesh.position.z = -0.04;
     strokeGroup.add(bezelMesh);
 
-    // Subtle brass trim hairline
     const trimGeo = new THREE.BoxGeometry(3.16, 3.16, 0.04);
     const trimMesh = new THREE.Mesh(trimGeo, brassMat);
     trimMesh.position.z = -0.09;
     strokeGroup.add(trimMesh);
 
     // ══════════════════════════════════════════════════════════════════════════
-    // SCENE 2: TACTILE 3D DOUBLE-SIDED LINEN & SUMI FLASHCARDS (180° FLIP)
+    // SCENE 2: FRAMELESS 3D DOUBLE-SIDED FLASHCARDS (CLICK DIRECTLY TO FLIP)
     // ══════════════════════════════════════════════════════════════════════════
     const cardsGroup = new THREE.Group();
     rootRig.add(cardsGroup);
 
-    const cardGeo = new THREE.BoxGeometry(1.75, 2.38, 0.07);
+    const cardGeo = new THREE.BoxGeometry(1.96, 2.66, 0.08);
     const cardEntries = CARD_SPECS.map((spec, idx) => {
       const frontTex = createCardFrontTexture(spec);
       const backTex = createCardBackTexture(spec);
       const frontMat = new THREE.MeshStandardMaterial({
         map: frontTex,
-        roughness: 0.42,
+        roughness: 0.38,
         metalness: 0.04,
       });
       const backMat = new THREE.MeshStandardMaterial({
         map: backTex,
-        roughness: 0.36,
+        roughness: 0.34,
         metalness: 0.08,
       });
       const mesh = new THREE.Mesh(cardGeo, [
@@ -550,11 +635,13 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
         frontMat,
         backMat,
       ]);
-      const baseX = (idx - 1) * 1.98;
-      mesh.position.set(baseX, 0, idx === 1 ? 0.35 : -0.2);
+      mesh.userData = { kind: 'card', cardId: spec.id, cardIdx: idx };
+      const baseX = (idx - 1) * 2.28;
+      mesh.position.set(baseX, 0, idx === 0 ? 0.35 : -0.15);
       cardsGroup.add(mesh);
       return {
         id: spec.id,
+        idx,
         mesh,
         frontMat,
         backMat,
@@ -564,70 +651,88 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
     });
 
     // ══════════════════════════════════════════════════════════════════════════
-    // SCENE 3: ARCHITECTURAL HSK 1 → 6 GRADUATED CERAMIC STEPS (ZERO RPG RUBY!)
+    // SCENE 3: 6 REAL 3D HSK 1 → 6 TEXTBOOKS (REAL .WEBP COVERS + SPINE + PAGES)
     // ══════════════════════════════════════════════════════════════════════════
     const hskGroup = new THREE.Group();
     rootRig.add(hskGroup);
 
-    const hskSpecs = [
-      { level: 1, words: '150 từ', accent: '#157A57', hex: 0xe7efe9 },
-      { level: 2, words: '300 từ', accent: '#157A57', hex: 0xd4e5db },
-      { level: 3, words: '600 từ', accent: '#B8860B', hex: 0xf1e6cf },
-      { level: 4, words: '1.200 từ', accent: '#B8860B', hex: 0xe6d3ae },
-      { level: 5, words: '2.500 từ', accent: '#C41E3A', hex: 0xdfb8be },
-      { level: 6, words: '5.000+ từ', accent: '#C41E3A', hex: 0xc41e3a },
-    ];
-
-    const hskBlocks: Array<{
-      group: THREE.Group;
-      topMat: THREE.MeshStandardMaterial;
-      sideMat: THREE.MeshStandardMaterial;
-      basePos: THREE.Vector3;
-    }> = [];
-
-    hskSpecs.forEach((spec, i) => {
-      const g = new THREE.Group();
-      const colH = 0.62 + i * 0.4;
-      const boxGeo = new THREE.BoxGeometry(0.84, colH, 0.84);
-      const labelTex = createHskLabelTexture(spec.level, spec.words, spec.accent);
-      const topMat = new THREE.MeshStandardMaterial({
-        map: labelTex,
-        roughness: 0.38,
-        metalness: 0.05,
-      });
-      const sideMat = new THREE.MeshStandardMaterial({
-        color: spec.hex,
-        metalness: 0.08,
-        roughness: 0.38,
-      });
-      const mesh = new THREE.Mesh(boxGeo, [
-        sideMat,
-        sideMat,
-        topMat,
-        walnutMat,
-        sideMat,
-        sideMat,
-      ]);
-      mesh.position.y = colH / 2 - 1.55;
-      g.add(mesh);
-
-      const x = (i - 2.5) * 0.96;
-      const z = Math.sin((i / 5) * Math.PI) * 0.55 - 0.15;
-      g.position.set(x, 0, z);
-      hskGroup.add(g);
-      hskBlocks.push({
-        group: g,
-        topMat,
-        sideMat,
-        basePos: new THREE.Vector3(x, colH - 1.55, z),
-      });
+    const textureLoader = new THREE.TextureLoader();
+    const pageEdgeTex = createBookPageEdgeTexture();
+    const pageEdgeMat = new THREE.MeshStandardMaterial({
+      map: pageEdgeTex,
+      roughness: 0.65,
+      metalness: 0.02,
     });
 
-    // Clean brushed-brass horizontal pointer ring highlighting the active HSK step
-    const markerRingGeo = new THREE.TorusGeometry(0.56, 0.02, 16, 64);
-    const markerRing = new THREE.Mesh(markerRingGeo, crimsonMat);
-    markerRing.rotation.x = Math.PI / 2;
-    hskGroup.add(markerRing);
+    const bookGeo = new THREE.BoxGeometry(1.22, 1.72, 0.24);
+    const hskBookEntries: Array<{
+      level: number;
+      mesh: THREE.Mesh;
+      frontMat: THREE.MeshStandardMaterial;
+      spineMat: THREE.MeshStandardMaterial;
+      backMat: THREE.MeshStandardMaterial;
+      baseX: number;
+      baseZ: number;
+      baseRotY: number;
+    }> = [];
+
+    HSK_BOOK_SPECS.forEach((spec, i) => {
+      const spineTex = createBookSpineTexture(spec.level, spec.spineHex);
+      const spineMat = new THREE.MeshStandardMaterial({
+        map: spineTex,
+        roughness: 0.38,
+        metalness: 0.06,
+      });
+
+      const frontMat = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        roughness: 0.32,
+        metalness: 0.05,
+      });
+
+      textureLoader.load(spec.coverUrl, (tex) => {
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.anisotropy = 4;
+        frontMat.map = tex;
+        frontMat.needsUpdate = true;
+      });
+
+      const backMat = new THREE.MeshStandardMaterial({
+        color: spec.jacketColor,
+        roughness: 0.42,
+        metalness: 0.05,
+      });
+
+      // BoxGeometry faces: 0=+X(pages), 1=-X(spine), 2=+Y(top pages), 3=-Y(bottom pages), 4=+Z(front cover), 5=-Z(back cover)
+      const mesh = new THREE.Mesh(bookGeo, [
+        pageEdgeMat,
+        spineMat,
+        pageEdgeMat,
+        pageEdgeMat,
+        frontMat,
+        backMat,
+      ]);
+      mesh.userData = { kind: 'book', level: spec.level, bookIdx: i };
+
+      const baseX = (i - 2.5) * 1.18;
+      const baseZ = -Math.abs(i - 2.5) * 0.16;
+      const baseRotY = -0.22 + (i - 2.5) * 0.03;
+
+      mesh.position.set(baseX, 0, baseZ);
+      mesh.rotation.y = baseRotY;
+      hskGroup.add(mesh);
+
+      hskBookEntries.push({
+        level: spec.level,
+        mesh,
+        frontMat,
+        spineMat,
+        backMat,
+        baseX,
+        baseZ,
+        baseRotY,
+      });
+    });
 
     const sceneGroups = [tonesGroup, strokeGroup, cardsGroup, hskGroup];
     const sceneScales = [0, 1, 2, 3].map((idx) => (idx === stateRef.current.activeScene ? 1 : 0));
@@ -636,39 +741,132 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
       grp.scale.setScalar(Math.max(0.001, sceneScales[idx]));
     });
 
-    let dragRotX = 0.06;
-    let dragRotY = -0.16;
+    // ══════════════════════════════════════════════════════════════════════════
+    // RAYCASTER FOR DIRECT 3D CARD FLIP & 3D HSK BOOK SELECTION
+    // ══════════════════════════════════════════════════════════════════════════
+    const raycaster = new THREE.Raycaster();
+    const pointerNdc = new THREE.Vector2();
+    let hoveredCardIdx: number | null = null;
+    let hoveredBookIdx: number | null = null;
+
+    let dragRotX = 0.05;
+    let dragRotY = -0.1;
     let isDragging = false;
+    let downX = 0;
+    let downY = 0;
     let prevX = 0;
     let prevY = 0;
+    let pointerTravel = 0;
     let isVisible = true;
     let rafId = 0;
     const clock = new THREE.Clock();
 
+    const updateRaycasterFromEvent = (e: PointerEvent) => {
+      const rect = container.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0) return false;
+      pointerNdc.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      pointerNdc.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera(pointerNdc, camera);
+      return true;
+    };
+
+    const getInteractiveTargets = (): THREE.Object3D[] => {
+      const sc = stateRef.current.activeScene;
+      if (sc === 2) return cardEntries.map((c) => c.mesh);
+      if (sc === 3) return hskBookEntries.map((b) => b.mesh);
+      return [];
+    };
+
     const onDown = (e: PointerEvent) => {
       isDragging = true;
+      downX = e.clientX;
+      downY = e.clientY;
       prevX = e.clientX;
       prevY = e.clientY;
-      container.style.cursor = 'grabbing';
+      pointerTravel = 0;
     };
+
     const onMove = (e: PointerEvent) => {
-      if (!isDragging) return;
-      dragRotY += (e.clientX - prevX) * 0.008;
-      dragRotX = THREE.MathUtils.clamp(dragRotX + (e.clientY - prevY) * 0.006, -0.65, 0.65);
-      prevX = e.clientX;
-      prevY = e.clientY;
-    };
-    const onUp = () => {
       if (isDragging) {
-        isDragging = false;
+        const dx = e.clientX - prevX;
+        const dy = e.clientY - prevY;
+        pointerTravel = Math.hypot(e.clientX - downX, e.clientY - downY);
+        if (pointerTravel > 5) {
+          container.style.cursor = 'grabbing';
+          dragRotY += dx * 0.008;
+          dragRotX = THREE.MathUtils.clamp(dragRotX + dy * 0.006, -0.62, 0.62);
+        }
+        prevX = e.clientX;
+        prevY = e.clientY;
+        return;
+      }
+
+      // Hover raycasting on active 3D cards or 3D HSK books
+      const targets = getInteractiveTargets();
+      if (targets.length === 0) {
+        hoveredCardIdx = null;
+        hoveredBookIdx = null;
+        container.style.cursor = 'grab';
+        return;
+      }
+
+      if (!updateRaycasterFromEvent(e)) return;
+      const hits = raycaster.intersectObjects(targets, false);
+      if (hits.length > 0) {
+        const ud = hits[0].object.userData;
+        if (ud.kind === 'card') {
+          hoveredCardIdx = ud.cardIdx;
+          hoveredBookIdx = null;
+        } else if (ud.kind === 'book') {
+          hoveredBookIdx = ud.bookIdx;
+          hoveredCardIdx = null;
+        }
+        container.style.cursor = 'pointer';
+      } else {
+        hoveredCardIdx = null;
+        hoveredBookIdx = null;
         container.style.cursor = 'grab';
       }
     };
 
+    const onUp = (e: PointerEvent) => {
+      if (!isDragging) return;
+      isDragging = false;
+
+      // If pointer movement was small (< 8px), treat as direct 3D object click!
+      if (pointerTravel < 8) {
+        const targets = getInteractiveTargets();
+        if (targets.length > 0 && updateRaycasterFromEvent(e)) {
+          const hits = raycaster.intersectObjects(targets, false);
+          if (hits.length > 0) {
+            const ud = hits[0].object.userData;
+            if (ud.kind === 'card' && callbacksRef.current.onCardClick) {
+              callbacksRef.current.onCardClick(ud.cardId, ud.cardIdx);
+              container.style.cursor = 'pointer';
+              return;
+            }
+            if (ud.kind === 'book' && callbacksRef.current.onBookClick) {
+              callbacksRef.current.onBookClick(ud.level);
+              container.style.cursor = 'pointer';
+              return;
+            }
+          }
+        }
+      }
+
+      container.style.cursor = hoveredCardIdx !== null || hoveredBookIdx !== null ? 'pointer' : 'grab';
+    };
+
+    const onLeave = () => {
+      hoveredCardIdx = null;
+      hoveredBookIdx = null;
+    };
+
     container.style.cursor = 'grab';
     container.addEventListener('pointerdown', onDown);
-    window.addEventListener('pointermove', onMove, { passive: true });
+    container.addEventListener('pointermove', onMove, { passive: true });
     window.addEventListener('pointerup', onUp);
+    container.addEventListener('pointerleave', onLeave);
 
     const ro = new ResizeObserver(() => {
       const nw = container.clientWidth || 640;
@@ -692,13 +890,16 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
     const sceneCameraTargets: Array<{ y: number; z: number; rotX: number; rotY: number }> = [
       { y: 0.2, z: 7.4, rotX: 0.12, rotY: -0.2 },
       { y: 0.08, z: 6.7, rotX: -0.08, rotY: 0.2 },
-      { y: 0.1, z: 7.8, rotX: 0.05, rotY: 0.0 },
-      { y: 0.9, z: 8.2, rotX: 0.28, rotY: -0.3 },
+      { y: 0.06, z: 7.45, rotX: 0.03, rotY: 0.0 },
+      { y: 0.14, z: 7.85, rotX: 0.07, rotY: 0.04 },
     ];
 
     const animate = () => {
       rafId = requestAnimationFrame(animate);
-      if (!isVisible || document.hidden) return;
+      if (!isActiveRef.current || !isVisible || document.hidden) {
+        clock.getDelta();
+        return;
+      }
 
       const dt = Math.min(clock.getDelta(), 0.05);
       const t = clock.elapsedTime;
@@ -724,8 +925,8 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
       camera.lookAt(0, 0, 0);
 
       if (!isDragging) {
-        const breatheY = camTarget.rotY + Math.sin(t * 0.45) * 0.1 * m;
-        const breatheX = camTarget.rotX + Math.cos(t * 0.35) * 0.03 * m;
+        const breatheY = camTarget.rotY + Math.sin(t * 0.45) * 0.07 * m;
+        const breatheX = camTarget.rotX + Math.cos(t * 0.35) * 0.025 * m;
         dragRotY += (breatheY - dragRotY) * Math.min(1, dt * 2.2);
         dragRotX += (breatheX - dragRotX) * Math.min(1, dt * 2.2);
       }
@@ -762,32 +963,48 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
         cardEntries.forEach((entry, idx) => {
           const flipped = !!st.flippedCards[entry.id];
           const isFocus = idx === st.activeCardIdx;
-          const targetRotY = (flipped ? Math.PI : 0) + (idx - 1) * -0.14;
+          const isHovered = idx === hoveredCardIdx;
+          const targetRotY = (flipped ? Math.PI : 0) + (idx - 1) * -0.12;
           entry.currentFlipY += (targetRotY - entry.currentFlipY) * Math.min(1, dt * 13);
           entry.mesh.rotation.y = entry.currentFlipY;
 
-          const targetZ = isFocus ? 0.72 : -0.22;
-          const targetScale = isFocus ? 1.08 : 0.93;
-          entry.mesh.position.z += (targetZ - entry.mesh.position.z) * Math.min(1, dt * 10);
-          entry.mesh.position.y = Math.sin(t * 1.2 * m + idx * 1.2) * 0.06;
+          const targetZ = (isFocus ? 0.55 : -0.1) + (isHovered ? 0.24 : 0);
+          const targetY =
+            Math.sin(t * 1.15 * m + idx * 1.2) * 0.055 + (isHovered ? 0.14 : 0);
+          const targetScale = (isFocus ? 1.07 : 0.96) + (isHovered ? 0.04 : 0);
+
+          entry.mesh.position.z += (targetZ - entry.mesh.position.z) * Math.min(1, dt * 11);
+          entry.mesh.position.y += (targetY - entry.mesh.position.y) * Math.min(1, dt * 11);
           entry.mesh.scale.setScalar(
-            entry.mesh.scale.x + (targetScale - entry.mesh.scale.x) * Math.min(1, dt * 10)
+            entry.mesh.scale.x + (targetScale - entry.mesh.scale.x) * Math.min(1, dt * 11)
           );
         });
       }
 
       if (hskGroup.visible) {
         const activeIdx = Math.min(5, Math.max(0, st.activeHskLevel - 1));
-        hskBlocks.forEach((blk, idx) => {
+        hskBookEntries.forEach((book, idx) => {
           const selected = idx === activeIdx;
-          const targetY = selected ? 0.2 : 0;
-          blk.group.position.y += (targetY - blk.group.position.y) * Math.min(1, dt * 7);
+          const hovered = idx === hoveredBookIdx;
+
+          const targetZ =
+            book.baseZ + (selected ? 0.85 : 0) + (hovered && !selected ? 0.26 : 0);
+          const targetY =
+            (selected ? 0.18 : 0) +
+            (hovered ? 0.11 : 0) +
+            Math.sin(t * 1.05 * m + idx * 0.9) * 0.035;
+          const targetRotY = selected ? 0.08 : hovered ? book.baseRotY * 0.5 : book.baseRotY;
+          const targetRotX = selected ? -0.05 : 0;
+          const targetScale = selected ? 1.15 : hovered ? 1.05 : 0.96;
+
+          book.mesh.position.z += (targetZ - book.mesh.position.z) * Math.min(1, dt * 9);
+          book.mesh.position.y += (targetY - book.mesh.position.y) * Math.min(1, dt * 9);
+          book.mesh.rotation.y += (targetRotY - book.mesh.rotation.y) * Math.min(1, dt * 9);
+          book.mesh.rotation.x += (targetRotX - book.mesh.rotation.x) * Math.min(1, dt * 9);
+          book.mesh.scale.setScalar(
+            book.mesh.scale.x + (targetScale - book.mesh.scale.x) * Math.min(1, dt * 9)
+          );
         });
-        const targetBlock = hskBlocks[activeIdx];
-        markerRing.position.x += (targetBlock.basePos.x - markerRing.position.x) * Math.min(1, dt * 8);
-        markerRing.position.y +=
-          (targetBlock.basePos.y + 0.34 - markerRing.position.y) * Math.min(1, dt * 8);
-        markerRing.position.z += (targetBlock.basePos.z - markerRing.position.z) * Math.min(1, dt * 8);
       }
 
       renderer.render(scene, camera);
@@ -798,8 +1015,9 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
     return () => {
       cancelAnimationFrame(rafId);
       container.removeEventListener('pointerdown', onDown);
-      window.removeEventListener('pointermove', onMove);
+      container.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
+      container.removeEventListener('pointerleave', onLeave);
       ro.disconnect();
       io.disconnect();
       tabletMatRef.current = null;
@@ -826,15 +1044,18 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
         c.backMat.map?.dispose();
         c.backMat.dispose();
       });
-      hskBlocks.forEach((b) => {
-        b.topMat.map?.dispose();
-        b.topMat.dispose();
-        b.sideMat.dispose();
+      bookGeo.dispose();
+      pageEdgeTex.dispose();
+      pageEdgeMat.dispose();
+      hskBookEntries.forEach((b) => {
+        b.frontMat.map?.dispose();
+        b.frontMat.dispose();
+        b.spineMat.map?.dispose();
+        b.spineMat.dispose();
+        b.backMat.dispose();
       });
-      markerRingGeo.dispose();
       walnutMat.dispose();
       brassMat.dispose();
-      crimsonMat.dispose();
       porcelainEdgeMat.dispose();
       envTex.dispose();
       renderer.dispose();

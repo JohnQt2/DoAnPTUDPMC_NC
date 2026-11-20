@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GlassCard, BorderBeam, ShimmerButton, NumberTicker } from '../../components/ui';
+import { PathMap, PathNode } from '../../components/PathMap';
 import { celebrateSuccess } from '../../lib/celebration';
 import {
   Volume2,
@@ -13,6 +14,7 @@ import {
   MessagesSquare,
   Flame,
   Gauge,
+  ArrowLeft,
 } from 'lucide-react';
 
 interface SpeakingSentence {
@@ -47,7 +49,7 @@ const HANPEAK_SPEAKING_BANK: SpeakingSentence[] = [
 ];
 
 export const SpeakingPracticePage: React.FC = () => {
-  const [mode, setMode] = useState<'shadowing' | 'roleplay'>('shadowing');
+  const [mode, setMode] = useState<'path' | 'shadowing' | 'roleplay'>('path');
   const [levelFilter, setLevelFilter] = useState<string>('ALL');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [speechRate, setSpeechRate] = useState<number>(0.85);
@@ -55,7 +57,14 @@ export const SpeakingPracticePage: React.FC = () => {
   const [spokenText, setSpokenText] = useState<string | null>(null);
   const [scorePercent, setScorePercent] = useState<number | null>(null);
   const [feedback, setFeedback] = useState<'idle' | 'good' | 'try_again' | 'unsupported'>('idle');
-  const [completedIds, setCompletedIds] = useState<number[]>([]);
+  const [completedIds, setCompletedIds] = useState<number[]>(() => {
+    try {
+      const saved = localStorage.getItem('hanzi4u_speaking_done_ids');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
 
   const filteredList =
     levelFilter === 'ALL'
@@ -141,6 +150,54 @@ export const SpeakingPracticePage: React.FC = () => {
     setFeedback('idle');
   };
 
+  const openSentenceOnStudio = (sentenceId: number) => {
+    setLevelFilter('ALL');
+    const idx = HANPEAK_SPEAKING_BANK.findIndex((s) => s.id === sentenceId);
+    setCurrentIndex(idx >= 0 ? idx : 0);
+    setSpokenText(null);
+    setScorePercent(null);
+    setFeedback('idle');
+    setMode('shadowing');
+  };
+
+  const speakingPath = useMemo(() => {
+    const groups = [
+      { title: 'Nền tảng 1/3 • Giao tiếp HSK 1', items: HANPEAK_SPEAKING_BANK.filter((s) => s.level === 'HSK1') },
+      { title: 'Nền tảng 2/3 • Giao tiếp HSK 2', items: HANPEAK_SPEAKING_BANK.filter((s) => s.level === 'HSK2') },
+      {
+        title: 'Nền tảng 3/3 • Giao tiếp HSK 3–4',
+        items: HANPEAK_SPEAKING_BANK.filter((s) => s.level === 'HSK3' || s.level === 'HSK4'),
+      },
+    ];
+
+    let foundCurrent = false;
+    let firstCurrentId = HANPEAK_SPEAKING_BANK[0]?.id ?? 1;
+
+    const sections = groups.map((g) => {
+      const nodes: PathNode[] = g.items.map((s) => {
+        const isDone = completedIds.includes(s.id);
+        let status: PathNode['status'] = 'locked';
+        if (isDone) {
+          status = 'done';
+        } else if (!foundCurrent) {
+          status = 'current';
+          foundCurrent = true;
+          firstCurrentId = s.id;
+        }
+        return {
+          id: s.id,
+          label: `${s.topic}: ${s.hanzi}`,
+          glyph: s.hanzi.charAt(0) || '说',
+          status,
+          onClick: () => openSentenceOnStudio(s.id),
+        };
+      });
+      return { title: g.title, nodes };
+    });
+
+    return { sections, todaySentenceId: firstCurrentId };
+  }, [completedIds]);
+
   const cleanSpokenForHighlight = (spokenText || '').replace(/[，。？！?.,\s]/g, '');
 
   return (
@@ -162,8 +219,9 @@ export const SpeakingPracticePage: React.FC = () => {
         <div className="flex items-center gap-3">
           <div className="inline-flex p-1 rounded-2xl glass-light">
             {[
+              { id: 'path' as const, label: 'Lộ trình nói' },
               { id: 'shadowing' as const, label: 'Đọc theo mẫu' },
-              { id: 'roleplay' as const, label: 'Hội thoại tình huống' },
+              { id: 'roleplay' as const, label: 'Hội thoại' },
             ].map((m) => {
               const active = mode === m.id;
               return (
@@ -189,7 +247,31 @@ export const SpeakingPracticePage: React.FC = () => {
         </div>
       </div>
 
-      {/* Level Filter + Progress */}
+      {mode === 'path' ? (
+        <div className="max-w-2xl mx-auto space-y-12 pb-20">
+          {speakingPath.sections.map((sec) => (
+            <PathMap
+              key={sec.title}
+              title={sec.title}
+              nodes={sec.nodes}
+              onHeaderAction={() => setMode('shadowing')}
+            />
+          ))}
+        </div>
+      ) : (
+        <>
+          <div className="flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => setMode('path')}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl glass-light text-xs font-bold text-slate-700 hover:text-rose-600 cursor-pointer"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Về lộ trình luyện nói</span>
+            </button>
+          </div>
+
+          {/* Level Filter + Progress */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-1.5">
           {(['ALL', 'HSK1', 'HSK2', 'HSK3', 'HSK4'] as const).map((lvl) => (
@@ -442,6 +524,8 @@ export const SpeakingPracticePage: React.FC = () => {
           );
         })}
       </div>
+        </>
+      )}
     </div>
   );
 };

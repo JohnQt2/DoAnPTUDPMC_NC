@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
+import { saveInProgressLessonId } from './lib/resumeLesson';
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
 import {
@@ -35,10 +37,43 @@ import { Lock, ShieldAlert, ArrowRight, Home } from 'lucide-react';
 const AppContent: React.FC = () => {
   const { user, isLoading, hasCompletedOnboarding } = useAuth();
   const [currentHash, setCurrentHash] = useState(window.location.hash || '#/');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('hanzi4u_sidebar_collapsed') === '1';
+    } catch {
+      return false;
+    }
+  });
+
+  const toggleSidebarCollapsed = () => {
+    setSidebarCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('hanzi4u_sidebar_collapsed', next ? '1' : '0');
+      } catch {
+        // ignore storage errors
+      }
+      return next;
+    });
+  };
 
   useEffect(() => {
+    const syncHash = (hash: string) => {
+      const clean = hash.split('?')[0] || '#/';
+      if (clean.startsWith('#/lessons/')) {
+        const lid = parseInt(clean.replace('#/lessons/', ''), 10);
+        if (Number.isFinite(lid) && lid > 0) {
+          saveInProgressLessonId(lid);
+        }
+      }
+    };
+
+    syncHash(window.location.hash || '#/');
+
     const handleHashChange = () => {
-      setCurrentHash(window.location.hash || '#/');
+      const next = window.location.hash || '#/';
+      setCurrentHash(next);
+      syncHash(next);
       window.scrollTo(0, 0);
     };
 
@@ -143,8 +178,17 @@ const AppContent: React.FC = () => {
 
     return (
       <MeshBackground variant="light" showHanzi={false} className="text-gray-900 font-sans">
-        <Sidebar currentPath={currentHash} />
-        <div className="lg:pl-[17.25rem] min-h-screen flex flex-col">
+        <Sidebar
+          currentPath={currentHash}
+          collapsed={sidebarCollapsed}
+          onToggleCollapse={toggleSidebarCollapsed}
+        />
+        <div
+          style={{ ['--sidebar-offset' as any]: sidebarCollapsed ? '6.25rem' : '17.25rem' }}
+          className={`${
+            sidebarCollapsed ? 'lg:pl-[6.25rem]' : 'lg:pl-[17.25rem]'
+          } min-h-screen flex flex-col transition-[padding] duration-300 ease-out`}
+        >
           <main className="flex-1 pb-16">
             <PageTransition
               routeKey={isAdminProfile ? 'admin-profile' : isAdminLessonPreview ? basePath : adminTab}
@@ -289,8 +333,17 @@ const AppContent: React.FC = () => {
 
   return (
     <MeshBackground variant="light" showHanzi={false} className="text-gray-900 font-sans">
-      <Sidebar currentPath={currentHash} />
-      <div className="lg:pl-[17.25rem] min-h-screen flex flex-col">
+      <Sidebar
+        currentPath={currentHash}
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={toggleSidebarCollapsed}
+      />
+      <div
+        style={{ ['--sidebar-offset' as any]: sidebarCollapsed ? '6.25rem' : '17.25rem' }}
+        className={`${
+          sidebarCollapsed ? 'lg:pl-[6.25rem]' : 'lg:pl-[17.25rem]'
+        } min-h-screen flex flex-col transition-[padding] duration-300 ease-out`}
+      >
         <main className="flex-1 pb-16">
           <PageTransition routeKey={basePath}>{renderCurrentPage()}</PageTransition>
         </main>
@@ -301,12 +354,14 @@ const AppContent: React.FC = () => {
 
 export const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <CustomCursor />
-      <CelebrationOverlay />
-      <DialogOverlay />
-      <AppContent />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <CustomCursor />
+        <CelebrationOverlay />
+        <DialogOverlay />
+        <AppContent />
+      </AuthProvider>
+    </ThemeProvider>
   );
 };
 

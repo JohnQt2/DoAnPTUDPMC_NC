@@ -228,6 +228,20 @@ input[type='submit'],
   background-position: center;
 }
 
+/* Smooth brush-flow animation for Hanzi calligraphic stroke order */
+@keyframes hanzi-stroke-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-hanzi-stroke {
+  animation: hanzi-stroke-draw 0.62s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
 /* ── Hardware-Accelerated 3D Flashcard Flip ── */
 .perspective-1000 {
   perspective: 1100px;

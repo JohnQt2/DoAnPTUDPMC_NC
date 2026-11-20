@@ -501,11 +501,16 @@ export const ProfilePage: React.FC = () => {
           <div className="flex items-center gap-3">
             <Monitor className="w-5 h-5 text-gray-700" />
             <div>
-              <h2 className="text-lg font-display font-bold text-gray-900">
-                Thiết bị đang đăng nhập
-              </h2>
-              <p className="text-xs text-gray-500">
-                Kiểm tra và đăng xuất tài khoản khỏi các thiết bị khác
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-lg font-display font-bold text-gray-900">
+                  Thiết bị đang đăng nhập
+                </h2>
+                <span className="px-2.5 py-0.5 rounded-full bg-white/75 border border-white text-[11px] font-bold text-slate-600">
+                  {sessions.length}/3 thiết bị
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Phiên tự động gia hạn 30 ngày khi học lại. Tối đa 3 thiết bị cùng lúc — thiết bị cũ nhất sẽ tự đăng xuất khi vượt quá.
               </p>
             </div>
           </div>

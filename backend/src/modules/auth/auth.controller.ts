@@ -1,7 +1,17 @@
 import { Request, Response, NextFunction } from 'express';
 import { authService } from './auth.service';
-import { RegisterDto, SendOtpDto, VerifyOtpDto, LoginPasswordDto, GoogleAuthDto, RefreshTokenDto } from './auth.dto';
+import {
+  RegisterDto,
+  SendOtpDto,
+  VerifyOtpDto,
+  LoginPasswordDto,
+  GoogleAuthDto,
+  RefreshTokenDto,
+  ForgotPasswordSendOtpDto,
+  ResetPasswordWithOtpDto,
+} from './auth.dto';
 import { env } from '../../config/env';
+import { getAccessTokenTtlSeconds, getRefreshTokenTtlMs } from '../../shared/utils/crypto';
 
 export class AuthController {
   private getClientInfo(req: Request) {
@@ -16,7 +26,7 @@ export class AuthController {
       httpOnly: true,
       secure: env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      maxAge: getRefreshTokenTtlMs(), // 30 days Sliding Expiration
       path: '/',
     });
   }
@@ -28,6 +38,14 @@ export class AuthController {
       sameSite: 'lax',
       path: '/',
     });
+  }
+
+  /**
+   * In production, refresh token is delivered strictly via HttpOnly Cookie (never exposed to JS / XSS).
+   * In dev/test, keep refreshToken field for automated integration tests.
+   */
+  private buildRefreshTokenBodyField(refreshToken: string) {
+    return env.NODE_ENV === 'production' ? {} : { refreshToken };
   }
 
   register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -43,9 +61,9 @@ export class AuthController {
         data: {
           user: result.user,
           accessToken: result.accessToken,
-          refreshToken: result.refreshToken,
+          ...this.buildRefreshTokenBodyField(result.refreshToken),
           isNewUser: true,
-          expiresIn: 900,
+          expiresIn: getAccessTokenTtlSeconds(),
         },
       });
     } catch (err) {
@@ -72,11 +90,49 @@ export class AuthController {
 
   getMailbox = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      if (env.NODE_ENV === 'production') {
+        res.status(404).json({ success: false, error: { message: 'Endpoint không khả dụng.' } });
+        return;
+      }
       const email = req.query.email as string;
       const mail = await authService.getMailboxMessage(email);
       res.status(200).json({
         success: true,
         data: mail,
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  forgotPasswordSendOtp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { email } = ForgotPasswordSendOtpDto.parse(req.body);
+      const result = await authService.sendPasswordResetOtp(email);
+      res.status(200).json({
+        success: true,
+        data: {
+          message: result.message,
+          expiresIn: result.expiresIn,
+          senderEmail: result.senderEmail,
+        },
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  resetPasswordWithOtp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { email, otp, newPassword } = ResetPasswordWithOtpDto.parse(req.body);
+      const clientInfo = this.getClientInfo(req);
+      const result = await authService.resetPasswordWithOtp(email, otp, newPassword, clientInfo);
+      this.clearRefreshTokenCookie(res);
+      res.status(200).json({
+        success: true,
+        data: {
+          message: result.message,
+        },
       });
     } catch (err) {
       next(err);
@@ -96,9 +152,9 @@ export class AuthController {
         data: {
           user: result.user,
           accessToken: result.accessToken,
-          refreshToken: result.refreshToken,
+          ...this.buildRefreshTokenBodyField(result.refreshToken),
           isNewUser: result.isNewUser,
-          expiresIn: 900,
+          expiresIn: getAccessTokenTtlSeconds(),
         },
       });
     } catch (err) {
@@ -120,7 +176,7 @@ export class AuthController {
           user: result.user,
           accessToken: result.accessToken,
           isNewUser: result.isNewUser,
-          expiresIn: 900, // 15 mins in seconds
+          expiresIn: getAccessTokenTtlSeconds(), // 1 hour (3600s)
         },
       });
     } catch (err) {
@@ -154,9 +210,9 @@ export class AuthController {
         data: {
           user: result.user,
           accessToken: result.accessToken,
-          refreshToken: result.refreshToken,
+          ...this.buildRefreshTokenBodyField(result.refreshToken),
           isNewUser: result.isNewUser,
-          expiresIn: 900,
+          expiresIn: getAccessTokenTtlSeconds(),
         },
       });
     } catch (err) {
@@ -225,11 +281,19 @@ export class AuthController {
         success: true,
         data: {
           accessToken: result.accessToken,
-          refreshToken: result.refreshToken,
-          expiresIn: 900,
+          ...this.buildRefreshTokenBodyField(result.refreshToken),
+          expiresIn: getAccessTokenTtlSeconds(),
         },
       });
-    } catch (err) {
+    } catch (err: any) {
+      if (
+        err?.code === 'TOKEN_FAMILY_REVOKED' ||
+        err?.code === 'SESSION_EXPIRED' ||
+        err?.code === 'INVALID_REFRESH_TOKEN' ||
+        err?.code === 'SESSION_NOT_FOUND'
+      ) {
+        this.clearRefreshTokenCookie(res);
+      }
       next(err);
     }
   };
@@ -262,7 +326,11 @@ export class AuthController {
       const currentSessionId = req.user!.sessionId;
 
       const sessions = await authService.listUserSessions(userId, currentSessionId);
-      res.status(200).json({ success: true, data: sessions });
+      res.status(200).json({
+        success: true,
+        data: sessions,
+        meta: { maxConcurrentSessions: env.MAX_CONCURRENT_SESSIONS },
+      });
     } catch (err) {
       next(err);
     }

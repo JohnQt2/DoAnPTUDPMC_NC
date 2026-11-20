@@ -263,15 +263,34 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
 
   return (
     <div className="max-w-5xl mx-auto py-6 sm:py-8 px-4 sm:px-6 lg:px-8 space-y-6">
-      {/* Top Breadcrumb & Status Navigation */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-200 pb-4">
-        <a
-          href={`#/courses/${lesson.chapter.course?.course_id || 1}`}
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-primary-600 transition-colors"
+      {/* Top Clickable Multi-Level Breadcrumb & Status Navigation */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2">
+        <nav
+          aria-label="Điều hướng bài học"
+          className="inline-flex flex-wrap items-center gap-1.5 px-3.5 py-2 rounded-full glass-light text-xs font-semibold text-gray-600 self-start"
         >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Quay lại {lesson.chapter.title}</span>
-        </a>
+          <a
+            href="#/courses"
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full hover:bg-white/80 hover:text-primary-600 transition-colors cursor-pointer"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Lộ trình</span>
+          </a>
+          <span className="text-gray-400">/</span>
+          <a
+            href={`#/courses?level=${(lesson.chapter.course?.code || 'HSK1').toUpperCase()}`}
+            className="px-2 py-0.5 rounded-full hover:bg-white/80 hover:text-primary-600 text-gray-800 font-bold transition-colors cursor-pointer"
+          >
+            {(lesson.chapter.course?.code || 'HSK1').replace('HSK', 'HSK ')}
+          </a>
+          <span className="text-gray-400">/</span>
+          <a
+            href={`#/courses/${lesson.chapter.course?.course_id || 1}`}
+            className="px-2 py-0.5 rounded-full hover:bg-white/80 hover:text-primary-600 transition-colors truncate max-w-[200px] cursor-pointer"
+          >
+            {lesson.chapter.title}
+          </a>
+        </nav>
 
         {/* Status Indicators */}
         <div className="flex items-center gap-3">
@@ -304,35 +323,35 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
       </div>
 
       {/* Lesson Header Banner */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-sm space-y-4">
+      <div className="glass-light rounded-[28px] p-6 sm:p-8 space-y-4">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-extrabold uppercase tracking-wider text-primary-600 bg-primary-50 px-2.5 py-0.5 rounded-md border border-primary-100">
+          <span className="text-xs font-extrabold uppercase tracking-wider text-primary-700 bg-primary-50/90 px-2.5 py-0.5 rounded-md border border-primary-100">
             {lesson.chapter.title}
           </span>
           <span className="text-xs text-gray-400 font-semibold">•</span>
-          <span className="text-xs text-gray-500 font-semibold flex items-center gap-1">
+          <span className="text-xs text-gray-600 font-semibold flex items-center gap-1">
             <Clock className="w-3.5 h-3.5" />
             {lesson.estimatedDurationMins} phút
           </span>
         </div>
 
-        <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
+        <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-gray-900 tracking-tight">
           {lesson.title}
         </h1>
 
-        <p className="text-xs sm:text-sm text-gray-500 leading-relaxed">
-          Không gian học tập tích hợp đa phương tiện theo Unit: Nắm vững từ vựng qua thẻ Flashcard, làm chủ cấu trúc ngữ pháp trọng tâm, luyện nghe phản xạ hội thoại Audio và luyện viết nét chữ Hán SVG tương tác.
+        <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+          Học đầy đủ từ vựng, ngữ pháp, hội thoại nghe nói và luyện viết chữ Hán của bài học.
         </p>
 
-        {/* Tab Switcher */}
-        <div className="pt-4 border-t border-gray-100 flex items-center gap-2 overflow-x-auto scrollbar-none">
+        {/* Tab Switcher — Clean wrap, ZERO horizontal scrollbar */}
+        <div className="pt-4 border-t border-white/75 flex flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={() => setActiveTab('content')}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 border ${
+            className={`px-4 py-2 rounded-full text-xs sm:text-sm font-bold transition-colors shrink-0 cursor-pointer flex items-center gap-1.5 border ${
               activeTab === 'content'
-                ? 'bg-primary-600 text-white border-primary-600 shadow-sm'
-                : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                ? 'bg-gradient-to-r from-primary-600 via-rose-500 to-amber-500 text-white border-transparent shadow-md'
+                : 'bg-white/60 border-white/85 text-gray-700 hover:bg-white'
             }`}
           >
             <BookOpen className="w-4 h-4" />
@@ -342,23 +361,23 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
           <button
             type="button"
             onClick={() => setActiveTab('vocab')}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 border ${
+            className={`px-4 py-2 rounded-full text-xs sm:text-sm font-bold transition-colors shrink-0 cursor-pointer flex items-center gap-1.5 border ${
               activeTab === 'vocab'
-                ? 'bg-primary-600 text-white border-primary-600 shadow-sm'
-                : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                ? 'bg-gradient-to-r from-primary-600 via-rose-500 to-amber-500 text-white border-transparent shadow-md'
+                : 'bg-white/60 border-white/85 text-gray-700 hover:bg-white'
             }`}
           >
             <BookMarked className="w-4 h-4" />
-            <span>Từ vựng Unit ({lesson.vocabularies.length})</span>
+            <span>Từ vựng bài ({lesson.vocabularies.length})</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('grammar')}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 border ${
+            className={`px-4 py-2 rounded-full text-xs sm:text-sm font-bold transition-colors shrink-0 cursor-pointer flex items-center gap-1.5 border ${
               activeTab === 'grammar'
-                ? 'bg-primary-600 text-white border-primary-600 shadow-sm'
-                : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                ? 'bg-gradient-to-r from-primary-600 via-rose-500 to-amber-500 text-white border-transparent shadow-md'
+                : 'bg-white/60 border-white/85 text-gray-700 hover:bg-white'
             }`}
           >
             <Sparkles className="w-4 h-4" />
@@ -368,27 +387,27 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
           <button
             type="button"
             onClick={() => setActiveTab('dialogue')}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 border ${
+            className={`px-4 py-2 rounded-full text-xs sm:text-sm font-bold transition-colors shrink-0 cursor-pointer flex items-center gap-1.5 border ${
               activeTab === 'dialogue'
-                ? 'bg-primary-600 text-white border-primary-600 shadow-sm'
-                : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                ? 'bg-gradient-to-r from-primary-600 via-rose-500 to-amber-500 text-white border-transparent shadow-md'
+                : 'bg-white/60 border-white/85 text-gray-700 hover:bg-white'
             }`}
           >
             <Headphones className="w-4 h-4" />
-            <span>Hội thoại Audio</span>
+            <span>Hội thoại mẫu</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('hanzi')}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 border ${
+            className={`px-4 py-2 rounded-full text-xs sm:text-sm font-bold transition-colors shrink-0 cursor-pointer flex items-center gap-1.5 border ${
               activeTab === 'hanzi'
-                ? 'bg-primary-600 text-white border-primary-600 shadow-sm'
-                : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                ? 'bg-gradient-to-r from-primary-600 via-rose-500 to-amber-500 text-white border-transparent shadow-md'
+                : 'bg-white/60 border-white/85 text-gray-700 hover:bg-white'
             }`}
           >
             <PenTool className="w-4 h-4" />
-            <span>Luyện viết chữ Hán SVG</span>
+            <span>Tập viết chữ Hán</span>
           </button>
         </div>
       </div>
@@ -399,14 +418,14 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
       {activeTab === 'content' && (
         <div className="space-y-6">
           {/* Progress bar inside step */}
-          <div className="bg-white rounded-2xl p-4 border border-gray-200 flex items-center justify-between gap-4">
+          <div className="glass-light rounded-2xl p-4 flex items-center justify-between gap-4">
             <span className="text-xs font-bold text-gray-600">
               Phần {currentBlockIdx + 1} / {blocks.length}
             </span>
 
-            <div className="flex-1 max-w-xs h-2 bg-gray-100 rounded-full overflow-hidden">
+            <div className="flex-1 max-w-xs h-2 bg-white/70 border border-white rounded-full overflow-hidden">
               <div
-                className="h-full bg-primary-600 rounded-full transition-all duration-300"
+                className="h-full bg-gradient-to-r from-primary-600 to-amber-500 rounded-full transition-all duration-300"
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
@@ -416,7 +435,7 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
 
           {/* Current Block Content Card */}
           {currentBlock ? (
-            <div className="bg-white rounded-3xl p-6 sm:p-10 border border-gray-200 shadow-sm space-y-6">
+            <div className="glass-light rounded-[28px] p-6 sm:p-10 space-y-6">
               <div className="flex items-center justify-between border-b border-gray-100 pb-4">
                 <span className="px-3 py-1 rounded-full bg-primary-50 text-primary-700 font-extrabold text-xs uppercase tracking-wider">
                   {currentBlock.blockType === 'THEORY' && 'Lý Thuyết & Ngữ Pháp'}
@@ -613,7 +632,7 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
               return (
                 <div
                   key={vocab.charId || idx}
-                  className="bg-white rounded-3xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-all space-y-4 flex flex-col justify-between"
+                  className="glass-card-grid rounded-[26px] p-5 space-y-4 flex flex-col justify-between"
                 >
                   {/* Top card action */}
                   <div className="flex items-center justify-between border-b border-gray-100 pb-3">
@@ -700,16 +719,16 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
                 return (
                   <div
                     key={b.blockId}
-                    className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-sm space-y-4"
+                    className="glass-light rounded-[28px] p-6 sm:p-8 space-y-4"
                   >
                     <div className="flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full bg-primary-600" />
-                      <h3 className="text-lg font-black text-gray-900">
+                      <h3 className="text-lg font-display font-bold text-gray-900">
                         {content.title || 'Chủ điểm ngữ pháp trọng tâm'}
                       </h3>
                     </div>
 
-                    <div className="p-4 rounded-2xl bg-gray-50 border border-gray-200 text-sm leading-relaxed text-gray-700 whitespace-pre-line">
+                    <div className="p-4 rounded-2xl bg-white/55 border border-white/80 text-sm leading-relaxed text-gray-700 whitespace-pre-line">
                       {content.content}
                     </div>
                   </div>
@@ -717,21 +736,21 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
               })}
             </div>
           ) : (
-            <div className="bg-white rounded-3xl p-8 text-center text-gray-500 border border-gray-200">
+            <div className="glass-light rounded-[28px] p-8 text-center text-gray-600">
               Bài học này tập trung vào làm quen ngữ âm và chữ Hán căn bản.
             </div>
           )}
 
-          {/* Pinyin & F0 Pitch Contour Visualizer */}
-          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-sm space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
+          {/* Pinyin & Tone Contour Visualizer */}
+          <div className="glass-light rounded-[28px] p-6 sm:p-8 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/75 pb-4">
               <div>
-                <h3 className="text-lg font-black text-gray-900 flex items-center gap-2">
+                <h3 className="text-lg font-display font-bold text-gray-900 flex items-center gap-2">
                   <Sparkles className="w-5 h-5 text-amber-500" />
-                  Trực Quan Hóa Cao Độ Thanh Điệu F0 (Hệ Thống Chao 5 Bậc)
+                  Biểu đồ cao độ 4 thanh điệu
                 </h3>
-                <p className="text-xs text-gray-500 mt-0.5">
-                  Chọn thanh điệu để xem đường cong cao độ phát âm chuẩn và so sánh khẩu hình
+                <p className="text-xs text-gray-600 mt-0.5">
+                  Chọn thanh điệu để nghe phát âm mẫu và xem đường cao độ chuẩn
                 </p>
               </div>
 
@@ -912,7 +931,7 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
           </div>
 
           {allDialogues.length > 0 ? (
-            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-sm space-y-4">
+            <div className="glass-light rounded-[28px] p-6 sm:p-8 space-y-4">
               {allDialogues.map((line, idx) => {
                 const isPlaying = playingDialogueIdx === idx;
 
@@ -983,11 +1002,11 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h2 className="text-xl font-extrabold text-gray-900">
-                Bảng Luyện Viết Chữ Hán Theo Nét Bút Thuận
+              <h2 className="text-xl font-display font-extrabold text-gray-900">
+                Bảng luyện viết chữ Hán theo thứ tự nét
               </h2>
-              <p className="text-xs text-gray-500 mt-0.5">
-                Xem hoạt họa các nét vẽ chuẩn SVG và tự tay tập vẽ trên ô chữ mễ (米字格)
+              <p className="text-xs text-gray-600 mt-0.5">
+                Xem thứ tự nét chuẩn và tự tay tập viết trên ô chữ mễ (米字格).
               </p>
             </div>
 
@@ -1022,7 +1041,7 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
 
           {/* Interactive Hanzi Canvas Component */}
           {selectedChar ? (
-            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-sm space-y-6">
+            <div className="glass-light rounded-[28px] p-6 sm:p-8 space-y-6">
               <HanziCanvas
                 character={selectedChar.character}
                 pinyin={selectedChar.pinyin}

@@ -1,6 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../lib/api';
+import { celebrateSuccess } from '../../lib/celebration';
+import { appConfirm, appNotice } from '../../lib/dialog';
+import { GlassCard, UserAvatar, ShimmerButton } from '../../components/ui';
 import {
   User,
   Bell,
@@ -8,19 +11,25 @@ import {
   Monitor,
   Trash2,
   Save,
-  CheckCircle2,
   Clock,
-  Target,
   Sparkles,
   Smartphone,
   Laptop,
   Shield,
   Search,
   LogOut,
+  Camera,
 } from 'lucide-react';
+
+const ROLE_LABEL: Record<string, string> = {
+  STUDENT: 'Học viên',
+  CONTENT_EDITOR: 'Biên tập nội dung',
+  ADMIN: 'Quản trị viên',
+};
 
 export const ProfilePage: React.FC = () => {
   const { user, updateUser, logout } = useAuth();
+  const isAdminRole = user?.role === 'ADMIN' || user?.role === 'CONTENT_EDITOR';
 
   const [displayName, setDisplayName] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
@@ -29,20 +38,69 @@ export const ProfilePage: React.FC = () => {
   const [notifyEmail, setNotifyEmail] = useState(true);
   const [notifyWebpush, setNotifyWebpush] = useState(false);
   const [sessions, setSessions] = useState<any[]>([]);
-  const [activeRoadmap, setActiveRoadmap] = useState<any>(null);
 
-  // Onboarding goals
+  // Student learning goals
   const [startingLevel, setStartingLevel] = useState('ZERO');
   const [targetGoal, setTargetGoal] = useState('HSK1');
   const [dailyCommitment, setDailyCommitment] = useState(15);
 
-  // Admin RBAC user management state
+  // Admin account management
   const [adminUsers, setAdminUsers] = useState<any[]>([]);
   const [adminSearch, setAdminSearch] = useState('');
   const [adminRoleFilter, setAdminRoleFilter] = useState('');
 
   const [isSaving, setIsSaving] = useState(false);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      appNotice('Vui lòng chọn tệp hình ảnh (JPG, PNG, WEBP).', 'error');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = async () => {
+        const size = 256;
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        const minSide = Math.min(img.width, img.height);
+        const sx = (img.width - minSide) / 2;
+        const sy = (img.height - minSide) / 2;
+        ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, size, size);
+        const compressed = canvas.toDataURL('image/jpeg', 0.84);
+
+        setAvatarUrl(compressed);
+        setIsUploadingAvatar(true);
+        try {
+          const updatedRes = await api.put<any>('/users/me', {
+            display_name: displayName || user?.displayName || 'Người dùng',
+            avatar_url: compressed,
+          });
+          const savedAvatar =
+            updatedRes?.profile?.avatarUrl !== undefined
+              ? updatedRes.profile.avatarUrl
+              : compressed;
+          updateUser({ avatarUrl: savedAvatar });
+          celebrateSuccess('Đã cập nhật ảnh đại diện', 'sparkle');
+        } catch (err: any) {
+          appNotice(err.message || 'Không thể lưu ảnh đại diện.', 'error');
+        } finally {
+          setIsUploadingAvatar(false);
+        }
+      };
+      img.src = String(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
 
   useEffect(() => {
     loadProfile();
@@ -67,7 +125,6 @@ export const ProfilePage: React.FC = () => {
         setNotifyWebpush(data.notificationSettings.notifyWebpush ?? false);
       }
       if (data.activeRoadmap) {
-        setActiveRoadmap(data.activeRoadmap);
         setStartingLevel(data.activeRoadmap.startingLevel);
         setTargetGoal(data.activeRoadmap.targetGoal);
         setDailyCommitment(data.activeRoadmap.dailyCommitmentMins);
@@ -101,117 +158,165 @@ export const ProfilePage: React.FC = () => {
     }
   };
 
-  const handleAdminUpdateUser = async (targetUserId: number, updates: { role?: string; status?: string }) => {
+  const handleAdminUpdateUser = async (
+    targetUserId: number,
+    updates: { role?: string; status?: string }
+  ) => {
     try {
       await api.put(`/users/admin/${targetUserId}`, updates);
       loadAdminUsers();
-      setSuccessMsg('Đã cập nhật phân quyền / trạng thái người dùng (RBAC) thành công!');
-      setTimeout(() => setSuccessMsg(null), 3000);
+      appNotice('Đã cập nhật quyền và trạng thái tài khoản.', 'success');
     } catch (err: any) {
-      alert(err.message || 'Lỗi khi cập nhật quyền người dùng');
+      appNotice(err.message || 'Lỗi khi cập nhật quyền người dùng.', 'error');
     }
   };
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
-    setSuccessMsg(null);
 
     try {
-      // 1. Update Profile name & avatar
       const payload: any = { display_name: displayName };
       if (avatarUrl.trim()) {
         payload.avatar_url = avatarUrl.trim();
       }
       const updatedRes = await api.put<any>('/users/me', payload);
+      const savedAvatar =
+        updatedRes?.profile?.avatarUrl !== undefined
+          ? updatedRes.profile.avatarUrl
+          : avatarUrl.trim() || null;
       updateUser({
         displayName,
-        avatarUrl: updatedRes?.profile?.avatarUrl ?? (avatarUrl.trim() || undefined),
+        avatarUrl: savedAvatar,
       });
 
-      // 2. Update Notifications
-      await api.put('/users/notifications', {
-        reminder_time: reminderTime,
-        notify_email: notifyEmail,
-        notify_webpush: notifyWebpush,
-      });
+      if (!isAdminRole) {
+        await api.put('/users/notifications', {
+          reminder_time: reminderTime,
+          notify_email: notifyEmail,
+          notify_webpush: notifyWebpush,
+        });
 
-      // 3. Save Onboarding / Roadmap Goal
-      const res = await api.post<any>('/users/onboarding', {
-        starting_level: startingLevel,
-        target_goal: targetGoal,
-        daily_commitment_mins: dailyCommitment,
-        reminder_time: reminderTime,
-      });
-      setActiveRoadmap(res.roadmap);
+        await api.post<any>('/users/onboarding', {
+          starting_level: startingLevel,
+          target_goal: targetGoal,
+          daily_commitment_mins: dailyCommitment,
+          reminder_time: reminderTime,
+        });
+      }
 
-      setSuccessMsg('Đã cập nhật hồ sơ, lộ trình học và cài đặt thông báo thành công!');
-      setTimeout(() => setSuccessMsg(null), 4000);
+      celebrateSuccess('Đã lưu cài đặt tài khoản', 'sparkle');
     } catch (err: any) {
-      alert(err.message || 'Lỗi cập nhật hồ sơ');
+      appNotice(err.message || 'Lỗi cập nhật hồ sơ.', 'error');
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleRevokeSession = async (sessionId: number) => {
-    if (!confirm('Bạn có chắc chắn muốn thu hồi phiên đăng nhập trên thiết bị này?')) return;
+    const ok = await appConfirm({
+      title: 'Thu hồi phiên đăng nhập?',
+      message: 'Thiết bị này sẽ bị đăng xuất khỏi tài khoản Hanzi4U của bạn.',
+      confirmLabel: 'Thu hồi',
+      cancelLabel: 'Quay lại',
+      danger: true,
+    });
+    if (!ok) return;
+
     try {
       await api.delete(`/auth/sessions/${sessionId}`);
       setSessions((prev) => prev.filter((s) => s.session_id !== sessionId));
+      appNotice('Đã đăng xuất thiết bị thành công.', 'success');
     } catch (err: any) {
-      alert(err.message || 'Lỗi khi thu hồi phiên');
+      appNotice(err.message || 'Lỗi khi thu hồi phiên.', 'error');
     }
   };
 
   const handleRevokeOtherSessions = async () => {
-    if (!confirm('Đăng xuất tất cả các thiết bị khác ngoại trừ thiết bị đang dùng?')) return;
+    const ok = await appConfirm({
+      title: 'Đăng xuất các thiết bị khác?',
+      message: 'Tất cả thiết bị khác sẽ bị đăng xuất, chỉ giữ lại thiết bị hiện tại.',
+      confirmLabel: 'Đăng xuất tất cả',
+      cancelLabel: 'Quay lại',
+      danger: true,
+    });
+    if (!ok) return;
+
     try {
       await api.post('/auth/sessions/revoke-others');
       loadSessions();
+      appNotice('Đã đăng xuất toàn bộ thiết bị khác.', 'success');
     } catch (err: any) {
-      alert(err.message || 'Lỗi thu hồi');
+      appNotice(err.message || 'Lỗi khi thu hồi phiên.', 'error');
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-10 px-4 sm:px-6 lg:px-8 space-y-8">
+    <div className="max-w-4xl mx-auto py-10 px-4 sm:px-6 lg:px-8 space-y-7">
       {/* Page Title */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
-            Hồ Sơ Cá Nhân & Thiết Lập Học Tập
+          <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-gray-900">
+            Hồ sơ cá nhân
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Quản lý thông tin định danh, thiết lập lộ trình và thông báo nhắc học
+          <p className="text-sm text-gray-600 mt-1">
+            {isAdminRole
+              ? 'Cập nhật thông tin tài khoản và quản lý thiết bị đăng nhập.'
+              : 'Quản lý thông tin tài khoản, lộ trình HSK và lịch nhắc học mỗi ngày.'}
           </p>
         </div>
-        <span className="px-3 py-1 bg-primary-50 text-primary-700 rounded-full text-xs font-bold uppercase tracking-wider">
-          {user?.role || 'STUDENT'}
+        <span className="px-3.5 py-1.5 glass-light text-primary-700 rounded-full text-xs font-bold">
+          {ROLE_LABEL[user?.role || 'STUDENT'] || user?.role}
         </span>
       </div>
 
-      {successMsg && (
-        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center gap-3 text-emerald-800 text-sm animate-fade-in">
-          <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-          <span>{successMsg}</span>
-        </div>
-      )}
-
       <form onSubmit={handleSaveProfile} className="space-y-6">
-        {/* Section 1: Basic Profile */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-6">
-          <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+        {/* Section 1: Basic Profile & Single-Button Avatar */}
+        <GlassCard className="p-6 sm:p-8 space-y-6 rounded-[28px]">
+          <div className="flex items-center justify-between border-b border-white/75 pb-4">
             <div className="flex items-center gap-3">
               <User className="w-5 h-5 text-primary-600" />
-              <h2 className="text-lg font-bold text-gray-900">Thông Tin Tài Khoản</h2>
+              <h2 className="text-lg font-display font-bold text-gray-900">Thông tin tài khoản</h2>
             </div>
-            <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full">
-              Đã hoàn thành: {completedLessonsCount} bài học
-            </span>
+            {!isAdminRole && (
+              <span className="text-xs font-bold text-emerald-700 bg-emerald-500/12 border border-emerald-200/70 px-3 py-1 rounded-full">
+                Đã hoàn thành: {completedLessonsCount} bài học
+              </span>
+            )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {/* Clean Avatar Row — ONLY ONE button: "Thay đổi ảnh" */}
+          <div className="flex flex-col sm:flex-row items-center gap-5 p-4 rounded-2xl bg-white/45 border border-white/80">
+            <UserAvatar
+              avatarUrl={avatarUrl || null}
+              displayName={displayName || user?.displayName}
+              size="xl"
+            />
+            <div className="flex-1 text-center sm:text-left space-y-2.5">
+              <h3 className="text-sm font-display font-bold text-gray-900">Ảnh đại diện</h3>
+              <div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarFileChange}
+                  className="hidden"
+                />
+                <ShimmerButton
+                  type="button"
+                  size="sm"
+                  disabled={isUploadingAvatar}
+                  onClick={() => fileInputRef.current?.click()}
+                  className="rounded-xl"
+                >
+                  <Camera className="w-3.5 h-3.5" />
+                  <span>{isUploadingAvatar ? 'Đang cập nhật...' : 'Thay đổi ảnh'}</span>
+                </ShimmerButton>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
               <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
                 Tên hiển thị
@@ -221,227 +326,222 @@ export const ProfilePage: React.FC = () => {
                 required
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+                className="w-full px-4 py-3 rounded-xl bg-white/65 border border-white/85 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-400 text-sm transition-colors"
               />
             </div>
 
             <div>
               <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
-                Địa chỉ Email
+                Email
               </label>
               <input
                 type="text"
                 disabled
                 value={user?.email || ''}
-                className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 text-gray-400 text-sm cursor-not-allowed"
-              />
-            </div>
-
-            <div className="sm:col-span-2">
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
-                Ảnh đại diện (Avatar URL)
-              </label>
-              <input
-                type="url"
-                placeholder="https://images.unsplash.com/..."
-                value={avatarUrl}
-                onChange={(e) => setAvatarUrl(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+                className="w-full px-4 py-3 rounded-xl border border-white/70 bg-white/35 text-gray-500 text-sm cursor-not-allowed"
               />
             </div>
           </div>
-        </div>
+        </GlassCard>
 
-        {/* Section 2: Onboarding & Study Goal */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
-            <div className="flex items-center gap-3">
-              <Compass className="w-5 h-5 text-secondary-600" />
-              <div>
-                <h2 className="text-lg font-bold text-gray-900">Lộ Trình Cá Nhân</h2>
-                <p className="text-xs text-gray-400">Khảo sát mục tiêu và gán khóa học phù hợp từ HSK 1 đến HSK 6</p>
-              </div>
-            </div>
-            <a
-              href="#/onboarding"
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-primary-50 hover:bg-primary-100 text-primary-700 font-bold text-xs transition-colors cursor-pointer"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Xem lộ trình chi tiết</span>
-            </a>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {/* Starting Level */}
-            <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
-                Trình độ hiện tại
-              </label>
-              <select
-                value={startingLevel}
-                onChange={(e) => setStartingLevel(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
-              >
-                <option value="ZERO">Mới bắt đầu (Chưa biết gì)</option>
-                <option value="PINYIN_KNOWN">Đã biết Pinyin cơ bản</option>
-                <option value="HSK1">Đang ở trình độ HSK 1</option>
-                <option value="HSK2">Đang ở trình độ HSK 2</option>
-                <option value="HSK3">Đang ở trình độ HSK 3</option>
-                <option value="HSK4">Đang ở trình độ HSK 4</option>
-                <option value="HSK5">Đang ở trình độ HSK 5</option>
-                <option value="HSK6">Đang ở trình độ HSK 6</option>
-              </select>
-            </div>
-
-            {/* Target Goal */}
-            <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
-                Mục tiêu chính
-              </label>
-              <select
-                value={targetGoal}
-                onChange={(e) => setTargetGoal(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
-              >
-                <option value="HSK1">Đạt chứng chỉ HSK 1</option>
-                <option value="HSK2">Đạt chứng chỉ HSK 2</option>
-                <option value="HSK3">Đạt chứng chỉ HSK 3</option>
-                <option value="HSK4">Đạt chứng chỉ HSK 4</option>
-                <option value="HSK5">Đạt chứng chỉ HSK 5</option>
-                <option value="HSK6">Đạt chứng chỉ HSK 6</option>
-                <option value="COMMUNICATION">Giao tiếp đời sống</option>
-                <option value="HOBBY">Học theo sở thích</option>
-              </select>
-            </div>
-
-            {/* Daily Commitment */}
-            <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
-                Cam kết mỗi ngày
-              </label>
-              <select
-                value={dailyCommitment}
-                onChange={(e) => setDailyCommitment(parseInt(e.target.value, 10))}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
-              >
-                <option value={15}>15 phút / ngày (0.25 giờ)</option>
-                <option value={30}>30 phút / ngày (0.5 giờ)</option>
-                <option value={45}>45 phút / ngày (0.75 giờ)</option>
-                <option value={60}>60 phút / ngày (1 giờ)</option>
-                <option value={90}>90 phút / ngày (1.5 giờ)</option>
-                <option value={120}>120 phút / ngày (2 giờ)</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* Section 3: Notification Reminder Settings */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-6">
-          <div className="flex items-center gap-3 border-b border-gray-100 pb-4">
-            <Bell className="w-5 h-5 text-accent-600" />
-            <div>
-              <h2 className="text-lg font-bold text-gray-900">Cài Đặt Thông Báo Nhắc Học</h2>
-              <p className="text-xs text-gray-400">Giữ chuỗi học tập (Streak) và nhận lời nhắc đều đặn</p>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-gray-50 border border-gray-100">
+        {/* Section 2: Student Study Goal (Complete Liquid Glass) */}
+        {!isAdminRole && (
+          <GlassCard className="p-6 sm:p-8 space-y-6 rounded-[28px]">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/75 pb-4">
               <div className="flex items-center gap-3">
-                <Clock className="w-5 h-5 text-primary-600" />
+                <Compass className="w-5 h-5 text-amber-600" />
                 <div>
-                  <span className="text-sm font-bold text-gray-900">Khung giờ nhắc học hằng ngày</span>
-                  <p className="text-xs text-gray-500">Hệ thống sẽ gửi thông báo vào giờ này</p>
+                  <h2 className="text-lg font-display font-bold text-gray-900">Lộ trình học HSK</h2>
+                  <p className="text-xs text-gray-500">
+                    Điều chỉnh trình độ, mục tiêu HSK và thời gian học mỗi ngày
+                  </p>
                 </div>
               </div>
-              <input
-                type="time"
-                value={reminderTime}
-                onChange={(e) => setReminderTime(e.target.value)}
-                className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-bold bg-white text-gray-900"
-              />
+              <a
+                href="#/onboarding"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/65 hover:bg-white border border-white/85 text-primary-700 font-bold text-xs transition-colors cursor-pointer self-start sm:self-auto"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Xem lộ trình chi tiết</span>
+              </a>
             </div>
 
-            <div className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 border border-gray-100">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
               <div>
-                <span className="text-sm font-bold text-gray-900">Nhắc nhở qua Email</span>
-                <p className="text-xs text-gray-500">Gửi email tóm tắt từ vựng đến hạn ôn tập</p>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+                  Trình độ hiện tại
+                </label>
+                <select
+                  value={startingLevel}
+                  onChange={(e) => setStartingLevel(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-white/65 border border-white/85 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-400 text-sm transition-colors"
+                >
+                  <option value="ZERO">Mới bắt đầu</option>
+                  <option value="PINYIN_KNOWN">Đã biết Pinyin cơ bản</option>
+                  <option value="HSK1">Đang ở trình độ HSK 1</option>
+                  <option value="HSK2">Đang ở trình độ HSK 2</option>
+                  <option value="HSK3">Đang ở trình độ HSK 3</option>
+                  <option value="HSK4">Đang ở trình độ HSK 4</option>
+                  <option value="HSK5">Đang ở trình độ HSK 5</option>
+                  <option value="HSK6">Đang ở trình độ HSK 6</option>
+                </select>
               </div>
-              <input
-                type="checkbox"
-                checked={notifyEmail}
-                onChange={(e) => setNotifyEmail(e.target.checked)}
-                className="w-5 h-5 text-primary-600 rounded focus:ring-primary-500"
-              />
-            </div>
 
-            <div className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 border border-gray-100">
               <div>
-                <span className="text-sm font-bold text-gray-900">Thông báo trình duyệt (Web Push)</span>
-                <p className="text-xs text-gray-500">Hiện popup nhắc nhở học bài trên máy tính/điện thoại</p>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+                  Mục tiêu chính
+                </label>
+                <select
+                  value={targetGoal}
+                  onChange={(e) => setTargetGoal(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-white/65 border border-white/85 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-400 text-sm transition-colors"
+                >
+                  <option value="HSK1">Đạt chứng chỉ HSK 1</option>
+                  <option value="HSK2">Đạt chứng chỉ HSK 2</option>
+                  <option value="HSK3">Đạt chứng chỉ HSK 3</option>
+                  <option value="HSK4">Đạt chứng chỉ HSK 4</option>
+                  <option value="HSK5">Đạt chứng chỉ HSK 5</option>
+                  <option value="HSK6">Đạt chứng chỉ HSK 6</option>
+                  <option value="COMMUNICATION">Giao tiếp đời sống</option>
+                  <option value="HOBBY">Học theo sở thích</option>
+                </select>
               </div>
-              <input
-                type="checkbox"
-                checked={notifyWebpush}
-                onChange={(e) => setNotifyWebpush(e.target.checked)}
-                className="w-5 h-5 text-primary-600 rounded focus:ring-primary-500"
-              />
-            </div>
-          </div>
-        </div>
 
-        <button
-          type="submit"
-          disabled={isSaving}
-          className="flex items-center justify-center gap-2 px-8 py-3.5 rounded-2xl bg-primary-600 hover:bg-primary-700 text-white font-bold text-sm shadow-md shadow-primary-600/20 transition-all disabled:opacity-50"
-        >
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+                  Thời gian mỗi ngày
+                </label>
+                <select
+                  value={dailyCommitment}
+                  onChange={(e) => setDailyCommitment(parseInt(e.target.value, 10))}
+                  className="w-full px-4 py-3 rounded-xl bg-white/65 border border-white/85 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-400 text-sm transition-colors"
+                >
+                  <option value={15}>15 phút / ngày</option>
+                  <option value={30}>30 phút / ngày</option>
+                  <option value={45}>45 phút / ngày</option>
+                  <option value={60}>60 phút / ngày</option>
+                  <option value={90}>90 phút / ngày</option>
+                  <option value={120}>120 phút / ngày</option>
+                </select>
+              </div>
+            </div>
+          </GlassCard>
+        )}
+
+        {/* Section 3: Notification Reminder Settings (Complete Liquid Glass) */}
+        {!isAdminRole && (
+          <GlassCard className="p-6 sm:p-8 space-y-5 rounded-[28px]">
+            <div className="flex items-center gap-3 border-b border-white/75 pb-4">
+              <Bell className="w-5 h-5 text-emerald-600" />
+              <div>
+                <h2 className="text-lg font-display font-bold text-gray-900">
+                  Nhắc lịch học hằng ngày
+                </h2>
+                <p className="text-xs text-gray-500">
+                  Duy trì thói quen học tiếng Trung đều đặn mỗi ngày
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-white/50 border border-white/80">
+                <div className="flex items-center gap-3">
+                  <Clock className="w-5 h-5 text-primary-600 shrink-0" />
+                  <div>
+                    <span className="text-sm font-bold text-gray-900">Giờ nhắc học</span>
+                    <p className="text-xs text-gray-500">Gửi lời nhắc ôn bài vào khung giờ này</p>
+                  </div>
+                </div>
+                <input
+                  type="time"
+                  value={reminderTime}
+                  onChange={(e) => setReminderTime(e.target.value)}
+                  className="px-4 py-2 rounded-xl border border-white/85 bg-white/75 text-sm font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-400"
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-4 rounded-2xl bg-white/50 border border-white/80">
+                <div>
+                  <span className="text-sm font-bold text-gray-900">Nhắc học qua Email</span>
+                  <p className="text-xs text-gray-500">Gửi email nhắc danh sách từ vựng cần ôn</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={notifyEmail}
+                  onChange={(e) => setNotifyEmail(e.target.checked)}
+                  className="w-5 h-5 text-primary-600 rounded focus:ring-primary-500 cursor-pointer"
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-4 rounded-2xl bg-white/50 border border-white/80">
+                <div>
+                  <span className="text-sm font-bold text-gray-900">Thông báo trên trình duyệt</span>
+                  <p className="text-xs text-gray-500">Nhận thông báo nhắc giờ học trên thiết bị</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={notifyWebpush}
+                  onChange={(e) => setNotifyWebpush(e.target.checked)}
+                  className="w-5 h-5 text-primary-600 rounded focus:ring-primary-500 cursor-pointer"
+                />
+              </div>
+            </div>
+          </GlassCard>
+        )}
+
+        <ShimmerButton type="submit" disabled={isSaving} size="lg">
           <Save className="w-4 h-4" />
-          {isSaving ? 'Đang lưu thay đổi...' : 'Lưu Tất Cả Cài Đặt'}
-        </button>
+          <span>{isSaving ? 'Đang lưu...' : 'Lưu cài đặt'}</span>
+        </ShimmerButton>
       </form>
 
-      {/* Section 4: Device Sessions Management */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-6">
-        <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+      {/* Section 4: Device Sessions Management (Complete Liquid Glass) */}
+      <GlassCard className="p-6 sm:p-8 space-y-5 rounded-[28px]">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/75 pb-4">
           <div className="flex items-center gap-3">
-            <Monitor className="w-5 h-5 text-gray-600" />
+            <Monitor className="w-5 h-5 text-gray-700" />
             <div>
-              <h2 className="text-lg font-bold text-gray-900">Quản Lý Phiên Đăng Nhập Theo Thiết Bị</h2>
-              <p className="text-xs text-gray-400">Kiểm tra và thu hồi quyền truy cập từ các thiết bị khác</p>
+              <h2 className="text-lg font-display font-bold text-gray-900">
+                Thiết bị đang đăng nhập
+              </h2>
+              <p className="text-xs text-gray-500">
+                Kiểm tra và đăng xuất tài khoản khỏi các thiết bị khác
+              </p>
             </div>
           </div>
 
           {sessions.length > 1 && (
             <button
+              type="button"
               onClick={handleRevokeOtherSessions}
-              className="text-xs text-red-600 hover:text-red-700 font-semibold underline"
+              className="text-xs text-rose-600 hover:text-rose-700 font-bold underline cursor-pointer"
             >
-              Thu hồi tất cả thiết bị khác
+              Đăng xuất tất cả thiết bị khác
             </button>
           )}
         </div>
 
-        <div className="divide-y divide-gray-100">
+        <div className="divide-y divide-white/65">
           {sessions.map((sess) => {
             const isMobile = sess.user_agent?.toLowerCase().includes('mobile');
             return (
               <div key={sess.session_id} className="py-4 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-600">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-white/65 border border-white/85 flex items-center justify-center text-gray-600 shrink-0">
                     {isMobile ? <Smartphone className="w-5 h-5" /> : <Laptop className="w-5 h-5" />}
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-gray-900">
-                        {sess.user_agent?.slice(0, 40) || 'Thiết bị không xác định'}...
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-bold text-gray-900 truncate">
+                        {sess.user_agent?.slice(0, 42) || 'Thiết bị trình duyệt'}
                       </span>
                       {sess.isCurrent && (
-                        <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">
+                        <span className="text-[10px] bg-emerald-500/15 text-emerald-800 border border-emerald-200/70 px-2.5 py-0.5 rounded-full font-bold">
                           Thiết bị hiện tại
                         </span>
                       )}
                     </div>
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-gray-500">
                       IP: {sess.ip_address || '127.0.0.1'} • Đăng nhập:{' '}
                       {new Date(sess.created_at).toLocaleDateString('vi-VN')}
                     </span>
@@ -450,17 +550,19 @@ export const ProfilePage: React.FC = () => {
 
                 {sess.isCurrent ? (
                   <button
+                    type="button"
                     onClick={logout}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-xl border border-gray-200 transition-colors"
+                    className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-gray-700 hover:text-rose-600 bg-white/65 hover:bg-rose-50/90 rounded-xl border border-white/85 transition-colors cursor-pointer shrink-0"
                     title="Đăng xuất phiên hiện tại"
                   >
                     <LogOut className="w-3.5 h-3.5" />
-                    Đăng xuất
+                    <span>Đăng xuất</span>
                   </button>
                 ) : (
                   <button
+                    type="button"
                     onClick={() => handleRevokeSession(sess.session_id)}
-                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    className="p-2 text-gray-500 hover:text-rose-600 hover:bg-rose-50/90 rounded-xl transition-colors cursor-pointer shrink-0"
                     title="Thu hồi phiên"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -470,20 +572,20 @@ export const ProfilePage: React.FC = () => {
             );
           })}
         </div>
-      </div>
+      </GlassCard>
 
-      {/* Section 5: RBAC User Management (Visible for ADMIN role) */}
+      {/* Section 5: Account Role Management (Visible for ADMIN) */}
       {user?.role === 'ADMIN' && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
+        <GlassCard className="p-6 sm:p-8 space-y-5 rounded-[28px]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/75 pb-4">
             <div className="flex items-center gap-3">
               <Shield className="w-5 h-5 text-primary-600" />
               <div>
-                <h2 className="text-lg font-bold text-gray-900">
-                  Quản Trị Phân Quyền Người Dùng (RBAC - Admin)
+                <h2 className="text-lg font-display font-bold text-gray-900">
+                  Quản lý quyền tài khoản
                 </h2>
-                <p className="text-xs text-gray-400">
-                  Phân quyền vai trò (STUDENT, CONTENT_EDITOR, ADMIN) và khóa/mở khóa tài khoản
+                <p className="text-xs text-gray-500">
+                  Cấp quyền học viên, biên tập nội dung, quản trị viên và quản lý trạng thái tài khoản
                 </p>
               </div>
             </div>
@@ -497,34 +599,37 @@ export const ProfilePage: React.FC = () => {
                   value={adminSearch}
                   onChange={(e) => setAdminSearch(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && loadAdminUsers()}
-                  className="pl-9 pr-3 py-1.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="pl-9 pr-3 py-2 rounded-xl bg-white/65 border border-white/85 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-400"
                 />
               </div>
               <select
                 value={adminRoleFilter}
                 onChange={(e) => setAdminRoleFilter(e.target.value)}
-                className="px-3 py-1.5 rounded-xl border border-gray-200 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="px-3 py-2 rounded-xl bg-white/65 border border-white/85 text-xs font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-400"
               >
                 <option value="">Tất cả vai trò</option>
-                <option value="STUDENT">STUDENT</option>
-                <option value="CONTENT_EDITOR">CONTENT_EDITOR</option>
-                <option value="ADMIN">ADMIN</option>
+                <option value="STUDENT">Học viên</option>
+                <option value="CONTENT_EDITOR">Biên tập nội dung</option>
+                <option value="ADMIN">Quản trị viên</option>
               </select>
             </div>
           </div>
 
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-white/65">
             {adminUsers.map((u) => (
-              <div key={u.user_id} className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div
+                key={u.user_id}
+                className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+              >
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-bold text-gray-900">{u.display_name}</span>
-                    <span className="text-xs text-gray-400">({u.email})</span>
+                    <span className="text-xs text-gray-500">({u.email})</span>
                   </div>
-                  <span className="text-[11px] text-gray-400">
+                  <span className="text-[11px] text-gray-500">
                     ID #{u.user_id} • Trạng thái:{' '}
-                    <strong className={u.status === 'ACTIVE' ? 'text-emerald-600' : 'text-red-600'}>
-                      {u.status}
+                    <strong className={u.status === 'ACTIVE' ? 'text-emerald-600' : 'text-rose-600'}>
+                      {u.status === 'ACTIVE' ? 'Hoạt động' : u.status === 'LOCKED' ? 'Tạm khóa' : 'Đã khóa'}
                     </strong>
                   </span>
                 </div>
@@ -534,28 +639,28 @@ export const ProfilePage: React.FC = () => {
                     value={u.role}
                     disabled={u.user_id === user.userId}
                     onChange={(e) => handleAdminUpdateUser(u.user_id, { role: e.target.value })}
-                    className="px-3 py-1.5 rounded-xl border border-gray-200 text-xs font-semibold bg-gray-50 disabled:opacity-50"
+                    className="px-3 py-1.5 rounded-xl bg-white/65 border border-white/85 text-xs font-semibold disabled:opacity-50"
                   >
-                    <option value="STUDENT">STUDENT</option>
-                    <option value="CONTENT_EDITOR">CONTENT_EDITOR</option>
-                    <option value="ADMIN">ADMIN</option>
+                    <option value="STUDENT">Học viên</option>
+                    <option value="CONTENT_EDITOR">Biên tập nội dung</option>
+                    <option value="ADMIN">Quản trị viên</option>
                   </select>
 
                   <select
                     value={u.status}
                     disabled={u.user_id === user.userId}
                     onChange={(e) => handleAdminUpdateUser(u.user_id, { status: e.target.value })}
-                    className="px-3 py-1.5 rounded-xl border border-gray-200 text-xs font-semibold bg-gray-50 disabled:opacity-50"
+                    className="px-3 py-1.5 rounded-xl bg-white/65 border border-white/85 text-xs font-semibold disabled:opacity-50"
                   >
-                    <option value="ACTIVE">ACTIVE</option>
-                    <option value="LOCKED">LOCKED</option>
-                    <option value="BANNED">BANNED</option>
+                    <option value="ACTIVE">Hoạt động</option>
+                    <option value="LOCKED">Tạm khóa</option>
+                    <option value="BANNED">Khóa vĩnh viễn</option>
                   </select>
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        </GlassCard>
       )}
     </div>
   );

@@ -22,8 +22,14 @@ export class CurriculumService {
       where,
       include: {
         _count: { select: { chapters: true } },
+        chapters: {
+          orderBy: { order_index: 'asc' },
+          include: {
+            _count: { select: { lessons: true } },
+          },
+        },
       },
-      orderBy: { created_at: 'desc' },
+      orderBy: [{ level: 'asc' }, { course_id: 'asc' }],
     });
 
     return courses.map((c) => ({
@@ -34,8 +40,63 @@ export class CurriculumService {
       level: c.level,
       isPublished: c.is_published,
       chaptersCount: c._count.chapters,
+      lessonsCount: c.chapters.reduce((sum, ch) => sum + ch._count.lessons, 0),
       createdAt: c.created_at,
     }));
+  }
+
+  async deleteCourse(courseId: number) {
+    const course = await prisma.courses.findUnique({ where: { course_id: courseId } });
+    if (!course) {
+      throw AppError.notFound('Không tìm thấy khóa học này.');
+    }
+    await prisma.courses.delete({ where: { course_id: courseId } });
+    return { message: 'Đã xóa khóa học thành công.' };
+  }
+
+  async listVocabularies(query: { level?: string; search?: string; limit?: number }) {
+    const where: any = {};
+    if (query.level && query.level !== 'ALL') {
+      where.hsk_level = query.level.toUpperCase();
+    }
+    if (query.search) {
+      where.OR = [
+        { word: { contains: query.search } },
+        { pinyin: { contains: query.search } },
+        { meaning: { contains: query.search } },
+      ];
+    }
+    const limit = Math.min(300, Math.max(1, query.limit || 200));
+    const items = await prisma.vocabulary.findMany({
+      where,
+      take: limit,
+      orderBy: [{ hsk_level: 'asc' }, { vocabulary_id: 'asc' }],
+    });
+
+    return items.map((v) => {
+      let examples: any[] = [];
+      let notes: any = null;
+      try {
+        if (v.examples) examples = JSON.parse(v.examples);
+      } catch {
+        examples = [];
+      }
+      try {
+        if (v.notes) notes = JSON.parse(v.notes);
+      } catch {
+        notes = v.notes;
+      }
+      return {
+        vocabularyId: v.vocabulary_id,
+        word: v.word,
+        pinyin: v.pinyin,
+        meaning: v.meaning,
+        wordType: v.word_type,
+        hskLevel: v.hsk_level,
+        examples,
+        notes,
+      };
+    });
   }
 
   async getCourseDetail(courseId: number, userId?: number) {

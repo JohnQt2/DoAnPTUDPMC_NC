@@ -1,6 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect, useTransition } from 'react';
+import { motion } from 'framer-motion';
 import { api } from '../../lib/api';
-import { BookOpen, ArrowRight, Layers, Route } from 'lucide-react';
+import { getCached, setCached } from '../../lib/cache';
+import {
+  GlassCard,
+  ShimmerButton,
+  SpotlightCard,
+  NumberTicker,
+} from '../../components/ui';
+import {
+  BookOpen,
+  ArrowRight,
+  Route,
+  SlidersHorizontal,
+  Play,
+  CheckCircle2,
+  Lock,
+  Sparkles,
+  Flame,
+  Trophy,
+  Clock,
+  Layers,
+  Award,
+  BookMarked,
+} from 'lucide-react';
 
 interface CourseItem {
   courseId: number;
@@ -10,159 +33,678 @@ interface CourseItem {
   level: string;
   isPublished: boolean;
   chaptersCount?: number;
-  _count?: { chapters: number };
+  lessonsCount?: number;
 }
 
-const HSK_VOCAB: Record<string, string> = {
-  HSK1: '150 từ',
-  HSK2: '300 từ',
-  HSK3: '600 từ',
-  HSK4: '1.200 từ',
-  HSK5: '2.500 từ',
-  HSK6: '5.000+ từ',
+interface LessonNode {
+  lessonId: number;
+  title: string;
+  orderIndex: number;
+  estimatedDurationMins: number;
+  blocksCount: number;
+  vocabulariesCount: number;
+  testsCount: number;
+  isUnlocked: boolean;
+  isCompleted: boolean;
+  highestScore: number;
+}
+
+interface ChapterStation {
+  chapterId: number;
+  title: string;
+  orderIndex: number;
+  lessons: LessonNode[];
+}
+
+const HSK_META: Record<
+  string,
+  {
+    label: string;
+    vocab: string;
+    subtitle: string;
+    pillGradient: string;
+    heroBg: string;
+    heroBorder: string;
+    accentText: string;
+    badge: string;
+    progressBar: string;
+    unitBadge: string;
+    spotlight: string;
+    nodeHalo: string;
+    nodeIdle: string;
+    lineColor: string;
+    currentCard: string;
+    actionIdle: string;
+  }
+> = {
+  HSK1: {
+    label: 'HSK 1',
+    vocab: '150 từ',
+    subtitle: 'Nhập môn & Giao tiếp cơ bản',
+    pillGradient: 'from-emerald-300/90 via-teal-300/90 to-cyan-200/95',
+    heroBg: 'from-emerald-100/92 via-teal-50/90 to-cyan-100/90',
+    heroBorder: 'border-emerald-200/80',
+    accentText: 'text-emerald-800',
+    badge: 'bg-emerald-100/85 text-emerald-800 border-emerald-200/80',
+    progressBar: 'from-emerald-400 to-teal-400',
+    unitBadge: 'from-emerald-400 to-teal-400',
+    spotlight: 'rgba(52, 211, 153, 0.08)',
+    nodeHalo: 'ring-4 ring-emerald-300/35',
+    nodeIdle: 'bg-white/90 border-2 border-emerald-300/80 text-emerald-700',
+    lineColor: 'bg-emerald-300/65',
+    currentCard: 'bg-white/88 border-emerald-300/85 shadow-sm shadow-emerald-400/10',
+    actionIdle: 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100',
+  },
+  HSK2: {
+    label: 'HSK 2',
+    vocab: '300 từ',
+    subtitle: 'Đời sống & Du lịch trôi chảy',
+    pillGradient: 'from-sky-300/90 via-blue-300/85 to-indigo-200/95',
+    heroBg: 'from-sky-100/92 via-blue-50/90 to-indigo-100/90',
+    heroBorder: 'border-sky-200/80',
+    accentText: 'text-sky-800',
+    badge: 'bg-sky-100/85 text-sky-800 border-sky-200/80',
+    progressBar: 'from-sky-400 to-indigo-400',
+    unitBadge: 'from-sky-400 to-blue-400',
+    spotlight: 'rgba(56, 189, 248, 0.08)',
+    nodeHalo: 'ring-4 ring-sky-300/35',
+    nodeIdle: 'bg-white/90 border-2 border-sky-300/80 text-sky-700',
+    lineColor: 'bg-sky-300/65',
+    currentCard: 'bg-white/88 border-sky-300/85 shadow-sm shadow-sky-400/10',
+    actionIdle: 'bg-sky-50 text-sky-700 hover:bg-sky-100',
+  },
+  HSK3: {
+    label: 'HSK 3',
+    vocab: '600 từ',
+    subtitle: 'Trung cấp & Văn hóa xã hội',
+    pillGradient: 'from-amber-300/90 via-orange-200/90 to-rose-200/95',
+    heroBg: 'from-amber-100/92 via-orange-50/90 to-rose-100/88',
+    heroBorder: 'border-amber-200/80',
+    accentText: 'text-amber-800',
+    badge: 'bg-amber-100/85 text-amber-800 border-amber-200/80',
+    progressBar: 'from-amber-400 to-orange-400',
+    unitBadge: 'from-amber-400 to-orange-400',
+    spotlight: 'rgba(251, 191, 36, 0.08)',
+    nodeHalo: 'ring-4 ring-amber-300/35',
+    nodeIdle: 'bg-white/90 border-2 border-amber-300/80 text-amber-700',
+    lineColor: 'bg-amber-300/65',
+    currentCard: 'bg-white/88 border-amber-300/85 shadow-sm shadow-amber-400/10',
+    actionIdle: 'bg-amber-50 text-amber-800 hover:bg-amber-100',
+  },
+  HSK4: {
+    label: 'HSK 4',
+    vocab: '1.200 từ',
+    subtitle: 'Công sở, Phỏng vấn & Thuyết trình',
+    pillGradient: 'from-rose-300/90 via-pink-200/95 to-fuchsia-200/90',
+    heroBg: 'from-rose-100/92 via-pink-50/90 to-fuchsia-100/88',
+    heroBorder: 'border-rose-200/80',
+    accentText: 'text-rose-800',
+    badge: 'bg-rose-100/85 text-rose-800 border-rose-200/80',
+    progressBar: 'from-rose-400 to-pink-400',
+    unitBadge: 'from-rose-400 to-pink-400',
+    spotlight: 'rgba(251, 113, 133, 0.08)',
+    nodeHalo: 'ring-4 ring-rose-300/35',
+    nodeIdle: 'bg-white/90 border-2 border-rose-300/80 text-rose-700',
+    lineColor: 'bg-rose-300/65',
+    currentCard: 'bg-white/88 border-rose-300/85 shadow-sm shadow-rose-400/10',
+    actionIdle: 'bg-rose-50 text-rose-700 hover:bg-rose-100',
+  },
+  HSK5: {
+    label: 'HSK 5',
+    vocab: '2.500 từ',
+    subtitle: 'Báo chí, Công nghệ & Phân tích',
+    pillGradient: 'from-violet-300/90 via-purple-200/95 to-fuchsia-200/90',
+    heroBg: 'from-violet-100/92 via-purple-50/90 to-fuchsia-100/88',
+    heroBorder: 'border-violet-200/80',
+    accentText: 'text-violet-800',
+    badge: 'bg-violet-100/85 text-violet-800 border-violet-200/80',
+    progressBar: 'from-violet-400 to-purple-400',
+    unitBadge: 'from-violet-400 to-purple-400',
+    spotlight: 'rgba(167, 139, 250, 0.08)',
+    nodeHalo: 'ring-4 ring-violet-300/35',
+    nodeIdle: 'bg-white/90 border-2 border-violet-300/80 text-violet-700',
+    lineColor: 'bg-violet-300/65',
+    currentCard: 'bg-white/88 border-violet-300/85 shadow-sm shadow-violet-400/10',
+    actionIdle: 'bg-violet-50 text-violet-700 hover:bg-violet-100',
+  },
+  HSK6: {
+    label: 'HSK 6',
+    vocab: '5.000+ từ',
+    subtitle: 'Thành ngữ & Học thuật bản xứ',
+    pillGradient: 'from-fuchsia-300/90 via-pink-200/90 to-amber-200/95',
+    heroBg: 'from-fuchsia-100/90 via-pink-50/90 to-amber-100/88',
+    heroBorder: 'border-fuchsia-200/80',
+    accentText: 'text-fuchsia-800',
+    badge: 'bg-fuchsia-100/85 text-fuchsia-800 border-fuchsia-200/80',
+    progressBar: 'from-fuchsia-400 to-amber-400',
+    unitBadge: 'from-fuchsia-400 to-pink-400',
+    spotlight: 'rgba(232, 121, 249, 0.08)',
+    nodeHalo: 'ring-4 ring-fuchsia-300/35',
+    nodeIdle: 'bg-white/90 border-2 border-fuchsia-300/80 text-fuchsia-700',
+    lineColor: 'bg-fuchsia-300/65',
+    currentCard: 'bg-white/88 border-fuchsia-300/85 shadow-sm shadow-fuchsia-400/10',
+    actionIdle: 'bg-fuchsia-50 text-fuchsia-700 hover:bg-fuchsia-100',
+  },
 };
 
-export const CourseListPage: React.FC = () => {
-  const [courses, setCourses] = useState<CourseItem[]>([]);
-  const [selectedFilter, setSelectedFilter] = useState<string>('ALL');
-  const [isLoading, setIsLoading] = useState(true);
+const HSK_KEYS = ['HSK1', 'HSK2', 'HSK3', 'HSK4', 'HSK5', 'HSK6'] as const;
 
+function readLevelFromHash(): string | null {
+  if (typeof window === 'undefined') return null;
+  const raw = window.location.hash || '';
+  if (!raw.includes('?')) return null;
+  const level = new URLSearchParams(raw.split('?')[1]).get('level');
+  if (!level) return null;
+  const normalized = level.toUpperCase().replace(/\s+/g, '');
+  return HSK_META[normalized] ? normalized : null;
+}
+
+function normalizeChapters(detail: any): ChapterStation[] {
+  return (detail?.chapters || []).map((ch: any) => ({
+    chapterId: ch.chapterId || ch.chapter_id,
+    title: ch.title,
+    orderIndex: ch.orderIndex || ch.order_index || 1,
+    lessons: (ch.lessons || []).map((l: any) => ({
+      lessonId: l.lessonId || l.lesson_id,
+      title: l.title,
+      orderIndex: l.orderIndex || l.order_index || 1,
+      estimatedDurationMins: l.estimatedDurationMins || l.estimated_duration_mins || 15,
+      blocksCount: l.blocksCount ?? l._count?.blocks ?? 0,
+      vocabulariesCount: l.vocabulariesCount ?? l._count?.vocabularies ?? 0,
+      testsCount: l.testsCount ?? l._count?.tests ?? 0,
+      isUnlocked: l.isUnlocked ?? l.is_unlocked ?? true,
+      isCompleted: l.isCompleted ?? l.is_completed ?? false,
+      highestScore: l.highestScore ?? l.highest_score ?? 0,
+    })),
+  }));
+}
+
+export const CourseListPage: React.FC = () => {
+  const cachedCourses = getCached<CourseItem[]>('courses:list');
+  const [selectedLevel, setSelectedLevel] = useState<string>(() => readLevelFromHash() || 'HSK1');
+  const [courses, setCourses] = useState<CourseItem[]>(cachedCourses || []);
+  const [chapters, setChapters] = useState<ChapterStation[]>(() => {
+    if (!cachedCourses) return [];
+    const match = cachedCourses.find((c) => (c.level || '').toUpperCase() === (readLevelFromHash() || 'HSK1'));
+    const cid = match?.courseId || (match as any)?.course_id;
+    return cid ? getCached<ChapterStation[]>(`course:chapters:${cid}`) || [] : [];
+  });
+  const [activeCourse, setActiveCourse] = useState<CourseItem | null>(() => {
+    if (!cachedCourses) return null;
+    return cachedCourses.find((c) => (c.level || '').toUpperCase() === (readLevelFromHash() || 'HSK1')) || cachedCourses[0] || null;
+  });
+  const [isLoadingCourses, setIsLoadingCourses] = useState(!cachedCourses);
+  const [isFetchingLevel, setIsFetchingLevel] = useState(false);
+  const [, startTransition] = useTransition();
+
+  // Silky GPU sliding tab indicator (measured via local offsetLeft / offsetWidth — 0 layoutId jump!)
+  const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const [sliderStyle, setSliderStyle] = useState<{ left: number; top: number; width: number; height: number } | null>(null);
+
+  const measureSlider = () => {
+    const el = tabRefs.current[selectedLevel];
+    if (el) {
+      setSliderStyle({
+        left: el.offsetLeft,
+        top: el.offsetTop,
+        width: el.offsetWidth,
+        height: el.offsetHeight,
+      });
+    }
+  };
+
+  useLayoutEffect(() => {
+    measureSlider();
+    window.addEventListener('resize', measureSlider);
+    return () => window.removeEventListener('resize', measureSlider);
+  }, [selectedLevel]);
+
+  // Sync selectedLevel if user navigates via breadcrumb link like #/courses?level=HSK2
   useEffect(() => {
-    api
-      .get<any[]>('/curriculum/courses')
-      .then((data) => setCourses(data || []))
-      .catch(() => setCourses([]))
-      .finally(() => setIsLoading(false));
+    const syncLevel = () => {
+      const lvl = readLevelFromHash();
+      if (lvl) setSelectedLevel(lvl);
+    };
+    window.addEventListener('hashchange', syncLevel);
+    return () => window.removeEventListener('hashchange', syncLevel);
   }, []);
 
-  const filteredCourses =
-    selectedFilter === 'ALL'
-      ? courses
-      : courses.filter((c) => (c.level || '').toUpperCase() === selectedFilter);
+  // Load all HSK 1–6 courses (instant from SWR cache when revisited)
+  useEffect(() => {
+    if (cachedCourses) {
+      setIsLoadingCourses(false);
+      return;
+    }
+    api
+      .get<CourseItem[]>('/curriculum/courses')
+      .then((data) => {
+        const list = data || [];
+        setCached('courses:list', list);
+        setCourses(list);
+        const fromHash = readLevelFromHash();
+        if (fromHash) {
+          setSelectedLevel(fromHash);
+        } else {
+          const defaultCourse =
+            list.find((c) => (c.level || '').toUpperCase() === 'HSK1') || list[0] || null;
+          if (defaultCourse) {
+            setSelectedLevel((defaultCourse.level || 'HSK1').toUpperCase());
+          }
+        }
+      })
+      .catch(() => setCourses([]))
+      .finally(() => setIsLoadingCourses(false));
+  }, []);
+
+  // Load course chapters with instant cache hit (no layout collapse on switch!)
+  useEffect(() => {
+    if (courses.length === 0) return;
+    const match =
+      courses.find((c) => (c.level || '').toUpperCase() === selectedLevel) || courses[0];
+    setActiveCourse(match || null);
+    if (!match) return;
+
+    const cid = match.courseId || (match as any).course_id;
+    const cacheKey = `course:chapters:${cid}`;
+    const hit = getCached<ChapterStation[]>(cacheKey);
+
+    if (hit) {
+      setChapters(hit);
+      setIsFetchingLevel(false);
+      return;
+    }
+
+    let cancelled = false;
+    setIsFetchingLevel(true);
+    api
+      .get<any>(`/curriculum/courses/${cid}`)
+      .then((detail) => {
+        if (cancelled) return;
+        const normalized = normalizeChapters(detail);
+        setCached(cacheKey, normalized);
+        setChapters(normalized);
+      })
+      .catch(() => {
+        if (!cancelled) setChapters([]);
+      })
+      .finally(() => {
+        if (!cancelled) setIsFetchingLevel(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedLevel, courses]);
+
+  const meta = HSK_META[selectedLevel] || HSK_META.HSK1;
+  const allLessons = chapters.flatMap((c) => c.lessons);
+  const completedCount = allLessons.filter((l) => l.isCompleted).length;
+  const totalLessonsCount = allLessons.length;
+  const progressPercent =
+    totalLessonsCount > 0 ? Math.round((completedCount / totalLessonsCount) * 100) : 0;
+  const nextActiveLesson =
+    allLessons.find((l) => l.isUnlocked && !l.isCompleted) || allLessons[0] || null;
 
   return (
     <div className="max-w-5xl mx-auto py-8 px-4 sm:px-6 space-y-6">
-      {/* Simple Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      {/* Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-gray-900 flex items-center gap-2">
-            <Route className="w-6 h-6 text-primary-500" />
-            Lộ trình học
+          <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-slate-900 flex items-center gap-2.5 tracking-tight">
+            <span
+              className={`w-11 h-11 rounded-2xl bg-gradient-to-tr ${meta.unitBadge} text-white flex items-center justify-center shadow-md`}
+            >
+              <Route className="w-5 h-5" />
+            </span>
+            <span>Lộ trình học HSK 1 – 6</span>
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Chọn cấp độ HSK phù hợp để vào học theo từng bài.
+          <p className="text-sm text-slate-600 mt-1">
+            Học tiếng Trung từng bước theo cấp độ HSK 1 đến HSK 6, chia theo chủ đề và bài kiểm tra cuối chặng.
           </p>
         </div>
 
         <a
           href="#/onboarding?mode=survey"
-          className="text-xs font-bold text-primary-600 hover:underline self-start sm:self-auto"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl glass-light hover:bg-white text-xs font-extrabold text-rose-600 transition-colors self-start sm:self-auto"
         >
-          Thiết lập lại mục tiêu học
+          <SlidersHorizontal className="w-4 h-4" />
+          <span>Khảo sát & Điều chỉnh mục tiêu</span>
         </a>
       </div>
 
-      {/* Simple Level Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1">
-        <button
-          type="button"
-          onClick={() => setSelectedFilter('ALL')}
-          className={`px-4 py-2 rounded-xl text-sm font-bold transition-all shrink-0 cursor-pointer ${
-            selectedFilter === 'ALL'
-              ? 'bg-primary-500 text-white shadow-sm'
-              : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
-          }`}
-        >
-          Tất cả
-        </button>
+      {/* Silky Unified HSK 1–6 Pastel Track (Single GPU-gliding Pill — Zero Jump!) */}
+      <div className="relative p-1.5 rounded-[24px] glass-light grid grid-cols-3 sm:grid-cols-6 gap-1.5">
+        {sliderStyle && (
+          <div
+            aria-hidden="true"
+            style={{
+              transform: `translate3d(${sliderStyle.left}px, ${sliderStyle.top}px, 0)`,
+              width: sliderStyle.width,
+              height: sliderStyle.height,
+            }}
+            className={`pointer-events-none absolute top-0 left-0 rounded-[18px] bg-gradient-to-br ${meta.pillGradient} border border-white/95 shadow-sm transition-[transform,width,height,background] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]`}
+          />
+        )}
 
-        {(['HSK1', 'HSK2', 'HSK3', 'HSK4', 'HSK5', 'HSK6'] as const).map((lvl) => {
-          const isSelected = selectedFilter === lvl;
+        {HSK_KEYS.map((lvl) => {
+          const itemMeta = HSK_META[lvl];
+          const isSelected = selectedLevel === lvl;
           return (
             <button
               key={lvl}
+              ref={(el) => {
+                tabRefs.current[lvl] = el;
+              }}
               type="button"
-              onClick={() => setSelectedFilter(lvl)}
-              className={`px-4 py-2 rounded-xl text-sm font-bold transition-all shrink-0 cursor-pointer border ${
-                isSelected
-                  ? 'bg-primary-500 text-white border-primary-500 shadow-sm'
-                  : 'bg-white border-gray-200 text-gray-700 hover:border-primary-300 hover:text-primary-600'
+              onClick={() => startTransition(() => setSelectedLevel(lvl))}
+              className={`relative z-10 rounded-[18px] px-3 py-2.5 text-left transition-colors duration-200 cursor-pointer ${
+                isSelected ? 'text-slate-900' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              {lvl.replace('HSK', 'HSK ')}
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-display font-extrabold tracking-tight">
+                  {itemMeta.label}
+                </span>
+                <Sparkles
+                  className={`w-3.5 h-3.5 transition-opacity duration-200 ${
+                    isSelected ? 'opacity-80 text-slate-700' : 'opacity-0'
+                  }`}
+                />
+              </div>
+              <p
+                className={`text-[11px] font-semibold mt-0.5 ${
+                  isSelected ? 'text-slate-700' : 'text-slate-400'
+                }`}
+              >
+                {itemMeta.vocab}
+              </p>
             </button>
           );
         })}
       </div>
 
-      {/* Courses Grid */}
-      {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="h-52 rounded-2xl bg-gray-100 animate-pulse" />
+      {/* Dreamy Pastel Liquid Glass Hero Banner */}
+      <div
+        className={`relative overflow-hidden rounded-[28px] p-6 sm:p-8 bg-gradient-to-br ${meta.heroBg} border ${meta.heroBorder} backdrop-blur-2xl shadow-[0_14px_38px_-14px_rgba(148,163,184,0.25),inset_0_1.5px_1px_rgba(255,255,255,0.95)] transition-colors duration-300`}
+      >
+        <span
+          aria-hidden="true"
+          className="pointer-events-none select-none absolute right-6 -bottom-8 font-hanzi-serif font-black text-[140px] text-slate-900/[0.045] leading-none"
+        >
+          {selectedLevel.replace('HSK', '')}
+        </span>
+
+        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+          <div className="lg:col-span-8 space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={`px-3 py-1 rounded-full border text-xs font-extrabold ${meta.badge}`}>
+                {meta.label} • {meta.vocab}
+              </span>
+              <span className="px-3 py-1 rounded-full bg-white/70 border border-white text-slate-700 text-xs font-bold flex items-center gap-1">
+                <Flame className="w-3.5 h-3.5 text-amber-500 fill-amber-400" />
+                Học mới • Củng cố • Ôn lại
+              </span>
+            </div>
+
+            <h2 className="text-2xl sm:text-3xl font-display font-extrabold text-slate-900 tracking-tight">
+              {activeCourse?.title || `${meta.label} — ${meta.subtitle}`}
+            </h2>
+            <p className="text-sm text-slate-600 max-w-2xl leading-relaxed">
+              {activeCourse?.description || meta.subtitle}
+            </p>
+
+            {/* Progress Bar */}
+            <div className="pt-2 max-w-md space-y-1.5">
+              <div className="flex items-center justify-between text-xs font-bold text-slate-700">
+                <span>Tiến độ chinh phục {meta.label}</span>
+                <span>
+                  {completedCount}/{totalLessonsCount} bài (
+                  <NumberTicker value={progressPercent} suffix="%" />)
+                </span>
+              </div>
+              <div className="h-2.5 rounded-full bg-white/75 border border-white p-0.5 overflow-hidden">
+                <motion.div
+                  initial={false}
+                  animate={{ width: `${Math.max(progressPercent, 2)}%` }}
+                  transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                  className={`h-full rounded-full bg-gradient-to-r ${meta.progressBar}`}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="lg:col-span-4 flex flex-col sm:flex-row lg:flex-col gap-2.5 lg:items-end">
+            {nextActiveLesson && (
+              <ShimmerButton
+                href={`#/lessons/${nextActiveLesson.lessonId}`}
+                size="lg"
+                className="w-full lg:w-auto"
+              >
+                <Play className="w-4 h-4 fill-current" />
+                <span>Tiếp tục chặng hiện tại</span>
+              </ShimmerButton>
+            )}
+            {activeCourse && (
+              <a
+                href={`#/courses/${activeCourse.courseId}`}
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl bg-white/70 hover:bg-white border border-white/90 text-xs font-bold text-slate-700 transition-colors"
+              >
+                <BookMarked className="w-4 h-4 text-rose-500" />
+                <span>Giáo trình, Từ vựng & Đề thi {meta.label}</span>
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Learning Path Units (Smooth crossfade, zero sudden skeleton collapse!) */}
+      {isLoadingCourses ? (
+        <div className="space-y-4">
+          {[1, 2].map((i) => (
+            <div key={i} className="h-44 rounded-3xl glass-card-grid animate-pulse" />
           ))}
         </div>
-      ) : filteredCourses.length === 0 ? (
-        <div className="bg-white rounded-3xl p-12 text-center border border-gray-200 space-y-3">
-          <Layers className="w-10 h-10 text-gray-300 mx-auto" />
-          <h3 className="text-base font-bold text-gray-800">Chưa có khóa học cho cấp độ này</h3>
-          <button
-            type="button"
-            onClick={() => setSelectedFilter('ALL')}
-            className="px-4 py-2 bg-primary-500 text-white text-xs font-bold rounded-xl cursor-pointer"
-          >
-            Xem tất cả
-          </button>
-        </div>
+      ) : chapters.length === 0 && !isFetchingLevel ? (
+        <GlassCard className="p-12 text-center space-y-3">
+          <Layers className="w-10 h-10 text-slate-300 mx-auto" />
+          <h3 className="text-base font-bold text-slate-800">
+            Chưa có bài học cho cấp độ {selectedLevel}
+          </h3>
+          <p className="text-xs text-slate-500">
+            Nội dung bài học cho cấp độ này đang được cập nhật.
+          </p>
+        </GlassCard>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filteredCourses.map((course) => {
-            const courseId = (course as any).courseId || (course as any).course_id || 1;
-            const chaptersCount =
-              (course as any).chaptersCount ?? (course as any)._count?.chapters ?? 2;
-            const lvl = (course.level || 'HSK1').toUpperCase();
+        <motion.div
+          key={selectedLevel}
+          initial={{ opacity: 0.4, y: 5 }}
+          animate={{ opacity: isFetchingLevel ? 0.65 : 1, y: 0 }}
+          transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+          className="space-y-6"
+        >
+          {chapters.map((chapter, chIdx) => {
+            const unitDone = chapter.lessons.filter((l) => l.isCompleted).length;
+            const unitTotal = chapter.lessons.length;
 
             return (
-              <a
-                key={courseId}
-                href={`#/courses/${courseId}`}
-                className="bg-white rounded-2xl p-5 border border-gray-200 hover:border-primary-300 hover:shadow-md transition-all flex flex-col justify-between group"
+              <SpotlightCard
+                key={chapter.chapterId}
+                spotlightColor={meta.spotlight}
+                className="p-6 sm:p-7"
               >
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="px-3 py-1 rounded-full bg-primary-50 text-primary-600 font-extrabold text-xs">
-                      {lvl.replace('HSK', 'HSK ')}
-                    </span>
-                    <span className="text-xs text-gray-400 font-medium">
-                      {HSK_VOCAB[lvl] || 'HSK'}
-                    </span>
+                {/* Unit Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-white/75">
+                  <div className="flex items-center gap-3.5">
+                    <div
+                      className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${meta.unitBadge} text-white flex flex-col items-center justify-center shadow-sm shrink-0`}
+                    >
+                      <span className="text-[10px] font-bold uppercase opacity-90 leading-none">
+                        Unit
+                      </span>
+                      <span className="text-lg font-black leading-tight">{chIdx + 1}</span>
+                    </div>
+                    <div>
+                      <span
+                        className={`inline-block px-2.5 py-0.5 rounded-full border text-[11px] font-extrabold ${meta.badge}`}
+                      >
+                        Chặng {chIdx + 1} • {unitDone}/{unitTotal} bài hoàn thành
+                      </span>
+                      <h3 className="text-lg sm:text-xl font-display font-extrabold text-slate-900 mt-1">
+                        {chapter.title}
+                      </h3>
+                    </div>
                   </div>
 
-                  <div>
-                    <h3 className="text-lg font-extrabold text-gray-900 group-hover:text-primary-600 transition-colors">
-                      {course.title}
-                    </h3>
-                    {course.description && (
-                      <p className="text-xs text-gray-500 line-clamp-2 mt-1 leading-relaxed">
-                        {course.description}
-                      </p>
-                    )}
-                  </div>
+                  <a
+                    href={activeCourse ? `#/courses/${activeCourse.courseId}?tab=vocab` : '#/vocab'}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/65 hover:bg-white border border-white/85 text-xs font-bold text-slate-700 hover:text-rose-600 transition-colors self-start sm:self-auto"
+                  >
+                    <BookOpen className="w-3.5 h-3.5 text-rose-500" />
+                    <span>Từ vựng cấp độ này</span>
+                  </a>
                 </div>
 
-                <div className="pt-4 mt-5 border-t border-gray-100 flex items-center justify-between text-xs font-bold">
-                  <span className="flex items-center gap-1.5 text-gray-600">
-                    <BookOpen className="w-4 h-4 text-primary-500" />
-                    {chaptersCount} chương
-                  </span>
-                  <span className="flex items-center gap-1 text-primary-600 group-hover:translate-x-0.5 transition-transform">
-                    Vào học <ArrowRight className="w-3.5 h-3.5" />
-                  </span>
+                {/* Centered Timeline Rail */}
+                <div className="mt-4">
+                  {chapter.lessons.map((lesson, lIdx) => {
+                    const isCurrent =
+                      nextActiveLesson?.lessonId === lesson.lessonId && !lesson.isCompleted;
+                    const isFirst = lIdx === 0;
+                    const isLast = lIdx === chapter.lessons.length - 1;
+
+                    return (
+                      <div key={lesson.lessonId} className="flex items-stretch gap-3.5 sm:gap-4">
+                        <div className="w-10 shrink-0 flex flex-col items-center">
+                          <div
+                            aria-hidden="true"
+                            className={`w-[2px] flex-1 ${isFirst ? 'bg-transparent' : meta.lineColor}`}
+                          />
+                          <div
+                            className={`relative z-10 w-9 h-9 rounded-full flex items-center justify-center shrink-0 font-display font-extrabold text-xs transition-shadow ${
+                              lesson.isCompleted
+                                ? 'bg-gradient-to-tr from-emerald-400 to-teal-400 text-white shadow-sm'
+                                : isCurrent
+                                  ? `bg-gradient-to-tr ${meta.unitBadge} text-white shadow-md ${meta.nodeHalo}`
+                                  : lesson.isUnlocked
+                                    ? `${meta.nodeIdle} shadow-sm`
+                                    : 'bg-white/60 border border-slate-200/90 text-slate-400'
+                            }`}
+                          >
+                            {lesson.isCompleted ? (
+                              <CheckCircle2 className="w-4 h-4" />
+                            ) : !lesson.isUnlocked ? (
+                              <Lock className="w-3.5 h-3.5" />
+                            ) : (
+                              lIdx + 1
+                            )}
+                          </div>
+                          <div
+                            aria-hidden="true"
+                            className={`w-[2px] flex-1 ${isLast ? 'bg-transparent' : meta.lineColor}`}
+                          />
+                        </div>
+
+                        <div className="flex-1 py-1.5 min-w-0">
+                          <a
+                            href={lesson.isUnlocked ? `#/lessons/${lesson.lessonId}` : undefined}
+                            onClick={(e) => {
+                              if (!lesson.isUnlocked) e.preventDefault();
+                            }}
+                            className={`rounded-2xl p-4 border transition-colors duration-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                              isCurrent
+                                ? meta.currentCard
+                                : lesson.isUnlocked
+                                  ? 'bg-white/60 border-white/85 hover:bg-white/90 hover:border-white'
+                                  : 'bg-white/35 border-white/65 opacity-70 cursor-not-allowed'
+                            }`}
+                          >
+                            <div className="space-y-1 min-w-0">
+                              <div className="flex flex-wrap items-center gap-2">
+                                {isCurrent && (
+                                  <span
+                                    className={`px-2 py-0.5 rounded-md bg-gradient-to-r ${meta.unitBadge} text-white text-[10px] font-black uppercase`}
+                                  >
+                                    Đang học
+                                  </span>
+                                )}
+                                {lesson.isCompleted && (
+                                  <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 text-[10px] font-extrabold uppercase">
+                                    Hoàn thành {lesson.highestScore ? `• ${lesson.highestScore}%` : ''}
+                                  </span>
+                                )}
+                                <h4 className="text-sm sm:text-base font-display font-bold text-slate-900">
+                                  {lesson.title}
+                                </h4>
+                              </div>
+                              <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 font-medium">
+                                <span className="inline-flex items-center gap-1">
+                                  <Clock className="w-3.5 h-3.5 text-slate-400" />
+                                  {lesson.estimatedDurationMins} phút
+                                </span>
+                                <span className="inline-flex items-center gap-1">
+                                  <BookOpen className="w-3.5 h-3.5 text-amber-400" />
+                                  {lesson.vocabulariesCount || 4} từ trọng tâm
+                                </span>
+                                <span className="inline-flex items-center gap-1">
+                                  <Sparkles className="w-3.5 h-3.5 text-violet-400" />
+                                  {lesson.blocksCount || 2} phần nội dung
+                                </span>
+                              </div>
+                            </div>
+
+                            {lesson.isUnlocked ? (
+                              <span
+                                className={`inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl font-bold text-xs shrink-0 transition-colors ${
+                                  isCurrent
+                                    ? `bg-gradient-to-r ${meta.unitBadge} text-white shadow-sm`
+                                    : meta.actionIdle
+                                }`}
+                              >
+                                <Play className="w-3.5 h-3.5 fill-current" />
+                                <span>{lesson.isCompleted ? 'Ôn lại' : 'Vào học'}</span>
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-xs font-bold text-slate-400 shrink-0">
+                                <Lock className="w-3.5 h-3.5" />
+                                Hoàn thành bài trước
+                              </span>
+                            )}
+                          </a>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              </a>
+              </SpotlightCard>
             );
           })}
-        </div>
+
+          {/* Level Exam Checkpoint Card */}
+          <GlassCard className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-white/85">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-300 via-orange-300 to-rose-300 text-amber-950 flex items-center justify-center shadow-md shrink-0">
+                <Trophy className="w-7 h-7" />
+              </div>
+              <div>
+                <span className="inline-flex items-center gap-1 text-[11px] font-black uppercase tracking-wider text-amber-700">
+                  <Award className="w-3.5 h-3.5" />
+                  Đánh giá trình độ {meta.label}
+                </span>
+                <h4 className="text-base sm:text-lg font-display font-extrabold text-slate-900">
+                  Thử sức 5 Đề thi mô phỏng & Sách bài tập {meta.label}
+                </h4>
+                <p className="text-xs text-slate-600 mt-0.5">
+                  Kiểm tra năng lực tổng hợp để xác nhận độ vững kiến thức trước khi lên cấp tiếp theo.
+                </p>
+              </div>
+            </div>
+
+            <ShimmerButton href="#/exams" className="shrink-0">
+              <span>Vào phòng thi {meta.label}</span>
+              <ArrowRight className="w-4 h-4" />
+            </ShimmerButton>
+          </GlassCard>
+        </motion.div>
       )}
     </div>
   );

@@ -5,11 +5,13 @@ import { authorize } from '../../shared/middleware/rbac.middleware';
 
 const router = Router();
 
-// ─── Courses ──────────────────────────────────────────────────────────
+// ─── Courses & Vocabularies ───────────────────────────────────────────
+router.get('/vocabularies', optionalAuthenticate, curriculumController.listVocabularies);
 router.get('/courses', optionalAuthenticate, curriculumController.listCourses);
 router.get('/courses/:id', optionalAuthenticate, curriculumController.getCourseDetail);
 router.post('/courses', authenticate, authorize('ADMIN', 'CONTENT_EDITOR'), curriculumController.createCourse);
 router.put('/courses/:id', authenticate, authorize('ADMIN', 'CONTENT_EDITOR'), curriculumController.updateCourse);
+router.delete('/courses/:id', authenticate, authorize('ADMIN', 'CONTENT_EDITOR'), curriculumController.deleteCourse);
 router.post('/courses/:id/publish', authenticate, authorize('ADMIN', 'CONTENT_EDITOR'), curriculumController.publishCourse);
 
 // ─── Chapters ─────────────────────────────────────────────────────────

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import { api } from '../../lib/api';
 import { celebrateSuccess } from '../../lib/celebration';
 import { appConfirm, appNotice } from '../../lib/dialog';
@@ -19,6 +20,8 @@ import {
   Search,
   LogOut,
   Camera,
+  Sun,
+  Moon,
 } from 'lucide-react';
 
 const ROLE_LABEL: Record<string, string> = {
@@ -29,6 +32,7 @@ const ROLE_LABEL: Record<string, string> = {
 
 export const ProfilePage: React.FC = () => {
   const { user, updateUser, logout } = useAuth();
+  const { theme, setTheme } = useTheme();
   const isAdminRole = user?.role === 'ADMIN' || user?.role === 'CONTENT_EDITOR';
 
   const [displayName, setDisplayName] = useState('');
@@ -269,6 +273,61 @@ export const ProfilePage: React.FC = () => {
           {ROLE_LABEL[user?.role || 'STUDENT'] || user?.role}
         </span>
       </div>
+
+      {/* Theme Appearance Card (Light / Dark) */}
+      <GlassCard className="p-6 sm:p-8 space-y-4 rounded-[28px]">
+        <div className="flex items-center justify-between border-b border-white/75 pb-4">
+          <div className="flex items-center gap-3">
+            {theme === 'dark' ? (
+              <Moon className="w-5 h-5 text-indigo-400" />
+            ) : (
+              <Sun className="w-5 h-5 text-amber-500" />
+            )}
+            <div>
+              <h2 className="text-lg font-display font-bold text-gray-900">Giao diện hiển thị</h2>
+              <p className="text-xs text-gray-500">Áp dụng chế độ Sáng hoặc Tối cho toàn bộ hệ thống</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3.5">
+          <button
+            type="button"
+            onClick={() => setTheme('light')}
+            className={`p-4 rounded-2xl border text-left flex items-center gap-3.5 transition-all cursor-pointer ${
+              theme === 'light'
+                ? 'bg-rose-50/80 border-rose-400 ring-2 ring-rose-400/25 shadow-sm'
+                : 'bg-white/50 border-white/80 hover:bg-white/80'
+            }`}
+          >
+            <span className="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
+              <Sun className="w-5 h-5" />
+            </span>
+            <div>
+              <p className="text-sm font-bold text-gray-900">Giao diện sáng</p>
+              <p className="text-xs text-gray-500">Tươi sáng, rõ nét ban ngày</p>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setTheme('dark')}
+            className={`p-4 rounded-2xl border text-left flex items-center gap-3.5 transition-all cursor-pointer ${
+              theme === 'dark'
+                ? 'bg-slate-800/90 border-rose-400 ring-2 ring-rose-400/25 shadow-sm'
+                : 'bg-white/50 border-white/80 hover:bg-white/80'
+            }`}
+          >
+            <span className="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0">
+              <Moon className="w-5 h-5" />
+            </span>
+            <div>
+              <p className="text-sm font-bold text-gray-900">Giao diện tối</p>
+              <p className="text-xs text-gray-500">Dịu mắt khi học ban đêm</p>
+            </div>
+          </button>
+        </div>
+      </GlassCard>
 
       <form onSubmit={handleSaveProfile} className="space-y-6">
         {/* Section 1: Basic Profile & Single-Button Avatar */}

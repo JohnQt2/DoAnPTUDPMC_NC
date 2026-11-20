@@ -82,7 +82,7 @@ const HSK_META: Record<
     vocab: '150 từ',
     subtitle: 'Nhập môn & Giao tiếp cơ bản',
     pillGradient: 'from-emerald-300/90 via-teal-300/90 to-cyan-200/95',
-    heroBg: 'from-emerald-100/92 via-teal-50/90 to-cyan-100/90',
+    heroBg: 'from-emerald-200/32 via-white/16 to-cyan-200/30',
     heroBorder: 'border-emerald-200/80',
     accentText: 'text-emerald-800',
     badge: 'bg-emerald-100/85 text-emerald-800 border-emerald-200/80',
@@ -100,7 +100,7 @@ const HSK_META: Record<
     vocab: '300 từ',
     subtitle: 'Đời sống & Du lịch trôi chảy',
     pillGradient: 'from-sky-300/90 via-blue-300/85 to-indigo-200/95',
-    heroBg: 'from-sky-100/92 via-blue-50/90 to-indigo-100/90',
+    heroBg: 'from-sky-200/34 via-white/16 to-indigo-200/30',
     heroBorder: 'border-sky-200/80',
     accentText: 'text-sky-800',
     badge: 'bg-sky-100/85 text-sky-800 border-sky-200/80',
@@ -118,7 +118,7 @@ const HSK_META: Record<
     vocab: '600 từ',
     subtitle: 'Trung cấp & Văn hóa xã hội',
     pillGradient: 'from-amber-300/90 via-orange-200/90 to-rose-200/95',
-    heroBg: 'from-amber-100/92 via-orange-50/90 to-rose-100/88',
+    heroBg: 'from-amber-200/34 via-white/16 to-rose-200/30',
     heroBorder: 'border-amber-200/80',
     accentText: 'text-amber-800',
     badge: 'bg-amber-100/85 text-amber-800 border-amber-200/80',
@@ -136,7 +136,7 @@ const HSK_META: Record<
     vocab: '1.200 từ',
     subtitle: 'Công sở, Phỏng vấn & Thuyết trình',
     pillGradient: 'from-rose-300/90 via-pink-200/95 to-fuchsia-200/90',
-    heroBg: 'from-rose-100/92 via-pink-50/90 to-fuchsia-100/88',
+    heroBg: 'from-rose-200/34 via-white/16 to-fuchsia-200/30',
     heroBorder: 'border-rose-200/80',
     accentText: 'text-rose-800',
     badge: 'bg-rose-100/85 text-rose-800 border-rose-200/80',
@@ -154,7 +154,7 @@ const HSK_META: Record<
     vocab: '2.500 từ',
     subtitle: 'Báo chí, Công nghệ & Phân tích',
     pillGradient: 'from-violet-300/90 via-purple-200/95 to-fuchsia-200/90',
-    heroBg: 'from-violet-100/92 via-purple-50/90 to-fuchsia-100/88',
+    heroBg: 'from-violet-200/34 via-white/16 to-fuchsia-200/30',
     heroBorder: 'border-violet-200/80',
     accentText: 'text-violet-800',
     badge: 'bg-violet-100/85 text-violet-800 border-violet-200/80',
@@ -172,7 +172,7 @@ const HSK_META: Record<
     vocab: '5.000+ từ',
     subtitle: 'Thành ngữ & Học thuật bản xứ',
     pillGradient: 'from-fuchsia-300/90 via-pink-200/90 to-amber-200/95',
-    heroBg: 'from-fuchsia-100/90 via-pink-50/90 to-amber-100/88',
+    heroBg: 'from-fuchsia-200/32 via-white/16 to-amber-200/30',
     heroBorder: 'border-fuchsia-200/80',
     accentText: 'text-fuchsia-800',
     badge: 'bg-fuchsia-100/85 text-fuchsia-800 border-fuchsia-200/80',
@@ -423,9 +423,9 @@ export const CourseListPage: React.FC = () => {
         })}
       </div>
 
-      {/* Dreamy Pastel Liquid Glass Hero Banner */}
+      {/* iPhone Optical Liquid Glass Hero Banner */}
       <div
-        className={`relative overflow-hidden rounded-[28px] p-6 sm:p-8 bg-gradient-to-br ${meta.heroBg} border ${meta.heroBorder} backdrop-blur-2xl shadow-[0_14px_38px_-14px_rgba(148,163,184,0.25),inset_0_1.5px_1px_rgba(255,255,255,0.95)] transition-colors duration-300`}
+        className={`relative overflow-hidden rounded-[28px] p-6 sm:p-8 ios-hero-glass bg-gradient-to-br ${meta.heroBg} transition-colors duration-300`}
       >
         <span
           aria-hidden="true"

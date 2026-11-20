@@ -617,8 +617,8 @@ export const AdminCMSPage: React.FC<{ initialTab?: 'courses' | 'questions' | 'rb
 
     return (
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-6">
-        {/* Pastel Studio Header */}
-        <div className="relative overflow-hidden rounded-[28px] p-6 bg-gradient-to-r from-sky-100/92 via-indigo-50/90 to-rose-100/90 border border-white/95 backdrop-blur-2xl shadow-[0_14px_36px_-14px_rgba(148,163,184,0.25),inset_0_1.5px_1px_rgba(255,255,255,0.96)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        {/* iPhone Optical Liquid Glass Studio Header */}
+        <div className="relative overflow-hidden rounded-[28px] p-6 ios-hero-glass bg-gradient-to-r from-sky-200/32 via-white/18 to-rose-200/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <button
               type="button"
@@ -1205,8 +1205,8 @@ export const AdminCMSPage: React.FC<{ initialTab?: 'courses' | 'questions' | 'rb
   // ═══════════════════════════════════════════════════════════════════════
   return (
     <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-7">
-      {/* Pastel Admin Hero Header */}
-      <div className="relative overflow-hidden rounded-[28px] p-6 sm:p-8 bg-gradient-to-br from-sky-100/92 via-indigo-50/88 to-rose-100/90 border border-white/95 backdrop-blur-2xl shadow-[0_14px_38px_-14px_rgba(148,163,184,0.25),inset_0_1.5px_1px_rgba(255,255,255,0.96)]">
+      {/* iPhone Optical Liquid Glass Admin Hero Header */}
+      <div className="relative overflow-hidden rounded-[28px] p-6 sm:p-8 ios-hero-glass bg-gradient-to-br from-sky-200/32 via-white/18 to-rose-200/30">
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/75 border border-white text-xs font-bold text-indigo-700">

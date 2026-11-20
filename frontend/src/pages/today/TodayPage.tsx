@@ -99,12 +99,12 @@ export const TodayPage: React.FC = () => {
         </GlassCard>
       </div>
 
-      {/* Main Call-To-Action Pastel Liquid Glass Hero Banner */}
+      {/* Main Call-To-Action iPhone Liquid Glass Hero Lens */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="relative overflow-hidden rounded-[28px] p-6 sm:p-8 bg-gradient-to-br from-rose-100/95 via-amber-50/90 to-violet-100/90 border border-white/95 backdrop-blur-2xl shadow-[0_14px_38px_-14px_rgba(148,163,184,0.25),inset_0_1.5px_1px_rgba(255,255,255,0.96)]"
+        className="relative overflow-hidden rounded-[28px] p-6 sm:p-8 ios-hero-glass bg-gradient-to-br from-rose-200/32 via-white/18 to-violet-200/30"
       >
         <span
           aria-hidden="true"

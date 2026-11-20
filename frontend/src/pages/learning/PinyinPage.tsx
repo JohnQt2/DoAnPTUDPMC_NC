@@ -222,8 +222,8 @@ export const PinyinPage: React.FC = () => {
 
   return (
     <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6 space-y-7">
-      {/* Pastel Hero Header */}
-      <div className="relative overflow-hidden rounded-[28px] p-6 sm:p-8 bg-gradient-to-br from-violet-100/92 via-rose-50/90 to-sky-100/90 border border-white/95 backdrop-blur-2xl shadow-[0_14px_38px_-14px_rgba(148,163,184,0.25),inset_0_1.5px_1px_rgba(255,255,255,0.96)]">
+      {/* iPhone Optical Liquid Glass Hero Header */}
+      <div className="relative overflow-hidden rounded-[28px] p-6 sm:p-8 ios-hero-glass bg-gradient-to-br from-violet-200/34 via-white/18 to-sky-200/30">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div className="space-y-2 max-w-2xl">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/75 border border-white text-xs font-extrabold uppercase tracking-wider text-violet-700">

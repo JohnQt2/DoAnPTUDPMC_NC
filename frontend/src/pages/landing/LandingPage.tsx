@@ -69,98 +69,114 @@ export const LandingPage: React.FC = () => {
   };
 
   return (
-    <div className="text-[#F4F2EE]">
-      {/* ── 01. EDITORIAL 3D HERO (Lettra × ThreeUI × Lucian #216/#001) ── */}
-      <section className="max-w-6xl mx-auto px-5 sm:px-8 pt-10 pb-16 lg:pt-16 lg:pb-24">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
+    <div className="text-zinc-950">
+      {/* ── 01. MINIMALIST SAAS HERO ── */}
+      <section className="max-w-6xl mx-auto px-5 sm:px-8 pt-12 pb-16 lg:pt-20 lg:pb-24">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
           {/* Left Editorial Column */}
-          <div className="lg:col-span-6 space-y-7">
+          <div className="lg:col-span-6 space-y-6">
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.45, ease: [0.2, 0.8, 0.2, 1] }}
-              className="inline-flex items-center gap-2.5 text-[11px] font-mono uppercase tracking-[0.2em] text-white/55"
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-zinc-200 text-[11px] font-medium text-zinc-600 shadow-[0_1px_2px_rgba(9,9,11,0.03)]"
             >
-              <span className="w-2 h-2 rounded-full bg-[#D93A55]" />
-              <span>Hanzi4U · Học tiếng Trung chuẩn HSK 1–6</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#BE123C]" />
+              <span>Hanzi4U · Lộ trình tiếng Trung chuẩn HSK 1–6</span>
             </motion.div>
 
             <MaskedHeadline
               lines={['Tiếng Trung bài bản,', 'tinh gọn từng nét chữ.']}
               accentLineIndex={1}
-              className="text-4xl sm:text-5xl lg:text-[56px] text-[#F4F2EE]"
+              className="text-4xl sm:text-5xl lg:text-[54px] text-zinc-950"
             />
 
             <motion.p
-              initial={{ opacity: 0, y: 12 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, delay: 0.3, ease: [0.2, 0.8, 0.2, 1] }}
-              className="text-[15.5px] sm:text-base text-white/60 max-w-lg leading-relaxed"
+              transition={{ duration: 0.4, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              className="text-[15px] sm:text-base text-zinc-600 max-w-lg leading-relaxed"
             >
               Học Pinyin 63 âm chuẩn phổ thông, xem thứ tự từng nét thư pháp, ghi nhớ từ vựng bằng
-              thẻ lặp lại ngắt quãng và thi thử HSK trong một không gian tập trung, gọn gàng.
+              thẻ lặp lại ngắt quãng và thi thử HSK trong một không gian tối giản, tập trung tuyệt đối.
             </motion.p>
 
-            {/* Lucian #001 Magnetic Liquid Glass CTAs */}
+            {/* Restrained Executive CTAs */}
             <motion.div
-              initial={{ opacity: 0, y: 12 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, delay: 0.42, ease: [0.2, 0.8, 0.2, 1] }}
-              className="flex flex-wrap items-center gap-3.5 pt-1"
+              transition={{ duration: 0.4, delay: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              className="flex flex-wrap items-center gap-3 pt-1"
             >
-              <LucianLiquidButton href="#/login" variant="vermilion" size="lg">
+              <LucianLiquidButton href="#/login" variant="ink" size="lg">
                 <span>Bắt đầu học ngay</span>
                 <ArrowRight className="w-4 h-4" />
               </LucianLiquidButton>
-              <LucianLiquidButton href="#/login?tab=register" variant="glass-dark" size="lg">
+              <LucianLiquidButton href="#/login?tab=register" variant="glass-light" size="lg">
                 <span>Tạo tài khoản miễn phí</span>
               </LucianLiquidButton>
             </motion.div>
 
-            {/* Quiet Hairline Editorial Stats (OTTO / Zero style) */}
+            {/* Hairline Metric Bar */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.65, delay: 0.55 }}
-              className="grid grid-cols-3 gap-6 pt-6 border-t border-white/[0.09] max-w-md"
+              transition={{ duration: 0.45, delay: 0.36 }}
+              className="grid grid-cols-3 gap-6 pt-6 border-t border-zinc-200 max-w-md"
             >
               <div>
-                <p className="font-display text-2xl font-extrabold text-white tabular-nums">63</p>
-                <p className="text-[11px] text-white/45 mt-0.5">Âm Pinyin chuẩn</p>
+                <p className="font-display text-2xl font-bold text-zinc-950 tabular-nums tracking-tight">
+                  63
+                </p>
+                <p className="text-xs text-zinc-500 mt-0.5">Âm Pinyin chuẩn</p>
               </div>
               <div>
-                <p className="font-display text-2xl font-extrabold text-white tabular-nums">HSK 1–6</p>
-                <p className="text-[11px] text-white/45 mt-0.5">Lộ trình cá nhân</p>
+                <p className="font-display text-2xl font-bold text-zinc-950 tabular-nums tracking-tight">
+                  HSK 1–6
+                </p>
+                <p className="text-xs text-zinc-500 mt-0.5">Lộ trình cá nhân</p>
               </div>
               <div>
-                <p className="font-display text-2xl font-extrabold text-white tabular-nums">48+</p>
-                <p className="text-[11px] text-white/45 mt-0.5">Bộ đề & bài tập</p>
+                <p className="font-display text-2xl font-bold text-zinc-950 tabular-nums tracking-tight">
+                  48+
+                </p>
+                <p className="text-xs text-zinc-500 mt-0.5">Bộ đề & bài tập</p>
               </div>
             </motion.div>
           </div>
 
-          {/* Right Interactive 3D Liquid Glass Stage (ThreeUI WebGL Physical Glass + Floating iPhone Glass Bar) */}
+          {/* Right Architectural 3D Crystal Specimen Card */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.7, delay: 0.15, ease: [0.2, 0.8, 0.2, 1] }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
             className="lg:col-span-6 relative"
           >
-            <div className="relative h-[430px] sm:h-[490px] w-full rounded-[32px] border border-white/[0.09] bg-white/[0.02] overflow-hidden">
-              {/* Real-Time Interactive 3D Liquid Crystal Sculpture + Floating Hanzi */}
-              <ThreeLiquidHeroScene activeHanzi={active.hanzi} mode="dark" className="w-full h-full" />
+            <div className="relative h-[420px] sm:h-[470px] w-full rounded-2xl border border-zinc-200 bg-white shadow-[0_12px_40px_-16px_rgba(9,9,11,0.08)] overflow-hidden">
+              {/* Subtle architectural dot-grid backdrop */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 opacity-[0.45]"
+                style={{
+                  backgroundImage: 'radial-gradient(#d4d4d8 1px, transparent 1px)',
+                  backgroundSize: '20px 20px',
+                }}
+              />
+
+              {/* Real-Time Interactive 3D Crystal Sculpture + Floating Hanzi */}
+              <ThreeLiquidHeroScene activeHanzi={active.hanzi} mode="light" className="w-full h-full relative z-[1]" />
 
               {/* Top-left subtle gallery tag */}
-              <div className="pointer-events-none absolute top-5 left-5 flex items-center gap-2 text-[11px] font-mono text-white/45">
-                <span>SPECIMEN · 3D GLASS</span>
-                <span className="text-white/20">/</span>
-                <span className="text-white/75">{active.tone}</span>
+              <div className="pointer-events-none absolute top-4 left-4 z-10 flex items-center gap-2 px-2.5 py-1 rounded-md bg-white/90 border border-zinc-200/80 text-[11px] font-mono text-zinc-500">
+                <span>SPECIMEN</span>
+                <span className="text-zinc-300">/</span>
+                <span className="text-zinc-900 font-semibold">{active.tone}</span>
               </div>
 
-              {/* Bottom Floating iPhone Liquid Glass Interactive Control Dock */}
-              <div className="absolute inset-x-4 bottom-4 sm:inset-x-5 sm:bottom-5 p-3 sm:p-3.5 rounded-[24px] bg-white/[0.07] backdrop-blur-2xl border border-white/[0.18] shadow-[0_20px_48px_rgba(0,0,0,0.45),inset_0_1.5px_1px_rgba(255,255,255,0.28)] flex flex-wrap sm:flex-nowrap items-center justify-between gap-3">
-                {/* Character Selector Pills */}
-                <div className="flex items-center gap-1.5">
+              {/* Bottom Crisp Frosted Specimen Dock */}
+              <div className="absolute inset-x-3.5 bottom-3.5 sm:inset-x-4 sm:bottom-4 z-10 p-2.5 sm:p-3 rounded-xl bg-white/92 backdrop-blur-md border border-zinc-200 shadow-[0_8px_24px_-8px_rgba(9,9,11,0.08)] flex flex-wrap sm:flex-nowrap items-center justify-between gap-3">
+                {/* Character Selector */}
+                <div className="flex items-center gap-1">
                   {SPECIMEN_CHARS.map((item, idx) => {
                     const isSelected = idx === selectedIdx;
                     return (
@@ -168,10 +184,10 @@ export const LandingPage: React.FC = () => {
                         key={item.hanzi}
                         type="button"
                         onClick={() => setSelectedIdx(idx)}
-                        className={`w-10 h-10 rounded-xl font-hanzi-serif text-lg font-bold transition-all cursor-pointer ${
+                        className={`w-9 h-9 rounded-lg font-hanzi-serif text-base font-bold transition-colors cursor-pointer ${
                           isSelected
-                            ? 'bg-white text-[#16151B] shadow-md'
-                            : 'bg-white/[0.06] text-white/70 hover:bg-white/[0.14] hover:text-white'
+                            ? 'bg-zinc-900 text-white'
+                            : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-950'
                         }`}
                       >
                         {item.hanzi}
@@ -183,21 +199,21 @@ export const LandingPage: React.FC = () => {
                 {/* Live Reading Info + Audio */}
                 <div className="flex items-center gap-3 ml-auto">
                   <div className="text-right leading-tight">
-                    <p className="text-sm font-mono font-bold text-white">
+                    <p className="text-[13px] font-mono font-bold text-zinc-950">
                       {active.pinyin}{' '}
-                      <span className="font-sans font-normal text-white/55">· {active.meaning}</span>
+                      <span className="font-sans font-normal text-zinc-500">· {active.meaning}</span>
                     </p>
-                    <p className="text-[11px] text-white/45 mt-0.5">{active.phrase}</p>
+                    <p className="text-[11px] text-zinc-500 mt-0.5">{active.phrase}</p>
                   </div>
 
                   <button
                     type="button"
                     onClick={handleSpeak}
                     aria-label={`Nghe phát âm chữ ${active.hanzi}`}
-                    className={`w-10 h-10 rounded-full flex items-center justify-center border transition-all cursor-pointer shrink-0 ${
+                    className={`w-9 h-9 rounded-lg flex items-center justify-center border transition-colors cursor-pointer shrink-0 ${
                       isSpeaking
-                        ? 'bg-[#D93A55] border-[#D93A55] text-white scale-105'
-                        : 'bg-white/[0.10] hover:bg-[#D93A55] border-white/20 text-white'
+                        ? 'bg-[#BE123C] border-[#BE123C] text-white'
+                        : 'bg-zinc-50 hover:bg-zinc-900 border-zinc-200 hover:border-zinc-900 text-zinc-700 hover:text-white'
                     }`}
                   >
                     <Volume2 className="w-4 h-4" />
@@ -209,41 +225,43 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* ── 02. EDITORIAL FEATURE INDEX (Hairline Catalogue inspired by OTTO & Zero) ── */}
-      <section className="max-w-6xl mx-auto px-5 sm:px-8 py-16 border-t border-white/[0.08]">
+      {/* ── 02. ARCHITECTURAL FEATURE GRID ── */}
+      <section className="max-w-6xl mx-auto px-5 sm:px-8 py-16 border-t border-zinc-200">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
-          <div className="space-y-2">
-            <p className="text-[11px] font-mono uppercase tracking-[0.2em] text-white/40">
+          <div className="space-y-1.5">
+            <p className="text-[11px] font-mono uppercase tracking-[0.16em] text-zinc-500">
               Cấu trúc học tập
             </p>
-            <h2 className="text-2xl sm:text-3xl font-display font-bold text-[#F4F2EE] tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-display font-bold text-zinc-950 tracking-tight">
               Bốn trụ cột để tự tin dùng tiếng Trung
             </h2>
           </div>
-          <p className="text-xs sm:text-sm text-white/50 max-w-sm">
-            Mọi công cụ cần thiết đều gói gọn trong một giao diện tĩnh lặng, không quảng cáo, không xao nhãng.
+          <p className="text-sm text-zinc-500 max-w-sm">
+            Mọi công cụ cốt lõi gói gọn trong một không gian tĩnh lặng — không quảng cáo, không hiệu ứng gây xao nhãng.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 border-t border-l border-white/[0.08]">
-          {EDITORIAL_PILLARS.map((item) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 rounded-2xl border border-zinc-200 bg-white overflow-hidden divide-y md:divide-y-0 md:grid-rows-2">
+          {EDITORIAL_PILLARS.map((item, idx) => (
             <div
               key={item.index}
-              className="p-7 sm:p-8 border-r border-b border-white/[0.08] bg-white/[0.015] hover:bg-white/[0.04] transition-colors duration-300 flex flex-col justify-between gap-6"
+              className={`p-7 sm:p-8 hover:bg-zinc-50/70 transition-colors duration-200 flex flex-col justify-between gap-6 ${
+                idx % 2 === 1 ? 'md:border-l md:border-zinc-200' : ''
+              } ${idx >= 2 ? 'md:border-t md:border-zinc-200' : ''}`}
             >
-              <div className="space-y-4">
+              <div className="space-y-3.5">
                 <div className="flex items-center justify-between text-[11px] font-mono tracking-wider">
-                  <span className="text-[#D93A55] font-bold">{item.index}</span>
-                  <span className="text-white/40">{item.tag}</span>
+                  <span className="text-[#BE123C] font-semibold">{item.index}</span>
+                  <span className="text-zinc-400">{item.tag}</span>
                 </div>
-                <h3 className="text-lg sm:text-xl font-display font-bold text-white leading-snug">
+                <h3 className="text-lg font-display font-semibold text-zinc-950 leading-snug">
                   {item.title}
                 </h3>
-                <p className="text-sm text-white/55 leading-relaxed">{item.desc}</p>
+                <p className="text-sm text-zinc-600 leading-relaxed">{item.desc}</p>
               </div>
-              <div className="pt-4 border-t border-white/[0.06] flex items-center justify-between text-xs text-white/45">
+              <div className="pt-4 border-t border-zinc-100 flex items-center justify-between text-xs text-zinc-500">
                 <span className="font-mono">{item.meta}</span>
-                <ArrowUpRight className="w-4 h-4 text-white/30" />
+                <ArrowUpRight className="w-4 h-4 text-zinc-400" />
               </div>
             </div>
           ))}
@@ -251,14 +269,14 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* ── 03. CLEAN HSK 1–6 ROADMAP STRIP ── */}
-      <section className="max-w-6xl mx-auto px-5 sm:px-8 py-14 border-t border-white/[0.08]">
-        <div className="flex items-baseline justify-between mb-8">
-          <h2 className="text-xl sm:text-2xl font-display font-bold text-white tracking-tight">
+      <section className="max-w-6xl mx-auto px-5 sm:px-8 py-14 border-t border-zinc-200">
+        <div className="flex items-baseline justify-between mb-8 gap-4">
+          <h2 className="text-xl sm:text-2xl font-display font-bold text-zinc-950 tracking-tight">
             Lộ trình chuẩn HSK 1 đến HSK 6
           </h2>
           <a
             href="#/login?tab=register"
-            className="text-xs font-semibold text-white/60 hover:text-white inline-flex items-center gap-1 transition-colors"
+            className="text-xs font-semibold text-zinc-600 hover:text-zinc-950 inline-flex items-center gap-1 transition-colors shrink-0"
           >
             <span>Khảo sát xếp trình độ</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -269,13 +287,13 @@ export const LandingPage: React.FC = () => {
           {HSK_STRIP.map((row) => (
             <div
               key={row.level}
-              className="p-4 rounded-2xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.08] transition-colors space-y-2"
+              className="p-4 rounded-xl bg-white hover:border-zinc-300 border border-zinc-200 transition-colors space-y-2 shadow-[0_1px_2px_rgba(9,9,11,0.03)]"
             >
               <div className="flex items-center justify-between">
-                <span className="font-display font-extrabold text-sm text-white">{row.level}</span>
-                <span className="text-[11px] font-mono text-[#D93A55]">{row.words}</span>
+                <span className="font-display font-bold text-sm text-zinc-950">{row.level}</span>
+                <span className="text-[11px] font-mono font-medium text-[#BE123C]">{row.words}</span>
               </div>
-              <p className="text-xs text-white/50 leading-relaxed">{row.focus}</p>
+              <p className="text-xs text-zinc-500 leading-relaxed">{row.focus}</p>
             </div>
           ))}
         </div>
@@ -283,16 +301,16 @@ export const LandingPage: React.FC = () => {
 
       {/* ── 04. QUIET CLOSING CTA ── */}
       <section className="max-w-6xl mx-auto px-5 sm:px-8 pt-6 pb-20">
-        <div className="rounded-[32px] p-8 sm:p-12 bg-white/[0.04] backdrop-blur-2xl border border-white/[0.12] shadow-[inset_0_1.5px_1px_rgba(255,255,255,0.18)] flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2 max-w-xl">
-            <h2 className="text-2xl sm:text-3xl font-display font-bold text-white tracking-tight">
+        <div className="rounded-2xl p-8 sm:p-10 bg-white border border-zinc-200 shadow-[0_4px_20px_-8px_rgba(9,9,11,0.06)] flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-1.5 max-w-xl">
+            <h2 className="text-2xl font-display font-bold text-zinc-950 tracking-tight">
               Sẵn sàng cho 15 phút tiếng Trung đầu tiên hôm nay?
             </h2>
-            <p className="text-sm text-white/55">
+            <p className="text-sm text-zinc-600">
               Đăng nhập bằng Google hoặc Gmail trong 10 giây, tiến độ học được đồng bộ xuyên suốt giữa máy tính và điện thoại.
             </p>
           </div>
-          <LucianLiquidButton href="#/login?tab=register" variant="vermilion" size="lg" className="shrink-0">
+          <LucianLiquidButton href="#/login?tab=register" variant="ink" size="lg" className="shrink-0">
             <span>Mở lộ trình miễn phí</span>
             <ArrowRight className="w-4 h-4" />
           </LucianLiquidButton>

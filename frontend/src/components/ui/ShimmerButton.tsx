@@ -8,6 +8,12 @@ interface ShimmerButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   children: React.ReactNode;
 }
 
+/**
+ * Refined 2026 Executive SaaS Button (Linear / Vercel / Stripe precision):
+ * - Clean deep charcoal ink (#18181B) primary CTA with crisp 1px top inset sheen
+ * - Clean porcelain white (#FFFFFF) + zinc-200 border secondary button
+ * - Zero neon gradients, zero infinite animated shimmer bars
+ */
 export const ShimmerButton: React.FC<ShimmerButtonProps> = ({
   href,
   variant = 'primary',
@@ -17,39 +23,30 @@ export const ShimmerButton: React.FC<ShimmerButtonProps> = ({
   ...props
 }) => {
   const baseClasses = cn(
-    'relative inline-flex items-center justify-center gap-2 overflow-hidden font-bold rounded-2xl transition-[background,box-shadow,border-color,opacity] duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 whitespace-nowrap',
-    size === 'sm' && 'px-4 py-2 text-xs min-h-[38px]',
-    size === 'md' && 'px-5 py-3 text-sm min-h-[46px]',
-    size === 'lg' && 'px-7 py-4 text-base min-h-[52px]',
+    'relative inline-flex items-center justify-center gap-2 font-semibold rounded-xl transition-[background-color,border-color,box-shadow,opacity] duration-150 cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 whitespace-nowrap select-none',
+    size === 'sm' && 'px-3.5 py-2 text-xs h-9',
+    size === 'md' && 'px-4 py-2.5 text-sm h-10',
+    size === 'lg' && 'px-6 py-3 text-sm h-11',
     variant === 'primary' &&
-      'bg-gradient-to-r from-rose-500 via-pink-500 to-amber-400 hover:brightness-105 text-white shadow-md shadow-rose-400/25 hover:shadow-lg hover:shadow-rose-400/30',
+      'bg-[#18181B] hover:bg-[#27272A] text-white border border-zinc-900 shadow-[0_1px_2px_rgba(9,9,11,0.12),inset_0_1px_0_rgba(255,255,255,0.14)]',
     variant === 'glass-dark' &&
-      'bg-white/10 hover:bg-white/16 text-white border border-white/25 backdrop-blur-md shadow-lg shadow-black/20',
+      'bg-white/10 hover:bg-white/15 text-white border border-white/15',
     variant === 'glass-light' &&
-      'bg-white/85 hover:bg-white text-gray-800 border border-white/90 backdrop-blur-md shadow-sm hover:shadow-md',
+      'bg-white hover:bg-zinc-50 text-zinc-900 border border-zinc-200 shadow-[0_1px_2px_rgba(9,9,11,0.04)]',
     className
-  );
-
-  const sheen = (
-    <span
-      aria-hidden="true"
-      className="pointer-events-none absolute inset-0 -translate-x-full animate-shimmer-sweep bg-gradient-to-r from-transparent via-white/25 to-transparent"
-    />
   );
 
   if (href) {
     return (
       <a href={href} className={baseClasses}>
-        {variant === 'primary' && sheen}
-        <span className="relative z-10 inline-flex items-center gap-2">{children}</span>
+        {children}
       </a>
     );
   }
 
   return (
     <button className={baseClasses} {...props}>
-      {variant === 'primary' && sheen}
-      <span className="relative z-10 inline-flex items-center gap-2">{children}</span>
+      {children}
     </button>
   );
 };

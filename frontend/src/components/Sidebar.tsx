@@ -1,10 +1,5 @@
 import React, { useState, useRef, useLayoutEffect, useMemo } from 'react';
-import {
-  motion,
-  AnimatePresence,
-  useMotionValue,
-  useSpring,
-} from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
 import { getCached, setCached } from '../lib/cache';
@@ -36,7 +31,7 @@ export const STUDENT_SIDEBAR_ITEMS = [
   { label: 'Tiến độ', hash: '#/progress', icon: TrendingUp },
 ];
 
-// Deduplicated background hover prefetch so clicking menu items renders instantly
+// Deduplicated background hover prefetch so clicking any menu item feels instant
 const prefetchedInFlight = new Set<string>();
 function prefetchRouteData(hash: string) {
   if (prefetchedInFlight.has(hash)) return;
@@ -79,10 +74,10 @@ interface NavContentProps {
 }
 
 /**
- * Clean Floating iPhone / ThreeUI AnimatedTopDock-Inspired Sidebar:
- * - Zero nested backdrop-filter inside .liquid-sidebar (120fps instant response)
- * - Proximity subtle scale wave on hover (inspired by MengTo/threeui topDockController)
- * - Clean restrained ink (#16151B) + Seal Vermilion (#D93A55) accent (zero rainbow clutter)
+ * 2026 Minimalist Executive Sidebar (Linear / Vercel / Claude precision):
+ * - Full-height pure #FFFFFF rail with 1px zinc-200 border
+ * - Pixel-aligned 36px rows, crisp neutral #F4F4F5 active indicator sliding smoothly on GPU translate3d
+ * - Zero bounce, zero blur lag, zero visual bloat
  */
 const SidebarNavContent: React.FC<NavContentProps> = ({
   menuItems,
@@ -94,88 +89,75 @@ const SidebarNavContent: React.FC<NavContentProps> = ({
   onSelect,
 }) => {
   const itemRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
-  const hasMountedRef = useRef(false);
-
-  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
-  const [activeVisible, setActiveVisible] = useState(false);
-  const [activeHeight, setActiveHeight] = useState(44);
-
-  // Smooth spring-damper active capsule (zero scroll jump, GPU-pure)
-  const activeTargetY = useMotionValue(0);
-  const activeY = useSpring(activeTargetY, { stiffness: 340, damping: 28, mass: 0.65 });
+  const [activeRect, setActiveRect] = useState<{ top: number; height: number } | null>(null);
 
   useLayoutEffect(() => {
     const el = itemRefs.current[activeHash];
-    if (!el) {
-      setActiveVisible(false);
-      hasMountedRef.current = false;
-      return;
-    }
-    setActiveHeight(el.offsetHeight);
-    if (!hasMountedRef.current) {
-      activeTargetY.jump(el.offsetTop);
-      activeY.jump(el.offsetTop);
-      hasMountedRef.current = true;
+    if (el) {
+      setActiveRect({ top: el.offsetTop, height: el.offsetHeight });
     } else {
-      activeTargetY.set(el.offsetTop);
+      setActiveRect(null);
     }
-    setActiveVisible(true);
-  }, [activeHash, menuItems.length, activeTargetY, activeY]);
+  }, [activeHash, menuItems.length]);
 
   return (
     <div className="flex flex-col h-full">
-      {/* Clean Editorial Brand Mark */}
-      <div className="px-5 pt-6 pb-5 border-b border-[#16151B]/[0.07]">
+      {/* Brand Header */}
+      <div className="h-14 px-4 flex items-center border-b border-zinc-200/80 shrink-0">
         <a
           href={isAdmin ? '#/admin/courses' : '#/today'}
           onClick={onSelect}
-          className="flex items-center gap-3 group"
+          className="flex items-center gap-2.5"
         >
           <span
             aria-hidden="true"
-            className="w-9 h-9 rounded-xl bg-[#16151B] text-[#F4F2EE] flex items-center justify-center font-hanzi-serif font-bold text-lg shadow-sm transition-transform duration-200 group-hover:scale-105"
+            className="w-7 h-7 rounded-lg bg-[#09090B] text-white flex items-center justify-center font-hanzi-serif font-bold text-sm"
           >
             汉
           </span>
-          <div className="flex flex-col">
-            <span className="font-display font-extrabold text-xl tracking-tight text-[#16151B] leading-none">
-              Hanzi<span className="text-[#D93A55]">4U</span>
+          <div className="flex items-baseline gap-1.5">
+            <span className="font-display font-bold text-[16px] tracking-tight text-zinc-950 leading-none">
+              Hanzi<span className="text-[#BE123C]">4U</span>
             </span>
-            <span className="text-[10px] font-mono uppercase tracking-[0.14em] text-[#8E8A97] mt-1">
-              {isAdmin ? (isSuperAdmin ? 'Quản trị' : 'Biên tập') : 'HSK 1–6 Studio'}
-            </span>
+            {isAdmin && (
+              <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 bg-zinc-100 border border-zinc-200 px-1.5 py-0.5 rounded">
+                {isSuperAdmin ? 'Admin' : 'CMS'}
+              </span>
+            )}
           </div>
         </a>
       </div>
 
-      {/* Navigation Dock List */}
-      <nav
-        className="relative flex-1 px-3 py-4 flex flex-col gap-1 overflow-y-auto no-scrollbar"
-        aria-label={isAdmin ? 'Menu quản trị' : 'Menu học tập'}
-        onMouseLeave={() => setHoveredIdx(null)}
-      >
-        {/* Active Crisp iPhone Liquid Glass Pill (zero nested blur -> locked 120fps) */}
-        <motion.div
-          aria-hidden="true"
-          style={{ y: activeY, height: activeHeight }}
-          animate={{ opacity: activeVisible ? 1 : 0 }}
-          transition={{ duration: 0.16 }}
-          className="pointer-events-none absolute left-3 right-3 top-0 m-0 rounded-2xl bg-white/88 border border-white shadow-[0_8px_22px_-10px_rgba(22,21,27,0.16),inset_0_1.5px_1px_rgba(255,255,255,1)] will-change-transform"
-        >
-          <span className="absolute left-1.5 top-1/2 -translate-y-1/2 w-[3px] h-4 rounded-full bg-[#D93A55]" />
-        </motion.div>
+      {/* Navigation Group Label */}
+      <div className="px-4 pt-5 pb-1.5">
+        <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-zinc-400">
+          {isAdmin ? 'Quản trị hệ thống' : 'Không gian học'}
+        </span>
+      </div>
 
-        {menuItems.map((item, idx) => {
+      {/* Navigation Items */}
+      <nav
+        className="relative flex-1 px-2.5 pb-4 flex flex-col gap-0.5 overflow-y-auto no-scrollbar"
+        aria-label={isAdmin ? 'Menu quản trị' : 'Menu học tập'}
+      >
+        {/* Crisp Neutral Active Indicator Pill (GPU translate3d, 100% scroll-immune) */}
+        {activeRect && (
+          <span
+            aria-hidden="true"
+            style={{
+              transform: `translate3d(0, ${activeRect.top}px, 0)`,
+              height: activeRect.height,
+            }}
+            className="pointer-events-none absolute left-2.5 right-2.5 top-0 rounded-lg bg-zinc-100 border border-zinc-200/70 transition-transform duration-150 ease-out"
+          />
+        )}
+
+        {menuItems.map((item) => {
           const Icon = item.icon;
           const active = item.hash === activeHash;
 
-          // ThreeUI AnimatedTopDock proximity magnification (subtle, crisp, zero layout shift)
-          const dist = hoveredIdx === null ? 99 : Math.abs(hoveredIdx - idx);
-          const dockScale = dist === 0 ? 1.03 : dist === 1 ? 1.012 : 1;
-          const dockShiftX = dist === 0 ? 3 : dist === 1 ? 1 : 0;
-
           return (
-            <motion.a
+            <a
               key={item.hash}
               ref={(el) => {
                 itemRefs.current[item.hash] = el;
@@ -183,48 +165,46 @@ const SidebarNavContent: React.FC<NavContentProps> = ({
               href={item.hash}
               onClick={onSelect}
               onMouseEnter={() => {
-                setHoveredIdx(idx);
                 if (!isAdmin) prefetchRouteData(item.hash);
               }}
-              animate={{ scale: dockScale, x: dockShiftX }}
-              transition={{ type: 'spring', stiffness: 360, damping: 26 }}
-              style={{ transformOrigin: 'left center' }}
-              className={`relative z-10 flex items-center justify-between px-4 h-11 rounded-2xl text-[14px] leading-none transition-colors duration-150 select-none ${
+              className={`relative z-10 flex items-center justify-between px-3 h-9 rounded-lg text-[13.5px] leading-none transition-colors duration-150 select-none ${
                 active
-                  ? 'text-[#16151B] font-bold'
-                  : 'text-[#57535F] font-medium hover:text-[#16151B]'
+                  ? 'text-zinc-950 font-semibold'
+                  : 'text-zinc-600 font-medium hover:text-zinc-950 hover:bg-zinc-100/60'
               }`}
             >
-              <span className="flex items-center gap-3 min-w-0">
+              <span className="flex items-center gap-2.5 min-w-0">
                 <Icon
                   aria-hidden="true"
-                  className={`w-[18px] h-[18px] shrink-0 transition-colors duration-150 ${
-                    active ? 'text-[#D93A55]' : 'text-[#8E8A97]'
+                  className={`w-4 h-4 shrink-0 transition-colors duration-150 ${
+                    active ? 'text-[#BE123C]' : 'text-zinc-400'
                   }`}
-                  strokeWidth={active ? 2.2 : 1.8}
+                  strokeWidth={active ? 2.1 : 1.75}
                 />
-                <span className="leading-none truncate">{item.label}</span>
+                <span className="truncate">{item.label}</span>
               </span>
-              {active && <span className="w-1.5 h-1.5 rounded-full bg-[#D93A55] shrink-0" />}
-            </motion.a>
+              {active && <span className="w-1.5 h-1.5 rounded-full bg-[#BE123C] shrink-0" />}
+            </a>
           );
         })}
       </nav>
 
-      {/* Bottom Profile Card */}
+      {/* Bottom Account Footer */}
       {user && (
-        <div className="p-3 border-t border-[#16151B]/[0.07]">
-          <div className="flex items-center justify-between gap-2 px-2.5 py-2 rounded-2xl bg-white/65 hover:bg-white/90 border border-white/90 transition-colors duration-200">
+        <div className="p-2.5 border-t border-zinc-200/80 shrink-0">
+          <div className="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg hover:bg-zinc-50 transition-colors">
             <a
               href="#/profile"
               onClick={onSelect}
               className="flex items-center gap-2.5 min-w-0 flex-1"
             >
-              <UserAvatar avatarUrl={user.avatarUrl} displayName={user.displayName} size="md" />
+              <UserAvatar avatarUrl={user.avatarUrl} displayName={user.displayName} size="sm" />
               <div className="min-w-0">
-                <p className="text-sm font-bold text-[#16151B] truncate">{user.displayName}</p>
-                <p className="text-[11px] text-[#57535F] truncate">
-                  {isAdmin ? (isSuperAdmin ? 'Quản trị viên' : 'Biên tập') : 'Hồ sơ cá nhân'}
+                <p className="text-[13px] font-semibold text-zinc-900 truncate leading-tight">
+                  {user.displayName}
+                </p>
+                <p className="text-[11px] text-zinc-500 truncate leading-tight mt-0.5">
+                  {isAdmin ? (isSuperAdmin ? 'Quản trị viên' : 'Biên tập nội dung') : 'Tài khoản'}
                 </p>
               </div>
             </a>
@@ -237,7 +217,7 @@ const SidebarNavContent: React.FC<NavContentProps> = ({
               }}
               title="Đăng xuất"
               aria-label="Đăng xuất"
-              className="p-2 text-[#8E8A97] hover:text-[#D93A55] hover:bg-[#D93A55]/10 rounded-xl transition-colors cursor-pointer shrink-0"
+              className="p-1.5 text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 rounded-md transition-colors cursor-pointer shrink-0"
             >
               <LogOut className="w-4 h-4" />
             </button>
@@ -299,7 +279,8 @@ export const Sidebar: React.FC<{ currentPath: string }> = React.memo(({ currentP
 
   return (
     <>
-      <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:top-3 lg:bottom-3 lg:left-3 lg:rounded-[26px] liquid-sidebar z-40 overflow-hidden">
+      {/* Desktop Fixed Full-Height Executive Rail */}
+      <aside className="hidden lg:flex lg:flex-col lg:w-60 lg:fixed lg:inset-y-0 lg:left-0 bg-white border-r border-zinc-200 z-40">
         <SidebarNavContent
           menuItems={menuItems}
           activeHash={activeHash}
@@ -310,25 +291,27 @@ export const Sidebar: React.FC<{ currentPath: string }> = React.memo(({ currentP
         />
       </aside>
 
-      <header className="lg:hidden sticky top-0 z-40 liquid-sidebar px-4 h-14 flex items-center justify-between">
+      {/* Mobile Top Bar */}
+      <header className="lg:hidden sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-zinc-200 px-4 h-14 flex items-center justify-between">
         <a href={isAdmin ? '#/admin/courses' : '#/today'} className="flex items-center gap-2">
-          <span className="w-8 h-8 rounded-xl bg-[#16151B] text-[#F4F2EE] flex items-center justify-center font-hanzi-serif font-bold text-base">
+          <span className="w-7 h-7 rounded-lg bg-[#09090B] text-white flex items-center justify-center font-hanzi-serif font-bold text-sm">
             汉
           </span>
-          <span className="font-display font-extrabold text-lg tracking-tight text-[#16151B]">
-            Hanzi<span className="text-[#D93A55]">4U</span>
+          <span className="font-display font-bold text-base tracking-tight text-zinc-950">
+            Hanzi<span className="text-[#BE123C]">4U</span>
           </span>
         </a>
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
           aria-label="Mở menu"
-          className="p-2 rounded-xl text-[#16151B] hover:bg-white/80 cursor-pointer"
+          className="p-2 rounded-lg text-zinc-700 hover:bg-zinc-100 cursor-pointer"
         >
-          <Menu className="w-6 h-6" />
+          <Menu className="w-5 h-5" />
         </button>
       </header>
 
+      {/* Mobile Drawer */}
       <AnimatePresence>
         {mobileOpen && (
           <div className="lg:hidden fixed inset-0 z-50 flex">
@@ -336,21 +319,22 @@ export const Sidebar: React.FC<{ currentPath: string }> = React.memo(({ currentP
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/25 backdrop-blur-sm"
+              transition={{ duration: 0.16 }}
+              className="fixed inset-0 bg-zinc-950/30 backdrop-blur-[2px]"
               onClick={() => setMobileOpen(false)}
             />
             <motion.div
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
-              transition={{ type: 'spring', stiffness: 380, damping: 36 }}
-              className="relative w-72 max-w-[82vw] bg-[#F4F2EE]/95 backdrop-blur-2xl h-full shadow-2xl border-r border-white flex flex-col z-10"
+              transition={{ duration: 0.2, ease: [0.2, 0.8, 0.2, 1] }}
+              className="relative w-64 max-w-[82vw] bg-white h-full border-r border-zinc-200 shadow-xl flex flex-col z-10"
             >
               <button
                 type="button"
                 onClick={() => setMobileOpen(false)}
                 aria-label="Đóng menu"
-                className="absolute top-4 right-4 p-2 rounded-xl text-[#57535F] hover:bg-black/5 cursor-pointer z-20"
+                className="absolute top-3 right-3 p-1.5 rounded-lg text-zinc-500 hover:bg-zinc-100 cursor-pointer z-20"
               >
                 <X className="w-5 h-5" />
               </button>

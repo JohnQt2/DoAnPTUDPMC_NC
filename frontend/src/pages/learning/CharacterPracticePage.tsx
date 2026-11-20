@@ -126,22 +126,22 @@ export const CharacterPracticePage: React.FC = () => {
 
       {/* Main Content Layout: Left Character Picker, Right Interactive Canvas */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        <GlassCard className="lg:col-span-5 rounded-[28px] p-5 space-y-4">
+        <GlassCard className="lg:col-span-5 rounded-2xl p-5 space-y-4">
           <form onSubmit={handleSearchSubmit} className="relative">
-            <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+            <Search className="w-4 h-4 absolute left-3.5 top-2.5 text-zinc-400" />
             <input
               type="text"
               placeholder="Tìm chữ Hán, Pinyin, nghĩa..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/65 focus:bg-white border border-white/85 text-xs focus:outline-none focus:ring-2 focus:ring-rose-300 transition-colors"
+              className="w-full pl-9 pr-4 py-2 rounded-lg bg-white border border-zinc-200 text-xs text-zinc-950 placeholder-zinc-400 focus:outline-none focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/10 transition-colors"
             />
           </form>
 
           {isLoading ? (
             <div className="space-y-2.5">
               {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-16 rounded-2xl glass-card-grid animate-pulse" />
+                <div key={i} className="h-16 rounded-xl glass-card-grid animate-pulse" />
               ))}
             </div>
           ) : (
@@ -155,15 +155,15 @@ export const CharacterPracticePage: React.FC = () => {
                     key={c.charId}
                     type="button"
                     onClick={() => setSelectedChar(c)}
-                    className={`w-full p-3 rounded-2xl flex items-center justify-between gap-2 text-left transition-colors cursor-pointer border ${
+                    className={`w-full p-3 rounded-xl flex items-center justify-between gap-2 text-left transition-colors cursor-pointer border ${
                       isSelected
-                        ? 'bg-rose-50/85 border-rose-300/80 shadow-sm'
-                        : 'bg-white/45 border-white/75 hover:bg-white/80'
+                        ? 'bg-zinc-50 border-zinc-900 ring-1 ring-zinc-900'
+                        : 'bg-white border-zinc-200 hover:bg-zinc-50 hover:border-zinc-300'
                     }`}
                   >
-                    <div className="flex items-center gap-3.5 min-w-0">
+                    <div className="flex items-center gap-3 min-w-0">
                       <span
-                        className={`w-12 h-12 rounded-xl bg-white/80 flex items-center justify-center font-hanzi-serif font-bold text-slate-800 border border-white shrink-0 ${
+                        className={`w-11 h-11 rounded-lg bg-zinc-50 flex items-center justify-center font-hanzi-serif font-bold text-zinc-950 border border-zinc-200 shrink-0 ${
                           isMulti ? 'text-base leading-none tracking-tight' : 'text-2xl'
                         }`}
                       >
@@ -171,14 +171,14 @@ export const CharacterPracticePage: React.FC = () => {
                       </span>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="font-mono font-extrabold text-sm text-rose-600">
+                          <span className="font-mono font-semibold text-sm text-[#BE123C]">
                             {c.pinyin}
                           </span>
                           {c.sinoVietnamese && (
-                            <span className="text-xs text-slate-500 truncate">[{c.sinoVietnamese}]</span>
+                            <span className="text-xs text-zinc-500 truncate">[{c.sinoVietnamese}]</span>
                           )}
                         </div>
-                        <span className="text-xs text-slate-600 line-clamp-1">{c.meaning}</span>
+                        <span className="text-xs text-zinc-600 line-clamp-1">{c.meaning}</span>
                       </div>
                     </div>
 
@@ -186,12 +186,12 @@ export const CharacterPracticePage: React.FC = () => {
                       {isDone && (
                         <span
                           title="Đã luyện xong"
-                          className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center"
+                          className="w-6 h-6 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center"
                         >
                           <CheckCircle2 className="w-3.5 h-3.5" />
                         </span>
                       )}
-                      <span className="text-[11px] font-mono text-slate-500 bg-white/75 border border-white px-2 py-0.5 rounded-md">
+                      <span className="text-[11px] font-mono text-zinc-500 bg-zinc-100 border border-zinc-200 px-2 py-0.5 rounded-md">
                         {c.strokesCount} nét
                       </span>
                     </div>

@@ -16,9 +16,9 @@ interface ThreeLiquidHeroSceneProps {
 function buildStudioEnvTexture(renderer: THREE.WebGLRenderer, isDark: boolean): THREE.Texture {
   const pmrem = new THREE.PMREMGenerator(renderer);
   const envScene = new THREE.Scene();
-  envScene.background = new THREE.Color(isDark ? 0x0b0b12 : 0xf4f2ee);
+  envScene.background = new THREE.Color(isDark ? 0x0b0b12 : 0xfafafa);
 
-  // Overhead softbox panel
+  // Overhead architectural softbox
   const topPanel = new THREE.Mesh(
     new THREE.PlaneGeometry(18, 18),
     new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })
@@ -27,28 +27,28 @@ function buildStudioEnvTexture(renderer: THREE.WebGLRenderer, isDark: boolean): 
   topPanel.rotation.x = Math.PI / 2;
   envScene.add(topPanel);
 
-  // Warm Seal-Vermilion key reflector
+  // Subtle left studio reflector
   const leftPanel = new THREE.Mesh(
     new THREE.PlaneGeometry(12, 10),
-    new THREE.MeshBasicMaterial({ color: isDark ? 0xf43f5e : 0xfda4af, side: THREE.DoubleSide })
+    new THREE.MeshBasicMaterial({ color: isDark ? 0xf43f5e : 0xe4e4e7, side: THREE.DoubleSide })
   );
   leftPanel.position.set(-9, 2, 3);
   leftPanel.rotation.y = Math.PI / 2;
   envScene.add(leftPanel);
 
-  // Cool Porcelain-Ice rim reflector
+  // Cool silver-platinum rim reflector
   const rightPanel = new THREE.Mesh(
     new THREE.PlaneGeometry(12, 10),
-    new THREE.MeshBasicMaterial({ color: isDark ? 0x93c5fd : 0xe0f2fe, side: THREE.DoubleSide })
+    new THREE.MeshBasicMaterial({ color: isDark ? 0x93c5fd : 0xf4f4f5, side: THREE.DoubleSide })
   );
   rightPanel.position.set(9, -1, 4);
   rightPanel.rotation.y = -Math.PI / 2;
   envScene.add(rightPanel);
 
-  // Soft Warm Gold bottom bounce
+  // Neutral matte bounce
   const bottomPanel = new THREE.Mesh(
     new THREE.PlaneGeometry(14, 14),
-    new THREE.MeshBasicMaterial({ color: isDark ? 0xfbbf24 : 0xfef3c7, side: THREE.DoubleSide })
+    new THREE.MeshBasicMaterial({ color: isDark ? 0xfbbf24 : 0xd4d4d8, side: THREE.DoubleSide })
   );
   bottomPanel.position.set(0, -8, 2);
   bottomPanel.rotation.x = -Math.PI / 2;
@@ -61,7 +61,7 @@ function buildStudioEnvTexture(renderer: THREE.WebGLRenderer, isDark: boolean): 
 
 /**
  * Render a crisp floating Hanzi character onto a transparent canvas texture
- * so it floats physically inside/around the 3D optical glass sculpture (inspired by Lettra & ThreeUI).
+ * so it floats physically inside/around the 3D optical glass sculpture.
  */
 function createHanziPlaneTexture(char: string, isDark: boolean): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
@@ -70,17 +70,17 @@ function createHanziPlaneTexture(char: string, isDark: boolean): THREE.CanvasTex
   const ctx = canvas.getContext('2d')!;
   ctx.clearRect(0, 0, 512, 512);
 
-  // Subtle circular seal-ink halo
-  const grad = ctx.createRadialGradient(256, 256, 30, 256, 256, 220);
-  grad.addColorStop(0, isDark ? 'rgba(217, 58, 85, 0.24)' : 'rgba(217, 58, 85, 0.16)');
-  grad.addColorStop(1, 'rgba(217, 58, 85, 0)');
+  // Subtle neutral-to-seal halo behind glyph
+  const grad = ctx.createRadialGradient(256, 256, 30, 256, 256, 210);
+  grad.addColorStop(0, isDark ? 'rgba(190, 18, 60, 0.22)' : 'rgba(255, 255, 255, 0.72)');
+  grad.addColorStop(1, isDark ? 'rgba(190, 18, 60, 0)' : 'rgba(255, 255, 255, 0)');
   ctx.fillStyle = grad;
   ctx.beginPath();
-  ctx.arc(256, 256, 220, 0, Math.PI * 2);
+  ctx.arc(256, 256, 210, 0, Math.PI * 2);
   ctx.fill();
 
   // Crisp Song/Serif calligraphy character
-  ctx.fillStyle = isDark ? 'rgba(248, 245, 240, 0.96)' : 'rgba(22, 21, 27, 0.92)';
+  ctx.fillStyle = isDark ? 'rgba(248, 245, 240, 0.96)' : 'rgba(9, 9, 11, 0.94)';
   ctx.font = '700 280px "Noto Serif SC", "Songti SC", "STSong", serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
@@ -159,11 +159,11 @@ export const ThreeLiquidHeroScene: React.FC<ThreeLiquidHeroSceneProps> = ({
     keyLight.position.set(4, 6, 5);
     scene.add(keyLight);
 
-    const vermilionLight = new THREE.PointLight(0xd93a55, isDark ? 9 : 4.5, 16);
+    const vermilionLight = new THREE.PointLight(0xbe123c, isDark ? 8 : 2.2, 16);
     vermilionLight.position.set(-3.2, -1.8, 2.4);
     scene.add(vermilionLight);
 
-    const rimLight = new THREE.PointLight(0x93c5fd, isDark ? 6 : 3.2, 16);
+    const rimLight = new THREE.PointLight(isDark ? 0x93c5fd : 0xe4e4e7, isDark ? 6 : 2.5, 16);
     rimLight.position.set(3.4, 2.6, -2.0);
     scene.add(rimLight);
 
@@ -171,40 +171,40 @@ export const ThreeLiquidHeroScene: React.FC<ThreeLiquidHeroSceneProps> = ({
     const rootGroup = new THREE.Group();
     scene.add(rootGroup);
 
-    // 1. REAL OPTICAL LIQUID GLASS SCULPTURE (MeshPhysicalMaterial transmission + iridescence)
+    // 1. REAL OPTICAL CRYSTAL SCULPTURE (Restrained architectural glass)
     const glassMat = new THREE.MeshPhysicalMaterial({
-      color: isDark ? 0xffffff : 0xffffff,
-      transmission: 0.96,
+      color: 0xffffff,
+      transmission: 0.95,
       opacity: 1,
       transparent: true,
-      roughness: 0.055,
+      roughness: isDark ? 0.055 : 0.08,
       metalness: 0.0,
-      ior: 1.48,
-      thickness: 1.9,
-      specularIntensity: 1.0,
+      ior: 1.46,
+      thickness: 1.65,
+      specularIntensity: 0.95,
       specularColor: new THREE.Color(0xffffff),
       clearcoat: 1.0,
-      clearcoatRoughness: 0.04,
-      iridescence: 0.85,
-      iridescenceIOR: 1.32,
-      iridescenceThicknessRange: [120, 420],
-      attenuationColor: new THREE.Color(isDark ? 0xfda4af : 0xfecdd3),
-      attenuationDistance: 3.4,
-      envMapIntensity: isDark ? 1.45 : 1.25,
+      clearcoatRoughness: 0.06,
+      iridescence: isDark ? 0.65 : 0.22,
+      iridescenceIOR: 1.3,
+      iridescenceThicknessRange: [120, 340],
+      attenuationColor: new THREE.Color(isDark ? 0xfda4af : 0xe4e4e7),
+      attenuationDistance: 3.6,
+      envMapIntensity: isDark ? 1.4 : 1.05,
     });
 
     const knotGeo = new THREE.TorusKnotGeometry(1.38, 0.36, 180, 36, 2, 3);
     const glassSculpture = new THREE.Mesh(knotGeo, glassMat);
     rootGroup.add(glassSculpture);
 
-    // 2. Inner Seal-Vermilion Porcelain Core (visible refracting & magnifying through the crystal!)
-    const coreGeo = new THREE.SphereGeometry(0.68, 48, 48);
+    // 2. Inner Imperial Seal Crimson Core
+    const coreGeo = new THREE.SphereGeometry(0.62, 48, 48);
     const coreMat = new THREE.MeshStandardMaterial({
-      color: 0xd93a55,
-      emissive: 0x9f1239,
-      emissiveIntensity: isDark ? 0.55 : 0.25,
-      roughness: 0.22,
-      metalness: 0.12,
+      color: 0xbe123c,
+      emissive: 0x881337,
+      emissiveIntensity: isDark ? 0.45 : 0.14,
+      roughness: 0.28,
+      metalness: 0.1,
     });
     const coreSphere = new THREE.Mesh(coreGeo, coreMat);
     coreSphere.position.set(0, 0, -0.35);
@@ -355,10 +355,17 @@ export const ThreeLiquidHeroScene: React.FC<ThreeLiquidHeroSceneProps> = ({
   }, [mode]);
 
   if (webglUnsupported) {
+    const isDark = mode === 'dark';
     return (
       <div className={`flex items-center justify-center ${className}`}>
-        <div className="w-64 h-64 rounded-full bg-gradient-to-tr from-rose-500/20 via-white/10 to-sky-400/20 border border-white/20 backdrop-blur-2xl flex items-center justify-center shadow-2xl">
-          <span className="font-hanzi-serif text-8xl font-bold text-white/90">{activeHanzi}</span>
+        <div
+          className={`w-56 h-56 rounded-full border flex items-center justify-center ${
+            isDark
+              ? 'bg-white/[0.06] border-white/15 text-white/90'
+              : 'bg-zinc-50 border-zinc-200 text-zinc-950 shadow-sm'
+          }`}
+        >
+          <span className="font-hanzi-serif text-8xl font-bold">{activeHanzi}</span>
         </div>
       </div>
     );

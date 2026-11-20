@@ -5,9 +5,7 @@ import { Flame } from 'lucide-react';
 import { cn } from '../../lib/cn';
 
 /**
- * Port of Lucian #001 — Pointer-Reactive Magnetic Liquid Glass Button.
- * - Tracks pointer coordinates into --mx / --my for live glass specular reflection
- * - Computes magnetic pull (max 0.16 * delta within 190px radius) respecting prefers-reduced-motion
+ * Refined Lucian #001 — Subtle Pointer-Reactive Button (Minimalist SaaS 2026 edition).
  */
 interface LucianLiquidButtonProps {
   href?: string;
@@ -23,7 +21,7 @@ interface LucianLiquidButtonProps {
 export const LucianLiquidButton: React.FC<LucianLiquidButtonProps> = ({
   href,
   onClick,
-  variant = 'vermilion',
+  variant = 'ink',
   size = 'md',
   className,
   children,
@@ -36,41 +34,32 @@ export const LucianLiquidButton: React.FC<LucianLiquidButtonProps> = ({
     if (disabled) return;
     const el = elRef.current;
     if (!el) return;
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const rect = el.getBoundingClientRect();
     const mx = ((e.clientX - rect.left) / Math.max(1, rect.width)) * 100;
     const my = ((e.clientY - rect.top) / Math.max(1, rect.height)) * 100;
     el.style.setProperty('--mx', `${mx.toFixed(1)}%`);
     el.style.setProperty('--my', `${my.toFixed(1)}%`);
-
-    if (!reduced) {
-      const dx = e.clientX - (rect.left + rect.width / 2);
-      const dy = e.clientY - (rect.top + rect.height / 2);
-      const pull = Math.max(0, 1 - Math.hypot(dx, dy) / 190) * 0.16;
-      el.style.transform = `translate3d(${(dx * pull).toFixed(2)}px, ${(dy * pull).toFixed(2)}px, 0)`;
-    }
   };
 
   const handlePointerLeave = () => {
     const el = elRef.current;
     if (!el) return;
-    el.style.transform = 'translate3d(0, 0, 0)';
     el.style.setProperty('--mx', '50%');
     el.style.setProperty('--my', '0%');
   };
 
-  const sizeCls = size === 'lg' ? 'px-6 py-3.5 text-sm' : 'px-5 py-2.5 text-xs sm:text-sm';
+  const sizeCls = size === 'lg' ? 'px-5 h-11 text-sm' : 'px-4 h-9 text-xs sm:text-[13px]';
   const variantCls =
     variant === 'vermilion'
-      ? 'bg-[#D93A55] text-white border border-white/25 shadow-[0_12px_28px_-8px_rgba(217,58,85,0.48),inset_0_1.5px_1px_rgba(255,255,255,0.45)]'
+      ? 'bg-[#BE123C] hover:bg-[#9F1239] text-white border border-[#BE123C] shadow-[0_1px_2px_rgba(9,9,11,0.10),inset_0_1px_0_rgba(255,255,255,0.16)]'
       : variant === 'ink'
-        ? 'bg-[#16151B] text-[#F4F2EE] border border-white/15 shadow-[0_12px_28px_-10px_rgba(22,21,27,0.4),inset_0_1px_1px_rgba(255,255,255,0.22)]'
+        ? 'bg-[#18181B] hover:bg-[#27272A] text-white border border-zinc-900 shadow-[0_1px_2px_rgba(9,9,11,0.12),inset_0_1px_0_rgba(255,255,255,0.14)]'
         : variant === 'glass-dark'
-          ? 'bg-white/[0.08] text-white border border-white/20 backdrop-blur-xl shadow-[0_12px_30px_-10px_rgba(0,0,0,0.45),inset_0_1.5px_1px_rgba(255,255,255,0.35)]'
-          : 'bg-white/55 text-[#16151B] border border-white/90 backdrop-blur-xl shadow-[0_10px_26px_-10px_rgba(22,21,27,0.12),inset_0_1.5px_1px_rgba(255,255,255,1)]';
+          ? 'bg-white/10 hover:bg-white/15 text-white border border-white/15'
+          : 'bg-white hover:bg-zinc-50 text-[#09090B] border border-zinc-200 shadow-[0_1px_2px_rgba(9,9,11,0.04)]';
 
   const baseCls = cn(
-    'u001-liquid-btn relative inline-flex items-center justify-center gap-2 rounded-full font-bold tracking-tight overflow-hidden select-none cursor-pointer disabled:opacity-50',
+    'u001-liquid-btn relative inline-flex items-center justify-center gap-2 rounded-xl font-semibold tracking-[-0.01em] overflow-hidden select-none cursor-pointer disabled:opacity-45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2',
     sizeCls,
     variantCls,
     className
@@ -78,7 +67,7 @@ export const LucianLiquidButton: React.FC<LucianLiquidButtonProps> = ({
 
   const inner = (
     <>
-      <span aria-hidden="true" className="u001-specular pointer-events-none absolute inset-0 rounded-full" />
+      <span aria-hidden="true" className="u001-specular pointer-events-none absolute inset-0 rounded-[inherit]" />
       <span className="relative z-10 inline-flex items-center gap-2">{children}</span>
     </>
   );
@@ -118,8 +107,7 @@ export const LucianLiquidButton: React.FC<LucianLiquidButtonProps> = ({
 };
 
 /**
- * Port of Lucian #216 — Editorial Staggered Masked Headline Entrance.
- * Each word glides out from beneath an overflow-hidden baseline mask using --ux-ease (.2, .8, .2, 1).
+ * Port of Lucian #216 — Crisp Editorial Masked Headline Reveal.
  */
 export const MaskedHeadline: React.FC<{
   lines: string[];
@@ -129,21 +117,24 @@ export const MaskedHeadline: React.FC<{
   let wordCounter = 0;
 
   return (
-    <h1 className={cn('font-display font-extrabold tracking-[-0.03em] leading-[1.08]', className)}>
+    <h1 className={cn('font-display font-bold tracking-[-0.035em] leading-[1.08]', className)}>
       {lines.map((line, lIdx) => {
         const words = line.split(' ');
         const isAccent = lIdx === accentLineIndex;
         return (
-          <span key={lIdx} className={cn('block', isAccent && 'text-[#D93A55]')}>
+          <span key={lIdx} className={cn('block', isAccent && 'text-zinc-400')}>
             {words.map((word, wIdx) => {
-              const delay = 0.05 + wordCounter++ * 0.055;
+              const delay = 0.03 + wordCounter++ * 0.04;
               return (
-                <span key={`${lIdx}-${wIdx}`} className="inline-block overflow-hidden align-bottom mr-[0.24em] last:mr-0 pb-[0.06em]">
+                <span
+                  key={`${lIdx}-${wIdx}`}
+                  className="inline-block overflow-hidden align-bottom mr-[0.23em] last:mr-0 pb-[0.06em]"
+                >
                   <motion.span
                     className="inline-block"
-                    initial={{ y: '108%', opacity: 0.01 }}
+                    initial={{ y: '105%', opacity: 0.01 }}
                     animate={{ y: '0%', opacity: 1 }}
-                    transition={{ duration: 0.62, delay, ease: [0.2, 0.8, 0.2, 1] }}
+                    transition={{ duration: 0.48, delay, ease: [0.2, 0.8, 0.2, 1] }}
                   >
                     {word}
                   </motion.span>
@@ -158,7 +149,7 @@ export const MaskedHeadline: React.FC<{
 };
 
 /**
- * Port of Lucian #372 — Fill-to-Level-Up Liquid XP Progress Bar.
+ * Minimalist Precision Progress Bar (Lucian #372 adapted for 2026 SaaS).
  */
 export const LucianXpBar: React.FC<{
   current: number;
@@ -172,30 +163,25 @@ export const LucianXpBar: React.FC<{
   return (
     <div className={cn('space-y-2', className)}>
       <div className="flex items-center justify-between text-xs">
-        <span className="font-semibold text-[#57535F]">{label}</span>
-        <span className="font-mono font-bold text-[#16151B] tabular-nums">
-          {current} / {safeTarget} bài · {pct}%
+        <span className="font-medium text-zinc-500">{label}</span>
+        <span className="font-mono font-semibold text-zinc-900 tabular-nums">
+          {current}/{safeTarget} bài · {pct}%
         </span>
       </div>
-      <div className="relative h-2.5 w-full rounded-full bg-[#16151B]/[0.07] overflow-hidden border border-white/80">
+      <div className="relative h-1.5 w-full rounded-full bg-zinc-100 overflow-hidden">
         <motion.div
           initial={{ width: 0 }}
-          animate={{ width: `${Math.max(4, pct)}%` }}
-          transition={{ duration: 0.85, ease: [0.2, 0.8, 0.2, 1] }}
-          className="relative h-full rounded-full bg-gradient-to-r from-[#D93A55] via-[#E85D75] to-[#119C72] overflow-hidden"
-        >
-          <span
-            aria-hidden="true"
-            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/45 to-transparent -translate-x-full animate-[shimmer-slide_2.8s_infinite]"
-          />
-        </motion.div>
+          animate={{ width: `${Math.max(2, pct)}%` }}
+          transition={{ duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }}
+          className="h-full rounded-full bg-[#18181B]"
+        />
       </div>
     </div>
   );
 };
 
 /**
- * Port of Lucian #379 — Growing Streak Flame Pill.
+ * Crisp Minimalist Streak Metric Pill.
  */
 export const LucianStreakFlame: React.FC<{
   count: number;
@@ -203,19 +189,15 @@ export const LucianStreakFlame: React.FC<{
   subtitle?: string;
 }> = ({ count, unit = 'bài', subtitle = 'Đã hoàn thành' }) => {
   return (
-    <div className="ios-glass-pill inline-flex items-center gap-3 px-4 py-2.5 rounded-full">
-      <motion.div
-        animate={{ scale: [1, 1.08, 1] }}
-        transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
-        className="w-8 h-8 rounded-full bg-[#D93A55]/12 border border-[#D93A55]/25 text-[#D93A55] flex items-center justify-center shrink-0"
-      >
-        <Flame className="w-4 h-4 fill-[#D93A55]/85" />
-      </motion.div>
-      <div className="leading-tight pr-1">
-        <p className="text-sm font-extrabold text-[#16151B] tabular-nums">
+    <div className="inline-flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-white border border-zinc-200 shadow-[0_1px_2px_rgba(9,9,11,0.04)]">
+      <span className="w-7 h-7 rounded-lg bg-rose-50 border border-rose-100 text-[#BE123C] flex items-center justify-center shrink-0">
+        <Flame className="w-3.5 h-3.5 fill-[#BE123C]/90" />
+      </span>
+      <div className="leading-tight">
+        <p className="text-[13px] font-bold text-zinc-900 tabular-nums">
           {count} {unit}
         </p>
-        <p className="text-[11px] font-medium text-[#57535F]">{subtitle}</p>
+        <p className="text-[11px] text-zinc-500">{subtitle}</p>
       </div>
     </div>
   );

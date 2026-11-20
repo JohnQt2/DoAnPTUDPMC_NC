@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../../lib/api';
 import { celebrateSuccess } from '../../lib/celebration';
 import { PitchVisualizer } from '../../components/PitchVisualizer';
-import { GlassCard, SpotlightCard, BorderBeam, ShimmerButton, NumberTicker } from '../../components/ui';
+import { GlassCard, SpotlightCard, ShimmerButton, NumberTicker } from '../../components/ui';
 import {
   PINYIN_INITIALS_DATA,
   PINYIN_FINALS_DATA,
@@ -28,8 +28,7 @@ const TONE_SANDHI_RULES = [
   {
     title: 'Biến điệu Thanh 3 + Thanh 3',
     formula: 'Thanh 3 + Thanh 3 → Thanh 2 + Thanh 3',
-    badge: 'Cực kỳ phổ biến',
-    gradient: 'from-rose-400 to-amber-400',
+    badge: 'Phổ biến nhất',
     examples: [
       { hanzi: '你好', raw: 'nǐ + hǎo', spoken: 'ní hǎo', vi: 'Xin chào' },
       { hanzi: '很好', raw: 'hěn + hǎo', spoken: 'hén hǎo', vi: 'Rất tốt' },
@@ -40,7 +39,6 @@ const TONE_SANDHI_RULES = [
     title: 'Biến điệu chữ 不 (bù)',
     formula: '不 + Thanh 4 → bú + Thanh 4',
     badge: 'Hay nhầm khi nói',
-    gradient: 'from-violet-400 to-fuchsia-400',
     examples: [
       { hanzi: '不是', raw: 'bù + shì', spoken: 'bú shì', vi: 'Không phải' },
       { hanzi: '不去', raw: 'bù + qù', spoken: 'bú qù', vi: 'Không đi' },
@@ -51,7 +49,6 @@ const TONE_SANDHI_RULES = [
     title: 'Biến điệu chữ 一 (yī)',
     formula: '一 + Thanh 4 → yí | 一 + Thanh 1/2/3 → yì',
     badge: 'Chuẩn phổ thông',
-    gradient: 'from-emerald-400 to-cyan-400',
     examples: [
       { hanzi: '一个', raw: 'yī + gè', spoken: 'yí gè', vi: 'Một cái' },
       { hanzi: '一天', raw: 'yī + tiān', spoken: 'yì tiān', vi: 'Một ngày' },
@@ -186,32 +183,32 @@ export const PinyinPage: React.FC = () => {
         key={`${item.category}-${item.syllable}`}
         type="button"
         onClick={() => handleSelectChar(item)}
-        className={`p-3 rounded-2xl border text-center transition-colors duration-150 cursor-pointer group ${
+        className={`p-3 rounded-xl border text-center transition-colors duration-150 cursor-pointer group ${
           isSelected
-            ? 'bg-gradient-to-br from-rose-400 via-pink-400 to-amber-300 text-white border-transparent shadow-md'
-            : 'glass-card-grid text-slate-800'
+            ? 'bg-zinc-900 text-white border-zinc-900 shadow-xs'
+            : 'bg-white hover:bg-zinc-50 border-zinc-200 hover:border-zinc-300 text-zinc-900'
         }`}
       >
         <div className="flex items-center justify-between gap-1">
           <span
-            className={`text-[10px] font-hanzi-serif font-bold ${
-              isSelected ? 'text-white/85' : 'text-slate-400'
+            className={`text-[10px] font-hanzi-serif font-semibold ${
+              isSelected ? 'text-zinc-300' : 'text-zinc-400'
             }`}
           >
             {item.speakHanzi}
           </span>
           <Volume2
             className={`w-3.5 h-3.5 ${
-              isSelected ? 'text-white' : 'text-slate-300 group-hover:text-rose-500'
+              isSelected ? 'text-white' : 'text-zinc-300 group-hover:text-[#BE123C]'
             }`}
           />
         </div>
-        <span className="text-2xl font-display font-extrabold block tracking-tight mt-0.5">
+        <span className="text-xl font-display font-bold block tracking-tight mt-0.5">
           {item.syllable}
         </span>
         <span
-          className={`text-[10px] font-semibold block mt-1 truncate ${
-            isSelected ? 'text-white/90' : 'text-slate-500'
+          className={`text-[10px] font-medium block mt-1 truncate ${
+            isSelected ? 'text-zinc-300' : 'text-zinc-500'
           }`}
         >
           {item.vnHint}
@@ -221,20 +218,22 @@ export const PinyinPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6 space-y-7">
-      {/* iPhone Optical Liquid Glass Hero Header */}
-      <div className="relative overflow-hidden rounded-[28px] p-6 sm:p-8 ios-hero-glass bg-gradient-to-br from-violet-200/34 via-white/18 to-sky-200/30">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
+    <div className="max-w-6xl mx-auto py-8 px-5 sm:px-8 space-y-6">
+      {/* Crisp Architectural Header Card */}
+      <div className="rounded-2xl p-6 sm:p-7 ios-hero-glass">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div className="space-y-2 max-w-2xl">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/75 border border-white text-xs font-extrabold uppercase tracking-wider text-violet-700">
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-[0.14em] text-[#BE123C] font-semibold">
               <Mic className="w-3.5 h-3.5" />
               Bảng chữ cái Pinyin tiếng Trung chuẩn
             </span>
-            <h1 className="text-2xl sm:text-4xl font-display font-extrabold text-slate-900 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-display font-bold text-zinc-950 tracking-tight">
               Bảng Chữ Cái Pinyin & 4 Thanh Điệu
             </h1>
-            <p className="text-sm text-slate-600 leading-relaxed">
-              Đầy đủ <strong>23 thanh mẫu</strong>, <strong>24 vận mẫu</strong>, <strong>16 âm tiết đọc thẳng</strong>, 4 thanh điệu và luyện nghe phân biệt cặp âm dễ nhầm.
+            <p className="text-sm text-zinc-600 leading-relaxed">
+              Đầy đủ <strong className="text-zinc-900 font-semibold">23 thanh mẫu</strong>,{' '}
+              <strong className="text-zinc-900 font-semibold">24 vận mẫu</strong>,{' '}
+              <strong className="text-zinc-900 font-semibold">16 âm tiết đọc thẳng</strong>, 4 thanh điệu và luyện nghe phân biệt cặp âm dễ nhầm.
             </p>
           </div>
           <ShimmerButton href="#/speak-practice" className="shrink-0">
@@ -245,8 +244,8 @@ export const PinyinPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Sliding Tabs */}
-      <div className="flex flex-wrap items-center justify-center gap-1.5 p-1.5 rounded-2xl glass-light w-fit mx-auto">
+      {/* Main Segmented Tabs */}
+      <div className="flex flex-wrap items-center justify-center gap-1 p-1 rounded-xl bg-zinc-100 border border-zinc-200/80 w-fit mx-auto">
         {tabs.map((t) => {
           const Icon = t.icon;
           const active = tab === t.key;
@@ -255,18 +254,18 @@ export const PinyinPage: React.FC = () => {
               key={t.key}
               type="button"
               onClick={() => setTab(t.key)}
-              className={`relative inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-colors cursor-pointer ${
-                active ? 'text-white' : 'text-slate-600 hover:text-slate-900'
+              className={`relative inline-flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-xs sm:text-[13px] transition-colors cursor-pointer ${
+                active ? 'text-white' : 'text-zinc-600 hover:text-zinc-950'
               }`}
             >
               {active && (
                 <motion.span
                   layoutId="pinyin-main-tab"
-                  transition={{ type: 'spring', stiffness: 400, damping: 32 }}
-                  className="absolute inset-0 rounded-xl bg-gradient-to-r from-rose-400 via-pink-400 to-amber-300 shadow-sm"
+                  transition={{ type: 'spring', stiffness: 450, damping: 36 }}
+                  className="absolute inset-0 rounded-lg bg-zinc-900 shadow-xs"
                 />
               )}
-              <Icon className="relative z-10 w-4 h-4" />
+              <Icon className="relative z-10 w-3.5 h-3.5" />
               <span className="relative z-10">{t.label}</span>
             </button>
           );
@@ -278,38 +277,38 @@ export const PinyinPage: React.FC = () => {
         {tab === 'ALPHABET' && (
           <motion.div
             key="tab-alphabet"
-            initial={{ opacity: 0, y: 6 }}
+            initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
             className="space-y-6"
           >
             {/* Active Letter Guide & 4-Tone Interactive Bar */}
-            <GlassCard className="p-5 sm:p-6 rounded-[26px] flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-white/90">
+            <GlassCard className="p-5 sm:p-6 rounded-2xl flex flex-col lg:flex-row lg:items-center justify-between gap-4">
               <div className="flex items-start sm:items-center gap-4">
                 <button
                   type="button"
                   onClick={() => playSound(activeChar.speakHanzi, 0.75)}
-                  className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-rose-400 via-pink-400 to-amber-300 text-white flex flex-col items-center justify-center shadow-md shrink-0 cursor-pointer"
+                  className="w-15 h-15 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white flex flex-col items-center justify-center shrink-0 cursor-pointer transition-colors"
                   title="Nghe phát âm mẫu"
                 >
-                  <span className="text-2xl font-display font-black leading-none">
+                  <span className="text-2xl font-display font-bold leading-none">
                     {activeChar.syllable}
                   </span>
-                  <span className="text-[11px] font-hanzi-serif opacity-90 mt-1">
+                  <span className="text-[11px] font-hanzi-serif text-zinc-300 mt-1">
                     {activeChar.speakHanzi}
                   </span>
                 </button>
                 <div className="space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="px-2.5 py-0.5 rounded-full bg-rose-100/80 text-rose-700 text-[11px] font-extrabold">
+                    <span className="px-2 py-0.5 rounded-md bg-rose-50 border border-rose-200 text-[#BE123C] text-[11px] font-semibold">
                       {activeChar.group}
                     </span>
-                    <span className="text-xs font-bold text-slate-600">
-                      Đọc gần giống: <strong className="text-slate-900">{activeChar.vnHint}</strong>
+                    <span className="text-xs font-medium text-zinc-600">
+                      Đọc gần giống: <strong className="text-zinc-950 font-semibold">{activeChar.vnHint}</strong>
                     </span>
                   </div>
-                  <p className="text-sm text-slate-700 leading-relaxed">
+                  <p className="text-sm text-zinc-700 leading-relaxed">
                     {dbGuides[activeChar.syllable] || activeChar.guide}
                   </p>
                 </div>
@@ -323,11 +322,11 @@ export const PinyinPage: React.FC = () => {
                       key={toneLabel}
                       type="button"
                       onClick={() => playSound(activeChar.toneHanzi![idx], 0.72)}
-                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/75 hover:bg-rose-50 border border-white text-xs font-mono font-bold text-slate-800 hover:text-rose-700 transition-colors cursor-pointer shadow-sm"
+                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 text-xs font-mono font-semibold text-zinc-900 transition-colors cursor-pointer"
                     >
-                      <Volume2 className="w-3.5 h-3.5 text-rose-500" />
+                      <Volume2 className="w-3.5 h-3.5 text-[#BE123C]" />
                       <span>{toneLabel}</span>
-                      <span className="font-hanzi-serif text-slate-400">
+                      <span className="font-hanzi-serif text-zinc-400">
                         {activeChar.toneHanzi![idx]}
                       </span>
                     </button>
@@ -348,10 +347,10 @@ export const PinyinPage: React.FC = () => {
                   key={sub.id}
                   type="button"
                   onClick={() => setAlphabetSub(sub.id)}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-colors cursor-pointer border ${
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer border ${
                     alphabetSub === sub.id
-                      ? 'bg-slate-800 text-white border-slate-800 shadow-sm'
-                      : 'glass-light text-slate-700 hover:bg-white border-white/85'
+                      ? 'bg-zinc-900 text-white border-zinc-900'
+                      : 'bg-white text-zinc-700 hover:bg-zinc-50 border-zinc-200'
                   }`}
                 >
                   {sub.label}
@@ -361,17 +360,17 @@ export const PinyinPage: React.FC = () => {
 
             {/* Section 1: 23 Thanh mẫu */}
             {(alphabetSub === 'ALL' || alphabetSub === 'INITIAL') && (
-              <GlassCard className="p-5 sm:p-6 rounded-[28px] space-y-5">
-                <div className="flex items-center justify-between border-b border-white/75 pb-3">
+              <GlassCard className="p-5 sm:p-6 rounded-2xl space-y-5">
+                <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
                   <div>
-                    <h2 className="text-lg font-display font-extrabold text-slate-900">
+                    <h2 className="text-base sm:text-lg font-display font-bold text-zinc-950">
                       1. 23 Thanh mẫu (Phụ âm đầu — 声母)
                     </h2>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-zinc-500">
                       Bấm vào từng chữ cái để nghe phát âm chuẩn và xem hướng dẫn khẩu hình
                     </p>
                   </div>
-                  <span className="px-2.5 py-1 rounded-full bg-emerald-100/80 text-emerald-800 text-xs font-bold shrink-0">
+                  <span className="px-2.5 py-0.5 rounded-md bg-zinc-100 border border-zinc-200 text-zinc-700 text-xs font-mono font-semibold shrink-0">
                     23 âm
                   </span>
                 </div>
@@ -379,7 +378,7 @@ export const PinyinPage: React.FC = () => {
                 <div className="space-y-4">
                   {initialGroups.map(([groupName, items]) => (
                     <div key={groupName} className="space-y-2">
-                      <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-500">
+                      <h3 className="text-[11px] font-mono font-semibold uppercase tracking-wider text-zinc-500">
                         {groupName}
                       </h3>
                       <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2.5">
@@ -393,17 +392,17 @@ export const PinyinPage: React.FC = () => {
 
             {/* Section 2: 24 Vận mẫu */}
             {(alphabetSub === 'ALL' || alphabetSub === 'FINAL') && (
-              <GlassCard className="p-5 sm:p-6 rounded-[28px] space-y-5">
-                <div className="flex items-center justify-between border-b border-white/75 pb-3">
+              <GlassCard className="p-5 sm:p-6 rounded-2xl space-y-5">
+                <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
                   <div>
-                    <h2 className="text-lg font-display font-extrabold text-slate-900">
+                    <h2 className="text-base sm:text-lg font-display font-bold text-zinc-950">
                       2. 24 Vận mẫu (Nguyên âm — 韵母)
                     </h2>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-zinc-500">
                       Gồm 6 vận mẫu đơn, 9 vận mẫu kép, 5 vận mẫu mũi trước và 4 vận mẫu mũi sau
                     </p>
                   </div>
-                  <span className="px-2.5 py-1 rounded-full bg-sky-100/80 text-sky-800 text-xs font-bold shrink-0">
+                  <span className="px-2.5 py-0.5 rounded-md bg-zinc-100 border border-zinc-200 text-zinc-700 text-xs font-mono font-semibold shrink-0">
                     24 âm
                   </span>
                 </div>
@@ -411,7 +410,7 @@ export const PinyinPage: React.FC = () => {
                 <div className="space-y-4">
                   {finalGroups.map(([groupName, items]) => (
                     <div key={groupName} className="space-y-2">
-                      <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-500">
+                      <h3 className="text-[11px] font-mono font-semibold uppercase tracking-wider text-zinc-500">
                         {groupName}
                       </h3>
                       <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2.5">
@@ -425,17 +424,17 @@ export const PinyinPage: React.FC = () => {
 
             {/* Section 3: 16 Âm tiết đọc thẳng */}
             {(alphabetSub === 'ALL' || alphabetSub === 'WHOLE') && (
-              <GlassCard className="p-5 sm:p-6 rounded-[28px] space-y-4">
-                <div className="flex items-center justify-between border-b border-white/75 pb-3">
+              <GlassCard className="p-5 sm:p-6 rounded-2xl space-y-4">
+                <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
                   <div>
-                    <h2 className="text-lg font-display font-extrabold text-slate-900">
+                    <h2 className="text-base sm:text-lg font-display font-bold text-zinc-950">
                       3. 16 Âm tiết đọc thẳng (整体认读音节)
                     </h2>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-zinc-500">
                       Nhóm âm tiết đọc liền nguyên âm, không cần ghép đánh vần tách rời
                     </p>
                   </div>
-                  <span className="px-2.5 py-1 rounded-full bg-violet-100/80 text-violet-800 text-xs font-bold shrink-0">
+                  <span className="px-2.5 py-0.5 rounded-md bg-zinc-100 border border-zinc-200 text-zinc-700 text-xs font-mono font-semibold shrink-0">
                     16 âm
                   </span>
                 </div>
@@ -452,18 +451,21 @@ export const PinyinPage: React.FC = () => {
         {tab === 'TONE' && (
           <motion.div
             key="tab-tone"
-            initial={{ opacity: 0, y: 6 }}
+            initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-            className="space-y-7"
+            transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
+            className="space-y-6"
           >
-            <GlassCard className="p-5 bg-gradient-to-r from-amber-50/70 via-white/60 to-rose-50/70 border-white/85 text-sm text-slate-800 leading-relaxed">
-              <strong>Thang cao độ 5 bậc:</strong> Cao độ giọng nói chia từ 1 (thấp nhất) đến 5 (cao nhất).
-              Thanh 1 giữ phẳng <strong>55</strong>, Thanh 2 lên cao <strong>35</strong>, Thanh 3 hạ xuống rồi đi lên <strong>214</strong>, Thanh 4 xuống dứt khoát <strong>51</strong>.
+            <GlassCard className="p-5 bg-white border-zinc-200 text-sm text-zinc-700 leading-relaxed">
+              <strong className="text-zinc-950">Thang cao độ 5 bậc:</strong> Cao độ giọng nói chia từ 1 (thấp nhất) đến 5 (cao nhất).
+              Thanh 1 giữ phẳng <strong className="text-zinc-950">55</strong>, Thanh 2 lên cao{' '}
+              <strong className="text-zinc-950">35</strong>, Thanh 3 hạ xuống rồi đi lên{' '}
+              <strong className="text-zinc-950">214</strong>, Thanh 4 xuống dứt khoát{' '}
+              <strong className="text-zinc-950">51</strong>.
             </GlassCard>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <PitchVisualizer tone={1} contour="55 - Cao bằng" syllable="mā (Mẹ)" />
               <PitchVisualizer tone={2} contour="35 - Lên cao" syllable="má (Cây gai)" />
               <PitchVisualizer tone={3} contour="214 - Xuống rồi lên" syllable="mǎ (Con ngựa)" />
@@ -472,21 +474,19 @@ export const PinyinPage: React.FC = () => {
 
             {/* Tone Sandhi Section */}
             <div className="space-y-4">
-              <h2 className="text-xl font-display font-extrabold text-slate-900 flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-amber-500" />
+              <h2 className="text-lg font-display font-bold text-zinc-950 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-[#BE123C]" />
                 <span>3 Quy tắc biến điệu cần nhớ khi giao tiếp</span>
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {TONE_SANDHI_RULES.map((rule) => (
                   <SpotlightCard key={rule.title} className="p-5 space-y-4">
                     <div className="space-y-1.5">
-                      <span
-                        className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black text-white bg-gradient-to-r ${rule.gradient}`}
-                      >
+                      <span className="inline-block px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold text-zinc-700 bg-zinc-100 border border-zinc-200">
                         {rule.badge}
                       </span>
-                      <h3 className="text-base font-display font-bold text-slate-900">{rule.title}</h3>
-                      <p className="text-xs font-bold text-rose-600">{rule.formula}</p>
+                      <h3 className="text-[15px] font-display font-bold text-zinc-950">{rule.title}</h3>
+                      <p className="text-xs font-semibold text-[#BE123C]">{rule.formula}</p>
                     </div>
                     <div className="space-y-2">
                       {rule.examples.map((ex) => (
@@ -494,17 +494,17 @@ export const PinyinPage: React.FC = () => {
                           key={ex.hanzi}
                           type="button"
                           onClick={() => playSound(ex.hanzi, 0.8)}
-                          className="w-full p-2.5 rounded-xl bg-white/75 hover:bg-rose-50 border border-white flex items-center justify-between text-left transition-colors cursor-pointer"
+                          className="w-full p-2.5 rounded-lg bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/80 flex items-center justify-between text-left transition-colors cursor-pointer"
                         >
                           <div>
-                            <span className="font-hanzi-serif font-bold text-lg text-slate-900 mr-2">
+                            <span className="font-hanzi-serif font-bold text-base text-zinc-950 mr-2">
                               {ex.hanzi}
                             </span>
-                            <span className="text-xs text-slate-400 line-through mr-1.5">{ex.raw}</span>
-                            <span className="text-xs font-extrabold text-emerald-700">→ {ex.spoken}</span>
-                            <p className="text-[11px] text-slate-500">{ex.vi}</p>
+                            <span className="text-xs text-zinc-400 line-through mr-1.5">{ex.raw}</span>
+                            <span className="text-xs font-semibold text-emerald-700">→ {ex.spoken}</span>
+                            <p className="text-[11px] text-zinc-500">{ex.vi}</p>
                           </div>
-                          <Volume2 className="w-4 h-4 text-rose-500 shrink-0" />
+                          <Volume2 className="w-4 h-4 text-zinc-400 shrink-0" />
                         </button>
                       ))}
                     </div>
@@ -519,46 +519,45 @@ export const PinyinPage: React.FC = () => {
         {tab === 'MINIMAL_PAIRS' && (
           <motion.div
             key="tab-pairs"
-            initial={{ opacity: 0, y: 6 }}
+            initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
             className="max-w-2xl mx-auto"
           >
-            <GlassCard className="p-6 sm:p-8 text-center space-y-6 relative overflow-hidden">
-              <BorderBeam duration={8} colorFrom="#34d399" colorTo="#fbbf24" />
+            <GlassCard className="p-6 sm:p-8 text-center space-y-6">
               <div className="flex items-center justify-between">
-                <span className="px-3 py-1 rounded-full bg-rose-50 text-rose-700 text-xs font-extrabold">
+                <span className="px-2.5 py-1 rounded-md bg-zinc-100 border border-zinc-200 text-zinc-700 text-xs font-mono font-semibold">
                   Cặp âm {minimalPairs.length > 0 ? `${currentPairIdx + 1}/${minimalPairs.length}` : '0'}
                 </span>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-black">
-                  <Flame className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-zinc-50 border border-zinc-200 text-zinc-800 text-xs font-semibold">
+                  <Flame className="w-3.5 h-3.5 text-[#BE123C]" />
                   Chuỗi đúng: <NumberTicker value={streak} />
                 </span>
               </div>
 
               <div className="space-y-1">
-                <h3 className="text-xl font-display font-extrabold text-slate-900">
+                <h3 className="text-xl font-display font-bold text-zinc-950">
                   Phân biệt cặp âm dễ nhầm
                 </h3>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-zinc-500">
                   Bấm nút loa để nghe phát âm và chọn đúng âm bạn nghe thấy
                 </p>
               </div>
 
-              <div className="py-3">
+              <div className="py-2">
                 <button
                   type="button"
                   onClick={playSecretAudio}
-                  className="w-24 h-24 rounded-full bg-gradient-to-tr from-rose-400 via-pink-400 to-amber-300 text-white flex items-center justify-center mx-auto shadow-xl shadow-rose-300/40 hover:brightness-105 transition-all cursor-pointer"
+                  className="w-20 h-20 rounded-full bg-zinc-900 hover:bg-zinc-800 text-white flex items-center justify-center mx-auto shadow-sm transition-colors cursor-pointer"
                   aria-label="Nghe âm mẫu"
                 >
-                  <Volume2 className="w-10 h-10" />
+                  <Volume2 className="w-8 h-8" />
                 </button>
               </div>
 
               {currentPair && (
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3.5">
                   {(['primary', 'contrasting'] as const).map((side) => {
                     const data = side === 'primary' ? currentPair.primary : currentPair.contrasting;
                     if (!data) return null;
@@ -570,18 +569,18 @@ export const PinyinPage: React.FC = () => {
                         type="button"
                         onClick={() => handleChooseAnswer(side)}
                         disabled={selectedAnswer !== null}
-                        className={`p-6 rounded-2xl border-2 text-3xl font-display font-extrabold transition-colors cursor-pointer ${
+                        className={`p-5 rounded-xl border text-3xl font-display font-bold transition-colors cursor-pointer ${
                           selectedAnswer !== null
                             ? isRight
-                              ? 'border-emerald-400 bg-emerald-50 text-emerald-800 shadow-sm'
+                              ? 'border-emerald-500 bg-emerald-50 text-emerald-800'
                               : chosen
                                 ? 'border-rose-400 bg-rose-50 text-rose-800'
-                                : 'border-white/75 bg-white/50 text-slate-400'
-                            : 'border-white/85 bg-white/75 hover:border-rose-300 hover:bg-white text-slate-900'
+                                : 'border-zinc-200 bg-zinc-50 text-zinc-400'
+                            : 'border-zinc-200 bg-white hover:border-zinc-900 text-zinc-950'
                         }`}
                       >
                         {data.syllable}
-                        <span className="block text-xs font-semibold text-slate-400 mt-1">
+                        <span className="block text-xs font-medium text-zinc-400 mt-1">
                           Chọn âm này
                         </span>
                       </button>
@@ -592,16 +591,16 @@ export const PinyinPage: React.FC = () => {
 
               {quizFeedback && (
                 <div
-                  className={`p-4 rounded-2xl border text-sm font-bold flex items-center justify-center gap-2 ${
+                  className={`p-3.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 ${
                     quizFeedback.isCorrect
                       ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
                       : 'bg-rose-50 border-rose-200 text-rose-800'
                   }`}
                 >
                   {quizFeedback.isCorrect ? (
-                    <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                   ) : (
-                    <XCircle className="w-5 h-5 text-rose-600 shrink-0" />
+                    <XCircle className="w-4 h-4 text-[#BE123C] shrink-0" />
                   )}
                   <span>{quizFeedback.message}</span>
                 </div>

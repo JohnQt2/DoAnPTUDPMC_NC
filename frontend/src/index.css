@@ -4,286 +4,165 @@
 
 @layer base {
   html {
-    scroll-behavior: smooth;
     overflow-y: scroll;
-    /* Pastel Rose-Peach Arrow Cursor (Zero circle, 0ms native hardware latency) */
-    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23fb7185'/%3E%3Cstop offset='100%25' stop-color='%23f59e0b'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M4 3 L20 12.5 L12.2 14.3 L9.2 22 Z' fill='url(%23g)' stroke='%23ffffff' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E") 3 3, auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 
   body {
-    @apply antialiased text-slate-800 bg-[#faf5fa] font-sans selection:bg-rose-100 selection:text-rose-700;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-    line-height: 1.6;
+    @apply bg-[#FAFAFA] text-[#09090B] font-sans antialiased selection:bg-[#18181B] selection:text-white;
   }
 
-  /* Distinct Editorial Heading Typography */
-  h1, h2, h3 {
-    font-family: "Plus Jakarta Sans", "Be Vietnam Pro", sans-serif;
-    letter-spacing: -0.02em;
+  h1, h2, h3, h4, .font-heading {
+    @apply font-display tracking-[-0.025em];
   }
-}
-
-/* Custom Pastel Hand-Pointer Cursor Skin — placed AFTER @tailwind utilities so Tailwind .cursor-pointer never overrides it! */
-a,
-button,
-[role='button'],
-summary,
-label[for],
-select,
-input[type='checkbox'],
-input[type='radio'],
-input[type='submit'],
-.cursor-pointer {
-  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cdefs%3E%3ClinearGradient id='h' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23f472b6'/%3E%3Cstop offset='55%25' stop-color='%23fb7185'/%3E%3Cstop offset='100%25' stop-color='%23fbbf24'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M10.5 3.2 C10.5 2 12.6 2 12.6 3.2 L12.6 11.4 L14.4 10.6 C15.4 10.2 16.5 10.9 16.5 12 L16.5 12.3 L18 11.7 C19 11.3 20 12 20 13.1 L20 13.5 L21.2 13.1 C22.1 12.8 23 13.5 23 14.5 L23 18.6 C23 22.3 20.1 25 16.2 25 L13.2 25 C10.6 25 8.7 23.6 7.5 21.3 L4.8 16.2 C4.2 15.1 4.9 13.8 6.1 13.8 C6.9 13.8 7.6 14.2 8.1 14.9 L10.5 17.6 Z' fill='url(%23h)' stroke='%23ffffff' stroke-width='1.9' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E") 11 3, pointer !important;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   LUCIAN UX/UI TOKENS + iPHONE iOS 26 OPTICAL LIQUID GLASS (RESTRAINED EDITORIAL)
-   - Inspired by Lucian UX/UI Prompt (--ux-*), Landing.love (Zero / OTTO / HOLM) & Apple iOS 26
+   HANZI4U 2026 MINIMALIST EXECUTIVE SAAS SYSTEM
+   Inspired by Linear, Vercel, Stripe, Claude & Apple Editorial
+   - Strict neutral canvas (#FAFAFA) + pure white elevated cards (#FFFFFF)
+   - Crisp 1px architectural hairlines (#E4E4E7) & subtle micro-elevation
+   - Single restrained Imperial Crimson accent (#BE123C) + Jade mastery (#059669)
    ═══════════════════════════════════════════════════════════════════════════ */
 :root {
-  --ux-page: #F4F2EE;
-  --ux-surface: rgba(255, 255, 255, 0.44);
-  --ux-ink: #16151B;
-  --ux-ink-2: #57535F;
-  --ux-ink-3: #8E8A97;
-  --ux-line: rgba(22, 21, 27, 0.09);
-  --ux-accent: #D93A55;
-  --ux-mint: #119C72;
+  --ux-page: #FAFAFA;
+  --ux-surface: #FFFFFF;
+  --ux-surface-2: #F4F4F5;
+  --ux-ink: #09090B;
+  --ux-ink-2: #52525B;
+  --ux-ink-3: #71717A;
+  --ux-line: #E4E4E7;
+  --ux-accent: #BE123C;
+  --ux-mint: #059669;
   --ux-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   --ux-spring: cubic-bezier(0.34, 1.45, 0.64, 1);
 }
 
 @layer components {
-  /* Lucian #001 Pointer-Reactive Magnetic Liquid Glass Button */
+  /* Lucian #001 Subtle Pointer-Reactive Button (refined for minimalist SaaS) */
   .u001-liquid-btn {
     --mx: 50%;
     --my: 0%;
     transition:
-      transform 260ms var(--ux-spring),
-      box-shadow 220ms var(--ux-ease),
-      border-color 220ms var(--ux-ease),
-      filter 220ms var(--ux-ease);
+      transform 220ms var(--ux-ease),
+      background-color 160ms var(--ux-ease),
+      border-color 160ms var(--ux-ease),
+      box-shadow 160ms var(--ux-ease);
   }
 
   .u001-liquid-btn .u001-specular {
     background: radial-gradient(
-      140px circle at var(--mx) var(--my),
-      rgba(255, 255, 255, 0.42),
-      transparent 68%
+      120px circle at var(--mx) var(--my),
+      rgba(255, 255, 255, 0.18),
+      transparent 70%
     );
     opacity: 0;
-    transition: opacity 220ms var(--ux-ease);
+    transition: opacity 180ms var(--ux-ease);
   }
 
   .u001-liquid-btn:hover .u001-specular {
     opacity: 1;
   }
 
-  /* Compact iPhone Liquid Glass Pill (Status, Streak, Dock Chips) */
+  /* Compact Minimalist Status Pill */
   .ios-glass-pill {
-    background: linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.56) 0%,
-      rgba(255, 255, 255, 0.28) 100%
-    );
-    backdrop-filter: blur(16px) saturate(185%);
-    -webkit-backdrop-filter: blur(16px) saturate(185%);
-    border: 1px solid rgba(255, 255, 255, 0.82);
-    box-shadow:
-      0 10px 26px -12px rgba(22, 21, 27, 0.12),
-      inset 0 1.5px 1px rgba(255, 255, 255, 0.98),
-      inset 0 -1px 3px rgba(22, 21, 27, 0.05);
+    background-color: #FFFFFF;
+    border: 1px solid #E4E4E7;
+    box-shadow: 0 1px 2px rgba(9, 9, 11, 0.04);
   }
 
-  /* Clean Translucent iPhone Liquid Glass Panel (lets 3D sculpture & warm paper breathe through) */
+  /* Primary Architectural Card Surface */
   .glass-light {
     position: relative;
-    background: linear-gradient(
-      140deg,
-      rgba(255, 255, 255, 0.52) 0%,
-      rgba(255, 255, 255, 0.28) 52%,
-      rgba(255, 255, 255, 0.42) 100%
-    );
-    backdrop-filter: blur(18px) saturate(185%);
-    -webkit-backdrop-filter: blur(18px) saturate(185%);
-    border: 1px solid rgba(255, 255, 255, 0.78);
+    background-color: #FFFFFF;
+    border: 1px solid #E4E4E7;
     box-shadow:
-      0 16px 38px -16px rgba(22, 21, 27, 0.10),
-      0 2px 8px -2px rgba(22, 21, 27, 0.04),
-      inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.98),
-      inset 1px 0 1px 0 rgba(255, 255, 255, 0.70),
-      inset 0 -1.5px 4px 0 rgba(22, 21, 27, 0.04);
-    contain: layout style;
+      0 1px 2px rgba(9, 9, 11, 0.03),
+      0 4px 12px -6px rgba(9, 9, 11, 0.04);
   }
 
-  /* iPhone Optical Liquid Glass Hero Lens (subtle SVG displacement + Fresnel meniscus rim) */
+  /* Hero Section Card (Clean pure porcelain with hairline precision) */
   .ios-hero-glass {
     position: relative;
-    background: linear-gradient(
-      138deg,
-      rgba(255, 255, 255, 0.52) 0%,
-      rgba(255, 255, 255, 0.24) 50%,
-      rgba(255, 255, 255, 0.40) 100%
-    );
-    backdrop-filter: url(#ios-liquid-refraction) blur(18px) saturate(195%);
-    -webkit-backdrop-filter: blur(20px) saturate(195%);
-    border: 1px solid rgba(255, 255, 255, 0.84);
+    background-color: #FFFFFF;
+    border: 1px solid #E4E4E7;
     box-shadow:
-      0 22px 48px -18px rgba(22, 21, 27, 0.12),
-      0 4px 12px -4px rgba(217, 58, 85, 0.07),
-      inset 0 2px 1.5px 0 rgba(255, 255, 255, 1),
-      inset 1.5px 0 1.5px 0 rgba(255, 255, 255, 0.78),
-      inset 0 -2px 5px 0 rgba(22, 21, 27, 0.05);
+      0 1px 2px rgba(9, 9, 11, 0.04),
+      0 10px 28px -14px rgba(9, 9, 11, 0.06);
   }
 
-  .ios-hero-glass::before {
-    content: '';
-    pointer-events: none;
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background: linear-gradient(
-      125deg,
-      rgba(255, 255, 255, 0.45) 0%,
-      rgba(255, 255, 255, 0.08) 32%,
-      rgba(255, 255, 255, 0) 56%,
-      rgba(255, 255, 255, 0.14) 100%
-    );
-  }
-
-  /* Zero-Nested-Blur Crisp Porcelain Glass Cards for Dense Grids (120fps smooth!) */
+  /* Dense Grid Item Card (Vocab, Pinyin, Hanzi — zero blur lag, razor crisp) */
   .glass-card-grid {
-    background: linear-gradient(
-      145deg,
-      rgba(255, 255, 255, 0.76) 0%,
-      rgba(255, 255, 255, 0.56) 52%,
-      rgba(255, 255, 255, 0.70) 100%
-    );
-    border: 1px solid rgba(255, 255, 255, 0.88);
-    box-shadow:
-      0 6px 18px -10px rgba(22, 21, 27, 0.10),
-      inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.98);
+    background-color: #FFFFFF;
+    border: 1px solid #E4E4E7;
+    box-shadow: 0 1px 2px rgba(9, 9, 11, 0.03);
     transition:
-      background 200ms var(--ux-ease),
-      border-color 200ms var(--ux-ease),
-      box-shadow 200ms var(--ux-ease);
+      background-color 150ms var(--ux-ease),
+      border-color 150ms var(--ux-ease),
+      box-shadow 150ms var(--ux-ease);
   }
 
   .glass-card-grid:hover {
-    background: linear-gradient(
-      145deg,
-      rgba(255, 255, 255, 0.92) 0%,
-      rgba(255, 255, 255, 0.76) 52%,
-      rgba(255, 255, 255, 0.88) 100%
-    );
-    border-color: rgba(255, 255, 255, 1);
-    box-shadow:
-      0 14px 28px -12px rgba(22, 21, 27, 0.14),
-      inset 0 2px 2px 0 rgba(255, 255, 255, 1);
+    background-color: #FAFAFA;
+    border-color: #D4D4D8;
+    box-shadow: 0 4px 12px -4px rgba(9, 9, 11, 0.07);
   }
 
-  /* Calm Editorial Liquid Hover */
+  /* Refined Card Hover */
   .glass-light-hover {
     transition:
-      box-shadow 220ms var(--ux-ease),
-      border-color 220ms var(--ux-ease),
-      background 220ms var(--ux-ease);
+      border-color 160ms var(--ux-ease),
+      box-shadow 160ms var(--ux-ease),
+      background-color 160ms var(--ux-ease);
   }
 
   .glass-light-hover:hover {
-    background: linear-gradient(
-      140deg,
-      rgba(255, 255, 255, 0.68) 0%,
-      rgba(255, 255, 255, 0.44) 52%,
-      rgba(255, 255, 255, 0.58) 100%
-    );
-    border-color: rgba(255, 255, 255, 0.98);
+    border-color: #D4D4D8;
     box-shadow:
-      0 20px 42px -16px rgba(22, 21, 27, 0.14),
-      inset 0 2px 1.5px 0 rgba(255, 255, 255, 1);
+      0 2px 6px rgba(9, 9, 11, 0.04),
+      0 10px 24px -10px rgba(9, 9, 11, 0.08);
   }
 
-  /* Floating iPhone / ThreeUI-inspired Optical Glass Dock Sidebar */
+  /* Clean Executive Left Sidebar Rail */
   .liquid-sidebar {
-    background: linear-gradient(
-      165deg,
-      rgba(255, 255, 255, 0.54) 0%,
-      rgba(255, 255, 255, 0.30) 55%,
-      rgba(255, 255, 255, 0.46) 100%
-    );
-    backdrop-filter: url(#ios-liquid-refraction) blur(18px) saturate(195%);
-    -webkit-backdrop-filter: blur(20px) saturate(195%);
-    border: 1px solid rgba(255, 255, 255, 0.82);
-    box-shadow:
-      0 20px 46px -18px rgba(22, 21, 27, 0.14),
-      inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.98),
-      inset 1.5px 0 2px 0 rgba(255, 255, 255, 0.72),
-      inset 0 -1.5px 4px 0 rgba(22, 21, 27, 0.05);
-    contain: layout style;
+    background-color: #FFFFFF;
+    border-color: #E4E4E7;
   }
 
-  /* Liquid Glass Modal */
+  /* Crisp SaaS Modal Surface */
   .liquid-modal {
-    background: linear-gradient(
-      145deg,
-      rgba(255, 255, 255, 0.90) 0%,
-      rgba(253, 246, 251, 0.84) 55%,
-      rgba(255, 251, 245, 0.88) 100%
-    );
-    backdrop-filter: blur(30px) saturate(195%);
-    -webkit-backdrop-filter: blur(30px) saturate(195%);
-    border: 1.5px solid rgba(255, 255, 255, 0.96);
+    background-color: #FFFFFF;
+    border: 1px solid #E4E4E7;
     box-shadow:
-      0 26px 64px -12px rgba(15, 23, 42, 0.20),
-      0 8px 24px -8px rgba(244, 114, 182, 0.12),
-      inset 0 2px 2px rgba(255, 255, 255, 1);
+      0 24px 60px -12px rgba(9, 9, 11, 0.16),
+      0 4px 16px -4px rgba(9, 9, 11, 0.06);
   }
 
-  /* Liquid Glass Floating Reward / Notice Toast */
+  /* Minimalist Toast Pill */
   .liquid-toast {
-    background: linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.88) 0%,
-      rgba(253, 246, 251, 0.80) 100%
-    );
-    backdrop-filter: blur(24px) saturate(190%);
-    -webkit-backdrop-filter: blur(24px) saturate(190%);
-    border: 1.5px solid rgba(255, 255, 255, 0.96);
+    background-color: #18181B;
+    color: #FAFAFA;
+    border: 1px solid rgba(255, 255, 255, 0.10);
     box-shadow:
-      0 18px 42px -12px rgba(244, 114, 182, 0.18),
-      0 6px 18px -6px rgba(167, 139, 250, 0.12),
-      inset 0 2px 2px rgba(255, 255, 255, 1);
+      0 14px 36px -8px rgba(9, 9, 11, 0.28),
+      0 2px 8px rgba(9, 9, 11, 0.12);
   }
 
-  /* Dark Liquid Glass (Landing & Login) */
+  /* Monochrome Dark Surface (when explicitly requested) */
   .glass-dark {
-    background: linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.13) 0%,
-      rgba(255, 255, 255, 0.05) 50%,
-      rgba(255, 255, 255, 0.10) 100%
-    );
-    backdrop-filter: blur(24px) saturate(195%);
-    -webkit-backdrop-filter: blur(24px) saturate(195%);
-    border: 1px solid rgba(255, 255, 255, 0.24);
-    box-shadow:
-      0 18px 54px -8px rgba(0, 0, 0, 0.48),
-      inset 0 1.5px 1px rgba(255, 255, 255, 0.34),
-      inset 0 -1px 1px rgba(255, 255, 255, 0.08);
+    background-color: #111113;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.45);
   }
 
   .glass-dark-hover {
-    transition:
-      box-shadow 240ms cubic-bezier(0.22, 1, 0.36, 1),
-      border-color 240ms cubic-bezier(0.22, 1, 0.36, 1);
+    transition: border-color 160ms var(--ux-ease);
   }
 
   .glass-dark-hover:hover {
-    border-color: rgba(255, 255, 255, 0.40);
-    box-shadow:
-      0 20px 54px -8px rgba(244, 114, 182, 0.24),
-      inset 0 1.5px 2px rgba(255, 255, 255, 0.45);
+    border-color: rgba(255, 255, 255, 0.18);
   }
 }
 
@@ -295,21 +174,18 @@ input[type='submit'],
   display: none;
 }
 
-/* ── Restrained Museum Rice-Paper Base (Lucian --ux-page #F4F2EE, Zero Rainbow Slop) ── */
+/* Clean Studio Alabaster Base */
 .workspace-mesh-bg {
-  background-color: #f4f2ee;
-  background-image:
-    radial-gradient(ellipse 52% 46% at 12% 10%, rgba(217, 58, 85, 0.08) 0%, transparent 65%),
-    radial-gradient(ellipse 48% 44% at 88% 85%, rgba(17, 156, 114, 0.08) 0%, transparent 65%);
+  background-color: #FAFAFA;
 }
 
-/* ── Chinese TianZiGe Grid Pattern ── */
+/* ── Chinese TianZiGe Grid Pattern (subtle refined zinc hairline) ── */
 .tianzige-grid {
   background-image:
-    linear-gradient(to right, rgba(244, 114, 182, 0.18) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(244, 114, 182, 0.18) 1px, transparent 1px),
-    linear-gradient(45deg, transparent calc(50% - 0.5px), rgba(244, 114, 182, 0.12) calc(50% - 0.5px), rgba(244, 114, 182, 0.12) calc(50% + 0.5px), transparent calc(50% + 0.5px)),
-    linear-gradient(-45deg, transparent calc(50% - 0.5px), rgba(244, 114, 182, 0.12) calc(50% - 0.5px), rgba(244, 114, 182, 0.12) calc(50% + 0.5px), transparent calc(50% + 0.5px));
+    linear-gradient(to right, rgba(24, 24, 27, 0.09) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(24, 24, 27, 0.09) 1px, transparent 1px),
+    linear-gradient(45deg, transparent calc(50% - 0.5px), rgba(24, 24, 27, 0.06) calc(50% - 0.5px), rgba(24, 24, 27, 0.06) calc(50% + 0.5px), transparent calc(50% + 0.5px)),
+    linear-gradient(-45deg, transparent calc(50% - 0.5px), rgba(24, 24, 27, 0.06) calc(50% - 0.5px), rgba(24, 24, 27, 0.06) calc(50% + 0.5px), transparent calc(50% + 0.5px));
   background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%;
   background-position: center;
 }
@@ -348,46 +224,38 @@ input[type='submit'],
 
 .flip-3d-inner {
   transform-style: preserve-3d;
-  transition: transform 440ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 0.46s cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: transform;
 }
 
-/* ── Marquee & Shimmer Keyframes ── */
+/* ── Infinite Smooth Marquee ── */
 @keyframes marquee-scroll {
-  0% { transform: translate3d(0%, 0, 0); }
-  100% { transform: translate3d(-50%, 0, 0); }
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
 }
 
-@keyframes marquee-scroll-reverse {
-  0% { transform: translate3d(-50%, 0, 0); }
-  100% { transform: translate3d(0%, 0, 0); }
-}
-
-@keyframes shimmer-sweep {
-  0% { transform: translate3d(-120%, 0, 0) skewX(-18deg); }
-  100% { transform: translate3d(220%, 0, 0) skewX(-18deg); }
-}
-
-.animate-marquee {
+.animate-marquee-track {
+  display: flex;
+  width: max-content;
   animation: marquee-scroll 34s linear infinite;
 }
 
-.animate-marquee-reverse {
-  animation: marquee-scroll-reverse 38s linear infinite;
-}
-
-.group:hover .animate-marquee,
-.group:hover .animate-marquee-reverse {
+.animate-marquee-track:hover {
   animation-play-state: paused;
 }
 
-.animate-shimmer-sweep {
-  animation: shimmer-sweep 3.2s ease-in-out infinite;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .animate-marquee,
-  .animate-marquee-reverse,
-  .animate-shimmer-sweep {
-    animation: none !important;
+  .animate-marquee-track {
+    animation: none;
+  }
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
   }
 }

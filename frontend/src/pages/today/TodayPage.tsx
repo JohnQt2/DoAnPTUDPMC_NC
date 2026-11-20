@@ -58,48 +58,48 @@ export const TodayPage: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto py-9 px-5 sm:px-8 space-y-8">
-      {/* Clean Editorial Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-5 border-b border-[#16151B]/[0.08]">
+      {/* Crisp SaaS Header */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-5 border-b border-zinc-200">
         <div>
-          <p className="text-[11px] font-mono uppercase tracking-[0.18em] text-[#8E8A97]">
+          <p className="text-[11px] font-mono uppercase tracking-[0.16em] text-zinc-400">
             Không gian học hôm nay
           </p>
-          <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-[#16151B] tracking-tight mt-1">
+          <h1 className="text-2xl sm:text-3xl font-display font-bold text-zinc-950 tracking-tight mt-1">
             Chào {user?.displayName || 'bạn'}
           </h1>
-          <p className="text-sm text-[#57535F] mt-1">
-            Mục tiêu <strong className="text-[#16151B]">{dailyMins} phút/ngày</strong> · Lộ trình{' '}
-            <strong className="text-[#D93A55]">{targetGoal}</strong>
+          <p className="text-sm text-zinc-600 mt-1">
+            Mục tiêu <strong className="text-zinc-950 font-semibold">{dailyMins} phút/ngày</strong> · Lộ trình{' '}
+            <strong className="text-[#BE123C] font-semibold">{targetGoal}</strong>
           </p>
         </div>
 
         <LucianStreakFlame count={completedLessons} unit="bài" subtitle="Đã hoàn thành" />
       </div>
 
-      {/* Main iPhone Liquid Glass Hero Lens (transparent over live 3D WebGL backdrop) */}
+      {/* Primary Action Surface */}
       <motion.div
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
-        className="relative overflow-hidden rounded-[28px] p-6 sm:p-8 ios-hero-glass space-y-6"
+        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+        className="rounded-2xl p-6 sm:p-7 ios-hero-glass space-y-6"
       >
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="space-y-2 max-w-lg">
-            <span className="inline-flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.16em] text-[#D93A55] font-bold">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#D93A55]" />
+            <span className="inline-flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.14em] text-[#BE123C] font-semibold">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#BE123C]" />
               Bài học kế tiếp
             </span>
-            <h2 className="text-xl sm:text-2xl font-display font-extrabold text-[#16151B] tracking-tight">
+            <h2 className="text-xl sm:text-2xl font-display font-bold text-zinc-950 tracking-tight">
               {loading ? 'Đang chuẩn bị bài học...' : 'Tiếp tục chặng học hôm nay'}
             </h2>
-            <p className="text-sm text-[#57535F] leading-relaxed">
+            <p className="text-sm text-zinc-600 leading-relaxed">
               Mỗi phiên học gói gọn trong {dailyMins} phút: nghe hội thoại mẫu, nắm ngữ pháp trọng tâm và củng cố từ vựng.
             </p>
           </div>
 
           <LucianLiquidButton
             href={`#/lessons/${nextLessonId}`}
-            variant="vermilion"
+            variant="ink"
             size="lg"
             className="shrink-0"
           >
@@ -108,8 +108,7 @@ export const TodayPage: React.FC = () => {
           </LucianLiquidButton>
         </div>
 
-        {/* Lucian #372 Fill-to-Level-Up XP Progress Bar */}
-        <div className="relative z-10 pt-5 border-t border-[#16151B]/[0.07]">
+        <div className="pt-5 border-t border-zinc-100">
           <LucianXpBar
             current={completedLessons}
             target={totalLessons}
@@ -118,15 +117,15 @@ export const TodayPage: React.FC = () => {
         </div>
       </motion.div>
 
-      {/* Clean Editorial 3-Step Flow */}
+      {/* Clean 3-Step Flow */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-mono uppercase tracking-[0.16em] text-[#57535F] font-bold">
+          <h3 className="text-xs font-mono uppercase tracking-[0.14em] text-zinc-500 font-semibold">
             Nhịp học đề xuất hôm nay
           </h3>
           <a
             href="#/courses"
-            className="text-xs font-bold text-[#16151B] hover:text-[#D93A55] inline-flex items-center gap-1 transition-colors"
+            className="text-xs font-semibold text-zinc-700 hover:text-zinc-950 inline-flex items-center gap-1 transition-colors"
           >
             <span>Toàn bộ lộ trình HSK 1–6</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -140,34 +139,34 @@ export const TodayPage: React.FC = () => {
               <motion.a
                 key={item.href}
                 href={item.href}
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35, delay: idx * 0.06, ease: [0.2, 0.8, 0.2, 1] }}
-                className="glass-light glass-light-hover rounded-[24px] p-5 flex flex-col justify-between gap-6 group"
+                transition={{ duration: 0.25, delay: idx * 0.04, ease: [0.22, 1, 0.36, 1] }}
+                className="glass-light glass-light-hover rounded-2xl p-5 flex flex-col justify-between gap-6 group"
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-mono font-bold text-[#D93A55]">
+                    <span className="text-[11px] font-mono font-semibold text-[#BE123C]">
                       {item.index}
                     </span>
-                    <div className="w-9 h-9 rounded-xl bg-white/65 border border-white/90 text-[#16151B] group-hover:text-[#D93A55] flex items-center justify-center transition-colors">
+                    <div className="w-8 h-8 rounded-lg bg-zinc-50 border border-zinc-200 text-zinc-700 group-hover:text-zinc-950 group-hover:border-zinc-300 flex items-center justify-center transition-colors">
                       <Icon className="w-4 h-4" />
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <p className="text-[10px] font-mono tracking-widest text-[#8E8A97] uppercase">
+                    <p className="text-[10px] font-mono tracking-widest text-zinc-400 uppercase">
                       {item.label}
                     </p>
-                    <h4 className="font-display font-bold text-[15px] text-[#16151B] group-hover:text-[#D93A55] transition-colors leading-snug">
+                    <h4 className="font-display font-semibold text-[15px] text-zinc-950 group-hover:text-[#BE123C] transition-colors leading-snug">
                       {item.title}
                     </h4>
-                    <p className="text-xs text-[#57535F] leading-relaxed">{item.desc}</p>
+                    <p className="text-xs text-zinc-600 leading-relaxed">{item.desc}</p>
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-[#16151B]/[0.07] flex items-center justify-between text-xs font-bold text-[#16151B] group-hover:text-[#D93A55] transition-colors">
+                <div className="pt-3 border-t border-zinc-100 flex items-center justify-between text-xs font-semibold text-zinc-700 group-hover:text-zinc-950 transition-colors">
                   <span>Mở mục này</span>
-                  <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-1" />
+                  <ArrowRight className="w-3.5 h-3.5 transition-transform duration-150 group-hover:translate-x-0.5" />
                 </div>
               </motion.a>
             );

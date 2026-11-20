@@ -1,5 +1,12 @@
 import React, { useState, useRef, useLayoutEffect, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import {
+  motion,
+  AnimatePresence,
+  useMotionValue,
+  useSpring,
+  useVelocity,
+  useTransform,
+} from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { UserAvatar } from './ui';
 import {
@@ -40,9 +47,11 @@ interface NavContentProps {
 }
 
 /**
- * Scroll-immune sidebar nav:
- * Uses local offsetTop / offsetHeight inside <nav> via GPU translate3d instead of viewport layoutId,
- * so window.scrollTo(0, 0) on route changes NEVER causes the active pill to jump up from the bottom!
+ * Scroll-immune Liquid Glass Bubble sidebar nav:
+ * Anchored to local el.offsetTop inside <nav> (100% immune to window scroll jumps).
+ * Uses Framer Motion spring physics + real-time velocity-driven squash & stretch so the pill
+ * stretches vertically and narrows slightly like a silky liquid soap bubble while gliding,
+ * then settles seamlessly with a soft translucent glass specular highlight.
  */
 const SidebarNavContent: React.FC<NavContentProps> = ({
   menuItems,
@@ -54,27 +63,81 @@ const SidebarNavContent: React.FC<NavContentProps> = ({
   onSelect,
 }) => {
   const itemRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
+  const hasMountedActiveRef = useRef(false);
+  const hasVisibleHoverRef = useRef(false);
+
   const [hoveredHash, setHoveredHash] = useState<string | null>(null);
-  const [activeRect, setActiveRect] = useState<{ top: number; height: number } | null>(null);
-  const [hoverRect, setHoverRect] = useState<{ top: number; height: number } | null>(null);
+  const [activeVisible, setActiveVisible] = useState(false);
+  const [activeHeight, setActiveHeight] = useState(44);
+  const [hoverVisible, setHoverVisible] = useState(false);
+  const [hoverHeight, setHoverHeight] = useState(44);
+
+  // Active Liquid Bubble physics (velvety spring + volume-conserving droplet stretch)
+  const activeTargetY = useMotionValue(0);
+  const activeY = useSpring(activeTargetY, { stiffness: 280, damping: 24, mass: 0.72 });
+  const activeVelocity = useVelocity(activeY);
+  const activeStretchY = useTransform(activeVelocity, [-1600, -450, 0, 450, 1600], [1.22, 1.09, 1, 1.09, 1.22]);
+  const activeSqueezeX = useTransform(activeVelocity, [-1600, -450, 0, 450, 1600], [0.935, 0.972, 1, 0.972, 0.935]);
+  const activeScaleY = useSpring(activeStretchY, { stiffness: 420, damping: 32 });
+  const activeScaleX = useSpring(activeSqueezeX, { stiffness: 420, damping: 32 });
+
+  // Hover Dewdrop Bubble physics (light mist droplet trailing the cursor)
+  const hoverTargetY = useMotionValue(0);
+  const hoverY = useSpring(hoverTargetY, { stiffness: 360, damping: 29, mass: 0.62 });
+  const hoverVelocity = useVelocity(hoverY);
+  const hoverScaleY = useSpring(
+    useTransform(hoverVelocity, [-1400, 0, 1400], [1.14, 1, 1.14]),
+    { stiffness: 450, damping: 34 }
+  );
+  const hoverScaleX = useSpring(
+    useTransform(hoverVelocity, [-1400, 0, 1400], [0.96, 1, 0.96]),
+    { stiffness: 450, damping: 34 }
+  );
 
   useLayoutEffect(() => {
     const el = itemRefs.current[activeHash];
-    if (el) {
-      setActiveRect({ top: el.offsetTop, height: el.offsetHeight });
+    if (!el) {
+      setActiveVisible(false);
+      hasMountedActiveRef.current = false;
+      return;
     }
-  }, [activeHash, menuItems.length]);
+
+    setActiveHeight(el.offsetHeight);
+    if (!hasMountedActiveRef.current) {
+      // First paint: place bubble immediately with zero slide-from-top jump
+      activeTargetY.jump(el.offsetTop);
+      activeY.jump(el.offsetTop);
+      hasMountedActiveRef.current = true;
+    } else {
+      activeTargetY.set(el.offsetTop);
+    }
+    setActiveVisible(true);
+  }, [activeHash, menuItems.length, activeTargetY, activeY]);
 
   useLayoutEffect(() => {
     if (!hoveredHash || hoveredHash === activeHash) {
-      setHoverRect(null);
+      setHoverVisible(false);
+      hasVisibleHoverRef.current = false;
       return;
     }
     const el = itemRefs.current[hoveredHash];
-    if (el) {
-      setHoverRect({ top: el.offsetTop, height: el.offsetHeight });
+    if (!el) {
+      setHoverVisible(false);
+      hasVisibleHoverRef.current = false;
+      return;
     }
-  }, [hoveredHash, activeHash]);
+
+    setHoverHeight(el.offsetHeight);
+    if (!hasVisibleHoverRef.current) {
+      // Entering nav: bloom droplet directly under cursor, then glide smoothly between items
+      hoverTargetY.jump(el.offsetTop);
+      hoverY.jump(el.offsetTop);
+      hasVisibleHoverRef.current = true;
+    } else {
+      hoverTargetY.set(el.offsetTop);
+    }
+    setHoverVisible(true);
+  }, [hoveredHash, activeHash, hoverTargetY, hoverY]);
 
   return (
     <div className="flex flex-col h-full">
@@ -104,34 +167,52 @@ const SidebarNavContent: React.FC<NavContentProps> = ({
         </a>
       </div>
 
-      {/* Menu Items with Scroll-Immune Local GPU Pill (flex gap never affects position:absolute!) */}
+      {/* Menu Items with Scroll-Immune Liquid Glass Bubble */}
       <nav
         className="relative flex-1 px-3 flex flex-col gap-1 overflow-y-auto no-scrollbar"
         aria-label={isAdmin ? 'Menu quản trị' : 'Menu học tập'}
         onMouseLeave={() => setHoveredHash(null)}
       >
-        {/* Local Hover Highlight Pill */}
-        <span
+        {/* Soft Dewdrop Hover Bubble */}
+        <motion.span
           aria-hidden="true"
           style={{
-            transform: hoverRect ? `translate3d(0, ${hoverRect.top}px, 0)` : 'translate3d(0, 0, 0)',
-            height: hoverRect ? hoverRect.height : 0,
-            opacity: hoverRect ? 1 : 0,
+            y: hoverY,
+            scaleY: hoverScaleY,
+            scaleX: hoverScaleX,
+            height: hoverHeight,
+            originX: 0.5,
+            originY: 0.5,
           }}
-          className="pointer-events-none absolute left-3 right-3 top-0 m-0 rounded-2xl bg-white/70 border border-white/95 shadow-[0_4px_14px_rgba(148,163,184,0.08)] transition-[transform,opacity] duration-200 ease-out"
+          animate={{
+            opacity: hoverVisible ? 1 : 0,
+          }}
+          transition={{ duration: 0.18, ease: 'easeOut' }}
+          className="pointer-events-none absolute left-3 right-3 top-0 m-0 rounded-[20px] bg-white/68 backdrop-blur-md border border-white/95 shadow-[0_6px_18px_-6px_rgba(148,163,184,0.22),inset_0_1.5px_2px_rgba(255,255,255,0.98)] will-change-transform"
         />
 
-        {/* Local Active Pastel Liquid Crystal Pill (Pixel-aligned with item offsetTop) */}
-        {activeRect && (
-          <span
-            aria-hidden="true"
-            style={{
-              transform: `translate3d(0, ${activeRect.top}px, 0)`,
-              height: activeRect.height,
-            }}
-            className="pointer-events-none absolute left-3 right-3 top-0 m-0 rounded-2xl bg-gradient-to-r from-rose-200/60 via-pink-100/65 to-amber-100/65 border border-white/95 shadow-[0_6px_18px_rgba(244,114,182,0.14),inset_0_1.5px_1px_rgba(255,255,255,0.98)] transition-transform duration-250 ease-out"
-          />
-        )}
+        {/* Active Liquid Glass Bubble (stretches smoothly like a water droplet while gliding) */}
+        <motion.div
+          aria-hidden="true"
+          style={{
+            y: activeY,
+            scaleY: activeScaleY,
+            scaleX: activeScaleX,
+            height: activeHeight,
+            originX: 0.5,
+            originY: 0.5,
+          }}
+          animate={{
+            opacity: activeVisible ? 1 : 0,
+          }}
+          transition={{ duration: 0.2, ease: 'easeOut' }}
+          className="pointer-events-none absolute left-3 right-3 top-0 m-0 rounded-[22px] overflow-hidden bg-gradient-to-br from-rose-200/72 via-pink-100/62 to-amber-100/72 backdrop-blur-md border border-white/95 shadow-[0_10px_24px_-8px_rgba(244,114,182,0.28),0_2px_8px_-2px_rgba(255,255,255,0.65),inset_0_2px_3px_rgba(255,255,255,0.98),inset_0_-2px_6px_rgba(244,114,182,0.16)] will-change-transform"
+        >
+          {/* Curved Soap-Bubble Specular Sheen */}
+          <span className="absolute inset-x-4 top-[3px] h-[5px] rounded-full bg-gradient-to-r from-white/20 via-white/90 to-white/20 blur-[0.5px]" />
+          {/* Soft Iridescent Bottom Rim Glow */}
+          <span className="absolute inset-x-8 bottom-[2px] h-[3px] rounded-full bg-gradient-to-r from-rose-300/0 via-amber-200/55 to-rose-300/0 blur-[1px]" />
+        </motion.div>
 
         {menuItems.map((item) => {
           const Icon = item.icon;
@@ -146,20 +227,30 @@ const SidebarNavContent: React.FC<NavContentProps> = ({
               href={item.hash}
               onClick={onSelect}
               onMouseEnter={() => setHoveredHash(item.hash)}
-              className={`group/nav relative z-10 flex items-center gap-3.5 px-4 h-11 rounded-2xl text-[14.5px] leading-none transition-colors duration-200 ${
+              className={`group/nav relative z-10 flex items-center justify-between px-4 h-11 rounded-[22px] text-[14.5px] leading-none transition-colors duration-200 ${
                 active
                   ? 'text-rose-700 font-bold'
                   : 'text-slate-600 font-semibold hover:text-slate-900'
               }`}
             >
-              <Icon
-                aria-hidden="true"
-                className={`w-[19px] h-[19px] shrink-0 transition-colors duration-200 ${
-                  active ? 'text-rose-500' : 'text-slate-400 group-hover/nav:text-rose-400'
-                }`}
-                strokeWidth={active ? 2.25 : 1.9}
-              />
-              <span className="leading-none">{item.label}</span>
+              <span className="flex items-center gap-3.5 min-w-0">
+                <Icon
+                  aria-hidden="true"
+                  className={`w-[19px] h-[19px] shrink-0 transition-colors duration-200 ${
+                    active ? 'text-rose-500' : 'text-slate-400 group-hover/nav:text-rose-400'
+                  }`}
+                  strokeWidth={active ? 2.25 : 1.9}
+                />
+                <span className="leading-none truncate">{item.label}</span>
+              </span>
+              {active && (
+                <motion.span
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: 'spring', stiffness: 420, damping: 26 }}
+                  className="w-1.5 h-1.5 rounded-full bg-gradient-to-tr from-rose-400 to-amber-300 shadow-[0_0_8px_rgba(251,113,133,0.6)] shrink-0"
+                />
+              )}
             </a>
           );
         })}

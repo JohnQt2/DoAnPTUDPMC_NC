@@ -2,7 +2,7 @@
  * seed-hsk-full.ts
  * Comprehensive idempotent seed for:
  *  - Thick HSK 1–6 Vocabulary (140+ words) & Characters
- *  - Complete Pinyin Initials (21), Finals (24) & Minimal Pairs
+ *  - Complete Pinyin Initials (23), Finals (24) & Minimal Pairs
  *  - New enriched HSK 1–6 Chapters, Lessons & LessonBlocks (Theory, Grammar, Dialogue, Hanzi)
  *  - 30 Mock Exams (5 full HSK mock exams per level HSK 1–6, test_type = 'MOCK_EXAM')
  *  - 18 Workbook Practice Sets (Sách bài tập chuẩn HSK 1–6, test_type = 'WORKBOOK')
@@ -191,6 +191,8 @@ const PINYIN_INITIALS = [
   { syl: 'z', guide: 'Đầu lưỡi thẳng chạm mặt sau răng trên, KHÔNG bật hơi (giống "ch" thẳng lưỡi).' },
   { syl: 'c', guide: 'Đầu lưỡi thẳng chạm mặt sau răng trên rồi BẬT HƠI mạnh (xì mạnh).' },
   { syl: 's', guide: 'Đầu lưỡi thẳng gần răng trên, luồng hơi xì nhẹ (giống "x" sắc).' },
+  { syl: 'y', guide: 'Bán nguyên âm đứng đầu âm tiết thay cho "i", miệng dẹt nhẹ như khi đọc "i".' },
+  { syl: 'w', guide: 'Bán nguyên âm đứng đầu âm tiết thay cho "u", tròn môi chu ra phía trước.' },
 ];
 
 const PINYIN_FINALS = [
@@ -714,7 +716,7 @@ export async function runComprehensiveHskSeed(prisma: PrismaClient) {
       });
     }
   }
-  console.log(`   ✓ 21 Initials, 24 Finals & ${minimalPairDefs.length} Minimal Pairs seeded.`);
+  console.log(`   ✓ ${PINYIN_INITIALS.length} Initials, ${PINYIN_FINALS.length} Finals & ${minimalPairDefs.length} Minimal Pairs seeded.`);
 
   // 3. Seed Enriched HSK 1–6 Courses, Chapters, Lessons & LessonBlocks
   let totalLessonsEnsured = 0;

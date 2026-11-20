@@ -54,27 +54,29 @@ const SidebarNavContent: React.FC<NavContentProps> = ({
 
   useLayoutEffect(() => {
     const el = itemRefs.current[activeHash];
-    if (el) {
-      setActiveRect({ top: el.offsetTop, height: el.offsetHeight });
+    if (!el) {
+      setActiveRect(null);
+      return;
     }
+    setActiveRect({ top: el.offsetTop, height: el.offsetHeight });
   }, [activeHash, menuItems.length]);
 
   return (
-    <div className="flex flex-col h-full bg-[#FBF7EC]">
+    <div className="flex flex-col h-full bg-white">
       {/* Brand Header */}
-      <div className="px-5 h-16 flex items-center bg-[#1F3A2E] border-b border-[#B08D3C]/25">
+      <div className="px-5 h-16 flex items-center border-b border-[#EAE3DE]">
         <a href={isAdmin ? '#/admin/courses' : '#/today'} onClick={onSelect}>
           <HanziLogo
-            variant="dark"
+            variant="light"
             size="sm"
             subtitle={isAdmin ? (isSuperAdmin ? 'QUẢN TRỊ VIÊN' : 'BIÊN TẬP VIÊN') : 'HỌC VIỆN HÁN NGỮ'}
           />
         </a>
       </div>
 
-      {/* Navigation Links */}
+      {/* Zero-Lag GPU Active Pill Navigation */}
       <nav
-        className="relative flex-1 px-3 py-4 flex flex-col gap-0.5 overflow-y-auto no-scrollbar"
+        className="relative flex-1 px-3 py-4 flex flex-col gap-1 overflow-y-auto no-scrollbar"
         aria-label={isAdmin ? 'Menu quản trị' : 'Menu học tập'}
       >
         {activeRect && (
@@ -84,7 +86,7 @@ const SidebarNavContent: React.FC<NavContentProps> = ({
               transform: `translate3d(0, ${activeRect.top}px, 0)`,
               height: activeRect.height,
             }}
-            className="pointer-events-none absolute left-3 right-3 top-0 rounded-[6px] bg-[#1F3A2E] transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform"
+            className="pointer-events-none absolute left-3 right-3 top-0 rounded-xl bg-[#C41E3A] shadow-[0_6px_16px_-6px_rgba(196,30,58,0.5)] transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform"
           />
         )}
 
@@ -99,23 +101,23 @@ const SidebarNavContent: React.FC<NavContentProps> = ({
               }}
               href={item.hash}
               onClick={onSelect}
-              className={`relative z-10 flex items-center justify-between gap-3 px-3 h-9 rounded-[6px] text-[13.5px] transition-colors duration-150 ${
+              className={`relative z-10 flex items-center justify-between gap-3 px-3.5 h-10 rounded-xl text-[13.5px] transition-colors duration-150 ${
                 active
-                  ? 'text-[#FBF7EC] font-semibold'
-                  : 'text-[#6B5B4B] font-medium hover:text-[#2A2118] hover:bg-[#EADFC5]/60'
+                  ? 'text-white font-semibold'
+                  : 'text-[#5F5658] font-medium hover:text-[#181415] hover:bg-[#FAF8F6]'
               }`}
             >
               <span className="flex items-center gap-2.5 min-w-0">
                 <Icon
                   aria-hidden="true"
                   className={`w-4 h-4 shrink-0 transition-colors ${
-                    active ? 'text-[#D4B26A]' : 'text-[#6B5B4B]/70'
+                    active ? 'text-[#F2D16B]' : 'text-[#8C7F82]'
                   }`}
-                  strokeWidth={active ? 2.15 : 1.75}
+                  strokeWidth={active ? 2.2 : 1.85}
                 />
                 <span className="truncate">{item.label}</span>
               </span>
-              {active && <span className="w-1.5 h-1.5 rounded-full bg-[#D4B26A] shrink-0" />}
+              {active && <span className="w-1.5 h-1.5 rounded-full bg-[#F2D16B] shrink-0" />}
             </a>
           );
         })}
@@ -123,8 +125,8 @@ const SidebarNavContent: React.FC<NavContentProps> = ({
 
       {/* Profile Footer */}
       {user && (
-        <div className="p-3 border-t border-[#DECFAA]">
-          <div className="flex items-center justify-between gap-2 px-2 py-1.5 rounded-[6px] hover:bg-[#F3ECDC] transition-colors">
+        <div className="p-3 border-t border-[#EAE3DE]">
+          <div className="flex items-center justify-between gap-2 px-2 py-1.5 rounded-xl hover:bg-[#FAF8F6] transition-colors">
             <a
               href="#/profile"
               onClick={onSelect}
@@ -132,10 +134,10 @@ const SidebarNavContent: React.FC<NavContentProps> = ({
             >
               <UserAvatar avatarUrl={user.avatarUrl} displayName={user.displayName} size="sm" />
               <div className="min-w-0 leading-tight">
-                <p className="text-[13px] font-semibold text-[#2A2118] truncate">
+                <p className="text-[13px] font-semibold text-[#181415] truncate">
                   {user.displayName}
                 </p>
-                <p className="text-[11px] text-[#6B5B4B] truncate">
+                <p className="text-[11px] text-[#5F5658] truncate">
                   {isAdmin
                     ? isSuperAdmin
                       ? 'Quản trị viên'
@@ -153,7 +155,7 @@ const SidebarNavContent: React.FC<NavContentProps> = ({
               }}
               title="Đăng xuất"
               aria-label="Đăng xuất"
-              className="p-1.5 text-[#6B5B4B] hover:text-[#7A2E2B] hover:bg-[#7A2E2B]/10 rounded-md transition-colors cursor-pointer shrink-0"
+              className="p-1.5 text-[#5F5658] hover:text-[#C41E3A] hover:bg-rose-50 rounded-lg transition-colors cursor-pointer shrink-0"
             >
               <LogOut className="w-4 h-4" />
             </button>
@@ -226,16 +228,16 @@ export const Sidebar: React.FC<{ currentPath: string }> = ({ currentPath }) => {
         />
       </aside>
 
-      <header className="lg:hidden sticky top-0 z-40 bg-[#1F3A2E] border-b border-[#B08D3C]/25 px-4 h-14 flex items-center justify-between">
+      <header className="lg:hidden sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#EAE3DE] px-4 h-14 flex items-center justify-between">
         <a href={isAdmin ? '#/admin/courses' : '#/today'}>
-          <HanziLogo variant="dark" size="sm" showSubtitle={false} />
+          <HanziLogo variant="light" size="sm" showSubtitle={false} />
         </a>
 
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
           aria-label="Mở menu"
-          className="p-2 rounded-md text-[#FBF7EC] hover:bg-white/10 cursor-pointer"
+          className="p-2 rounded-lg text-[#181415] hover:bg-[#FAF8F6] cursor-pointer"
         >
           <Menu className="w-5 h-5" />
         </button>
@@ -249,7 +251,7 @@ export const Sidebar: React.FC<{ currentPath: string }> = ({ currentPath }) => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.16 }}
-              className="fixed inset-0 bg-[#1E1610]/45 backdrop-blur-[2px]"
+              className="fixed inset-0 bg-[#141112]/45 backdrop-blur-[2px]"
               onClick={() => setMobileOpen(false)}
             />
             <motion.div
@@ -257,13 +259,13 @@ export const Sidebar: React.FC<{ currentPath: string }> = ({ currentPath }) => {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-              className="relative w-64 max-w-[82vw] bg-[#FBF7EC] h-full shadow-2xl border-r border-[#DECFAA] flex flex-col z-10"
+              className="relative w-64 max-w-[82vw] bg-white h-full shadow-2xl border-r border-[#EAE3DE] flex flex-col z-10"
             >
               <button
                 type="button"
                 onClick={() => setMobileOpen(false)}
                 aria-label="Đóng menu"
-                className="absolute top-3.5 right-3 p-1.5 rounded-md text-[#FBF7EC] hover:bg-white/10 cursor-pointer z-20"
+                className="absolute top-3.5 right-3 p-1.5 rounded-lg text-[#5F5658] hover:bg-[#FAF8F6] cursor-pointer z-20"
               >
                 <X className="w-4 h-4" />
               </button>

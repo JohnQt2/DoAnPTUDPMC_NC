@@ -3,7 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
 import { HanziLogo } from './components/HanziLogo';
-import { requestLandingBay } from './lib/scrollNavigation';
+import { requestLandingSection } from './lib/scrollNavigation';
 import {
   MeshBackground,
   PageTransition,
@@ -44,9 +44,9 @@ const AppContent: React.FC = () => {
         setCurrentHash(next);
       });
       if (
-        !next.startsWith('#gioi-thieu') &&
-        !next.startsWith('#thu-phong') &&
-        !next.startsWith('#ghi-danh')
+        !next.startsWith('#khong-gian-3d') &&
+        !next.startsWith('#thu-vien-anh') &&
+        !next.startsWith('#bat-dau')
       ) {
         window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
       }
@@ -63,7 +63,7 @@ const AppContent: React.FC = () => {
       <MeshBackground variant="light" className="flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <HanziLogo variant="light" size="md" showSubtitle={false} />
-          <span className="text-xs font-medium text-[#6B5B4B]">Đang mở thư phòng Hanzi4U...</span>
+          <span className="text-xs font-medium text-[#5F5658]">Đang khởi tạo không gian học Hanzi4U...</span>
         </div>
       </MeshBackground>
     );
@@ -72,75 +72,79 @@ const AppContent: React.FC = () => {
   const basePath = currentHash.split('?')[0] || '#/';
 
   // ──────────────────────────────────────────────────────────────────────────
-  // 1. GUEST ROUTES (WARM ARCHIVAL HERITAGE × 3D × CHINESE STUDY WEBP)
+  // 1. GUEST ROUTES (HANZI4U NATIVE IMPERIAL CRIMSON × PORCELAIN × FULL 3D)
   // ──────────────────────────────────────────────────────────────────────────
   if (!user) {
     if (
       basePath === '#/' ||
       basePath === '' ||
       basePath === '#/landing' ||
-      basePath === '#gioi-thieu' ||
-      basePath === '#thu-phong' ||
-      basePath === '#ghi-danh'
+      basePath === '#khong-gian-3d' ||
+      basePath === '#thu-vien-anh' ||
+      basePath === '#bat-dau'
     ) {
       return (
         <MeshBackground variant="light" className="min-h-screen flex flex-col">
-          <Navbar currentPath={currentHash} theme="dark" />
+          <Navbar currentPath={currentHash} theme="light" />
           <main className="flex-1">
             <LandingPage />
           </main>
 
-          {/* Heritage Forest-Jade Footer topped with Cinnabar Hairline (echoing libri.id.vn) */}
-          <footer className="bg-[#1F3A2E] text-[#FBF7EC] border-t-2 border-[#7A2E2B]">
+          {/* Original Hanzi4U Deep Sumi-Ink Footer with Crimson-Gold Top Rule */}
+          <footer className="bg-[#141112] text-white border-t border-white/10 relative">
+            <div
+              aria-hidden="true"
+              className="h-[2px] w-full bg-gradient-to-r from-[#C41E3A] via-[#D4A017] to-[#00A86B]"
+            />
             <div className="max-w-7xl mx-auto px-5 sm:px-8 py-12 grid grid-cols-1 md:grid-cols-12 gap-8">
               <div className="md:col-span-5 space-y-3">
                 <HanziLogo variant="dark" size="md" />
-                <p className="text-xs text-[#FBF7EC]/70 leading-relaxed max-w-sm">
-                  Thư phòng tự học tiếng Trung HSK 1–6 cho người Việt — tích hợp 63 âm Pinyin chuẩn,
-                  mô phỏng thứ tự nét thư pháp, thẻ nhớ SRS và 48+ bộ đề luyện thi.
+                <p className="text-xs text-white/65 leading-relaxed max-w-sm">
+                  Nền tảng tự học tiếng Trung chuẩn HSK 1–6 cho người Việt — tích hợp phòng học 3D
+                  trực quan, 63 âm Pinyin, tập viết nét chữ Hán, thẻ nhớ SM-2 và 48+ bộ đề thi thử.
                 </p>
               </div>
 
               <div className="md:col-span-4 space-y-2.5">
-                <h3 className="font-editorial text-xs font-bold uppercase tracking-[0.18em] text-[#D4B26A]">
-                  CHƯƠNG TRÌNH HSK 1 — 6
+                <h3 className="font-display text-xs font-bold uppercase tracking-[0.16em] text-[#E6BE4C]">
+                  Chương trình HSK 1 — 6
                 </h3>
-                <ul className="space-y-1.5 text-xs text-[#FBF7EC]/75">
-                  <li>Bảng chữ cái 63 âm Pinyin & 4 thanh điệu</li>
-                  <li>Tập viết chữ Hán trên ô Điền Tự Cách</li>
+                <ul className="space-y-1.5 text-xs text-white/70">
+                  <li>63 âm Pinyin chuẩn phổ thông & 4 thanh điệu 3D</li>
+                  <li>Mô phỏng thứ tự nét chữ Hán trên ô Điền Tự Cách</li>
                   <li>30 Đề thi mô phỏng & 18 Bộ sách bài tập</li>
                 </ul>
               </div>
 
               <div className="md:col-span-3 space-y-2.5">
-                <h3 className="font-editorial text-xs font-bold uppercase tracking-[0.18em] text-[#D4B26A]">
-                  LIÊN KẾT NHANH
+                <h3 className="font-display text-xs font-bold uppercase tracking-[0.16em] text-[#E6BE4C]">
+                  Liên kết nhanh
                 </h3>
-                <div className="flex flex-col gap-1.5 text-xs text-[#FBF7EC]/75">
-                  <a href="#/login?tab=register" className="hover:text-[#D4B26A] transition-colors">
+                <div className="flex flex-col gap-1.5 text-xs text-white/70">
+                  <a href="#/login?tab=register" className="hover:text-[#E6BE4C] transition-colors">
                     Đăng ký học miễn phí
                   </a>
-                  <a href="#/login" className="hover:text-[#D4B26A] transition-colors">
+                  <a href="#/login" className="hover:text-[#E6BE4C] transition-colors">
                     Đăng nhập tài khoản
                   </a>
                   <a
-                    href="#thu-phong"
+                    href="#khong-gian-3d"
                     onClick={(e) => {
                       e.preventDefault();
-                      requestLandingBay(0);
+                      requestLandingSection('khong-gian-3d', 76);
                     }}
-                    className="hover:text-[#D4B26A] transition-colors"
+                    className="hover:text-[#E6BE4C] transition-colors"
                   >
-                    Khám phá Thư phòng HSK
+                    Khám phá Phòng Học 3D
                   </a>
                 </div>
               </div>
             </div>
 
-            <div className="border-t border-[#FBF7EC]/10 py-4 px-5 sm:px-8">
-              <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-[#FBF7EC]/55">
-                <span>© 2026 Hanzi4U (hanzi4u.id.vn) — Học viện Hán ngữ trực tuyến</span>
-                <span className="font-mono text-[#D4B26A]">Hanzi4U Edition · HSK 1–6</span>
+            <div className="border-t border-white/10 py-4 px-5 sm:px-8">
+              <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-white/50">
+                <span>© 2026 Hanzi4U (hanzi4u.id.vn) — Nền tảng học tiếng Trung HSK</span>
+                <span className="font-mono text-[#E6BE4C]">Hanzi4U 3D Edition · HSK 1–6</span>
               </div>
             </div>
           </footer>
@@ -151,7 +155,7 @@ const AppContent: React.FC = () => {
     if (basePath === '#/login') {
       return (
         <MeshBackground variant="light" className="min-h-screen flex flex-col">
-          <Navbar currentPath={currentHash} theme="dark" />
+          <Navbar currentPath={currentHash} theme="light" />
           <main className="flex-1 flex flex-col">
             <LoginPage />
           </main>
@@ -162,14 +166,14 @@ const AppContent: React.FC = () => {
     const redirectUrl = `#/login?redirect=${encodeURIComponent(currentHash)}`;
     return (
       <MeshBackground variant="light" className="min-h-screen flex flex-col">
-        <Navbar currentPath={currentHash} theme="dark" />
+        <Navbar currentPath={currentHash} theme="light" />
         <div className="flex-1 flex items-center justify-center px-4 py-16">
           <GlassCard variant="light" className="max-w-md w-full p-8 text-center space-y-5">
-            <div className="w-12 h-12 rounded-[8px] bg-[#1F3A2E] text-[#D4B26A] mx-auto flex items-center justify-center">
+            <div className="w-12 h-12 rounded-xl bg-[#C41E3A] text-white mx-auto flex items-center justify-center shadow-md">
               <Lock className="w-5 h-5" />
             </div>
-            <h2 className="text-xl font-editorial font-bold text-[#2A2118]">Vui lòng đăng nhập</h2>
-            <p className="text-sm text-[#6B5B4B] leading-relaxed">
+            <h2 className="text-xl font-display font-bold text-[#181415]">Vui lòng đăng nhập</h2>
+            <p className="text-sm text-[#5F5658] leading-relaxed">
               Đăng nhập tài khoản Hanzi4U để tiếp tục học và lưu tiến độ cá nhân hóa của bạn.
             </p>
             <div className="space-y-2.5 pt-2">
@@ -179,9 +183,9 @@ const AppContent: React.FC = () => {
               </ShimmerButton>
               <a
                 href="#/"
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-5 rounded-[6px] border border-[#DECFAA] hover:bg-[#F3ECDC] text-[#2A2118] font-medium text-xs transition-colors"
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl border border-[#EAE3DE] hover:bg-[#FAF8F6] text-[#181415] font-medium text-xs transition-colors"
               >
-                <Home className="w-4 h-4 text-[#6B5B4B]" />
+                <Home className="w-4 h-4 text-[#5F5658]" />
                 <span>Về trang chủ</span>
               </a>
             </div>
@@ -206,7 +210,7 @@ const AppContent: React.FC = () => {
         : 'courses';
 
     return (
-      <MeshBackground variant="light" className="text-[#2A2118] font-sans">
+      <MeshBackground variant="light" className="text-[#181415] font-sans">
         <Sidebar currentPath={currentHash} />
         <div className="lg:pl-60 min-h-screen flex flex-col">
           <main className="flex-1 pb-16">
@@ -233,8 +237,8 @@ const AppContent: React.FC = () => {
   if (hasCompletedOnboarding === false) {
     return (
       <MeshBackground variant="light" className="flex flex-col">
-        <header className="sticky top-0 z-40 bg-[#1F3A2E] border-b border-[#B08D3C]/25 h-16 px-4 sm:px-6 flex items-center justify-center">
-          <HanziLogo variant="dark" size="sm" />
+        <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#EAE3DE] h-16 px-4 sm:px-6 flex items-center justify-center">
+          <HanziLogo variant="light" size="sm" />
         </header>
         <main className="flex-1 pb-12">
           <PageTransition routeKey="onboarding-initial">

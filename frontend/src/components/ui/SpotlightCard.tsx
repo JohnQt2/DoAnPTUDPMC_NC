@@ -1,30 +1,27 @@
 import React from 'react';
 import { cn } from '../../lib/cn';
 
-interface SpotlightCardProps extends React.HTMLAttributes<HTMLDivElement> {
-  spotlightColor?: string;
-  variant?: 'light' | 'dark';
+interface SpotlightCardProps {
   children: React.ReactNode;
+  className?: string;
+  variant?: 'light' | 'dark';
+  spotlightColor?: string;
 }
 
 export const SpotlightCard: React.FC<SpotlightCardProps> = ({
-  variant = 'light',
-  className,
   children,
-  ...props
-}) => {
-  return (
-    <div
-      className={cn(
-        'relative rounded-[10px] transition-all duration-200',
-        variant === 'dark'
-          ? 'bg-[#1E1610] border border-[#DECFAA]/20 hover:border-[#B08D3C]/50'
-          : 'bg-[#FBF7EC] border border-[#DECFAA] hover:border-[#B08D3C] shadow-[0_2px_8px_rgba(42,33,24,0.04)] hover:shadow-[0_10px_28px_-12px_rgba(42,33,24,0.12)]',
-        className
-      )}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-};
+  className = '',
+  variant = 'light',
+}) => (
+  <div
+    className={cn(
+      'relative overflow-hidden rounded-2xl transition-[border-color,box-shadow,transform] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]',
+      variant === 'dark'
+        ? 'bg-[#141112] border border-white/10 text-white hover:border-[#C41E3A]/45 shadow-[0_18px_46px_-18px_rgba(0,0,0,0.55)]'
+        : 'bg-white border border-[#EAE3DE] text-[#181415] hover:border-[#C41E3A]/35 shadow-[0_2px_8px_rgba(24,20,21,0.03)] hover:shadow-[0_14px_32px_-16px_rgba(196,30,58,0.14)]',
+      className
+    )}
+  >
+    <div className="relative z-10 h-full">{children}</div>
+  </div>
+);

@@ -504,14 +504,14 @@ export const ProfilePage: React.FC = () => {
             <Monitor className="w-4 h-4 text-zinc-700" />
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-base font-display font-bold text-zinc-950">
+                <h2 className="text-base font-display font-bold text-[#181415]">
                   Thiết bị đang đăng nhập
                 </h2>
-                <span className="px-2 py-0.5 rounded-md bg-zinc-100 border border-zinc-200 text-[11px] font-mono font-semibold text-zinc-700">
+                <span className="px-2 py-0.5 rounded-md bg-rose-50 border border-rose-200 text-[11px] font-mono font-semibold text-[#C41E3A]">
                   {sessions.length}/3 thiết bị
                 </span>
               </div>
-              <p className="text-xs text-zinc-500 mt-0.5">
+              <p className="text-xs text-[#5F5658] mt-0.5">
                 Phiên tự động gia hạn 30 ngày khi học lại. Tối đa 3 thiết bị cùng lúc — thiết bị cũ nhất sẽ tự đăng xuất khi vượt quá.
               </p>
             </div>

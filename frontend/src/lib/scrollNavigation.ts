@@ -1,16 +1,15 @@
 /**
- * Silky 120fps cancelable smooth-scroll utilities for Hanzi4U Landing Page.
- * Directly drives document.scrollingElement via requestAnimationFrame so it never
- * conflicts with sticky horizontal scroll tracks, Framer Motion useScroll springs,
- * or browser CSS scroll-behavior quirks.
+ * Silky 120fps cancelable smooth-scroll utilities for Hanzi4U.
+ * Drives document.scrollingElement via requestAnimationFrame so it never
+ * conflicts with Framer Motion springs, sticky 3D stages, or browser smooth-scroll quirks.
  */
 
 let activeRafId: number | null = null;
 let cleanupInterrupt: (() => void) | null = null;
 
 type PendingLandingTarget =
-  | { type: 'bay'; bayIdx: number }
   | { type: 'section'; id: string; offsetPx: number }
+  | { type: 'scene'; sceneIdx: number }
   | null;
 
 let pendingTarget: PendingLandingTarget = null;
@@ -71,7 +70,6 @@ export function smoothScrollToY(targetY: number, durationMs = 580): void {
   const step = (now: number) => {
     const elapsed = now - startTime;
     const progress = Math.min(1, elapsed / durationMs);
-    // Cubic ease-out matching LUCIAN_EASE feel
     const eased = 1 - Math.pow(1 - progress, 3);
     const nextY = startY + delta * eased;
 
@@ -90,7 +88,7 @@ export function smoothScrollToY(targetY: number, durationMs = 580): void {
   activeRafId = requestAnimationFrame(step);
 }
 
-export function scrollToElementById(id: string, offsetPx = 64, durationMs = 560): boolean {
+export function scrollToElementById(id: string, offsetPx = 72, durationMs = 580): boolean {
   const target = document.getElementById(id);
   if (!target) return false;
   const top = target.getBoundingClientRect().top + getScrollTop() - offsetPx;
@@ -98,16 +96,16 @@ export function scrollToElementById(id: string, offsetPx = 64, durationMs = 560)
   return true;
 }
 
-export function requestLandingBay(bayIdx: number): void {
-  pendingTarget = { type: 'bay', bayIdx };
-  window.dispatchEvent(new CustomEvent('hanzi:goto-bay', { detail: { bayIdx } }));
-}
-
-export function requestLandingSection(id: string, offsetPx = 64): void {
+export function requestLandingSection(id: string, offsetPx = 72): void {
   pendingTarget = { type: 'section', id, offsetPx };
   if (scrollToElementById(id, offsetPx)) {
     pendingTarget = null;
   }
+}
+
+export function requestLandingScene(sceneIdx: number): void {
+  pendingTarget = { type: 'scene', sceneIdx };
+  window.dispatchEvent(new CustomEvent('hanzi:goto-scene', { detail: { sceneIdx } }));
 }
 
 export function consumePendingLandingTarget(): PendingLandingTarget {

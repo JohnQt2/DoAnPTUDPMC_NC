@@ -1,12 +1,38 @@
 import React from 'react';
 import { cn } from '../../lib/cn';
 
-interface ShimmerButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'glass-light' | 'glass-dark' | 'gold' | 'cinnabar';
+interface ShimmerButtonProps {
+  variant?: 'primary' | 'secondary' | 'emerald' | 'dark' | 'outline' | 'glass-light';
   size?: 'sm' | 'md' | 'lg';
   href?: string;
+  className?: string;
   children: React.ReactNode;
+  onClick?: React.MouseEventHandler<HTMLElement>;
+  type?: 'button' | 'submit' | 'reset';
+  disabled?: boolean;
+  title?: string;
 }
+
+const variantClasses = {
+  primary:
+    'bg-[#C41E3A] hover:bg-[#A51730] text-white border border-transparent shadow-[0_6px_18px_-6px_rgba(196,30,58,0.5)]',
+  secondary:
+    'bg-[#D4A017] hover:bg-[#B8860B] text-[#141112] border border-transparent shadow-[0_6px_18px_-6px_rgba(212,160,23,0.45)]',
+  emerald:
+    'bg-[#00A86B] hover:bg-[#059652] text-white border border-transparent shadow-[0_6px_18px_-6px_rgba(0,168,107,0.4)]',
+  dark:
+    'bg-[#181415] hover:bg-[#2A2325] text-white border border-transparent shadow-[0_6px_18px_-6px_rgba(24,20,21,0.35)]',
+  outline:
+    'bg-white hover:bg-[#FAF8F6] text-[#181415] border border-[#EAE3DE] hover:border-[#C41E3A]/40 shadow-xs',
+  'glass-light':
+    'bg-white hover:bg-[#FAF8F6] text-[#181415] border border-[#EAE3DE] hover:border-[#C41E3A]/40 shadow-xs',
+};
+
+const sizeClasses = {
+  sm: 'h-9 px-3.5 text-xs rounded-lg gap-1.5',
+  md: 'h-10 px-4 text-sm rounded-lg gap-2',
+  lg: 'h-11 px-6 text-sm rounded-xl gap-2',
+};
 
 export const ShimmerButton: React.FC<ShimmerButtonProps> = ({
   variant = 'primary',
@@ -14,40 +40,35 @@ export const ShimmerButton: React.FC<ShimmerButtonProps> = ({
   href,
   className,
   children,
-  ...props
+  onClick,
+  type = 'button',
+  disabled,
+  title,
 }) => {
-  const base =
-    'group relative inline-flex items-center justify-center gap-2 font-semibold rounded-[6px] transition-all duration-150 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B08D3C] focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.985]';
-
-  const sizes = {
-    sm: 'h-9 px-3.5 text-xs',
-    md: 'h-10 px-5 text-sm',
-    lg: 'h-11 px-6 text-sm',
-  }[size];
-
-  const variants = {
-    primary: 'bg-[#1F3A2E] hover:bg-[#172D23] text-[#FBF7EC] shadow-xs',
-    cinnabar: 'bg-[#7A2E2B] hover:bg-[#642422] text-[#FBF7EC] shadow-xs',
-    gold: 'bg-[#B08D3C] hover:bg-[#9C7B30] text-[#1E1610] shadow-xs',
-    secondary: 'bg-[#FBF7EC] hover:bg-[#F3ECDC] text-[#2A2118] border border-[#DECFAA] hover:border-[#B08D3C]',
-    'glass-light': 'bg-[#FBF7EC] hover:bg-[#F3ECDC] text-[#2A2118] border border-[#DECFAA] hover:border-[#B08D3C]',
-    'glass-dark': 'bg-[#1E1610] hover:bg-[#2A2118] text-[#FBF7EC] border border-[#DECFAA]/25',
-    ghost: 'bg-transparent hover:bg-[#EADFC5]/60 text-[#6B5B4B] hover:text-[#2A2118]',
-  }[variant];
-
-  const classes = cn(base, sizes, variants, className);
+  const baseClass = cn(
+    'relative inline-flex items-center justify-center font-semibold tracking-tight transition-[background-color,border-color,box-shadow,transform] duration-150 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C41E3A] focus-visible:ring-offset-2 active:scale-[0.985] disabled:opacity-50 disabled:cursor-not-allowed',
+    variantClasses[variant],
+    sizeClasses[size],
+    className
+  );
 
   if (href) {
     return (
-      <a href={href} className={classes}>
-        {children}
+      <a href={href} onClick={onClick} title={title} className={baseClass}>
+        <span className="inline-flex items-center gap-2">{children}</span>
       </a>
     );
   }
 
   return (
-    <button className={classes} {...props}>
-      {children}
+    <button
+      type={type}
+      disabled={disabled}
+      onClick={onClick}
+      title={title}
+      className={baseClass}
+    >
+      <span className="inline-flex items-center gap-2">{children}</span>
     </button>
   );
 };

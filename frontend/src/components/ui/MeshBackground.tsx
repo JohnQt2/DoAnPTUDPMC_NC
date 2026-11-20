@@ -15,14 +15,14 @@ export const MeshBackground: React.FC<MeshBackgroundProps> = ({
 }) => {
   if (variant === 'dark') {
     return (
-      <div className={cn('relative min-h-screen bg-[#1E1610] text-[#FBF7EC] overflow-x-clip', className)}>
+      <div className={cn('relative min-h-screen bg-[#141112] text-white overflow-x-clip', className)}>
         <div className="relative z-10 flex flex-col min-h-screen">{children}</div>
       </div>
     );
   }
 
   return (
-    <div className={cn('relative min-h-screen bg-[#F3ECDC] text-[#2A2118] overflow-x-clip', className)}>
+    <div className={cn('relative min-h-screen bg-[#FAF8F6] text-[#181415] overflow-x-clip', className)}>
       <div className="relative z-10 flex flex-col min-h-screen">{children}</div>
     </div>
   );

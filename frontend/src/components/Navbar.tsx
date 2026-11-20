@@ -1,13 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { motion, useScroll, useSpring } from 'framer-motion';
 import { HanziLogo } from './HanziLogo';
-import {
-  smoothScrollToY,
-  requestLandingBay,
-  requestLandingSection,
-} from '../lib/scrollNavigation';
+import { smoothScrollToY, requestLandingSection } from '../lib/scrollNavigation';
 
-type LandingSectionKey = 'home' | 'intro' | 'shelf' | 'register';
+type NavSectionId = 'hero' | 'khong-gian-3d' | 'thu-vien-anh' | 'bat-dau';
 
 export const Navbar: React.FC<{ currentPath?: string; theme?: 'dark' | 'light' }> = ({
   currentPath = '#/',
@@ -24,57 +20,38 @@ export const Navbar: React.FC<{ currentPath?: string; theme?: 'dark' | 'light' }
     basePath === '#/' ||
     basePath === '' ||
     basePath === '#/landing' ||
-    basePath === '#gioi-thieu' ||
-    basePath === '#thu-phong' ||
-    basePath === '#ghi-danh';
+    basePath === '#khong-gian-3d' ||
+    basePath === '#thu-vien-anh' ||
+    basePath === '#bat-dau';
 
-  const [activeSection, setActiveSection] = useState<LandingSectionKey>('home');
+  const [activeSection, setActiveSection] = useState<NavSectionId>('hero');
 
-  // Lightweight rAF-throttled scroll spy so active gold underline smoothly tracks current section
   useEffect(() => {
     if (!isLanding) return;
     let rafId = 0;
 
-    const updateActive = () => {
+    const updateSpy = () => {
       rafId = 0;
-      const introEl = document.getElementById('gioi-thieu');
-      const shelfEl = document.getElementById('thu-phong');
+      const stage3d = document.getElementById('khong-gian-3d');
+      const gallery = document.getElementById('thu-vien-anh');
+      const cta = document.getElementById('bat-dau');
 
-      if (!introEl || !shelfEl) {
-        setActiveSection('home');
-        return;
-      }
-
-      const introRect = introEl.getBoundingClientRect();
-      const shelfRect = shelfEl.getBoundingClientRect();
-
-      if (introRect.top > 120) {
-        setActiveSection('home');
-        return;
-      }
-
-      if (shelfRect.top > 120) {
-        setActiveSection('intro');
-        return;
-      }
-
-      // Inside or past the 5-bay horizontal shelf: highlight 'Ghi danh' on Bay 5 (progress >= 0.86)
-      const scrollable = Math.max(1, shelfEl.offsetHeight - (window.innerHeight - 64));
-      const shelfProgress = Math.max(0, Math.min(1, (64 - shelfRect.top) / scrollable));
-      if (shelfProgress >= 0.86 || shelfRect.bottom <= window.innerHeight + 24) {
-        setActiveSection('register');
+      if (cta && cta.getBoundingClientRect().top <= 360) {
+        setActiveSection('bat-dau');
+      } else if (gallery && gallery.getBoundingClientRect().top <= 280) {
+        setActiveSection('thu-vien-anh');
+      } else if (stage3d && stage3d.getBoundingClientRect().top <= 280) {
+        setActiveSection('khong-gian-3d');
       } else {
-        setActiveSection('shelf');
+        setActiveSection('hero');
       }
     };
 
     const onScroll = () => {
-      if (!rafId) {
-        rafId = requestAnimationFrame(updateActive);
-      }
+      if (!rafId) rafId = requestAnimationFrame(updateSpy);
     };
 
-    updateActive();
+    updateSpy();
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll, { passive: true });
     return () => {
@@ -84,57 +61,51 @@ export const Navbar: React.FC<{ currentPath?: string; theme?: 'dark' | 'light' }
     };
   }, [isLanding]);
 
-  const handleNavClick = (section: LandingSectionKey) => (e: React.MouseEvent) => {
+  const handleNavClick = (section: NavSectionId) => (e: React.MouseEvent) => {
     e.preventDefault();
     if (!isLanding) {
-      if (section === 'intro') requestLandingSection('gioi-thieu', 64);
-      else if (section === 'shelf') requestLandingBay(0);
-      else if (section === 'register') requestLandingBay(4);
+      if (section !== 'hero') requestLandingSection(section, 76);
       window.location.hash = '#/';
       return;
     }
 
     setActiveSection(section);
-    if (section === 'home') {
+    if (section === 'hero') {
       smoothScrollToY(0, 560);
-    } else if (section === 'intro') {
-      requestLandingSection('gioi-thieu', 64);
-    } else if (section === 'shelf') {
-      requestLandingBay(0);
-    } else if (section === 'register') {
-      requestLandingBay(4);
+    } else {
+      requestLandingSection(section, 76);
     }
   };
 
-  const navItems: Array<{ key: LandingSectionKey; label: string; href: string }> = [
-    { key: 'home', label: 'Trang chủ', href: '#/' },
-    { key: 'intro', label: 'Giới thiệu', href: '#gioi-thieu' },
-    { key: 'shelf', label: 'Thư phòng HSK', href: '#thu-phong' },
-    { key: 'register', label: 'Ghi danh', href: '#ghi-danh' },
+  const navItems: Array<{ key: NavSectionId; label: string; href: string }> = [
+    { key: 'hero', label: 'Tổng quan', href: '#/' },
+    { key: 'khong-gian-3d', label: 'Phòng Học 3D', href: '#khong-gian-3d' },
+    { key: 'thu-vien-anh', label: 'Phương Pháp', href: '#thu-vien-anh' },
+    { key: 'bat-dau', label: 'Đăng Ký HSK', href: '#bat-dau' },
   ];
 
   return (
-    <header className="sticky top-0 z-50 bg-[#1F3A2E] border-b border-[#B08D3C]/25 shadow-[0_4px_20px_rgba(18,28,22,0.22)]">
-      {/* Silky 120fps GPU Gold Scroll Progress Hairline */}
+    <header className="sticky top-0 z-50 bg-[#FAF8F6]/95 backdrop-blur-xl border-b border-[#EAE3DE] shadow-[0_2px_18px_-8px_rgba(24,20,21,0.08)]">
+      {/* Silky 120fps Crimson-to-Gold Scroll Progress Hairline */}
       <motion.div
         aria-hidden="true"
         style={{ scaleX, transformOrigin: '0% 50%' }}
-        className="pointer-events-none absolute bottom-0 inset-x-0 h-[2px] bg-[#B08D3C] z-50"
+        className="pointer-events-none absolute bottom-0 inset-x-0 h-[2px] bg-gradient-to-r from-[#C41E3A] via-[#D4A017] to-[#00A86B] z-50"
       />
 
       <div className="max-w-7xl mx-auto px-5 sm:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Bespoke Hanzi4U Architectural Scholar Crest */}
+          {/* Bespoke Hanzi4U Imperial Crimson Seal Logo */}
           <a
             href="#/"
-            onClick={handleNavClick('home')}
+            onClick={handleNavClick('hero')}
             className="group focus-visible:outline-none"
           >
-            <HanziLogo variant="dark" size="md" />
+            <HanziLogo variant="light" size="md" />
           </a>
 
-          {/* Center Editorial Nav Links with Silky GPU Sliding Gold Underline */}
-          <nav className="hidden md:flex items-center gap-8 text-[13.5px] font-medium">
+          {/* Center Pill Navigation with Sliding Porcelain-Crimson Active Capsule */}
+          <nav className="hidden md:flex items-center gap-1 p-1 rounded-full bg-white/80 border border-[#EAE3DE]">
             {navItems.map((item) => {
               const active = isLanding && activeSection === item.key;
               return (
@@ -142,36 +113,36 @@ export const Navbar: React.FC<{ currentPath?: string; theme?: 'dark' | 'light' }
                   key={item.key}
                   href={item.href}
                   onClick={handleNavClick(item.key)}
-                  className={`relative py-1.5 transition-colors cursor-pointer ${
-                    active ? 'text-[#FBF7EC]' : 'text-[#FBF7EC]/75 hover:text-[#FBF7EC]'
+                  className={`relative px-4 py-1.5 rounded-full text-[13px] font-semibold transition-colors cursor-pointer ${
+                    active ? 'text-white' : 'text-[#5F5658] hover:text-[#181415]'
                   }`}
                 >
-                  <span>{item.label}</span>
                   {active && (
                     <motion.span
-                      layoutId="navbar-active-underline"
+                      layoutId="navbar-active-pill"
                       transition={{ type: 'spring', stiffness: 420, damping: 34 }}
-                      className="absolute left-0 right-0 bottom-0 h-[2px] rounded-full bg-[#B08D3C]"
+                      className="absolute inset-0 rounded-full bg-[#181415] shadow-xs"
                     />
                   )}
+                  <span className="relative z-10">{item.label}</span>
                 </a>
               );
             })}
           </nav>
 
-          {/* Right Auth Actions: Gold 'Đăng nhập' + Cinnabar '#7A2E2B' 'Đăng ký miễn phí' */}
-          <div className="flex items-center gap-3">
+          {/* Right Auth Actions: Ink 'Đăng nhập' + Imperial Crimson '#C41E3A' CTA */}
+          <div className="flex items-center gap-2.5">
             <a
               href="#/login"
-              className="px-3 py-2 text-[13.5px] font-medium text-[#D4B26A] hover:text-[#FBF7EC] transition-colors"
+              className="px-3.5 py-2 text-[13.5px] font-semibold text-[#181415] hover:text-[#C41E3A] transition-colors"
             >
               Đăng nhập
             </a>
             <a
               href="#/login?tab=register"
-              className="h-9 px-4 rounded-[6px] bg-[#7A2E2B] hover:bg-[#642422] text-[#FBF7EC] text-[13px] font-semibold inline-flex items-center justify-center transition-colors shadow-xs border border-[#B08D3C]/25"
+              className="h-9 px-4 rounded-xl bg-[#C41E3A] hover:bg-[#A51730] text-white text-[13px] font-semibold inline-flex items-center justify-center transition-colors shadow-[0_6px_16px_-6px_rgba(196,30,58,0.55)]"
             >
-              Đăng ký miễn phí
+              Bắt đầu miễn phí
             </a>
           </div>
         </div>

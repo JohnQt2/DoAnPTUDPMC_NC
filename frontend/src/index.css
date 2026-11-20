@@ -3,20 +3,19 @@
 @tailwind utilities;
 
 :root {
-  /* Warm Archival Chinese Study Palette (inspired by libri.id.vn) */
-  --libri-jade: #1f3a2e;
-  --libri-jade-hover: #172d23;
-  --libri-parchment: #f3ecdc;
-  --libri-ivory: #fbf7ec;
-  --libri-espresso: #2a2118;
-  --libri-dark-wood: #1e1610;
-  --libri-umber: #6b5b4b;
-  --libri-gold: #b08d3c;
-  --libri-gold-soft: #d4b26a;
-  --libri-cinnabar: #7a2e2b;
-  --libri-cinnabar-hover: #642422;
-  --libri-border: #decfaa;
-  --libri-border-soft: #eadfc5;
+  /* Hanzi4U Native Brand Tokens: Imperial Crimson × Warm Porcelain × Gold × Jade */
+  --hanzi-crimson: #c41e3a;
+  --hanzi-crimson-hover: #a51730;
+  --hanzi-gold: #d4a017;
+  --hanzi-gold-soft: #e6be4c;
+  --hanzi-jade: #00a86b;
+  --hanzi-ink: #181415;
+  --hanzi-ink-dark: #141112;
+  --hanzi-muted: #5f5658;
+  --hanzi-porcelain: #faf8f6;
+  --hanzi-surface: #ffffff;
+  --hanzi-border: #eae3de;
+  --hanzi-border-strong: #ddd2ca;
   --ux-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --ux-spring: cubic-bezier(0.34, 1.32, 0.64, 1);
 }
@@ -27,37 +26,41 @@
   }
 
   body {
-    @apply antialiased text-[#2A2118] bg-[#F3ECDC] font-sans selection:bg-[#1F3A2E] selection:text-[#FBF7EC];
+    @apply antialiased text-[#181415] bg-[#FAF8F6] font-sans selection:bg-[#C41E3A] selection:text-white;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     line-height: 1.6;
   }
 
   h1, h2, h3 {
-    font-family: "Playfair Display", "Be Vietnam Pro", Georgia, serif;
-    letter-spacing: -0.015em;
+    font-family: "Plus Jakarta Sans", "Be Vietnam Pro", sans-serif;
+    letter-spacing: -0.025em;
   }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   ARCHIVAL XUAN PAPER & SCHOLAR STUDY SURFACES — TACTILE, CALM, 120FPS
+   HANZI4U PORCELAIN & LACQUER ARCHITECTURAL SURFACES — CRISP 120FPS
    ═══════════════════════════════════════════════════════════════════════════ */
 @layer components {
   .glass-light {
-    background: #fbf7ec;
-    border: 1px solid #decfaa;
-    box-shadow: 0 2px 6px rgba(42, 33, 24, 0.04), 0 10px 26px -14px rgba(42, 33, 24, 0.08);
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid #eae3de;
+    box-shadow:
+      0 2px 6px rgba(24, 20, 21, 0.03),
+      0 14px 32px -18px rgba(24, 20, 21, 0.09);
   }
 
   .ios-hero-glass {
-    background: #fbf7ec;
-    border: 1px solid #decfaa;
-    box-shadow: 0 2px 8px rgba(42, 33, 24, 0.05), 0 14px 34px -16px rgba(42, 33, 24, 0.1);
+    background: rgba(255, 255, 255, 0.94);
+    border: 1px solid #eae3de;
+    box-shadow:
+      0 4px 12px rgba(24, 20, 21, 0.04),
+      0 18px 40px -18px rgba(24, 20, 21, 0.11);
   }
 
   .glass-card-grid {
-    background: #fbf7ec;
-    border: 1px solid #decfaa;
-    box-shadow: 0 1px 3px rgba(42, 33, 24, 0.035);
+    background: #ffffff;
+    border: 1px solid #eae3de;
+    box-shadow: 0 1px 3px rgba(24, 20, 21, 0.03);
     transition:
       border-color 180ms var(--ux-ease),
       box-shadow 180ms var(--ux-ease),
@@ -65,8 +68,8 @@
   }
 
   .glass-card-grid:hover {
-    border-color: #b08d3c;
-    box-shadow: 0 10px 24px -10px rgba(42, 33, 24, 0.12);
+    border-color: rgba(196, 30, 58, 0.35);
+    box-shadow: 0 12px 28px -12px rgba(196, 30, 58, 0.12);
   }
 
   .glass-light-hover {
@@ -77,32 +80,32 @@
   }
 
   .glass-light-hover:hover {
-    border-color: #b08d3c;
-    box-shadow: 0 10px 24px -10px rgba(42, 33, 24, 0.12);
+    border-color: rgba(196, 30, 58, 0.35);
+    box-shadow: 0 12px 26px -12px rgba(196, 30, 58, 0.12);
   }
 
   .liquid-sidebar {
-    background: #fbf7ec;
-    border-right: 1px solid #decfaa;
+    background: #ffffff;
+    border-right: 1px solid #eae3de;
   }
 
   .liquid-modal {
-    background: #fbf7ec;
-    border: 1px solid #decfaa;
-    box-shadow: 0 24px 64px -16px rgba(30, 22, 16, 0.28);
+    background: #ffffff;
+    border: 1px solid #eae3de;
+    box-shadow: 0 24px 64px -16px rgba(20, 17, 18, 0.25);
   }
 
   .liquid-toast {
-    background: #1f3a2e;
-    color: #fbf7ec;
-    border: 1px solid rgba(176, 141, 60, 0.45);
-    box-shadow: 0 18px 42px -12px rgba(24, 34, 28, 0.45);
+    background: #141112;
+    color: #ffffff;
+    border: 1px solid rgba(212, 160, 23, 0.45);
+    box-shadow: 0 18px 42px -12px rgba(20, 17, 18, 0.48);
   }
 
   .glass-dark {
-    background: #1e1610;
-    border: 1px solid rgba(222, 207, 170, 0.18);
-    box-shadow: 0 20px 56px -14px rgba(0, 0, 0, 0.55);
+    background: #141112;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 22px 58px -16px rgba(0, 0, 0, 0.55);
   }
 
   .glass-dark-hover {
@@ -110,21 +113,7 @@
   }
 
   .glass-dark-hover:hover {
-    border-color: rgba(176, 141, 60, 0.45);
-  }
-
-  /* Continuous Dark Rosewood Bookshelf Plank */
-  .wood-shelf-plank {
-    background: linear-gradient(
-      180deg,
-      #8b6938 0%,
-      #4a2f1d 10%,
-      #2f1c11 58%,
-      #1b0f08 100%
-    );
-    box-shadow:
-      0 14px 26px -6px rgba(30, 22, 16, 0.38),
-      inset 0 1px 0 rgba(232, 204, 142, 0.55);
+    border-color: rgba(196, 30, 58, 0.45);
   }
 }
 
@@ -137,17 +126,17 @@
 }
 
 .workspace-mesh-bg {
-  background-color: #f3ecdc;
+  background-color: #faf8f6;
 }
 
-/* ── TianZiGe Calligraphy Grid (Warm Xuan Paper + Cinnabar Hairlines) ── */
+/* ── TianZiGe Calligraphy Grid (Porcelain Paper + Imperial Crimson Hairlines) ── */
 .tianzige-grid {
-  background-color: #fbf7ec;
+  background-color: #ffffff;
   background-image:
-    linear-gradient(to right, rgba(122, 46, 43, 0.14) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(122, 46, 43, 0.14) 1px, transparent 1px),
-    linear-gradient(45deg, transparent calc(50% - 0.5px), rgba(176, 141, 60, 0.18) calc(50% - 0.5px), rgba(176, 141, 60, 0.18) calc(50% + 0.5px), transparent calc(50% + 0.5px)),
-    linear-gradient(-45deg, transparent calc(50% - 0.5px), rgba(176, 141, 60, 0.18) calc(50% - 0.5px), rgba(176, 141, 60, 0.18) calc(50% + 0.5px), transparent calc(50% + 0.5px));
+    linear-gradient(to right, rgba(196, 30, 58, 0.14) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(196, 30, 58, 0.14) 1px, transparent 1px),
+    linear-gradient(45deg, transparent calc(50% - 0.5px), rgba(212, 160, 23, 0.18) calc(50% - 0.5px), rgba(212, 160, 23, 0.18) calc(50% + 0.5px), transparent calc(50% + 0.5px)),
+    linear-gradient(-45deg, transparent calc(50% - 0.5px), rgba(212, 160, 23, 0.18) calc(50% - 0.5px), rgba(212, 160, 23, 0.18) calc(50% + 0.5px), transparent calc(50% + 0.5px));
   background-size: 100% 100%;
   background-position: center;
 }
@@ -191,9 +180,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
   .animate-hanzi-stroke {
     animation: none !important;
   }

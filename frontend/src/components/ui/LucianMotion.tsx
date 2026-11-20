@@ -9,7 +9,7 @@ interface LucianLiquidButtonProps {
   onClick?: (e: React.MouseEvent) => void;
   type?: 'button' | 'submit';
   disabled?: boolean;
-  variant?: 'ink' | 'jade' | 'cinnabar' | 'gold' | 'glass-light' | 'porcelain';
+  variant?: 'ink' | 'crimson' | 'jade' | 'gold' | 'glass-light' | 'porcelain';
   size?: 'sm' | 'md' | 'lg';
   className?: string;
   children: React.ReactNode;
@@ -20,7 +20,7 @@ export const LucianLiquidButton: React.FC<LucianLiquidButtonProps> = ({
   onClick,
   type = 'button',
   disabled = false,
-  variant = 'jade',
+  variant = 'crimson',
   size = 'md',
   className = '',
   children,
@@ -51,18 +51,19 @@ export const LucianLiquidButton: React.FC<LucianLiquidButtonProps> = ({
   }[size];
 
   const variantCls = {
-    ink: 'bg-[#1F3A2E] hover:bg-[#172D23] text-[#FBF7EC] shadow-[0_4px_14px_-4px_rgba(31,58,46,0.4)]',
-    jade: 'bg-[#1F3A2E] hover:bg-[#172D23] text-[#FBF7EC] shadow-[0_4px_14px_-4px_rgba(31,58,46,0.4)]',
-    cinnabar: 'bg-[#7A2E2B] hover:bg-[#642422] text-[#FBF7EC] shadow-[0_4px_14px_-4px_rgba(122,46,43,0.42)]',
-    gold: 'bg-[#B08D3C] hover:bg-[#9C7B30] text-[#1E1610] shadow-[0_6px_18px_-4px_rgba(176,141,60,0.45)]',
+    ink: 'bg-[#181415] hover:bg-[#2B2426] text-white shadow-[0_8px_22px_-8px_rgba(24,20,21,0.45)]',
+    crimson:
+      'bg-[#C41E3A] hover:bg-[#A51730] text-white shadow-[0_8px_24px_-6px_rgba(196,30,58,0.48)]',
+    jade: 'bg-[#00A86B] hover:bg-[#059652] text-white shadow-[0_8px_22px_-6px_rgba(0,168,107,0.42)]',
+    gold: 'bg-[#D4A017] hover:bg-[#B8860B] text-[#141112] shadow-[0_8px_22px_-6px_rgba(212,160,23,0.45)]',
     'glass-light':
-      'bg-[#FBF7EC] hover:bg-white text-[#2A2118] border border-[#DECFAA] hover:border-[#B08D3C] shadow-xs',
+      'bg-white hover:bg-[#FAF8F6] text-[#181415] border border-[#EAE3DE] hover:border-[#C41E3A]/40 shadow-xs',
     porcelain:
-      'bg-[#FBF7EC] hover:bg-white text-[#1E1610] border border-[#DECFAA] shadow-[0_6px_20px_-6px_rgba(0,0,0,0.35)]',
+      'bg-white hover:bg-[#FAF8F6] text-[#141112] border border-[#EAE3DE] shadow-[0_8px_24px_-8px_rgba(0,0,0,0.28)]',
   }[variant];
 
   const sharedCls = cn(
-    'group inline-flex items-center justify-center gap-2 rounded-[6px] font-semibold tracking-tight transition-[background-color,border-color,box-shadow,transform] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B08D3C] focus-visible:ring-offset-2 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed will-change-transform',
+    'group inline-flex items-center justify-center gap-2 rounded-xl font-semibold tracking-tight transition-[background-color,border-color,box-shadow,transform] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C41E3A] focus-visible:ring-offset-2 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed will-change-transform',
     sizeCls,
     variantCls,
     className
@@ -118,7 +119,7 @@ export const SmoothReveal: React.FC<SmoothRevealProps> = ({
   <motion.div
     initial={{ opacity: 0, y }}
     whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, amount: 0.18 }}
+    viewport={{ once: true, amount: 0.16 }}
     transition={{ duration: 0.55, delay, ease: LUCIAN_EASE }}
     className={cn('will-change-[transform,opacity]', className)}
   >
@@ -135,18 +136,18 @@ export const LucianXpBar: React.FC<{
   const pct = Math.min(100, Math.round((current / Math.max(1, target)) * 100));
   return (
     <div className={cn('space-y-2', className)}>
-      <div className="flex items-center justify-between text-xs font-medium text-[#6B5B4B]">
+      <div className="flex items-center justify-between text-xs font-medium text-[#5F5658]">
         <span>{label}</span>
-        <span className="font-mono font-semibold text-[#2A2118] tabular-nums">
+        <span className="font-mono font-semibold text-[#181415] tabular-nums">
           {current} / {target} bài ({pct}%)
         </span>
       </div>
-      <div className="h-2 rounded-full bg-[#EADFC5] overflow-hidden">
+      <div className="h-2 rounded-full bg-[#EFEAE6] overflow-hidden">
         <motion.div
           initial={false}
           animate={{ width: `${Math.max(pct, 2)}%` }}
           transition={{ duration: 0.5, ease: LUCIAN_EASE }}
-          className="h-full rounded-full bg-[#1F3A2E]"
+          className="h-full rounded-full bg-[#C41E3A]"
         />
       </div>
     </div>
@@ -158,13 +159,13 @@ export const LucianStreakFlame: React.FC<{
   unit?: string;
   subtitle?: string;
 }> = ({ count, unit = 'bài', subtitle = 'Đã hoàn thành' }) => (
-  <div className="inline-flex items-center gap-3 px-4 py-2.5 rounded-[8px] bg-[#FBF7EC] border border-[#DECFAA] shadow-xs">
-    <span className="w-2.5 h-2.5 rounded-full bg-[#7A2E2B] shrink-0" />
+  <div className="inline-flex items-center gap-3 px-4 py-2.5 rounded-xl bg-white border border-[#EAE3DE] shadow-xs">
+    <span className="w-2.5 h-2.5 rounded-full bg-[#C41E3A] shrink-0" />
     <div className="leading-tight">
-      <p className="text-sm font-editorial font-bold text-[#2A2118] tabular-nums">
+      <p className="text-sm font-display font-bold text-[#181415] tabular-nums">
         {count} {unit}
       </p>
-      <p className="text-[11px] text-[#6B5B4B]">{subtitle}</p>
+      <p className="text-[11px] text-[#5F5658]">{subtitle}</p>
     </div>
   </div>
 );

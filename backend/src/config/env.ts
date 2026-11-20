@@ -29,8 +29,15 @@ const envSchema = z.object({
   DATABASE_URL: z.string().default('file:./dev.db'),
   JWT_ACCESS_SECRET: z.string().default('chinaeasy_super_secret_access_jwt_key_2026_xyz'),
   JWT_REFRESH_SECRET: z.string().default('chinaeasy_super_secret_refresh_jwt_key_2026_abc'),
-  JWT_ACCESS_EXPIRES_IN: z.string().default('15m'),
+  JWT_ACCESS_EXPIRES_IN: z.string().default('1h'),
   JWT_REFRESH_EXPIRES_IN: z.string().default('30d'),
+  MAX_CONCURRENT_SESSIONS: z
+    .string()
+    .default('3')
+    .transform((v) => {
+      const parsed = parseInt(v, 10);
+      return Number.isFinite(parsed) && parsed >= 1 ? parsed : 3;
+    }),
   REDIS_URL: z.string().default('redis://127.0.0.1:6379'),
   USE_MEMORY_REDIS: z
     .string()

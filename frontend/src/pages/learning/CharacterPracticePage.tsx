@@ -3,6 +3,7 @@ import { api } from '../../lib/api';
 import { getCached, setCached } from '../../lib/cache';
 import { celebrateSuccess } from '../../lib/celebration';
 import { HanziCanvas } from '../../components/HanziCanvas';
+import { FALLBACK_STARTER_CHARACTERS } from '../../components/hanziStrokes.data';
 import { GlassCard } from '../../components/ui';
 import { Search, CheckCircle2 } from 'lucide-react';
 
@@ -45,7 +46,8 @@ export const CharacterPracticePage: React.FC = () => {
       const data = await api.get<any[]>('/learning/characters', {
         params: { search: searchTerm || undefined },
       });
-      const list = data || [];
+      const apiList = Array.isArray(data) ? data : [];
+      const list = apiList.length > 0 || searchTerm ? apiList : FALLBACK_STARTER_CHARACTERS;
       setCached(cacheKey, list);
       setCharacters(list);
       if (list.length > 0 && !selectedChar) {
@@ -53,6 +55,10 @@ export const CharacterPracticePage: React.FC = () => {
       }
     } catch (err) {
       console.error('Failed to load characters:', err);
+      if (!searchTerm && characters.length === 0) {
+        setCharacters(FALLBACK_STARTER_CHARACTERS);
+        setSelectedChar(FALLBACK_STARTER_CHARACTERS[0]);
+      }
     } finally {
       setIsLoading(false);
     }

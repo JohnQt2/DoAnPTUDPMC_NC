@@ -1,5 +1,12 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { api, setAccessToken, clearAccessToken } from '../lib/api';
+import {
+  api,
+  setAccessToken,
+  clearAccessToken,
+  silentRefreshAccessToken,
+  isAccessTokenExpiringSoon,
+  getAccessToken,
+} from '../lib/api';
 
 export interface User {
   userId: number;
@@ -57,7 +64,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err) {
       console.warn('Logout API failed:', err);
     } finally {
-      clearAccessToken();
+      clearAccessToken(true);
       setUser(null);
       setHasCompletedOnboarding(null);
       window.location.hash = '#/login';
@@ -75,11 +82,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setHasCompletedOnboarding(true);
   }, [user]);
 
-  const refreshSession = async (): Promise<boolean> => {
+  const refreshSession = useCallback(async (): Promise<boolean> => {
     try {
-      const res = await api.post<{ accessToken: string }>('/auth/refresh');
-      if (res?.accessToken) {
-        setAccessToken(res.accessToken);
+      const token = await silentRefreshAccessToken({ notifyOnFail: false });
+      if (token) {
         const profile = await api.get<any>('/users/me');
         const userObj: User = {
           userId: profile.userId,
@@ -94,12 +100,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       return false;
     } catch {
-      clearAccessToken();
+      clearAccessToken(false);
       setUser(null);
       setHasCompletedOnboarding(null);
       return false;
     }
-  };
+  }, [checkOnboardingStatus]);
 
   useEffect(() => {
     refreshSession().finally(() => setIsLoading(false));
@@ -109,9 +115,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setHasCompletedOnboarding(null);
     };
 
+    // Wake-up / tab-focus silent refresh: catches laptop sleep or browser timer throttling
+    // so users returning mid-lesson or mid-exam stay seamlessly authenticated.
+    const handleResumeCheck = () => {
+      if (document.visibilityState === 'visible' && getAccessToken() && isAccessTokenExpiringSoon(5 * 60 * 1000)) {
+        void silentRefreshAccessToken({ notifyOnFail: true });
+      }
+    };
+
+    const handleOnline = () => {
+      if (getAccessToken() && isAccessTokenExpiringSoon(5 * 60 * 1000)) {
+        void silentRefreshAccessToken({ notifyOnFail: true });
+      }
+    };
+
     window.addEventListener('auth:unauthorized', handleUnauthorized);
-    return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
-  }, []);
+    document.addEventListener('visibilitychange', handleResumeCheck);
+    window.addEventListener('online', handleOnline);
+    return () => {
+      window.removeEventListener('auth:unauthorized', handleUnauthorized);
+      document.removeEventListener('visibilitychange', handleResumeCheck);
+      window.removeEventListener('online', handleOnline);
+    };
+  }, [refreshSession]);
 
   return (
     <AuthContext.Provider

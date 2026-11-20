@@ -1,4 +1,4 @@
-import { randomUUID } from 'crypto';
+import { randomUUID, timingSafeEqual } from 'crypto';
 import bcrypt from 'bcryptjs';
 import { prisma } from '../../shared/database/prisma.client';
 import { redisService } from '../../shared/redis/redis.service';
@@ -60,8 +60,20 @@ export class AuthService {
       }
       if (existingUser && existingUser.password_hash) {
         throw AppError.badRequest(
-          'Địa chỉ Gmail này đã được đăng ký tài khoản. Vui lòng chuyển sang tab Đăng nhập.',
+          'Email này đã được đăng ký tài khoản. Vui lòng chuyển sang tab Đăng nhập.',
           'EMAIL_ALREADY_REGISTERED'
+        );
+      }
+    } else if (options?.mode === 'login') {
+      if (!existingUser) {
+        throw AppError.notFound(
+          'Email này chưa được đăng ký tài khoản trên Hanzi4U. Vui lòng chuyển sang tab "Tạo tài khoản" để đăng ký mới.',
+          'ACCOUNT_NOT_FOUND'
+        );
+      }
+      if (existingUser.status === 'BANNED' || existingUser.status === 'LOCKED') {
+        throw AppError.forbidden(
+          'Tài khoản của bạn đang bị tạm khóa. Vui lòng liên hệ quản trị viên.'
         );
       }
     }
@@ -470,7 +482,7 @@ export class AuthService {
   }
 
   /**
-   * Đăng nhập bằng Gmail (@gmail.com) và Mật khẩu đã đăng ký
+   * Đăng nhập bằng Email và Mật khẩu (có phân biệt rõ lỗi + khóa tạm 15 phút khi nhập sai quá 5 lần)
    */
   async loginWithPassword(
     email: string,
@@ -482,26 +494,72 @@ export class AuthService {
     refreshToken: string;
     isNewUser: boolean;
   }> {
+    const normalizedEmail = email.trim().toLowerCase();
+    const loginLockKey = `login:lockout:${normalizedEmail}`;
+    const loginFailKey = `login:fail:${normalizedEmail}`;
+
+    const isLocked = await redisService.get(loginLockKey);
+    if (isLocked) {
+      const remaining = await redisService.ttl(loginLockKey);
+      const mins = Math.max(1, Math.ceil(remaining / 60));
+      throw AppError.tooManyRequests(
+        `Bạn đã nhập sai mật khẩu quá 5 lần. Tài khoản tạm khóa đăng nhập trong ${mins} phút (${remaining} giây). Bạn có thể chọn "Quên mật khẩu?" để đặt lại.`,
+        'LOGIN_ACCOUNT_LOCKED',
+        { remainingSeconds: remaining }
+      );
+    }
+
     const user = (await prisma.users.findUnique({
-      where: { email },
+      where: { email: normalizedEmail },
       include: { avatarResource: true },
     })) as any;
 
-    if (!user || !user.password_hash) {
+    if (!user) {
       throw AppError.unauthorized(
-        'Tài khoản chưa được đăng ký mật khẩu hoặc email không tồn tại. Vui lòng đăng ký tài khoản mới hoặc đăng nhập bằng OTP.',
-        'INVALID_CREDENTIALS'
+        'Email này chưa được đăng ký tài khoản trên Hanzi4U. Vui lòng kiểm tra lại hoặc chuyển sang tab "Tạo tài khoản".',
+        'ACCOUNT_NOT_FOUND'
       );
     }
 
     if (user.status === 'BANNED' || user.status === 'LOCKED') {
-      throw AppError.forbidden('Tài khoản đã bị tạm khóa. Vui lòng liên hệ quản trị viên.');
+      throw AppError.forbidden('Tài khoản của bạn đang bị tạm khóa. Vui lòng liên hệ quản trị viên.');
+    }
+
+    if (!user.password_hash) {
+      throw AppError.unauthorized(
+        'Tài khoản này trước đây đăng nhập bằng Google hoặc mã OTP nên chưa đặt mật khẩu. Hãy đăng nhập với Google hoặc bấm "Quên mật khẩu?" để tạo mật khẩu mới.',
+        'PASSWORD_NOT_SET'
+      );
     }
 
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
-      throw AppError.unauthorized('Mật khẩu không chính xác.', 'INVALID_CREDENTIALS');
+      const fails = await redisService.incr(loginFailKey);
+      if (fails === 1) {
+        await redisService.expire(loginFailKey, this.LOCKOUT_TTL_SECONDS);
+      }
+
+      if (fails >= this.MAX_OTP_ATTEMPTS) {
+        await redisService.del(loginFailKey);
+        await redisService.set(loginLockKey, 'LOCKED', this.LOCKOUT_TTL_SECONDS);
+        throw AppError.tooManyRequests(
+          'Bạn đã nhập sai mật khẩu quá 5 lần liên tiếp. Tài khoản tạm khóa đăng nhập trong 15 phút để đảm bảo an toàn.',
+          'LOGIN_ACCOUNT_LOCKED',
+          { remainingSeconds: this.LOCKOUT_TTL_SECONDS }
+        );
+      }
+
+      const remainingAttempts = this.MAX_OTP_ATTEMPTS - fails;
+      throw AppError.unauthorized(
+        `Mật khẩu không chính xác. Bạn còn ${remainingAttempts} lần thử trước khi tài khoản bị tạm khóa 15 phút.`,
+        'INVALID_PASSWORD',
+        { remainingAttempts }
+      );
     }
+
+    // Clear any prior failed login counters on success
+    await redisService.del(loginFailKey);
+    await redisService.del(loginLockKey);
 
     await prisma.users.update({
       where: { user_id: user.user_id },
@@ -542,6 +600,199 @@ export class AuthService {
       accessToken,
       refreshToken,
       isNewUser: false,
+    };
+  }
+
+  /**
+   * Quên mật khẩu (Bước 1): Gửi mã OTP 6 chữ số về Gmail để đặt lại mật khẩu
+   */
+  async sendPasswordResetOtp(
+    email: string
+  ): Promise<{ message: string; expiresIn: number; senderEmail?: string; devOtp?: string }> {
+    const normalizedEmail = email.trim().toLowerCase();
+    const lockoutKey = `pwdreset:lockout:${normalizedEmail}`;
+    const isLocked = await redisService.get(lockoutKey);
+
+    if (isLocked) {
+      const remaining = await redisService.ttl(lockoutKey);
+      throw AppError.tooManyRequests(
+        `Bạn đã nhập sai mã xác thực quá 5 lần. Vui lòng thử lại sau ${remaining} giây.`,
+        'OTP_ACCOUNT_LOCKED',
+        { remainingSeconds: remaining }
+      );
+    }
+
+    const user = await prisma.users.findUnique({ where: { email: normalizedEmail } });
+    if (!user) {
+      throw AppError.notFound(
+        'Email này chưa được đăng ký tài khoản trên Hanzi4U. Vui lòng kiểm tra lại hoặc tạo tài khoản mới.',
+        'ACCOUNT_NOT_FOUND'
+      );
+    }
+
+    if (user.status === 'BANNED' || user.status === 'LOCKED') {
+      throw AppError.forbidden(
+        'Tài khoản của bạn đang bị tạm khóa. Vui lòng liên hệ quản trị viên.'
+      );
+    }
+
+    const otp = generateOtp();
+    const otpHash = hashString(otp);
+    const otpKey = `pwdreset:otp:${normalizedEmail}`;
+    const payload = JSON.stringify({
+      hash: otpHash,
+      attempts: 0,
+      createdAt: Date.now(),
+    });
+
+    await redisService.set(otpKey, payload, this.OTP_TTL_SECONDS);
+
+    const mailResult = await mailerService.sendOtpEmail(
+      normalizedEmail,
+      otp,
+      this.OTP_TTL_SECONDS,
+      'reset_password'
+    );
+
+    if (!mailResult.sentViaSmtp) {
+      const reason = mailResult.errorReason || 'Không rõ nguyên nhân.';
+      if (env.NODE_ENV === 'production') {
+        await redisService.del(otpKey);
+        throw new AppError(
+          'Hệ thống tạm thời không gửi được email đặt lại mật khẩu. Vui lòng thử lại sau ít phút.',
+          502,
+          mailResult.errorCode || 'OTP_EMAIL_FAILED'
+        );
+      }
+
+      console.warn('\n============= [DEV] PASSWORD RESET OTP FALLBACK =============');
+      console.warn(`  Không gửi được email tới ${normalizedEmail}.`);
+      console.warn(`  Nguyên nhân: ${reason}`);
+      console.warn(`  👉 Mã OTP đặt lại mật khẩu (hiệu lực ${this.OTP_TTL_SECONDS}s): ${otp}`);
+      console.warn('=============================================================\n');
+
+      return {
+        message: `Không gửi được email tới ${normalizedEmail}. ${reason} (Chế độ phát triển: mã OTP đã in ở terminal backend.)`,
+        expiresIn: this.OTP_TTL_SECONDS,
+        senderEmail: mailResult.senderEmail,
+        devOtp: otp,
+      };
+    }
+
+    return {
+      message: `Mã OTP đặt lại mật khẩu 6 chữ số đã được gửi tới ${normalizedEmail}. Vui lòng kiểm tra hộp thư (kể cả mục Spam).`,
+      expiresIn: this.OTP_TTL_SECONDS,
+      senderEmail: mailResult.senderEmail,
+      devOtp: env.NODE_ENV !== 'production' ? otp : undefined,
+    };
+  }
+
+  /**
+   * Quên mật khẩu (Bước 2): Xác thực mã OTP từ Gmail và cập nhật mật khẩu mới + thu hồi toàn bộ phiên cũ
+   */
+  async resetPasswordWithOtp(
+    email: string,
+    otp: string,
+    newPassword: string,
+    clientInfo: ClientInfo
+  ): Promise<{ message: string }> {
+    const normalizedEmail = email.trim().toLowerCase();
+    const lockoutKey = `pwdreset:lockout:${normalizedEmail}`;
+    const isLocked = await redisService.get(lockoutKey);
+
+    if (isLocked) {
+      const remaining = await redisService.ttl(lockoutKey);
+      throw AppError.tooManyRequests(
+        `Bạn đã nhập sai mã OTP quá 5 lần. Vui lòng thử lại sau ${remaining} giây.`,
+        'OTP_ACCOUNT_LOCKED',
+        { remainingSeconds: remaining }
+      );
+    }
+
+    const otpKey = `pwdreset:otp:${normalizedEmail}`;
+    const storedData = await redisService.get(otpKey);
+    if (!storedData) {
+      throw AppError.badRequest(
+        'Mã OTP đặt lại mật khẩu đã hết hạn hoặc chưa được yêu cầu. Vui lòng bấm gửi lại mã mới.',
+        'OTP_EXPIRED'
+      );
+    }
+
+    const record = JSON.parse(storedData) as {
+      hash: string;
+      attempts: number;
+      createdAt: number;
+    };
+
+    const inputHashBuf = Buffer.from(hashString(otp), 'hex');
+    const expectedHashBuf = Buffer.from(record.hash, 'hex');
+    const isValidOtp =
+      inputHashBuf.length === expectedHashBuf.length &&
+      timingSafeEqual(inputHashBuf, expectedHashBuf);
+
+    if (!isValidOtp) {
+      const newAttempts = record.attempts + 1;
+      const ttlRemaining = await redisService.ttl(otpKey);
+
+      if (newAttempts >= this.MAX_OTP_ATTEMPTS) {
+        await redisService.del(otpKey);
+        await redisService.set(lockoutKey, 'LOCKED', this.LOCKOUT_TTL_SECONDS);
+        throw AppError.tooManyRequests(
+          'Bạn đã nhập sai mã OTP quá 5 lần. Chức năng đặt lại mật khẩu tạm khóa 15 phút để đảm bảo an toàn.',
+          'OTP_MAX_ATTEMPTS_EXCEEDED'
+        );
+      }
+
+      record.attempts = newAttempts;
+      await redisService.set(otpKey, JSON.stringify(record), Math.max(1, ttlRemaining));
+      const remainingAttempts = this.MAX_OTP_ATTEMPTS - newAttempts;
+      throw AppError.badRequest(
+        `Mã OTP không chính xác. Bạn còn ${remainingAttempts} lần thử.`,
+        'OTP_INCORRECT',
+        { remainingAttempts }
+      );
+    }
+
+    const user = await prisma.users.findUnique({ where: { email: normalizedEmail } });
+    if (!user) {
+      await redisService.del(otpKey);
+      throw AppError.notFound('Tài khoản không tồn tại.', 'ACCOUNT_NOT_FOUND');
+    }
+
+    if (user.status === 'BANNED' || user.status === 'LOCKED') {
+      throw AppError.forbidden('Tài khoản của bạn đang bị tạm khóa.');
+    }
+
+    // Consume OTP (single-use)
+    await redisService.del(otpKey);
+    await redisService.del(`login:fail:${normalizedEmail}`);
+    await redisService.del(`login:lockout:${normalizedEmail}`);
+
+    const newPasswordHash = await bcrypt.hash(newPassword, 10);
+    await prisma.users.update({
+      where: { user_id: user.user_id },
+      data: { password_hash: newPasswordHash },
+    });
+
+    // Security best practice: revoke all existing active sessions across devices after password reset
+    await prisma.userSessions.updateMany({
+      where: { user_id: user.user_id, is_revoked: false },
+      data: { is_revoked: true },
+    });
+
+    await prisma.auditLogs.create({
+      data: {
+        user_id: user.user_id,
+        action_type: 'PASSWORD_RESET_OTP',
+        target_entity: 'Users',
+        target_id: user.user_id.toString(),
+        new_value: JSON.stringify({ revokedAllSessions: true }),
+        ip_address: clientInfo.ip,
+      },
+    });
+
+    return {
+      message: 'Đặt lại mật khẩu thành công! Tất cả phiên cũ đã được đăng xuất an toàn, bạn có thể đăng nhập ngay bằng mật khẩu mới.',
     };
   }
 

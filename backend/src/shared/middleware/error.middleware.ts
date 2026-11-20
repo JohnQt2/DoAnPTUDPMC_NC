@@ -36,7 +36,7 @@ export function errorHandler(
     res.status(400).json({
       success: false,
       error: {
-        message: 'Dữ liệu đầu vào không hợp lệ.',
+        message: formatted[0]?.message || 'Dữ liệu đầu vào không hợp lệ.',
         code: 'VALIDATION_ERROR',
         details: formatted,
       },

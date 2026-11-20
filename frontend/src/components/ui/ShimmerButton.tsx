@@ -2,7 +2,7 @@ import React from 'react';
 import { cn } from '../../lib/cn';
 
 interface ShimmerButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'glass-light' | 'glass-dark';
+  variant?: 'primary' | 'secondary' | 'ghost' | 'glass-light' | 'glass-dark' | 'gold' | 'cinnabar';
   size?: 'sm' | 'md' | 'lg';
   href?: string;
   children: React.ReactNode;
@@ -17,7 +17,7 @@ export const ShimmerButton: React.FC<ShimmerButtonProps> = ({
   ...props
 }) => {
   const base =
-    'group relative inline-flex items-center justify-center gap-2 font-semibold rounded-lg transition-all duration-150 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.985]';
+    'group relative inline-flex items-center justify-center gap-2 font-semibold rounded-[6px] transition-all duration-150 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B08D3C] focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.985]';
 
   const sizes = {
     sm: 'h-9 px-3.5 text-xs',
@@ -26,11 +26,13 @@ export const ShimmerButton: React.FC<ShimmerButtonProps> = ({
   }[size];
 
   const variants = {
-    primary: 'bg-zinc-950 hover:bg-zinc-800 text-white shadow-[0_1px_2px_rgba(9,9,11,0.16)]',
-    secondary: 'bg-white hover:bg-zinc-50 text-zinc-900 border border-zinc-200 hover:border-zinc-300 shadow-[0_1px_2px_rgba(9,9,11,0.04)]',
-    'glass-light': 'bg-white hover:bg-zinc-50 text-zinc-900 border border-zinc-200 hover:border-zinc-300 shadow-[0_1px_2px_rgba(9,9,11,0.04)]',
-    'glass-dark': 'bg-zinc-900 hover:bg-zinc-800 text-white border border-white/15',
-    ghost: 'bg-transparent hover:bg-zinc-100 text-zinc-700 hover:text-zinc-950',
+    primary: 'bg-[#1F3A2E] hover:bg-[#172D23] text-[#FBF7EC] shadow-xs',
+    cinnabar: 'bg-[#7A2E2B] hover:bg-[#642422] text-[#FBF7EC] shadow-xs',
+    gold: 'bg-[#B08D3C] hover:bg-[#9C7B30] text-[#1E1610] shadow-xs',
+    secondary: 'bg-[#FBF7EC] hover:bg-[#F3ECDC] text-[#2A2118] border border-[#DECFAA] hover:border-[#B08D3C]',
+    'glass-light': 'bg-[#FBF7EC] hover:bg-[#F3ECDC] text-[#2A2118] border border-[#DECFAA] hover:border-[#B08D3C]',
+    'glass-dark': 'bg-[#1E1610] hover:bg-[#2A2118] text-[#FBF7EC] border border-[#DECFAA]/25',
+    ghost: 'bg-transparent hover:bg-[#EADFC5]/60 text-[#6B5B4B] hover:text-[#2A2118]',
   }[variant];
 
   const classes = cn(base, sizes, variants, className);

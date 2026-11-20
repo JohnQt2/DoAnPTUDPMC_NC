@@ -2,6 +2,8 @@ import React, { useState, useEffect, startTransition } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
+import { HanziLogo } from './components/HanziLogo';
+import { requestLandingBay } from './lib/scrollNavigation';
 import {
   MeshBackground,
   PageTransition,
@@ -41,7 +43,11 @@ const AppContent: React.FC = () => {
       startTransition(() => {
         setCurrentHash(next);
       });
-      if (!next.startsWith('#trai-nghiem') && !next.startsWith('#phuong-phap') && !next.startsWith('#lo-trinh')) {
+      if (
+        !next.startsWith('#gioi-thieu') &&
+        !next.startsWith('#thu-phong') &&
+        !next.startsWith('#ghi-danh')
+      ) {
         window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
       }
     };
@@ -56,13 +62,8 @@ const AppContent: React.FC = () => {
     return (
       <MeshBackground variant="light" className="flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <span
-            aria-hidden="true"
-            className="w-11 h-11 rounded-xl bg-zinc-950 text-white flex items-center justify-center font-hanzi-serif font-bold text-xl"
-          >
-            汉
-          </span>
-          <span className="text-xs font-medium text-zinc-500">Đang chuẩn bị Hanzi4U...</span>
+          <HanziLogo variant="light" size="md" showSubtitle={false} />
+          <span className="text-xs font-medium text-[#6B5B4B]">Đang mở thư phòng Hanzi4U...</span>
         </div>
       </MeshBackground>
     );
@@ -71,34 +72,76 @@ const AppContent: React.FC = () => {
   const basePath = currentHash.split('?')[0] || '#/';
 
   // ──────────────────────────────────────────────────────────────────────────
-  // 1. GUEST ROUTES (WARM ALABASTER MINIMALIST EDITORIAL + 3D + WEBP)
+  // 1. GUEST ROUTES (WARM ARCHIVAL HERITAGE × 3D × CHINESE STUDY WEBP)
   // ──────────────────────────────────────────────────────────────────────────
   if (!user) {
     if (
       basePath === '#/' ||
       basePath === '' ||
       basePath === '#/landing' ||
-      basePath === '#trai-nghiem' ||
-      basePath === '#phuong-phap' ||
-      basePath === '#lo-trinh'
+      basePath === '#gioi-thieu' ||
+      basePath === '#thu-phong' ||
+      basePath === '#ghi-danh'
     ) {
       return (
         <MeshBackground variant="light" className="min-h-screen flex flex-col">
-          <Navbar currentPath={currentHash} theme="light" />
+          <Navbar currentPath={currentHash} theme="dark" />
           <main className="flex-1">
             <LandingPage />
           </main>
-          <footer className="border-t border-zinc-200 bg-white py-8 px-5 sm:px-8">
-            <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500">
-              <div className="flex items-center gap-2">
-                <span className="w-6 h-6 rounded-md bg-zinc-950 text-white inline-flex items-center justify-center font-hanzi-serif font-bold text-xs">
-                  汉
-                </span>
-                <span className="font-display font-semibold text-zinc-900">Hanzi4U</span>
-                <span className="text-zinc-300">·</span>
-                <span>Nền tảng học tiếng Trung HSK cho người Việt</span>
+
+          {/* Heritage Forest-Jade Footer topped with Cinnabar Hairline (echoing libri.id.vn) */}
+          <footer className="bg-[#1F3A2E] text-[#FBF7EC] border-t-2 border-[#7A2E2B]">
+            <div className="max-w-7xl mx-auto px-5 sm:px-8 py-12 grid grid-cols-1 md:grid-cols-12 gap-8">
+              <div className="md:col-span-5 space-y-3">
+                <HanziLogo variant="dark" size="md" />
+                <p className="text-xs text-[#FBF7EC]/70 leading-relaxed max-w-sm">
+                  Thư phòng tự học tiếng Trung HSK 1–6 cho người Việt — tích hợp 63 âm Pinyin chuẩn,
+                  mô phỏng thứ tự nét thư pháp, thẻ nhớ SRS và 48+ bộ đề luyện thi.
+                </p>
               </div>
-              <p>© 2026 Hanzi4U (hanzi4u.id.vn)</p>
+
+              <div className="md:col-span-4 space-y-2.5">
+                <h3 className="font-editorial text-xs font-bold uppercase tracking-[0.18em] text-[#D4B26A]">
+                  CHƯƠNG TRÌNH HSK 1 — 6
+                </h3>
+                <ul className="space-y-1.5 text-xs text-[#FBF7EC]/75">
+                  <li>Bảng chữ cái 63 âm Pinyin & 4 thanh điệu</li>
+                  <li>Tập viết chữ Hán trên ô Điền Tự Cách</li>
+                  <li>30 Đề thi mô phỏng & 18 Bộ sách bài tập</li>
+                </ul>
+              </div>
+
+              <div className="md:col-span-3 space-y-2.5">
+                <h3 className="font-editorial text-xs font-bold uppercase tracking-[0.18em] text-[#D4B26A]">
+                  LIÊN KẾT NHANH
+                </h3>
+                <div className="flex flex-col gap-1.5 text-xs text-[#FBF7EC]/75">
+                  <a href="#/login?tab=register" className="hover:text-[#D4B26A] transition-colors">
+                    Đăng ký học miễn phí
+                  </a>
+                  <a href="#/login" className="hover:text-[#D4B26A] transition-colors">
+                    Đăng nhập tài khoản
+                  </a>
+                  <a
+                    href="#thu-phong"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      requestLandingBay(0);
+                    }}
+                    className="hover:text-[#D4B26A] transition-colors"
+                  >
+                    Khám phá Thư phòng HSK
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-[#FBF7EC]/10 py-4 px-5 sm:px-8">
+              <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-[#FBF7EC]/55">
+                <span>© 2026 Hanzi4U (hanzi4u.id.vn) — Học viện Hán ngữ trực tuyến</span>
+                <span className="font-mono text-[#D4B26A]">Hanzi4U Edition · HSK 1–6</span>
+              </div>
             </div>
           </footer>
         </MeshBackground>
@@ -108,7 +151,7 @@ const AppContent: React.FC = () => {
     if (basePath === '#/login') {
       return (
         <MeshBackground variant="light" className="min-h-screen flex flex-col">
-          <Navbar currentPath={currentHash} theme="light" />
+          <Navbar currentPath={currentHash} theme="dark" />
           <main className="flex-1 flex flex-col">
             <LoginPage />
           </main>
@@ -119,14 +162,14 @@ const AppContent: React.FC = () => {
     const redirectUrl = `#/login?redirect=${encodeURIComponent(currentHash)}`;
     return (
       <MeshBackground variant="light" className="min-h-screen flex flex-col">
-        <Navbar currentPath={currentHash} theme="light" />
+        <Navbar currentPath={currentHash} theme="dark" />
         <div className="flex-1 flex items-center justify-center px-4 py-16">
           <GlassCard variant="light" className="max-w-md w-full p-8 text-center space-y-5">
-            <div className="w-12 h-12 rounded-xl bg-zinc-100 border border-zinc-200 text-zinc-900 mx-auto flex items-center justify-center">
+            <div className="w-12 h-12 rounded-[8px] bg-[#1F3A2E] text-[#D4B26A] mx-auto flex items-center justify-center">
               <Lock className="w-5 h-5" />
             </div>
-            <h2 className="text-xl font-display font-bold text-zinc-950">Vui lòng đăng nhập</h2>
-            <p className="text-sm text-zinc-600 leading-relaxed">
+            <h2 className="text-xl font-editorial font-bold text-[#2A2118]">Vui lòng đăng nhập</h2>
+            <p className="text-sm text-[#6B5B4B] leading-relaxed">
               Đăng nhập tài khoản Hanzi4U để tiếp tục học và lưu tiến độ cá nhân hóa của bạn.
             </p>
             <div className="space-y-2.5 pt-2">
@@ -136,9 +179,9 @@ const AppContent: React.FC = () => {
               </ShimmerButton>
               <a
                 href="#/"
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-5 rounded-lg border border-zinc-200 hover:bg-zinc-50 text-zinc-700 font-medium text-xs transition-colors"
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-5 rounded-[6px] border border-[#DECFAA] hover:bg-[#F3ECDC] text-[#2A2118] font-medium text-xs transition-colors"
               >
-                <Home className="w-4 h-4 text-zinc-400" />
+                <Home className="w-4 h-4 text-[#6B5B4B]" />
                 <span>Về trang chủ</span>
               </a>
             </div>
@@ -163,7 +206,7 @@ const AppContent: React.FC = () => {
         : 'courses';
 
     return (
-      <MeshBackground variant="light" className="text-zinc-950 font-sans">
+      <MeshBackground variant="light" className="text-[#2A2118] font-sans">
         <Sidebar currentPath={currentHash} />
         <div className="lg:pl-60 min-h-screen flex flex-col">
           <main className="flex-1 pb-16">
@@ -190,15 +233,8 @@ const AppContent: React.FC = () => {
   if (hasCompletedOnboarding === false) {
     return (
       <MeshBackground variant="light" className="flex flex-col">
-        <header className="sticky top-0 z-40 bg-[#FAFAF9]/90 backdrop-blur-md border-b border-zinc-200 h-14 px-4 sm:px-6 flex items-center justify-center">
-          <div className="flex items-center gap-2.5">
-            <span className="w-8 h-8 rounded-lg bg-zinc-950 text-white flex items-center justify-center font-hanzi-serif font-bold text-base">
-              汉
-            </span>
-            <span className="font-display font-bold text-lg tracking-tight text-zinc-950">
-              Hanzi<span className="text-[#BE123C]">4U</span>
-            </span>
-          </div>
+        <header className="sticky top-0 z-40 bg-[#1F3A2E] border-b border-[#B08D3C]/25 h-16 px-4 sm:px-6 flex items-center justify-center">
+          <HanziLogo variant="dark" size="sm" />
         </header>
         <main className="flex-1 pb-12">
           <PageTransition routeKey="onboarding-initial">
@@ -223,37 +259,27 @@ const AppContent: React.FC = () => {
       return <TodayPage />;
     }
 
-    if (basePath === '#/courses' || basePath === '#/roadmap') {
-      return <CourseListPage />;
-    }
-
+    if (basePath === '#/courses' || basePath === '#/roadmap') return <CourseListPage />;
     if (basePath.startsWith('#/courses/')) {
-      const id = parseInt(basePath.replace('#/courses/', ''), 10);
-      return <CourseDetailPage courseId={id || 1} />;
+      return <CourseDetailPage courseId={parseInt(basePath.replace('#/courses/', ''), 10) || 1} />;
     }
-
     if (basePath.startsWith('#/lessons/')) {
-      const id = parseInt(basePath.replace('#/lessons/', ''), 10);
-      return <LessonPage lessonId={id || 1} />;
+      return <LessonPage lessonId={parseInt(basePath.replace('#/lessons/', ''), 10) || 1} />;
     }
-
     if (basePath === '#/vocab') return <VocabPage initialTab="bank" />;
     if (basePath === '#/srs') return <VocabPage initialTab="srs" />;
     if (basePath === '#/characters') return <VocabPage initialTab="writing" />;
     if (basePath === '#/speak-learn' || basePath === '#/pinyin') return <PinyinPage />;
     if (basePath === '#/speak-practice') return <SpeakingPracticePage />;
     if (basePath === '#/exams') return <ExamListPage />;
-
     if (basePath.startsWith('#/test-result/')) {
-      const id = parseInt(basePath.replace('#/test-result/', ''), 10);
-      return <TestResultPage submissionId={id || 1} />;
+      return (
+        <TestResultPage submissionId={parseInt(basePath.replace('#/test-result/', ''), 10) || 1} />
+      );
     }
-
     if (basePath.startsWith('#/test/')) {
-      const id = parseInt(basePath.replace('#/test/', ''), 10);
-      return <TestPage testId={id || 1} />;
+      return <TestPage testId={parseInt(basePath.replace('#/test/', ''), 10) || 1} />;
     }
-
     if (basePath === '#/leaderboard') return <LeaderboardPage />;
     if (basePath === '#/progress') return <ProgressPage />;
     if (basePath.startsWith('#/profile')) return <ProfilePage />;
@@ -265,10 +291,10 @@ const AppContent: React.FC = () => {
         return (
           <div className="max-w-lg mx-auto my-20 px-4">
             <GlassCard className="p-8 text-center space-y-5">
-              <div className="w-12 h-12 rounded-xl bg-rose-50 border border-rose-200 text-[#BE123C] mx-auto flex items-center justify-center">
+              <div className="w-12 h-12 rounded-[8px] bg-[#7A2E2B]/10 border border-[#7A2E2B]/30 text-[#7A2E2B] mx-auto flex items-center justify-center">
                 <ShieldAlert className="w-6 h-6" />
               </div>
-              <h2 className="text-xl font-display font-bold text-zinc-950">
+              <h2 className="text-xl font-editorial font-bold text-[#2A2118]">
                 403 - Không Có Quyền Truy Cập
               </h2>
               <ShimmerButton href="#/today">Về trang Hôm nay</ShimmerButton>
@@ -283,7 +309,7 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <MeshBackground variant="light" className="text-zinc-950 font-sans">
+    <MeshBackground variant="light" className="text-[#2A2118] font-sans">
       <Sidebar currentPath={currentHash} />
       <div className="lg:pl-60 min-h-screen flex flex-col">
         <main className="flex-1 pb-16">

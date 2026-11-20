@@ -2,6 +2,7 @@ import React, { useState, useRef, useLayoutEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { UserAvatar } from './ui';
+import { HanziLogo } from './HanziLogo';
 import {
   Home,
   Route,
@@ -59,30 +60,15 @@ const SidebarNavContent: React.FC<NavContentProps> = ({
   }, [activeHash, menuItems.length]);
 
   return (
-    <div className="flex flex-col h-full bg-white">
+    <div className="flex flex-col h-full bg-[#FBF7EC]">
       {/* Brand Header */}
-      <div className="px-5 h-15 flex items-center border-b border-zinc-100">
-        <a
-          href={isAdmin ? '#/admin/courses' : '#/today'}
-          onClick={onSelect}
-          className="flex items-center gap-2.5 group"
-        >
-          <span
-            aria-hidden="true"
-            className="w-8 h-8 rounded-lg bg-zinc-950 text-white flex items-center justify-center font-hanzi-serif font-bold text-base"
-          >
-            汉
-          </span>
-          <div className="flex flex-col">
-            <span className="font-display font-bold text-[17px] tracking-tight text-zinc-950 leading-none">
-              Hanzi<span className="text-[#BE123C]">4U</span>
-            </span>
-            {isAdmin && (
-              <span className="text-[10px] font-mono font-semibold text-zinc-400 uppercase tracking-wider mt-0.5">
-                {isSuperAdmin ? 'Quản trị' : 'Biên tập'}
-              </span>
-            )}
-          </div>
+      <div className="px-5 h-16 flex items-center bg-[#1F3A2E] border-b border-[#B08D3C]/25">
+        <a href={isAdmin ? '#/admin/courses' : '#/today'} onClick={onSelect}>
+          <HanziLogo
+            variant="dark"
+            size="sm"
+            subtitle={isAdmin ? (isSuperAdmin ? 'QUẢN TRỊ VIÊN' : 'BIÊN TẬP VIÊN') : 'HỌC VIỆN HÁN NGỮ'}
+          />
         </a>
       </div>
 
@@ -98,7 +84,7 @@ const SidebarNavContent: React.FC<NavContentProps> = ({
               transform: `translate3d(0, ${activeRect.top}px, 0)`,
               height: activeRect.height,
             }}
-            className="pointer-events-none absolute left-3 right-3 top-0 rounded-lg bg-zinc-100 transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform"
+            className="pointer-events-none absolute left-3 right-3 top-0 rounded-[6px] bg-[#1F3A2E] transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform"
           />
         )}
 
@@ -113,23 +99,23 @@ const SidebarNavContent: React.FC<NavContentProps> = ({
               }}
               href={item.hash}
               onClick={onSelect}
-              className={`relative z-10 flex items-center justify-between gap-3 px-3 h-9 rounded-lg text-[13.5px] transition-colors duration-150 ${
+              className={`relative z-10 flex items-center justify-between gap-3 px-3 h-9 rounded-[6px] text-[13.5px] transition-colors duration-150 ${
                 active
-                  ? 'text-zinc-950 font-semibold'
-                  : 'text-zinc-600 font-medium hover:text-zinc-950 hover:bg-zinc-50'
+                  ? 'text-[#FBF7EC] font-semibold'
+                  : 'text-[#6B5B4B] font-medium hover:text-[#2A2118] hover:bg-[#EADFC5]/60'
               }`}
             >
               <span className="flex items-center gap-2.5 min-w-0">
                 <Icon
                   aria-hidden="true"
                   className={`w-4 h-4 shrink-0 transition-colors ${
-                    active ? 'text-[#BE123C]' : 'text-zinc-400'
+                    active ? 'text-[#D4B26A]' : 'text-[#6B5B4B]/70'
                   }`}
                   strokeWidth={active ? 2.15 : 1.75}
                 />
                 <span className="truncate">{item.label}</span>
               </span>
-              {active && <span className="w-1.5 h-1.5 rounded-full bg-[#BE123C] shrink-0" />}
+              {active && <span className="w-1.5 h-1.5 rounded-full bg-[#D4B26A] shrink-0" />}
             </a>
           );
         })}
@@ -137,8 +123,8 @@ const SidebarNavContent: React.FC<NavContentProps> = ({
 
       {/* Profile Footer */}
       {user && (
-        <div className="p-3 border-t border-zinc-100">
-          <div className="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg hover:bg-zinc-50 transition-colors">
+        <div className="p-3 border-t border-[#DECFAA]">
+          <div className="flex items-center justify-between gap-2 px-2 py-1.5 rounded-[6px] hover:bg-[#F3ECDC] transition-colors">
             <a
               href="#/profile"
               onClick={onSelect}
@@ -146,8 +132,10 @@ const SidebarNavContent: React.FC<NavContentProps> = ({
             >
               <UserAvatar avatarUrl={user.avatarUrl} displayName={user.displayName} size="sm" />
               <div className="min-w-0 leading-tight">
-                <p className="text-[13px] font-semibold text-zinc-950 truncate">{user.displayName}</p>
-                <p className="text-[11px] text-zinc-500 truncate">
+                <p className="text-[13px] font-semibold text-[#2A2118] truncate">
+                  {user.displayName}
+                </p>
+                <p className="text-[11px] text-[#6B5B4B] truncate">
                   {isAdmin
                     ? isSuperAdmin
                       ? 'Quản trị viên'
@@ -165,7 +153,7 @@ const SidebarNavContent: React.FC<NavContentProps> = ({
               }}
               title="Đăng xuất"
               aria-label="Đăng xuất"
-              className="p-1.5 text-zinc-400 hover:text-[#BE123C] hover:bg-rose-50 rounded-md transition-colors cursor-pointer shrink-0"
+              className="p-1.5 text-[#6B5B4B] hover:text-[#7A2E2B] hover:bg-[#7A2E2B]/10 rounded-md transition-colors cursor-pointer shrink-0"
             >
               <LogOut className="w-4 h-4" />
             </button>
@@ -238,21 +226,16 @@ export const Sidebar: React.FC<{ currentPath: string }> = ({ currentPath }) => {
         />
       </aside>
 
-      <header className="lg:hidden sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-zinc-200 px-4 h-14 flex items-center justify-between">
-        <a href={isAdmin ? '#/admin/courses' : '#/today'} className="flex items-center gap-2">
-          <span className="w-7 h-7 rounded-md bg-zinc-950 text-white flex items-center justify-center font-hanzi-serif font-bold text-sm">
-            汉
-          </span>
-          <span className="font-display font-bold text-base tracking-tight text-zinc-950">
-            Hanzi<span className="text-[#BE123C]">4U</span>
-          </span>
+      <header className="lg:hidden sticky top-0 z-40 bg-[#1F3A2E] border-b border-[#B08D3C]/25 px-4 h-14 flex items-center justify-between">
+        <a href={isAdmin ? '#/admin/courses' : '#/today'}>
+          <HanziLogo variant="dark" size="sm" showSubtitle={false} />
         </a>
 
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
           aria-label="Mở menu"
-          className="p-2 rounded-lg text-zinc-600 hover:bg-zinc-100 cursor-pointer"
+          className="p-2 rounded-md text-[#FBF7EC] hover:bg-white/10 cursor-pointer"
         >
           <Menu className="w-5 h-5" />
         </button>
@@ -266,7 +249,7 @@ export const Sidebar: React.FC<{ currentPath: string }> = ({ currentPath }) => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.16 }}
-              className="fixed inset-0 bg-zinc-950/30 backdrop-blur-[2px]"
+              className="fixed inset-0 bg-[#1E1610]/45 backdrop-blur-[2px]"
               onClick={() => setMobileOpen(false)}
             />
             <motion.div
@@ -274,13 +257,13 @@ export const Sidebar: React.FC<{ currentPath: string }> = ({ currentPath }) => {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-              className="relative w-64 max-w-[82vw] bg-white h-full shadow-xl border-r border-zinc-200 flex flex-col z-10"
+              className="relative w-64 max-w-[82vw] bg-[#FBF7EC] h-full shadow-2xl border-r border-[#DECFAA] flex flex-col z-10"
             >
               <button
                 type="button"
                 onClick={() => setMobileOpen(false)}
                 aria-label="Đóng menu"
-                className="absolute top-3.5 right-3 p-1.5 rounded-lg text-zinc-500 hover:bg-zinc-100 cursor-pointer z-20"
+                className="absolute top-3.5 right-3 p-1.5 rounded-md text-[#FBF7EC] hover:bg-white/10 cursor-pointer z-20"
               >
                 <X className="w-4 h-4" />
               </button>

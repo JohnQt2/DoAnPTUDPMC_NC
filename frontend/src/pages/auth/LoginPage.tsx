@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../lib/api';
 import { GlassCard, ShimmerButton } from '../../components/ui';
+import { HanziLogoMark } from '../../components/HanziLogo';
 import {
   Mail,
   Lock,
@@ -392,7 +393,7 @@ export const LoginPage: React.FC = () => {
   };
 
   const glassInputCls =
-    'w-full pl-10 pr-4 py-2.5 rounded-lg border border-zinc-200 bg-white text-sm text-zinc-950 placeholder-zinc-400 focus:outline-none focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/10 transition-all';
+    'w-full pl-10 pr-4 py-2.5 rounded-[6px] border border-[#DECFAA] bg-white text-sm text-[#2A2118] placeholder-[#6B5B4B]/60 focus:outline-none focus:border-[#1F3A2E] focus:ring-2 focus:ring-[#1F3A2E]/15 transition-all';
 
   const GoogleIcon = (
     <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
@@ -416,44 +417,44 @@ export const LoginPage: React.FC = () => {
   );
 
   return (
-    <div className="relative flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 overflow-hidden">
-      {/* Subtle misty mountain .webp backdrop harmonized with Landing Page */}
+    <div className="relative flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 overflow-hidden bg-[#F3ECDC]">
+      {/* Real Chinese Study Desk .webp Backdrop */}
       <img
-        src="/images/hero-huangshan-mist.webp"
+        src="/images/login-study-desk.webp"
         alt=""
         aria-hidden="true"
         decoding="async"
-        className="pointer-events-none absolute inset-0 w-full h-full object-cover opacity-[0.12] grayscale-[30%]"
+        className="pointer-events-none absolute inset-0 w-full h-full object-cover opacity-35"
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#FAFAF9]/75 via-[#FAFAF9]/85 to-[#FAFAF9]"
+        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#F3ECDC]/70 via-[#F3ECDC]/75 to-[#F3ECDC]/90"
       />
 
-      <div className="relative z-10 w-full max-w-[420px] space-y-5">
+      <div className="relative z-10 w-full max-w-[430px] space-y-5">
         <GlassCard
           variant="light"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-          className="p-7 sm:p-8 space-y-6 rounded-2xl bg-white/95 backdrop-blur-md border border-zinc-200 shadow-[0_12px_40px_-16px_rgba(9,9,11,0.1)]"
+          className="p-7 sm:p-8 space-y-6 rounded-[10px] bg-[#FBF7EC]/95 backdrop-blur-md border border-[#DECFAA] border-t-[3px] border-t-[#1F3A2E] shadow-[0_18px_46px_-18px_rgba(42,33,24,0.22)]"
         >
-          {/* Header */}
+          {/* Header with Bespoke Hanzi4U Scholar Crest */}
           <div className="text-center space-y-2">
-            <div className="inline-flex w-11 h-11 rounded-xl bg-zinc-950 text-white items-center justify-center font-hanzi-serif font-bold text-xl mb-1">
-              汉
+            <div className="inline-flex items-center justify-center mb-1">
+              <HanziLogoMark variant="light" className="w-12 h-12" />
             </div>
-            <h2 className="text-xl sm:text-2xl font-display font-bold text-zinc-950 tracking-tight">
+            <h2 className="text-2xl font-editorial font-bold text-[#2A2118] tracking-tight">
               Chào mừng đến với Hanzi4U
             </h2>
-            <p className="text-sm text-zinc-500">
-              Bắt đầu hành trình chinh phục tiếng Trung HSK
+            <p className="text-xs sm:text-sm text-[#6B5B4B]">
+              Bước vào thư phòng chinh phục tiếng Trung HSK
             </p>
           </div>
 
           {/* Clean Segmented Tab Switcher */}
           {step === 'form' && (
-            <div className="grid grid-cols-2 p-1 rounded-xl bg-zinc-100 border border-zinc-200/70">
+            <div className="grid grid-cols-2 p-1 rounded-[8px] bg-[#F3ECDC] border border-[#DECFAA]">
               {(['login', 'register'] as const).map((tab) => {
                 const active = authTab === tab;
                 return (
@@ -464,15 +465,15 @@ export const LoginPage: React.FC = () => {
                       setAuthTab(tab);
                       setErrorMessage(null);
                     }}
-                    className={`relative min-h-[38px] py-2 text-xs font-semibold rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 ${
-                      active ? 'text-zinc-950' : 'text-zinc-500 hover:text-zinc-900'
+                    className={`relative min-h-[38px] py-2 text-xs font-semibold rounded-[6px] transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1F3A2E] ${
+                      active ? 'text-[#FBF7EC]' : 'text-[#6B5B4B] hover:text-[#2A2118]'
                     }`}
                   >
                     {active && (
                       <motion.span
                         layoutId="auth-tab-pill"
                         transition={{ type: 'spring', stiffness: 460, damping: 36 }}
-                        className="absolute inset-0 rounded-lg bg-white border border-zinc-200/80 shadow-[0_1px_2px_rgba(9,9,11,0.06)]"
+                        className="absolute inset-0 rounded-[6px] bg-[#1F3A2E] shadow-xs"
                       />
                     )}
                     <span className="relative z-10">
@@ -486,8 +487,8 @@ export const LoginPage: React.FC = () => {
 
           {/* Info Notice */}
           {infoMessage && step === 'form' && !errorMessage && (
-            <div className="p-3.5 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-700 text-xs font-medium flex items-center gap-2.5">
-              <ShieldCheck className="w-4 h-4 text-zinc-700 shrink-0" aria-hidden="true" />
+            <div className="p-3.5 bg-[#F3ECDC] border border-[#DECFAA] rounded-[6px] text-[#2A2118] text-xs font-medium flex items-center gap-2.5">
+              <ShieldCheck className="w-4 h-4 text-[#1F3A2E] shrink-0" aria-hidden="true" />
               <span>{infoMessage}</span>
             </div>
           )}
@@ -496,13 +497,13 @@ export const LoginPage: React.FC = () => {
           {errorMessage && (
             <div
               role="alert"
-              className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 flex items-start gap-2.5 text-rose-900 text-xs"
+              className="p-3.5 rounded-[6px] bg-[#7A2E2B]/10 border border-[#7A2E2B]/35 flex items-start gap-2.5 text-[#7A2E2B] text-xs"
             >
-              <AlertTriangle className="w-4 h-4 shrink-0 text-[#BE123C] mt-0.5" aria-hidden="true" />
+              <AlertTriangle className="w-4 h-4 shrink-0 text-[#7A2E2B] mt-0.5" aria-hidden="true" />
               <div className="space-y-1">
                 <p className="font-semibold">{errorMessage}</p>
                 {remainingAttempts !== null && !isLocked && (
-                  <p className="text-[11px] text-rose-700">
+                  <p className="text-[11px] opacity-90">
                     Lưu ý: Nhập sai quá 5 lần sẽ tạm khóa tài khoản trong 15 phút.
                   </p>
                 )}
@@ -512,8 +513,8 @@ export const LoginPage: React.FC = () => {
 
           {/* OTP Dispatched Alert */}
           {infoMessage && step === 'otp_verify' && !errorMessage && (
-            <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs flex items-center gap-2.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" aria-hidden="true" />
+            <div className="p-3.5 bg-[#1F3A2E]/10 border border-[#1F3A2E]/25 rounded-[6px] text-[#1F3A2E] text-xs flex items-center gap-2.5">
+              <CheckCircle2 className="w-4 h-4 text-[#1F3A2E] shrink-0" aria-hidden="true" />
               <span>{infoMessage}</span>
             </div>
           )}
@@ -533,13 +534,13 @@ export const LoginPage: React.FC = () => {
                 <div>
                   <label
                     htmlFor="register-display-name"
-                    className="block text-xs font-medium text-zinc-700 mb-1.5"
+                    className="block text-xs font-semibold text-[#2A2118] mb-1.5"
                   >
                     Họ và tên
                   </label>
                   <div className="relative">
                     <UserIcon
-                      className="w-4 h-4 absolute left-3.5 top-3 text-zinc-400"
+                      className="w-4 h-4 absolute left-3.5 top-3 text-[#6B5B4B]"
                       aria-hidden="true"
                     />
                     <input
@@ -557,13 +558,13 @@ export const LoginPage: React.FC = () => {
                 <div>
                   <label
                     htmlFor="register-email"
-                    className="block text-xs font-medium text-zinc-700 mb-1.5"
+                    className="block text-xs font-semibold text-[#2A2118] mb-1.5"
                   >
                     Email
                   </label>
                   <div className="relative">
                     <Mail
-                      className="w-4 h-4 absolute left-3.5 top-3 text-zinc-400"
+                      className="w-4 h-4 absolute left-3.5 top-3 text-[#6B5B4B]"
                       aria-hidden="true"
                     />
                     <input
@@ -581,13 +582,13 @@ export const LoginPage: React.FC = () => {
                 <div>
                   <label
                     htmlFor="register-password"
-                    className="block text-xs font-medium text-zinc-700 mb-1.5"
+                    className="block text-xs font-semibold text-[#2A2118] mb-1.5"
                   >
                     Mật khẩu
                   </label>
                   <div className="relative">
                     <Lock
-                      className="w-4 h-4 absolute left-3.5 top-3 text-zinc-400"
+                      className="w-4 h-4 absolute left-3.5 top-3 text-[#6B5B4B]"
                       aria-hidden="true"
                     />
                     <input
@@ -613,16 +614,16 @@ export const LoginPage: React.FC = () => {
                 </ShimmerButton>
 
                 <div className="relative flex items-center justify-center my-1">
-                  <div className="border-t border-zinc-200 w-full" />
-                  <span className="px-3 text-[11px] text-zinc-400 font-medium uppercase">hoặc</span>
-                  <div className="border-t border-zinc-200 w-full" />
+                  <div className="border-t border-[#DECFAA] w-full" />
+                  <span className="px-3 text-[11px] text-[#6B5B4B] font-medium uppercase">hoặc</span>
+                  <div className="border-t border-[#DECFAA] w-full" />
                 </div>
 
                 <button
                   type="button"
                   onClick={handleGoogleLogin}
                   disabled={isSubmitting || isGoogleLoading}
-                  className="w-full h-10 flex items-center justify-center gap-2.5 px-4 rounded-lg border border-zinc-200 bg-white hover:bg-zinc-50 hover:border-zinc-300 text-zinc-900 font-medium text-sm transition-colors cursor-pointer disabled:opacity-50"
+                  className="w-full h-10 flex items-center justify-center gap-2.5 px-4 rounded-[6px] border border-[#DECFAA] bg-white hover:bg-[#F3ECDC] hover:border-[#B08D3C] text-[#2A2118] font-medium text-sm transition-colors cursor-pointer disabled:opacity-50"
                 >
                   {GoogleIcon}
                   <span>{isGoogleLoading ? 'Đang xử lý...' : 'Đăng nhập với Google'}</span>
@@ -644,13 +645,13 @@ export const LoginPage: React.FC = () => {
                 <div>
                   <label
                     htmlFor="login-email"
-                    className="block text-xs font-medium text-zinc-700 mb-1.5"
+                    className="block text-xs font-semibold text-[#2A2118] mb-1.5"
                   >
                     Email
                   </label>
                   <div className="relative">
                     <Mail
-                      className="w-4 h-4 absolute left-3.5 top-3 text-zinc-400"
+                      className="w-4 h-4 absolute left-3.5 top-3 text-[#6B5B4B]"
                       aria-hidden="true"
                     />
                     <input
@@ -669,13 +670,13 @@ export const LoginPage: React.FC = () => {
                   <div>
                     <label
                       htmlFor="login-password"
-                      className="block text-xs font-medium text-zinc-700 mb-1.5"
+                      className="block text-xs font-semibold text-[#2A2118] mb-1.5"
                     >
                       Mật khẩu
                     </label>
                     <div className="relative">
                       <Lock
-                        className="w-4 h-4 absolute left-3.5 top-3 text-zinc-400"
+                        className="w-4 h-4 absolute left-3.5 top-3 text-[#6B5B4B]"
                         aria-hidden="true"
                       />
                       <input
@@ -712,7 +713,7 @@ export const LoginPage: React.FC = () => {
                     setLoginSubMode((prev) => (prev === 'password' ? 'otp' : 'password'));
                     setErrorMessage(null);
                   }}
-                  className="w-full flex items-center justify-center gap-1.5 text-xs font-medium text-zinc-500 hover:text-zinc-900 py-1 cursor-pointer transition-colors"
+                  className="w-full flex items-center justify-center gap-1.5 text-xs font-medium text-[#6B5B4B] hover:text-[#1F3A2E] py-1 cursor-pointer transition-colors"
                 >
                   <KeyRound className="w-3.5 h-3.5" aria-hidden="true" />
                   <span>
@@ -723,16 +724,16 @@ export const LoginPage: React.FC = () => {
                 </button>
 
                 <div className="relative flex items-center justify-center my-1">
-                  <div className="border-t border-zinc-200 w-full" />
-                  <span className="px-3 text-[11px] text-zinc-400 font-medium uppercase">hoặc</span>
-                  <div className="border-t border-zinc-200 w-full" />
+                  <div className="border-t border-[#DECFAA] w-full" />
+                  <span className="px-3 text-[11px] text-[#6B5B4B] font-medium uppercase">hoặc</span>
+                  <div className="border-t border-[#DECFAA] w-full" />
                 </div>
 
                 <button
                   type="button"
                   onClick={handleGoogleLogin}
                   disabled={isSubmitting || isGoogleLoading}
-                  className="w-full h-10 flex items-center justify-center gap-2.5 px-4 rounded-lg border border-zinc-200 bg-white hover:bg-zinc-50 hover:border-zinc-300 text-zinc-900 font-medium text-sm transition-colors cursor-pointer disabled:opacity-50"
+                  className="w-full h-10 flex items-center justify-center gap-2.5 px-4 rounded-[6px] border border-[#DECFAA] bg-white hover:bg-[#F3ECDC] hover:border-[#B08D3C] text-[#2A2118] font-medium text-sm transition-colors cursor-pointer disabled:opacity-50"
                 >
                   {GoogleIcon}
                   <span>{isGoogleLoading ? 'Đang xử lý...' : 'Đăng nhập với Google'}</span>
@@ -752,8 +753,8 @@ export const LoginPage: React.FC = () => {
                 className="space-y-5"
               >
                 <div className="text-center space-y-1">
-                  <span className="text-xs text-zinc-500">Mã xác nhận 6 chữ số đã gửi đến</span>
-                  <p className="text-sm font-semibold text-zinc-950">{email}</p>
+                  <span className="text-xs text-[#6B5B4B]">Mã xác nhận 6 chữ số đã gửi đến</span>
+                  <p className="text-sm font-semibold text-[#2A2118]">{email}</p>
                 </div>
 
                 <div className="flex items-center justify-center gap-2">
@@ -769,22 +770,22 @@ export const LoginPage: React.FC = () => {
                       onChange={(e) => handleOtpChange(idx, e.target.value)}
                       onKeyDown={(e) => handleOtpKeyDown(idx, e)}
                       disabled={isLocked}
-                      className="w-11 h-12 text-center text-lg font-bold rounded-lg border border-zinc-200 bg-white text-zinc-950 focus:outline-none focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/10 transition-all"
+                      className="w-11 h-12 text-center text-lg font-bold rounded-[6px] border border-[#DECFAA] bg-white text-[#2A2118] focus:outline-none focus:border-[#1F3A2E] focus:ring-2 focus:ring-[#1F3A2E]/15 transition-all"
                     />
                   ))}
                 </div>
 
                 <div className="flex items-center justify-between text-xs px-1">
-                  <div className="flex items-center gap-1.5 text-zinc-500 font-mono">
-                    <ShieldCheck className="w-4 h-4 text-[#BE123C]" aria-hidden="true" />
-                    Hiệu lực: <span className="font-semibold text-zinc-900">{formatTimer(countdown)}</span>
+                  <div className="flex items-center gap-1.5 text-[#6B5B4B] font-mono">
+                    <ShieldCheck className="w-4 h-4 text-[#7A2E2B]" aria-hidden="true" />
+                    Hiệu lực: <span className="font-semibold text-[#2A2118]">{formatTimer(countdown)}</span>
                   </div>
 
                   <button
                     type="button"
                     disabled={countdown > 0 || isSubmitting || isLocked}
                     onClick={() => handleSendOtp()}
-                    className="flex items-center gap-1 text-zinc-700 hover:text-zinc-950 font-semibold cursor-pointer disabled:opacity-40"
+                    className="flex items-center gap-1 text-[#1F3A2E] hover:text-[#7A2E2B] font-semibold cursor-pointer disabled:opacity-40"
                   >
                     <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
                     Gửi lại mã
@@ -807,7 +808,7 @@ export const LoginPage: React.FC = () => {
                     setErrorMessage(null);
                     setInfoMessage(null);
                   }}
-                  className="w-full text-center text-xs text-zinc-500 hover:text-zinc-900 transition-colors cursor-pointer"
+                  className="w-full text-center text-xs text-[#6B5B4B] hover:text-[#2A2118] transition-colors cursor-pointer"
                 >
                   ← Quay lại chỉnh sửa email
                 </button>
@@ -816,7 +817,7 @@ export const LoginPage: React.FC = () => {
           </AnimatePresence>
         </GlassCard>
 
-        <p className="text-center text-xs text-zinc-400">
+        <p className="text-center text-xs text-[#6B5B4B]">
           Bằng cách tiếp tục, bạn đồng ý với điều khoản sử dụng của Hanzi4U.
         </p>
       </div>

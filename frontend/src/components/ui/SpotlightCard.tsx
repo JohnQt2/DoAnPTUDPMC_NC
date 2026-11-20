@@ -16,10 +16,10 @@ export const SpotlightCard: React.FC<SpotlightCardProps> = ({
   return (
     <div
       className={cn(
-        'relative rounded-2xl transition-all duration-200',
+        'relative rounded-[10px] transition-all duration-200',
         variant === 'dark'
-          ? 'bg-[#111114] border border-white/10 hover:border-white/20'
-          : 'bg-white border border-zinc-200 hover:border-zinc-300 shadow-[0_1px_2px_rgba(9,9,11,0.03)] hover:shadow-[0_10px_28px_-12px_rgba(9,9,11,0.08)]',
+          ? 'bg-[#1E1610] border border-[#DECFAA]/20 hover:border-[#B08D3C]/50'
+          : 'bg-[#FBF7EC] border border-[#DECFAA] hover:border-[#B08D3C] shadow-[0_2px_8px_rgba(42,33,24,0.04)] hover:shadow-[0_10px_28px_-12px_rgba(42,33,24,0.12)]',
         className
       )}
       {...props}

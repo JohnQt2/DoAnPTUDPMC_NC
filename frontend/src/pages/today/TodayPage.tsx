@@ -47,6 +47,7 @@ export const TodayPage: React.FC = () => {
       label: 'LỘ TRÌNH CHÍNH',
       title: 'Học tiếp bài trong lộ trình',
       desc: 'Hoàn thành từng Unit theo tiến độ cá nhân để mở khóa chặng tiếp theo.',
+      bar: 'bg-[#1F3A2E]',
     },
     {
       index: '02',
@@ -55,6 +56,7 @@ export const TodayPage: React.FC = () => {
       label: 'PHÁT ÂM NỀN TẢNG',
       title: 'Ôn bảng chữ cái Pinyin',
       desc: 'Luyện nghe 63 âm chuẩn phổ thông, 4 thanh điệu và cặp âm dễ nhầm.',
+      bar: 'bg-[#B08D3C]',
     },
     {
       index: '03',
@@ -63,22 +65,23 @@ export const TodayPage: React.FC = () => {
       label: 'TỪ VỰNG & VIẾT NÉT',
       title: 'Ôn thẻ nhớ & tập viết chữ Hán',
       desc: 'Củng cố từ vựng theo lịch SRS và thực hành nét viết trên ô Điền Tự Cách.',
+      bar: 'bg-[#7A2E2B]',
     },
   ];
 
   return (
     <div className="max-w-4xl mx-auto py-9 px-5 sm:px-8 space-y-8">
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-5 border-b border-zinc-200">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-5 border-b border-[#DECFAA]">
         <div>
-          <p className="text-[11px] font-mono uppercase tracking-[0.16em] text-zinc-400">
-            Không gian học hôm nay
+          <p className="text-[11px] font-mono uppercase tracking-[0.18em] text-[#B08D3C] font-semibold">
+            Thư phòng hôm nay
           </p>
-          <h1 className="text-2xl sm:text-3xl font-display font-bold text-zinc-950 tracking-tight mt-1">
+          <h1 className="text-2xl sm:text-3xl font-editorial font-bold text-[#2A2118] mt-1">
             Chào {user?.displayName || 'bạn'}
           </h1>
-          <p className="text-sm text-zinc-600 mt-1">
-            Mục tiêu <strong className="text-zinc-950 font-semibold">{dailyMins} phút/ngày</strong> · Lộ trình{' '}
-            <strong className="text-[#BE123C] font-semibold">{targetGoal}</strong>
+          <p className="text-sm text-[#6B5B4B] mt-1">
+            Mục tiêu <strong className="text-[#2A2118] font-semibold">{dailyMins} phút/ngày</strong> · Lộ trình{' '}
+            <strong className="text-[#7A2E2B] font-semibold">{targetGoal}</strong>
           </p>
         </div>
 
@@ -89,50 +92,53 @@ export const TodayPage: React.FC = () => {
         initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, ease: LUCIAN_EASE }}
-        className="rounded-2xl p-6 sm:p-7 ios-hero-glass space-y-6"
+        className="rounded-[10px] overflow-hidden ios-hero-glass"
       >
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-          <div className="space-y-2 max-w-lg">
-            <span className="inline-flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.14em] text-[#BE123C] font-semibold">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#BE123C]" />
-              Bài học kế tiếp
-            </span>
-            <h2 className="text-xl sm:text-2xl font-display font-bold text-zinc-950 tracking-tight">
-              {loading ? 'Đang chuẩn bị bài học...' : 'Tiếp tục chặng học hôm nay'}
-            </h2>
-            <p className="text-sm text-zinc-600 leading-relaxed">
-              Học ngắn gọn từ vựng, nghe hội thoại mẫu và làm bài tập nhanh trong {dailyMins} phút.
-            </p>
+        <div className="h-1 bg-[#1F3A2E]" />
+        <div className="p-6 sm:p-7 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+            <div className="space-y-2 max-w-lg">
+              <span className="inline-flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.16em] text-[#7A2E2B] font-bold">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#7A2E2B]" />
+                Bài học kế tiếp
+              </span>
+              <h2 className="text-xl sm:text-2xl font-editorial font-bold text-[#2A2118]">
+                {loading ? 'Đang chuẩn bị bài học...' : 'Tiếp tục chặng học hôm nay'}
+              </h2>
+              <p className="text-sm text-[#6B5B4B] leading-relaxed">
+                Học ngắn gọn từ vựng, nghe hội thoại mẫu và làm bài tập nhanh trong {dailyMins} phút.
+              </p>
+            </div>
+
+            <LucianLiquidButton
+              href={`#/lessons/${nextLessonId}`}
+              variant="jade"
+              size="lg"
+              className="shrink-0"
+            >
+              <Play className="w-4 h-4 fill-current" />
+              <span>Vào học ngay</span>
+            </LucianLiquidButton>
           </div>
 
-          <LucianLiquidButton
-            href={`#/lessons/${nextLessonId}`}
-            variant="ink"
-            size="lg"
-            className="shrink-0"
-          >
-            <Play className="w-4 h-4 fill-current" />
-            <span>Vào học ngay</span>
-          </LucianLiquidButton>
-        </div>
-
-        <div className="pt-5 border-t border-zinc-100">
-          <LucianXpBar
-            current={completedLessons}
-            target={totalLessons}
-            label={`Tiến độ lộ trình ${targetGoal}`}
-          />
+          <div className="pt-5 border-t border-dashed border-[#DECFAA]">
+            <LucianXpBar
+              current={completedLessons}
+              target={totalLessons}
+              label={`Tiến độ lộ trình ${targetGoal}`}
+            />
+          </div>
         </div>
       </motion.div>
 
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-xs font-mono uppercase tracking-[0.14em] text-zinc-500 font-semibold">
+          <h3 className="text-xs font-mono uppercase tracking-[0.16em] text-[#6B5B4B] font-bold">
             Nhịp học đề xuất hôm nay
           </h3>
           <a
             href="#/courses"
-            className="text-xs font-semibold text-zinc-700 hover:text-zinc-950 inline-flex items-center gap-1 transition-colors"
+            className="text-xs font-semibold text-[#1F3A2E] hover:text-[#7A2E2B] inline-flex items-center gap-1 transition-colors"
           >
             <span>Toàn bộ lộ trình HSK 1–6</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -149,31 +155,34 @@ export const TodayPage: React.FC = () => {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.28, delay: idx * 0.05, ease: LUCIAN_EASE }}
-                className="glass-light glass-light-hover rounded-2xl p-5 flex flex-col justify-between gap-6 group"
+                className="glass-light glass-light-hover rounded-[10px] overflow-hidden flex flex-col justify-between group"
               >
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-mono font-semibold text-[#BE123C]">
-                      {item.index}
-                    </span>
-                    <div className="w-8 h-8 rounded-lg bg-zinc-50 border border-zinc-200 text-zinc-700 group-hover:text-zinc-950 flex items-center justify-center transition-colors">
-                      <Icon className="w-4 h-4" />
+                <div className={`h-1 w-full ${item.bar}`} />
+                <div className="p-5 flex-1 flex flex-col justify-between gap-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-mono font-bold text-[#B08D3C]">
+                        {item.index}
+                      </span>
+                      <div className="w-8 h-8 rounded-[6px] bg-[#F3ECDC] border border-[#DECFAA] text-[#1F3A2E] flex items-center justify-center">
+                        <Icon className="w-4 h-4" />
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <p className="text-[10px] font-mono tracking-widest text-[#6B5B4B] uppercase">
+                        {item.label}
+                      </p>
+                      <h4 className="font-editorial font-bold text-base text-[#2A2118] group-hover:text-[#7A2E2B] transition-colors leading-snug">
+                        {item.title}
+                      </h4>
+                      <p className="text-xs text-[#6B5B4B] leading-relaxed">{item.desc}</p>
                     </div>
                   </div>
-                  <div className="space-y-1.5">
-                    <p className="text-[10px] font-mono tracking-widest text-zinc-400 uppercase">
-                      {item.label}
-                    </p>
-                    <h4 className="font-display font-semibold text-[15px] text-zinc-950 group-hover:text-[#BE123C] transition-colors leading-snug">
-                      {item.title}
-                    </h4>
-                    <p className="text-xs text-zinc-600 leading-relaxed">{item.desc}</p>
-                  </div>
-                </div>
 
-                <div className="pt-3 border-t border-zinc-100 flex items-center justify-between text-xs font-semibold text-zinc-700 group-hover:text-zinc-950 transition-colors">
-                  <span>Mở mục này</span>
-                  <ArrowRight className="w-3.5 h-3.5 transition-transform duration-150 group-hover:translate-x-0.5" />
+                  <div className="pt-3 border-t border-dashed border-[#DECFAA] flex items-center justify-between text-xs font-semibold text-[#1F3A2E] group-hover:text-[#7A2E2B] transition-colors">
+                    <span>Mở mục này</span>
+                    <ArrowRight className="w-3.5 h-3.5 transition-transform duration-150 group-hover:translate-x-0.5" />
+                  </div>
                 </div>
               </motion.a>
             );

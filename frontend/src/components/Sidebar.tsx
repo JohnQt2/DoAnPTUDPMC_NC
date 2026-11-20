@@ -4,10 +4,10 @@ import {
   AnimatePresence,
   useMotionValue,
   useSpring,
-  useVelocity,
-  useTransform,
 } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import { api } from '../lib/api';
+import { getCached, setCached } from '../lib/cache';
 import { UserAvatar } from './ui';
 import {
   Home,
@@ -36,6 +36,38 @@ export const STUDENT_SIDEBAR_ITEMS = [
   { label: 'Tiến độ', hash: '#/progress', icon: TrendingUp },
 ];
 
+// Deduplicated background hover prefetch so clicking menu items renders instantly
+const prefetchedInFlight = new Set<string>();
+function prefetchRouteData(hash: string) {
+  if (prefetchedInFlight.has(hash)) return;
+  if (hash === '#/courses' && !getCached('courses:list')) {
+    prefetchedInFlight.add(hash);
+    api
+      .get<any[]>('/curriculum/courses')
+      .then((d) => Array.isArray(d) && setCached('courses:list', d))
+      .catch(() => {})
+      .finally(() => prefetchedInFlight.delete(hash));
+  } else if (hash === '#/vocab' && !getCached('vocab:HSK1:')) {
+    prefetchedInFlight.add(hash);
+    api
+      .get<any[]>('/curriculum/vocabularies', { params: { level: 'HSK1', limit: 160 } })
+      .then((d) => Array.isArray(d) && setCached('vocab:HSK1:', d))
+      .catch(() => {})
+      .finally(() => prefetchedInFlight.delete(hash));
+  } else if (hash === '#/exams' && !getCached('exams:list')) {
+    prefetchedInFlight.add(hash);
+    Promise.all([
+      api.get<any[]>('/assessment/tests').catch(() => null),
+      api.get<any[]>('/assessment/submissions').catch(() => null),
+    ])
+      .then(([t, s]) => {
+        if (Array.isArray(t)) setCached('exams:list', t);
+        if (Array.isArray(s)) setCached('exams:submissions', s);
+      })
+      .finally(() => prefetchedInFlight.delete(hash));
+  }
+}
+
 interface NavContentProps {
   menuItems: Array<{ label: string; hash: string; icon: React.ComponentType<any> }>;
   activeHash: string;
@@ -47,11 +79,10 @@ interface NavContentProps {
 }
 
 /**
- * Scroll-immune Liquid Glass Bubble sidebar nav:
- * Anchored to local el.offsetTop inside <nav> (100% immune to window scroll jumps).
- * Uses Framer Motion spring physics + real-time velocity-driven squash & stretch so the pill
- * stretches vertically and narrows slightly like a silky liquid soap bubble while gliding,
- * then settles seamlessly with a soft translucent glass specular highlight.
+ * Clean Floating iPhone / ThreeUI AnimatedTopDock-Inspired Sidebar:
+ * - Zero nested backdrop-filter inside .liquid-sidebar (120fps instant response)
+ * - Proximity subtle scale wave on hover (inspired by MengTo/threeui topDockController)
+ * - Clean restrained ink (#16151B) + Seal Vermilion (#D93A55) accent (zero rainbow clutter)
  */
 const SidebarNavContent: React.FC<NavContentProps> = ({
   menuItems,
@@ -63,86 +94,38 @@ const SidebarNavContent: React.FC<NavContentProps> = ({
   onSelect,
 }) => {
   const itemRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
-  const hasMountedActiveRef = useRef(false);
-  const hasVisibleHoverRef = useRef(false);
+  const hasMountedRef = useRef(false);
 
-  const [hoveredHash, setHoveredHash] = useState<string | null>(null);
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
   const [activeVisible, setActiveVisible] = useState(false);
   const [activeHeight, setActiveHeight] = useState(44);
-  const [hoverVisible, setHoverVisible] = useState(false);
-  const [hoverHeight, setHoverHeight] = useState(44);
 
-  // Active Liquid Bubble physics (velvety spring + volume-conserving droplet stretch)
+  // Smooth spring-damper active capsule (zero scroll jump, GPU-pure)
   const activeTargetY = useMotionValue(0);
-  const activeY = useSpring(activeTargetY, { stiffness: 280, damping: 24, mass: 0.72 });
-  const activeVelocity = useVelocity(activeY);
-  const activeStretchY = useTransform(activeVelocity, [-1600, -450, 0, 450, 1600], [1.22, 1.09, 1, 1.09, 1.22]);
-  const activeSqueezeX = useTransform(activeVelocity, [-1600, -450, 0, 450, 1600], [0.935, 0.972, 1, 0.972, 0.935]);
-  const activeScaleY = useSpring(activeStretchY, { stiffness: 420, damping: 32 });
-  const activeScaleX = useSpring(activeSqueezeX, { stiffness: 420, damping: 32 });
-
-  // Hover Dewdrop Bubble physics (light mist droplet trailing the cursor)
-  const hoverTargetY = useMotionValue(0);
-  const hoverY = useSpring(hoverTargetY, { stiffness: 360, damping: 29, mass: 0.62 });
-  const hoverVelocity = useVelocity(hoverY);
-  const hoverScaleY = useSpring(
-    useTransform(hoverVelocity, [-1400, 0, 1400], [1.14, 1, 1.14]),
-    { stiffness: 450, damping: 34 }
-  );
-  const hoverScaleX = useSpring(
-    useTransform(hoverVelocity, [-1400, 0, 1400], [0.96, 1, 0.96]),
-    { stiffness: 450, damping: 34 }
-  );
+  const activeY = useSpring(activeTargetY, { stiffness: 340, damping: 28, mass: 0.65 });
 
   useLayoutEffect(() => {
     const el = itemRefs.current[activeHash];
     if (!el) {
       setActiveVisible(false);
-      hasMountedActiveRef.current = false;
+      hasMountedRef.current = false;
       return;
     }
-
     setActiveHeight(el.offsetHeight);
-    if (!hasMountedActiveRef.current) {
-      // First paint: place bubble immediately with zero slide-from-top jump
+    if (!hasMountedRef.current) {
       activeTargetY.jump(el.offsetTop);
       activeY.jump(el.offsetTop);
-      hasMountedActiveRef.current = true;
+      hasMountedRef.current = true;
     } else {
       activeTargetY.set(el.offsetTop);
     }
     setActiveVisible(true);
   }, [activeHash, menuItems.length, activeTargetY, activeY]);
 
-  useLayoutEffect(() => {
-    if (!hoveredHash || hoveredHash === activeHash) {
-      setHoverVisible(false);
-      hasVisibleHoverRef.current = false;
-      return;
-    }
-    const el = itemRefs.current[hoveredHash];
-    if (!el) {
-      setHoverVisible(false);
-      hasVisibleHoverRef.current = false;
-      return;
-    }
-
-    setHoverHeight(el.offsetHeight);
-    if (!hasVisibleHoverRef.current) {
-      // Entering nav: bloom droplet directly under cursor, then glide smoothly between items
-      hoverTargetY.jump(el.offsetTop);
-      hoverY.jump(el.offsetTop);
-      hasVisibleHoverRef.current = true;
-    } else {
-      hoverTargetY.set(el.offsetTop);
-    }
-    setHoverVisible(true);
-  }, [hoveredHash, activeHash, hoverTargetY, hoverY]);
-
   return (
     <div className="flex flex-col h-full">
-      {/* Brand Logo */}
-      <div className="px-5 py-6">
+      {/* Clean Editorial Brand Mark */}
+      <div className="px-5 pt-6 pb-5 border-b border-[#16151B]/[0.07]">
         <a
           href={isAdmin ? '#/admin/courses' : '#/today'}
           onClick={onSelect}
@@ -150,116 +133,88 @@ const SidebarNavContent: React.FC<NavContentProps> = ({
         >
           <span
             aria-hidden="true"
-            className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-400 via-pink-400 to-amber-300 text-white flex items-center justify-center font-hanzi-serif font-black text-xl shadow-md shadow-rose-300/35"
+            className="w-9 h-9 rounded-xl bg-[#16151B] text-[#F4F2EE] flex items-center justify-center font-hanzi-serif font-bold text-lg shadow-sm transition-transform duration-200 group-hover:scale-105"
           >
             汉
           </span>
           <div className="flex flex-col">
-            <span className="font-display font-extrabold text-2xl tracking-tight text-slate-800 leading-none">
-              Hanzi<span className="text-rose-500">4U</span>
+            <span className="font-display font-extrabold text-xl tracking-tight text-[#16151B] leading-none">
+              Hanzi<span className="text-[#D93A55]">4U</span>
             </span>
-            {isAdmin && (
-              <span className="text-[11px] font-bold text-rose-500 uppercase tracking-wider mt-1">
-                {isSuperAdmin ? 'Trang quản trị' : 'Biên tập nội dung'}
-              </span>
-            )}
+            <span className="text-[10px] font-mono uppercase tracking-[0.14em] text-[#8E8A97] mt-1">
+              {isAdmin ? (isSuperAdmin ? 'Quản trị' : 'Biên tập') : 'HSK 1–6 Studio'}
+            </span>
           </div>
         </a>
       </div>
 
-      {/* Menu Items with Scroll-Immune Liquid Glass Bubble */}
+      {/* Navigation Dock List */}
       <nav
-        className="relative flex-1 px-3 flex flex-col gap-1 overflow-y-auto no-scrollbar"
+        className="relative flex-1 px-3 py-4 flex flex-col gap-1 overflow-y-auto no-scrollbar"
         aria-label={isAdmin ? 'Menu quản trị' : 'Menu học tập'}
-        onMouseLeave={() => setHoveredHash(null)}
+        onMouseLeave={() => setHoveredIdx(null)}
       >
-        {/* Soft Dewdrop Hover Bubble */}
-        <motion.span
-          aria-hidden="true"
-          style={{
-            y: hoverY,
-            scaleY: hoverScaleY,
-            scaleX: hoverScaleX,
-            height: hoverHeight,
-            originX: 0.5,
-            originY: 0.5,
-          }}
-          animate={{
-            opacity: hoverVisible ? 1 : 0,
-          }}
-          transition={{ duration: 0.18, ease: 'easeOut' }}
-          className="pointer-events-none absolute left-3 right-3 top-0 m-0 rounded-[20px] bg-white/68 backdrop-blur-md border border-white/95 shadow-[0_6px_18px_-6px_rgba(148,163,184,0.22),inset_0_1.5px_2px_rgba(255,255,255,0.98)] will-change-transform"
-        />
-
-        {/* Active Liquid Glass Bubble (stretches smoothly like a water droplet while gliding) */}
+        {/* Active Crisp iPhone Liquid Glass Pill (zero nested blur -> locked 120fps) */}
         <motion.div
           aria-hidden="true"
-          style={{
-            y: activeY,
-            scaleY: activeScaleY,
-            scaleX: activeScaleX,
-            height: activeHeight,
-            originX: 0.5,
-            originY: 0.5,
-          }}
-          animate={{
-            opacity: activeVisible ? 1 : 0,
-          }}
-          transition={{ duration: 0.2, ease: 'easeOut' }}
-          className="pointer-events-none absolute left-3 right-3 top-0 m-0 rounded-[22px] overflow-hidden bg-gradient-to-br from-rose-200/72 via-pink-100/62 to-amber-100/72 backdrop-blur-md border border-white/95 shadow-[0_10px_24px_-8px_rgba(244,114,182,0.28),0_2px_8px_-2px_rgba(255,255,255,0.65),inset_0_2px_3px_rgba(255,255,255,0.98),inset_0_-2px_6px_rgba(244,114,182,0.16)] will-change-transform"
+          style={{ y: activeY, height: activeHeight }}
+          animate={{ opacity: activeVisible ? 1 : 0 }}
+          transition={{ duration: 0.16 }}
+          className="pointer-events-none absolute left-3 right-3 top-0 m-0 rounded-2xl bg-white/88 border border-white shadow-[0_8px_22px_-10px_rgba(22,21,27,0.16),inset_0_1.5px_1px_rgba(255,255,255,1)] will-change-transform"
         >
-          {/* Curved Soap-Bubble Specular Sheen */}
-          <span className="absolute inset-x-4 top-[3px] h-[5px] rounded-full bg-gradient-to-r from-white/20 via-white/90 to-white/20 blur-[0.5px]" />
-          {/* Soft Iridescent Bottom Rim Glow */}
-          <span className="absolute inset-x-8 bottom-[2px] h-[3px] rounded-full bg-gradient-to-r from-rose-300/0 via-amber-200/55 to-rose-300/0 blur-[1px]" />
+          <span className="absolute left-1.5 top-1/2 -translate-y-1/2 w-[3px] h-4 rounded-full bg-[#D93A55]" />
         </motion.div>
 
-        {menuItems.map((item) => {
+        {menuItems.map((item, idx) => {
           const Icon = item.icon;
           const active = item.hash === activeHash;
 
+          // ThreeUI AnimatedTopDock proximity magnification (subtle, crisp, zero layout shift)
+          const dist = hoveredIdx === null ? 99 : Math.abs(hoveredIdx - idx);
+          const dockScale = dist === 0 ? 1.03 : dist === 1 ? 1.012 : 1;
+          const dockShiftX = dist === 0 ? 3 : dist === 1 ? 1 : 0;
+
           return (
-            <a
+            <motion.a
               key={item.hash}
               ref={(el) => {
                 itemRefs.current[item.hash] = el;
               }}
               href={item.hash}
               onClick={onSelect}
-              onMouseEnter={() => setHoveredHash(item.hash)}
-              className={`group/nav relative z-10 flex items-center justify-between px-4 h-11 rounded-[22px] text-[14.5px] leading-none transition-colors duration-200 ${
+              onMouseEnter={() => {
+                setHoveredIdx(idx);
+                if (!isAdmin) prefetchRouteData(item.hash);
+              }}
+              animate={{ scale: dockScale, x: dockShiftX }}
+              transition={{ type: 'spring', stiffness: 360, damping: 26 }}
+              style={{ transformOrigin: 'left center' }}
+              className={`relative z-10 flex items-center justify-between px-4 h-11 rounded-2xl text-[14px] leading-none transition-colors duration-150 select-none ${
                 active
-                  ? 'text-rose-700 font-bold'
-                  : 'text-slate-600 font-semibold hover:text-slate-900'
+                  ? 'text-[#16151B] font-bold'
+                  : 'text-[#57535F] font-medium hover:text-[#16151B]'
               }`}
             >
-              <span className="flex items-center gap-3.5 min-w-0">
+              <span className="flex items-center gap-3 min-w-0">
                 <Icon
                   aria-hidden="true"
-                  className={`w-[19px] h-[19px] shrink-0 transition-colors duration-200 ${
-                    active ? 'text-rose-500' : 'text-slate-400 group-hover/nav:text-rose-400'
+                  className={`w-[18px] h-[18px] shrink-0 transition-colors duration-150 ${
+                    active ? 'text-[#D93A55]' : 'text-[#8E8A97]'
                   }`}
-                  strokeWidth={active ? 2.25 : 1.9}
+                  strokeWidth={active ? 2.2 : 1.8}
                 />
                 <span className="leading-none truncate">{item.label}</span>
               </span>
-              {active && (
-                <motion.span
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ type: 'spring', stiffness: 420, damping: 26 }}
-                  className="w-1.5 h-1.5 rounded-full bg-gradient-to-tr from-rose-400 to-amber-300 shadow-[0_0_8px_rgba(251,113,133,0.6)] shrink-0"
-                />
-              )}
-            </a>
+              {active && <span className="w-1.5 h-1.5 rounded-full bg-[#D93A55] shrink-0" />}
+            </motion.a>
           );
         })}
       </nav>
 
-      {/* Bottom User Profile & Logout */}
+      {/* Bottom Profile Card */}
       {user && (
-        <div className="p-3 border-t border-white/70">
-          <div className="flex items-center justify-between gap-2 px-2.5 py-2 rounded-2xl bg-white/55 hover:bg-white/85 border border-white/85 shadow-sm transition-colors duration-200">
+        <div className="p-3 border-t border-[#16151B]/[0.07]">
+          <div className="flex items-center justify-between gap-2 px-2.5 py-2 rounded-2xl bg-white/65 hover:bg-white/90 border border-white/90 transition-colors duration-200">
             <a
               href="#/profile"
               onClick={onSelect}
@@ -267,17 +222,9 @@ const SidebarNavContent: React.FC<NavContentProps> = ({
             >
               <UserAvatar avatarUrl={user.avatarUrl} displayName={user.displayName} size="md" />
               <div className="min-w-0">
-                <p className="text-sm font-bold text-slate-800 truncate">{user.displayName}</p>
-                <p
-                  className={`text-[11px] truncate ${
-                    isAdmin ? 'text-rose-600 font-semibold' : 'text-slate-500'
-                  }`}
-                >
-                  {isAdmin
-                    ? isSuperAdmin
-                      ? 'Quản trị viên'
-                      : 'Biên tập nội dung'
-                    : 'Hồ sơ cá nhân'}
+                <p className="text-sm font-bold text-[#16151B] truncate">{user.displayName}</p>
+                <p className="text-[11px] text-[#57535F] truncate">
+                  {isAdmin ? (isSuperAdmin ? 'Quản trị viên' : 'Biên tập') : 'Hồ sơ cá nhân'}
                 </p>
               </div>
             </a>
@@ -290,7 +237,7 @@ const SidebarNavContent: React.FC<NavContentProps> = ({
               }}
               title="Đăng xuất"
               aria-label="Đăng xuất"
-              className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50/80 rounded-xl transition-colors cursor-pointer shrink-0"
+              className="p-2 text-[#8E8A97] hover:text-[#D93A55] hover:bg-[#D93A55]/10 rounded-xl transition-colors cursor-pointer shrink-0"
             >
               <LogOut className="w-4 h-4" />
             </button>
@@ -301,7 +248,7 @@ const SidebarNavContent: React.FC<NavContentProps> = ({
   );
 };
 
-export const Sidebar: React.FC<{ currentPath: string }> = ({ currentPath }) => {
+export const Sidebar: React.FC<{ currentPath: string }> = React.memo(({ currentPath }) => {
   const { user, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -352,8 +299,7 @@ export const Sidebar: React.FC<{ currentPath: string }> = ({ currentPath }) => {
 
   return (
     <>
-      {/* Desktop Floating Sculpted Liquid Glass Sidebar */}
-      <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:top-3 lg:bottom-3 lg:left-3 lg:rounded-[28px] liquid-sidebar z-40 overflow-hidden">
+      <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:top-3 lg:bottom-3 lg:left-3 lg:rounded-[26px] liquid-sidebar z-40 overflow-hidden">
         <SidebarNavContent
           menuItems={menuItems}
           activeHash={activeHash}
@@ -364,33 +310,25 @@ export const Sidebar: React.FC<{ currentPath: string }> = ({ currentPath }) => {
         />
       </aside>
 
-      {/* Mobile Liquid Glass Top Bar */}
       <header className="lg:hidden sticky top-0 z-40 liquid-sidebar px-4 h-14 flex items-center justify-between">
         <a href={isAdmin ? '#/admin/courses' : '#/today'} className="flex items-center gap-2">
-          <span className="w-8 h-8 rounded-xl bg-gradient-to-tr from-rose-400 to-amber-300 text-white flex items-center justify-center font-hanzi-serif font-black text-base shadow-sm">
+          <span className="w-8 h-8 rounded-xl bg-[#16151B] text-[#F4F2EE] flex items-center justify-center font-hanzi-serif font-bold text-base">
             汉
           </span>
-          <span className="font-display font-extrabold text-lg tracking-tight text-slate-800">
-            Hanzi<span className="text-rose-500">4U</span>
+          <span className="font-display font-extrabold text-lg tracking-tight text-[#16151B]">
+            Hanzi<span className="text-[#D93A55]">4U</span>
           </span>
-          {isAdmin && (
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-rose-50 text-rose-600 uppercase">
-              {isSuperAdmin ? 'Admin' : 'Biên tập'}
-            </span>
-          )}
         </a>
-
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
           aria-label="Mở menu"
-          className="p-2 rounded-xl text-slate-600 hover:bg-white/80 cursor-pointer"
+          className="p-2 rounded-xl text-[#16151B] hover:bg-white/80 cursor-pointer"
         >
           <Menu className="w-6 h-6" />
         </button>
       </header>
 
-      {/* Mobile Slide-Over Liquid Drawer */}
       <AnimatePresence>
         {mobileOpen && (
           <div className="lg:hidden fixed inset-0 z-50 flex">
@@ -398,7 +336,7 @@ export const Sidebar: React.FC<{ currentPath: string }> = ({ currentPath }) => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-slate-900/25 backdrop-blur-sm"
+              className="fixed inset-0 bg-black/25 backdrop-blur-sm"
               onClick={() => setMobileOpen(false)}
             />
             <motion.div
@@ -406,13 +344,13 @@ export const Sidebar: React.FC<{ currentPath: string }> = ({ currentPath }) => {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', stiffness: 380, damping: 36 }}
-              className="relative w-72 max-w-[82vw] bg-white/92 backdrop-blur-2xl h-full shadow-2xl border-r border-white flex flex-col z-10"
+              className="relative w-72 max-w-[82vw] bg-[#F4F2EE]/95 backdrop-blur-2xl h-full shadow-2xl border-r border-white flex flex-col z-10"
             >
               <button
                 type="button"
                 onClick={() => setMobileOpen(false)}
                 aria-label="Đóng menu"
-                className="absolute top-4 right-4 p-2 rounded-xl text-slate-500 hover:bg-slate-100 cursor-pointer z-20"
+                className="absolute top-4 right-4 p-2 rounded-xl text-[#57535F] hover:bg-black/5 cursor-pointer z-20"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -431,4 +369,6 @@ export const Sidebar: React.FC<{ currentPath: string }> = ({ currentPath }) => {
       </AnimatePresence>
     </>
   );
-};
+});
+
+Sidebar.displayName = 'Sidebar';

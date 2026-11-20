@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, startTransition } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
@@ -34,12 +34,17 @@ import { Lock, ShieldAlert, ArrowRight, Home } from 'lucide-react';
 
 const AppContent: React.FC = () => {
   const { user, isLoading, hasCompletedOnboarding } = useAuth();
+  const [visualHash, setVisualHash] = useState(window.location.hash || '#/');
   const [currentHash, setCurrentHash] = useState(window.location.hash || '#/');
 
   useEffect(() => {
     const handleHashChange = () => {
-      setCurrentHash(window.location.hash || '#/');
-      window.scrollTo(0, 0);
+      const next = window.location.hash || '#/';
+      setVisualHash(next);
+      window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+      startTransition(() => {
+        setCurrentHash(next);
+      });
     };
 
     window.addEventListener('hashchange', handleHashChange);
@@ -142,8 +147,8 @@ const AppContent: React.FC = () => {
         : 'courses';
 
     return (
-      <MeshBackground variant="light" showHanzi={false} className="text-gray-900 font-sans">
-        <Sidebar currentPath={currentHash} />
+      <MeshBackground variant="light" showHanzi={false} className="text-[#16151B] font-sans">
+        <Sidebar currentPath={visualHash} />
         <div className="lg:pl-[17.25rem] min-h-screen flex flex-col">
           <main className="flex-1 pb-16">
             <PageTransition
@@ -288,8 +293,8 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <MeshBackground variant="light" showHanzi={false} className="text-gray-900 font-sans">
-      <Sidebar currentPath={currentHash} />
+    <MeshBackground variant="light" showHanzi={false} className="text-[#16151B] font-sans">
+      <Sidebar currentPath={visualHash} />
       <div className="lg:pl-[17.25rem] min-h-screen flex flex-col">
         <main className="flex-1 pb-16">
           <PageTransition routeKey={basePath}>{renderCurrentPage()}</PageTransition>

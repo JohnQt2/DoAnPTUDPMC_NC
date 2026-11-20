@@ -1,82 +1,94 @@
 import React from 'react';
+import { motion, useScroll, useSpring } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
-import { ShimmerButton } from './ui';
+import { LucianLiquidButton } from './ui';
 
 export const Navbar: React.FC<{ currentPath?: string; theme?: 'dark' | 'light' }> = ({
-  theme = 'dark',
+  currentPath = '#/',
 }) => {
-  const isDark = theme === 'dark';
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 220,
+    damping: 32,
+    restDelta: 0.001,
+  });
+
+  const isLanding =
+    currentPath === '#/' ||
+    currentPath === '' ||
+    currentPath === '#/landing' ||
+    currentPath.startsWith('#/?');
+
+  const scrollToSection = (id: string) => (e: React.MouseEvent) => {
+    if (!isLanding) return;
+    e.preventDefault();
+    const target = document.getElementById(id);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
   return (
-    <header
-      className={
-        isDark
-          ? 'sticky top-0 z-50 border-b border-white/[0.08] bg-[#14080c]/65 backdrop-blur-2xl'
-          : 'sticky top-0 z-50 border-b border-white/80 bg-white/75 backdrop-blur-2xl shadow-sm shadow-gray-900/[0.03]'
-      }
-    >
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Brand Logo */}
+    <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-[#FAFAF9]/85 backdrop-blur-md">
+      {/* 120fps GPU Scroll Progress Hairline */}
+      <motion.div
+        aria-hidden="true"
+        style={{ scaleX, transformOrigin: '0% 50%' }}
+        className="pointer-events-none absolute top-0 inset-x-0 h-[2px] bg-[#BE123C] z-50"
+      />
+
+      <div className="max-w-6xl mx-auto px-5 sm:px-8">
+        <div className="flex items-center justify-between h-15 py-2.5">
+          {/* Brand */}
           <a href="#/" className="flex items-center gap-2.5 group">
             <span
               aria-hidden="true"
-              className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary-600 via-primary-500 to-secondary-500 text-white flex items-center justify-center font-chinese font-black text-xl shadow-lg shadow-primary-600/25 group-hover:scale-105 transition-transform"
+              className="w-8 h-8 rounded-lg bg-zinc-950 text-white flex items-center justify-center font-hanzi-serif font-bold text-base transition-transform duration-200 group-hover:scale-105"
             >
               汉
             </span>
-            <span
-              className={`font-extrabold text-xl tracking-tight ${
-                isDark ? 'text-white' : 'text-gray-900'
-              }`}
-            >
-              Hanzi
-              <span className="bg-gradient-to-r from-primary-400 to-secondary-400 bg-clip-text text-transparent">
-                4U
-              </span>
+            <span className="font-display font-bold text-[17px] tracking-tight text-zinc-950">
+              Hanzi<span className="text-[#BE123C]">4U</span>
             </span>
           </a>
 
-          {/* Navigation Links (Desktop) */}
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+          {/* Editorial Navigation Links */}
+          <nav className="hidden md:flex items-center gap-7 text-[13.5px] font-medium text-zinc-600">
             <a
-              href="#/"
-              className={
-                isDark
-                  ? 'text-white/70 hover:text-white transition-colors'
-                  : 'text-gray-600 hover:text-primary-600 transition-colors'
-              }
+              href="#trai-nghiem"
+              onClick={scrollToSection('trai-nghiem')}
+              className="hover:text-zinc-950 transition-colors"
             >
-              Trang chủ
+              Trải nghiệm thử
             </a>
             <a
-              href="#/login?tab=register"
-              className={
-                isDark
-                  ? 'text-white/70 hover:text-white transition-colors'
-                  : 'text-gray-600 hover:text-primary-600 transition-colors'
-              }
+              href="#phuong-phap"
+              onClick={scrollToSection('phuong-phap')}
+              className="hover:text-zinc-950 transition-colors"
+            >
+              Phương pháp
+            </a>
+            <a
+              href="#lo-trinh"
+              onClick={scrollToSection('lo-trinh')}
+              className="hover:text-zinc-950 transition-colors"
             >
               Lộ trình HSK 1–6
             </a>
           </nav>
 
-          {/* Auth Actions */}
-          <div className="flex items-center gap-2.5">
+          {/* Actions */}
+          <div className="flex items-center gap-2">
             <a
               href="#/login"
-              className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all ${
-                isDark
-                  ? 'text-white/85 hover:text-white hover:bg-white/10'
-                  : 'text-gray-700 hover:text-primary-600 hover:bg-primary-50'
-              }`}
+              className="h-9 px-3.5 rounded-lg inline-flex items-center text-[13px] font-medium text-zinc-700 hover:text-zinc-950 hover:bg-zinc-200/60 transition-colors"
             >
               Đăng nhập
             </a>
-            <ShimmerButton href="#/login?tab=register" size="sm" className="rounded-xl">
+            <LucianLiquidButton href="#/login?tab=register" variant="ink" size="sm" className="rounded-lg">
               <span>Đăng ký miễn phí</span>
-              <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
-            </ShimmerButton>
+              <ArrowRight className="w-3.5 h-3.5 transition-transform duration-150 group-hover:translate-x-0.5" />
+            </LucianLiquidButton>
           </div>
         </div>
       </div>

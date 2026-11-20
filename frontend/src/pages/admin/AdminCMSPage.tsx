@@ -44,12 +44,12 @@ const SKILL_CATEGORIES = ['READING', 'LISTENING', 'GRAMMAR', 'VOCABULARY', 'PINY
 const BLOCK_TYPES = ['THEORY', 'AUDIO', 'PINYIN', 'HANZI', 'VOCABULARY', 'EXAMPLE'] as const;
 
 const LEVEL_BADGE: Record<string, string> = {
-  HSK1: 'from-emerald-500 to-teal-500',
-  HSK2: 'from-sky-500 to-blue-600',
-  HSK3: 'from-amber-500 to-orange-500',
-  HSK4: 'from-rose-500 to-primary-600',
-  HSK5: 'from-violet-600 to-purple-600',
-  HSK6: 'from-fuchsia-600 to-amber-500',
+  HSK1: 'from-zinc-900 to-zinc-800',
+  HSK2: 'from-zinc-900 to-zinc-800',
+  HSK3: 'from-zinc-900 to-zinc-800',
+  HSK4: 'from-zinc-900 to-zinc-800',
+  HSK5: 'from-zinc-900 to-zinc-800',
+  HSK6: 'from-zinc-900 to-zinc-800',
 };
 
 function parseOptionsForEditor(raw: string): OptionItem[] {
@@ -617,8 +617,8 @@ export const AdminCMSPage: React.FC<{ initialTab?: 'courses' | 'questions' | 'rb
 
     return (
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-6">
-        {/* Pastel Studio Header */}
-        <div className="relative overflow-hidden rounded-[28px] p-6 bg-gradient-to-r from-sky-100/92 via-indigo-50/90 to-rose-100/90 border border-white/95 backdrop-blur-2xl shadow-[0_14px_36px_-14px_rgba(148,163,184,0.25),inset_0_1.5px_1px_rgba(255,255,255,0.96)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        {/* Studio Header */}
+        <div className="rounded-2xl p-6 ios-hero-glass flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <button
               type="button"
@@ -628,16 +628,16 @@ export const AdminCMSPage: React.FC<{ initialTab?: 'courses' | 'questions' | 'rb
                 setSelectedLessonId(null);
                 setLessonDetail(null);
               }}
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-rose-600 mb-1 cursor-pointer"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-950 mb-1 cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Quay lại danh sách khóa học</span>
             </button>
-            <h1 className="text-xl sm:text-2xl font-display font-extrabold text-slate-900 flex items-center gap-2">
-              <Sliders className="w-6 h-6 text-indigo-500" />
+            <h1 className="text-xl sm:text-2xl font-display font-bold text-zinc-950 flex items-center gap-2">
+              <Sliders className="w-5 h-5 text-[#BE123C]" />
               <span>Chỉnh sửa bài giảng: {selectedCourseForEdit.title}</span>
             </h1>
-            <p className="text-xs text-slate-600">
+            <p className="text-xs text-zinc-600">
               Thêm / sửa / xóa Chương, Bài học và chỉnh sửa trực tiếp từng phần nội dung Ngữ pháp, Hội thoại, Pinyin.
             </p>
           </div>
@@ -1205,22 +1205,22 @@ export const AdminCMSPage: React.FC<{ initialTab?: 'courses' | 'questions' | 'rb
   // ═══════════════════════════════════════════════════════════════════════
   return (
     <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-7">
-      {/* Pastel Admin Hero Header */}
-      <div className="relative overflow-hidden rounded-[28px] p-6 sm:p-8 bg-gradient-to-br from-sky-100/92 via-indigo-50/88 to-rose-100/90 border border-white/95 backdrop-blur-2xl shadow-[0_14px_38px_-14px_rgba(148,163,184,0.25),inset_0_1.5px_1px_rgba(255,255,255,0.96)]">
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+      {/* Admin Header */}
+      <div className="rounded-2xl p-6 sm:p-7 ios-hero-glass">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/75 border border-white text-xs font-bold text-indigo-700">
+            <div className="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-[0.14em] font-semibold text-[#BE123C]">
               <Shield className="w-3.5 h-3.5" />
               <span>
                 {isSuperAdmin ? 'Quản trị hệ thống Hanzi4U' : 'Không gian biên tập nội dung Hanzi4U'}
               </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-slate-900 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-display font-bold text-zinc-950 tracking-tight">
               {isSuperAdmin
                 ? 'Quản lý Khóa học, Bài giảng & Tài khoản'
                 : 'Biên tập Khóa học, Bài giảng & Ngân hàng câu hỏi'}
             </h1>
-            <p className="text-sm text-slate-600 max-w-2xl">
+            <p className="text-sm text-zinc-600 max-w-2xl">
               {isSuperAdmin
                 ? 'Thêm, chỉnh sửa khóa học, can thiệp trực tiếp nội dung từng bài học, quản lý ngân hàng câu hỏi HSK 1–6 và phân quyền tài khoản.'
                 : 'Biên soạn khóa học, cập nhật trực tiếp nội dung từng bài giảng và quản lý ngân hàng câu hỏi HSK 1–6.'}
@@ -1507,22 +1507,22 @@ export const AdminCMSPage: React.FC<{ initialTab?: 'courses' | 'questions' | 'rb
             {userSummary && (
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                  { label: 'Tổng người dùng', value: userSummary.totalUsers, icon: Users, color: 'from-primary-600 to-rose-500' },
-                  { label: 'Đang hoạt động', value: userSummary.activeUsers, icon: UserCheck, color: 'from-emerald-500 to-teal-500' },
-                  { label: 'Quản trị / Biên tập', value: (userSummary.adminCount || 0) + (userSummary.editorCount || 0), icon: Shield, color: 'from-amber-500 to-orange-500' },
-                  { label: 'Bị khóa', value: userSummary.lockedCount, icon: Lock, color: 'from-slate-600 to-slate-800' },
+                  { label: 'Tổng người dùng', value: userSummary.totalUsers, icon: Users },
+                  { label: 'Đang hoạt động', value: userSummary.activeUsers, icon: UserCheck },
+                  { label: 'Quản trị / Biên tập', value: (userSummary.adminCount || 0) + (userSummary.editorCount || 0), icon: Shield },
+                  { label: 'Bị khóa', value: userSummary.lockedCount, icon: Lock },
                 ].map((kpi) => {
                   const Icon = kpi.icon;
                   return (
                     <GlassCard key={kpi.label} className="p-5 flex items-center gap-3.5">
-                      <div className={`w-11 h-11 rounded-2xl bg-gradient-to-tr ${kpi.color} text-white flex items-center justify-center shadow-md shrink-0`}>
-                        <Icon className="w-5 h-5" />
+                      <div className="w-10 h-10 rounded-xl bg-zinc-100 border border-zinc-200 text-zinc-900 flex items-center justify-center shrink-0">
+                        <Icon className="w-4 h-4" />
                       </div>
                       <div>
-                        <p className="text-2xl font-black text-gray-900">
+                        <p className="text-2xl font-display font-bold text-zinc-950 tabular-nums">
                           <NumberTicker value={kpi.value || 0} />
                         </p>
-                        <p className="text-xs font-semibold text-gray-500">{kpi.label}</p>
+                        <p className="text-xs font-medium text-zinc-500">{kpi.label}</p>
                       </div>
                     </GlassCard>
                   );

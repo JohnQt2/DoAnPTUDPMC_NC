@@ -34,15 +34,6 @@ interface TestSummary {
   userPassed: boolean;
 }
 
-const LEVEL_GRADIENTS: Record<string, string> = {
-  HSK1: 'from-emerald-400 to-teal-400',
-  HSK2: 'from-sky-400 to-indigo-400',
-  HSK3: 'from-amber-400 to-orange-400',
-  HSK4: 'from-rose-400 to-pink-400',
-  HSK5: 'from-violet-400 to-purple-400',
-  HSK6: 'from-fuchsia-400 to-amber-400',
-};
-
 const SKILL_VI: Record<string, string> = {
   LISTENING: 'Nghe hiểu',
   READING: 'Đọc hiểu',
@@ -92,70 +83,70 @@ export const ExamListPage: React.FC = () => {
   const workbookCount = tests.filter((t) => t.testType === 'WORKBOOK').length;
 
   return (
-    <div className="max-w-5xl mx-auto py-8 px-4 sm:px-6 space-y-7">
-      {/* Pastel Liquid Glass Exam Hero (Replaces heavy dark crimson banner!) */}
-      <div className="relative overflow-hidden rounded-[28px] p-6 sm:p-8 bg-gradient-to-br from-rose-100/92 via-violet-100/82 to-sky-100/92 border border-white/90 backdrop-blur-2xl shadow-[0_14px_38px_-14px_rgba(148,163,184,0.25),inset_0_1.5px_1px_rgba(255,255,255,0.96)]">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
+    <div className="max-w-5xl mx-auto py-8 px-5 sm:px-8 space-y-6">
+      {/* Crisp Architectural Header Card */}
+      <div className="rounded-2xl p-6 sm:p-7 ios-hero-glass">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div className="space-y-2 max-w-2xl">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/75 border border-white text-xs font-extrabold uppercase tracking-wider text-rose-600">
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-[0.14em] text-[#BE123C] font-semibold">
+              <Sparkles className="w-3.5 h-3.5" />
               Trung tâm Đề thi & Sách bài tập HSK 1–6
             </span>
-            <h1 className="text-2xl sm:text-4xl font-display font-extrabold text-slate-900 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-display font-bold text-zinc-950 tracking-tight">
               Phòng Thi Mô Phỏng & Sách Bài Tập HSK
             </h1>
-            <p className="text-sm text-slate-600 leading-relaxed">
-              Gồm <strong className="text-slate-800">5 đề thi mẫu cho mỗi cấp độ HSK 1–6</strong> và{' '}
-              <strong className="text-slate-800">bộ bài tập bám sát Sách bài tập Giáo trình chuẩn HSK</strong>.
+            <p className="text-sm text-zinc-600 leading-relaxed">
+              Gồm <strong className="text-zinc-900 font-semibold">5 đề thi mẫu cho mỗi cấp độ HSK 1–6</strong> và{' '}
+              <strong className="text-zinc-900 font-semibold">bộ bài tập bám sát Sách bài tập Giáo trình chuẩn HSK</strong>.
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-3 shrink-0">
-            <div className="px-4 py-3 rounded-2xl bg-white/70 border border-white/95 text-center shadow-sm">
-              <p className="text-2xl font-display font-black text-rose-600">
+            <div className="px-4 py-3 rounded-xl bg-zinc-50 border border-zinc-200 text-center">
+              <p className="text-2xl font-display font-bold text-zinc-950 tabular-nums">
                 <NumberTicker value={mockCount} />
               </p>
-              <p className="text-[11px] font-bold text-slate-600">Đề thi mô phỏng</p>
+              <p className="text-[11px] font-medium text-zinc-500">Đề thi mô phỏng</p>
             </div>
-            <div className="px-4 py-3 rounded-2xl bg-white/70 border border-white/95 text-center shadow-sm">
-              <p className="text-2xl font-display font-black text-indigo-600">
+            <div className="px-4 py-3 rounded-xl bg-zinc-50 border border-zinc-200 text-center">
+              <p className="text-2xl font-display font-bold text-zinc-950 tabular-nums">
                 <NumberTicker value={workbookCount} />
               </p>
-              <p className="text-[11px] font-bold text-slate-600">Bộ Sách bài tập</p>
+              <p className="text-[11px] font-medium text-zinc-500">Bộ Sách bài tập</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 2-Part Pastel Switcher: Phòng thi mô phỏng vs Luyện tập Sách bài tập */}
+      {/* 2-Part Mode Switcher */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
         <button
           type="button"
           onClick={() => setSection('MOCK_EXAM')}
-          className={`relative p-5 rounded-[26px] text-left border-2 transition-[background,border-color,box-shadow] duration-200 cursor-pointer overflow-hidden ${
+          className={`p-5 rounded-2xl text-left border transition-colors duration-150 cursor-pointer ${
             section === 'MOCK_EXAM'
-              ? 'bg-gradient-to-br from-rose-100/95 via-pink-50/95 to-amber-100/90 border-rose-300/90 text-slate-900 shadow-lg shadow-rose-200/40'
-              : 'glass-light hover:bg-white/85 border-white/80 text-slate-700'
+              ? 'bg-white border-zinc-900 ring-1 ring-zinc-900 shadow-xs'
+              : 'bg-white hover:bg-zinc-50 border-zinc-200 hover:border-zinc-300'
           }`}
         >
           <div className="flex items-center gap-3.5">
             <div
-              className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-colors ${
+              className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
                 section === 'MOCK_EXAM'
-                  ? 'bg-gradient-to-tr from-rose-400 to-amber-300 text-white shadow-sm'
-                  : 'bg-rose-50 text-rose-500'
+                  ? 'bg-zinc-900 text-white'
+                  : 'bg-zinc-100 text-zinc-600'
               }`}
             >
-              <Trophy className="w-6 h-6" />
+              <Trophy className="w-5 h-5" />
             </div>
             <div>
-              <span className="text-[10px] font-black uppercase tracking-wider text-rose-600">
-                Phần 1 • Đề thi mẫu HSK
+              <span className="text-[10px] font-mono font-semibold uppercase tracking-wider text-[#BE123C]">
+                Phần 1 · Đề thi mẫu HSK
               </span>
-              <h2 className="text-lg font-display font-extrabold text-slate-900">
+              <h2 className="text-base font-display font-bold text-zinc-950">
                 Phòng thi mô phỏng
               </h2>
-              <p className="text-xs text-slate-600 mt-0.5">
+              <p className="text-xs text-zinc-500 mt-0.5">
                 5 đề thi mẫu chuẩn cho mỗi cấp HSK 1–6 (tổng {mockCount} đề)
               </p>
             </div>
@@ -165,30 +156,30 @@ export const ExamListPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setSection('WORKBOOK')}
-          className={`relative p-5 rounded-[26px] text-left border-2 transition-[background,border-color,box-shadow] duration-200 cursor-pointer overflow-hidden ${
+          className={`p-5 rounded-2xl text-left border transition-colors duration-150 cursor-pointer ${
             section === 'WORKBOOK'
-              ? 'bg-gradient-to-br from-indigo-100/95 via-violet-50/95 to-sky-100/90 border-indigo-300/90 text-slate-900 shadow-lg shadow-indigo-200/40'
-              : 'glass-light hover:bg-white/85 border-white/80 text-slate-700'
+              ? 'bg-white border-zinc-900 ring-1 ring-zinc-900 shadow-xs'
+              : 'bg-white hover:bg-zinc-50 border-zinc-200 hover:border-zinc-300'
           }`}
         >
           <div className="flex items-center gap-3.5">
             <div
-              className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-colors ${
+              className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
                 section === 'WORKBOOK'
-                  ? 'bg-gradient-to-tr from-indigo-400 to-sky-400 text-white shadow-sm'
-                  : 'bg-indigo-50 text-indigo-500'
+                  ? 'bg-zinc-900 text-white'
+                  : 'bg-zinc-100 text-zinc-600'
               }`}
             >
-              <BookOpenCheck className="w-6 h-6" />
+              <BookOpenCheck className="w-5 h-5" />
             </div>
             <div>
-              <span className="text-[10px] font-black uppercase tracking-wider text-indigo-600">
-                Phần 2 • Giáo trình chuẩn HSK
+              <span className="text-[10px] font-mono font-semibold uppercase tracking-wider text-zinc-500">
+                Phần 2 · Giáo trình chuẩn HSK
               </span>
-              <h2 className="text-lg font-display font-extrabold text-slate-900">
+              <h2 className="text-base font-display font-bold text-zinc-950">
                 Luyện tập Sách bài tập
               </h2>
-              <p className="text-xs text-slate-600 mt-0.5">
+              <p className="text-xs text-zinc-500 mt-0.5">
                 Bài tập chuyên đề bám sát Sách bài tập HSK 1–6
               </p>
             </div>
@@ -196,8 +187,8 @@ export const ExamListPage: React.FC = () => {
         </button>
       </div>
 
-      {/* HSK 1–6 Level Pills */}
-      <div className="flex flex-wrap items-center gap-2 p-1.5 rounded-2xl glass-light w-fit">
+      {/* HSK 1–6 Level Segmented Bar */}
+      <div className="flex flex-wrap items-center gap-1 p-1 rounded-xl bg-zinc-100 border border-zinc-200/80 w-fit">
         {(['HSK1', 'HSK2', 'HSK3', 'HSK4', 'HSK5', 'HSK6'] as const).map((lvl) => {
           const active = selectedLevel === lvl;
           const countInLevel = sectionTests.filter((t) => t.level === lvl).length;
@@ -206,20 +197,20 @@ export const ExamListPage: React.FC = () => {
               key={lvl}
               type="button"
               onClick={() => setSelectedLevel(lvl)}
-              className={`relative px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-colors cursor-pointer ${
-                active ? 'text-white' : 'text-slate-600 hover:text-slate-900'
+              className={`relative px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                active ? 'text-white' : 'text-zinc-600 hover:text-zinc-950'
               }`}
             >
               {active && (
                 <motion.span
                   layoutId="exam-level-pill"
-                  transition={{ type: 'spring', stiffness: 400, damping: 32 }}
-                  className={`absolute inset-0 rounded-xl bg-gradient-to-r ${LEVEL_GRADIENTS[lvl]} shadow-sm`}
+                  transition={{ type: 'spring', stiffness: 450, damping: 36 }}
+                  className="absolute inset-0 rounded-lg bg-zinc-900 shadow-xs"
                 />
               )}
               <span className="relative z-10">
                 {lvl.replace('HSK', 'HSK ')}{' '}
-                <span className={active ? 'opacity-90' : 'opacity-50'}>({countInLevel})</span>
+                <span className={active ? 'text-zinc-300' : 'text-zinc-400'}>({countInLevel})</span>
               </span>
             </button>
           );
@@ -230,13 +221,13 @@ export const ExamListPage: React.FC = () => {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-44 rounded-3xl glass-card-grid animate-pulse" />
+            <div key={i} className="h-44 rounded-2xl glass-card-grid animate-pulse" />
           ))}
         </div>
       ) : filteredTests.length === 0 ? (
         <GlassCard className="p-12 text-center space-y-2">
-          <FileText className="w-10 h-10 text-slate-300 mx-auto" />
-          <p className="text-sm font-bold text-slate-700">
+          <FileText className="w-9 h-9 text-zinc-300 mx-auto" />
+          <p className="text-sm font-semibold text-zinc-700">
             Chưa có bộ đề cho {selectedLevel} trong phân khu này.
           </p>
         </GlassCard>
@@ -244,91 +235,86 @@ export const ExamListPage: React.FC = () => {
         <AnimatePresence mode="wait">
           <motion.div
             key={`${section}-${selectedLevel}`}
-            initial={{ opacity: 0, y: 6 }}
+            initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
             className="grid grid-cols-1 md:grid-cols-2 gap-4"
           >
-            {filteredTests.map((exam, idx) => {
-              const lvlGrad = LEVEL_GRADIENTS[exam.level] || LEVEL_GRADIENTS.HSK1;
-              return (
-                <SpotlightCard
-                  key={exam.testId}
-                  className="p-6 flex flex-col justify-between gap-5"
-                >
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between gap-2">
+            {filteredTests.map((exam, idx) => (
+              <SpotlightCard
+                key={exam.testId}
+                className="p-5 sm:p-6 flex flex-col justify-between gap-5"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="px-2.5 py-0.5 rounded-md text-[11px] font-mono font-semibold text-zinc-800 bg-zinc-100 border border-zinc-200">
+                      {section === 'MOCK_EXAM'
+                        ? `ĐỀ MẪU 0${idx + 1} · ${exam.level.replace('HSK', 'HSK ')}`
+                        : `BÀI TẬP 0${idx + 1} · ${exam.level.replace('HSK', 'HSK ')}`}
+                    </span>
+                    {exam.userBestScore !== null && (
                       <span
-                        className={`px-3 py-1 rounded-full text-[11px] font-black text-white bg-gradient-to-r ${lvlGrad}`}
+                        className={`px-2 py-0.5 rounded-md text-[11px] font-mono font-semibold border ${
+                          exam.userPassed
+                            ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                            : 'bg-amber-50 border-amber-200 text-amber-800'
+                        }`}
                       >
-                        {section === 'MOCK_EXAM'
-                          ? `ĐỀ MẪU 0${idx + 1} • ${exam.level.replace('HSK', 'HSK ')}`
-                          : `BÀI TẬP 0${idx + 1} • ${exam.level.replace('HSK', 'HSK ')}`}
+                        Cao nhất: {Math.round(exam.userBestScore)}%
                       </span>
-                      {exam.userBestScore !== null && (
-                        <span
-                          className={`px-2.5 py-0.5 rounded-full text-[11px] font-extrabold ${
-                            exam.userPassed
-                              ? 'bg-emerald-100 text-emerald-800'
-                              : 'bg-amber-100 text-amber-800'
-                          }`}
-                        >
-                          Cao nhất: {Math.round(exam.userBestScore)}%
-                        </span>
-                      )}
-                    </div>
-
-                    <h3 className="text-base font-display font-bold text-slate-900 leading-snug">
-                      {exam.title}
-                    </h3>
-
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      {exam.skills.map((sk) => (
-                        <span
-                          key={sk}
-                          className="px-2.5 py-0.5 rounded-md bg-white/80 border border-white text-[10px] font-bold text-slate-600"
-                        >
-                          {SKILL_VI[sk] || sk}
-                        </span>
-                      ))}
-                    </div>
+                    )}
                   </div>
 
-                  <div className="pt-4 border-t border-white/75 flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3 text-xs text-slate-600 font-semibold">
-                      <span className="inline-flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5 text-rose-500" />
-                        {exam.timeLimitMins} phút
-                      </span>
-                      <span className="inline-flex items-center gap-1">
-                        <Award className="w-3.5 h-3.5 text-amber-500" />
-                        {exam.questionsCount} câu • Đạt ≥{exam.passingScore}%
-                      </span>
-                    </div>
+                  <h3 className="text-base font-display font-semibold text-zinc-950 leading-snug">
+                    {exam.title}
+                  </h3>
 
-                    <ShimmerButton href={`#/test/${exam.testId}`} size="sm" className="rounded-xl shrink-0">
-                      <Play className="w-3.5 h-3.5 fill-current" />
-                      <span>{section === 'MOCK_EXAM' ? 'Vào thi' : 'Luyện tập'}</span>
-                    </ShimmerButton>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {exam.skills.map((sk) => (
+                      <span
+                        key={sk}
+                        className="px-2 py-0.5 rounded-md bg-zinc-50 border border-zinc-200 text-[10px] font-medium text-zinc-600"
+                      >
+                        {SKILL_VI[sk] || sk}
+                      </span>
+                    ))}
                   </div>
-                </SpotlightCard>
-              );
-            })}
+                </div>
+
+                <div className="pt-4 border-t border-zinc-100 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 text-xs text-zinc-500 font-medium">
+                    <span className="inline-flex items-center gap-1">
+                      <Clock className="w-3.5 h-3.5 text-zinc-400" />
+                      {exam.timeLimitMins} phút
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <Award className="w-3.5 h-3.5 text-zinc-400" />
+                      {exam.questionsCount} câu · Đạt ≥{exam.passingScore}%
+                    </span>
+                  </div>
+
+                  <ShimmerButton href={`#/test/${exam.testId}`} size="sm" className="shrink-0">
+                    <Play className="w-3 h-3 fill-current" />
+                    <span>{section === 'MOCK_EXAM' ? 'Vào thi' : 'Luyện tập'}</span>
+                  </ShimmerButton>
+                </div>
+              </SpotlightCard>
+            ))}
           </motion.div>
         </AnimatePresence>
       )}
 
       {/* Past Submissions History */}
       <div className="space-y-3 pt-2">
-        <h3 className="text-base font-display font-extrabold text-slate-900 flex items-center gap-2">
-          <History className="w-5 h-5 text-rose-500" />
+        <h3 className="text-sm font-mono uppercase tracking-[0.14em] font-semibold text-zinc-500 flex items-center gap-2">
+          <History className="w-4 h-4 text-zinc-500" />
           <span>Lịch sử làm bài gần đây ({submissions.length})</span>
         </h3>
         {submissions.length === 0 ? (
           <GlassCard className="p-8 text-center space-y-2">
-            <FileText className="w-8 h-8 text-slate-300 mx-auto" />
-            <p className="text-sm text-slate-500">Bạn chưa hoàn thành bài thi hoặc bài luyện tập nào.</p>
+            <FileText className="w-8 h-8 text-zinc-300 mx-auto" />
+            <p className="text-sm text-zinc-500">Bạn chưa hoàn thành bài thi hoặc bài luyện tập nào.</p>
           </GlassCard>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -340,24 +326,26 @@ export const ExamListPage: React.FC = () => {
                 <a
                   key={id}
                   href={`#/test-result/${id}`}
-                  className="glass-light glass-light-hover rounded-2xl p-4 flex items-center justify-between gap-4"
+                  className="glass-light glass-light-hover rounded-xl p-4 flex items-center justify-between gap-4"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <CheckCircle2
-                      className={`w-5 h-5 shrink-0 ${passed ? 'text-emerald-500' : 'text-amber-500'}`}
+                      className={`w-4 h-4 shrink-0 ${passed ? 'text-emerald-600' : 'text-amber-600'}`}
                     />
                     <div className="min-w-0">
-                      <p className="text-sm font-extrabold text-slate-900 truncate">
+                      <p className="text-sm font-semibold text-zinc-950 truncate">
                         {sub.test?.title || sub.testTitle || `Bài kiểm tra #${id}`}
                       </p>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-zinc-500">
                         {passed ? 'Đạt yêu cầu' : 'Cần ôn thêm'}
                       </p>
                     </div>
                   </div>
                   <span
-                    className={`px-3 py-1 rounded-xl text-sm font-black shrink-0 ${
-                      passed ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
+                    className={`px-2.5 py-1 rounded-md text-xs font-mono font-semibold border shrink-0 tabular-nums ${
+                      passed
+                        ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                        : 'bg-amber-50 border-amber-200 text-amber-800'
                     }`}
                   >
                     {score}%

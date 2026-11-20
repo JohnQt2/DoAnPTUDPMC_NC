@@ -1,25 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Check } from 'lucide-react';
 import type { CelebrationPayload } from '../../lib/celebration';
 
-/**
- * Editorial Magic UI / 21st.dev-inspired Reward Pill:
- * - Animated SVG Path-Draw Checkmark (pathLength 0 -> 1)
- * - Soft Expanding Glass Ripple Ring
- * - Smooth spring enter/exit with zero layout disruption
- */
 export const CelebrationOverlay: React.FC = () => {
   const [active, setActive] = useState<CelebrationPayload | null>(null);
 
   useEffect(() => {
-    let timer: any;
+    let timer: ReturnType<typeof setTimeout> | undefined;
     const handler = (e: Event) => {
       const payload = (e as CustomEvent<CelebrationPayload>).detail;
-      if (!payload) return;
       setActive(payload);
       if (timer) clearTimeout(timer);
-      timer = setTimeout(() => setActive(null), payload.style === 'fireworks' ? 3200 : 2200);
+      timer = setTimeout(() => setActive(null), 2600);
     };
+
     window.addEventListener('hanzi-celebrate', handler);
     return () => {
       window.removeEventListener('hanzi-celebrate', handler);
@@ -28,51 +23,27 @@ export const CelebrationOverlay: React.FC = () => {
   }, []);
 
   return (
-    <div className="pointer-events-none fixed top-5 inset-x-0 z-[100] flex justify-center px-4">
-      <AnimatePresence>
+    <div
+      aria-live="polite"
+      className="pointer-events-none fixed bottom-5 right-5 z-[100] flex flex-col items-end"
+    >
+      <AnimatePresence mode="wait">
         {active && (
           <motion.div
             key={active.id}
-            initial={{ opacity: 0, y: -18, scale: 0.94 }}
+            initial={{ opacity: 0, y: 12, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -12, scale: 0.96 }}
-            transition={{ type: 'spring', stiffness: 360, damping: 28 }}
-            className="liquid-toast relative px-5 py-3 rounded-full flex items-center gap-3.5"
+            exit={{ opacity: 0, y: 6, scale: 0.98 }}
+            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            className="liquid-toast rounded-xl px-4 py-3 flex items-center gap-3 max-w-sm"
           >
-            {/* Animated Emblem + Soft Expanding Radial Ripple */}
-            <div className="relative w-9 h-9 flex items-center justify-center shrink-0">
-              <motion.span
-                initial={{ scale: 0.8, opacity: 0.7 }}
-                animate={{ scale: 1.9, opacity: 0 }}
-                transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
-                className="absolute inset-0 rounded-full border-2 border-rose-400/60"
-              />
-              <span className="relative z-10 w-9 h-9 rounded-full bg-gradient-to-tr from-primary-600 via-rose-500 to-amber-400 text-white flex items-center justify-center shadow-md">
-                <svg
-                  className="w-4 h-4"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={3}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <motion.path
-                    d="M5 13l4 4L19 7"
-                    initial={{ pathLength: 0 }}
-                    animate={{ pathLength: 1 }}
-                    transition={{ duration: 0.36, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
-                  />
-                </svg>
-              </span>
-            </div>
-
-            <div className="pr-1.5">
-              <p className="text-sm font-display font-extrabold text-gray-900 leading-tight">
-                {active.message}
-              </p>
+            <span className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+              <Check className="w-3.5 h-3.5" strokeWidth={2.75} />
+            </span>
+            <div className="min-w-0 leading-snug">
+              <p className="text-[13px] font-semibold text-white">{active.message}</p>
               {active.subtext && (
-                <p className="text-[11px] font-medium text-gray-600 mt-0.5">{active.subtext}</p>
+                <p className="text-[11.5px] text-zinc-400 mt-0.5 truncate">{active.subtext}</p>
               )}
             </div>
           </motion.div>

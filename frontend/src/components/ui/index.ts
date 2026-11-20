@@ -11,3 +11,10 @@ export { CelebrationOverlay } from './CelebrationOverlay';
 export { CustomCursor } from './CustomCursor';
 export { UserAvatar } from './UserAvatar';
 export { DialogOverlay } from './DialogOverlay';
+export {
+  LucianLiquidButton,
+  SmoothReveal,
+  LucianXpBar,
+  LucianStreakFlame,
+  LUCIAN_EASE,
+} from './LucianMotion';

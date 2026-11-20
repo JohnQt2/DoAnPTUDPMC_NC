@@ -2,18 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../lib/api';
-import { GlassCard, ShimmerButton, NumberTicker } from '../../components/ui';
-import {
-  Play,
-  BookOpen,
-  MessagesSquare,
-  FileText,
-  CheckCircle2,
-  Flame,
-  ArrowRight,
-  Route,
-  Sparkles,
-} from 'lucide-react';
+import { LucianLiquidButton, LucianXpBar, LucianStreakFlame, LUCIAN_EASE } from '../../components/ui';
+import { Play, BookOpen, Languages, Route, ArrowRight } from 'lucide-react';
 
 export const TodayPage: React.FC = () => {
   const { user } = useAuth();
@@ -44,103 +34,111 @@ export const TodayPage: React.FC = () => {
     load();
   }, []);
 
-  const dailyMins = roadmap?.daily_commitment_mins || 15;
-  const targetGoal = roadmap?.target_goal || 'HSK1';
+  const dailyMins = roadmap?.daily_commitment_mins || roadmap?.dailyCommitmentMins || 15;
+  const targetGoal = roadmap?.target_goal || roadmap?.targetGoal || 'HSK 1';
   const completedLessons = progress?.completedLessonsCount ?? progress?.completedLessons ?? 0;
+  const totalLessons = progress?.totalLessonsCount || 16;
 
   const dailyActions = [
     {
+      index: '01',
+      href: '#/courses',
+      icon: Route,
+      label: 'LỘ TRÌNH CHÍNH',
+      title: 'Học tiếp bài trong lộ trình',
+      desc: 'Hoàn thành từng Unit theo tiến độ cá nhân để mở khóa chặng tiếp theo.',
+    },
+    {
+      index: '02',
+      href: '#/speak-learn',
+      icon: Languages,
+      label: 'PHÁT ÂM NỀN TẢNG',
+      title: 'Ôn bảng chữ cái Pinyin',
+      desc: 'Luyện nghe 63 âm chuẩn phổ thông, 4 thanh điệu và cặp âm dễ nhầm.',
+    },
+    {
+      index: '03',
       href: '#/vocab',
       icon: BookOpen,
-      title: 'Ôn từ vựng',
-      desc: 'Ôn thẻ từ vựng và luyện viết chữ Hán',
-      accent: 'from-primary-500/15 to-rose-500/5 text-primary-600',
-    },
-    {
-      href: '#/speak-practice',
-      icon: MessagesSquare,
-      title: 'Luyện nói 5 phút',
-      desc: 'Nghe và đọc theo câu giao tiếp',
-      accent: 'from-secondary-500/20 to-amber-500/5 text-secondary-700',
-    },
-    {
-      href: '#/exams',
-      icon: FileText,
-      title: 'Làm đề kiểm tra',
-      desc: 'Đạt ≥ 80% để mở khóa bài mới',
-      accent: 'from-emerald-500/15 to-teal-500/5 text-emerald-600',
+      label: 'TỪ VỰNG & VIẾT NÉT',
+      title: 'Ôn thẻ nhớ & tập viết chữ Hán',
+      desc: 'Củng cố từ vựng theo lịch SRS và thực hành nét viết trên ô Điền Tự Cách.',
     },
   ];
 
   return (
-    <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 space-y-7">
-      {/* Greeting Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="max-w-4xl mx-auto py-9 px-5 sm:px-8 space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-5 border-b border-zinc-200">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
-            Chào {user?.displayName || 'bạn'}!
+          <p className="text-[11px] font-mono uppercase tracking-[0.16em] text-zinc-400">
+            Không gian học hôm nay
+          </p>
+          <h1 className="text-2xl sm:text-3xl font-display font-bold text-zinc-950 tracking-tight mt-1">
+            Chào {user?.displayName || 'bạn'}
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Mục tiêu hôm nay: <strong className="text-gray-800">{dailyMins} phút</strong> • Lộ trình{' '}
-            <strong className="text-primary-600">{targetGoal}</strong>
+          <p className="text-sm text-zinc-600 mt-1">
+            Mục tiêu <strong className="text-zinc-950 font-semibold">{dailyMins} phút/ngày</strong> · Lộ trình{' '}
+            <strong className="text-[#BE123C] font-semibold">{targetGoal}</strong>
           </p>
         </div>
 
-        <GlassCard className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-2xl self-start sm:self-auto">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-primary-500 to-secondary-500 text-white flex items-center justify-center shadow-sm">
-            <Flame className="w-4 h-4 fill-white" />
-          </div>
-          <div className="text-left leading-tight">
-            <p className="text-sm font-black text-gray-900">
-              <NumberTicker value={completedLessons} suffix=" bài" />
-            </p>
-            <p className="text-[11px] font-semibold text-gray-500">Đã hoàn thành</p>
-          </div>
-        </GlassCard>
+        <LucianStreakFlame count={completedLessons} unit="bài" subtitle="Đã hoàn thành" />
       </div>
 
-      {/* Main Call-To-Action Pastel Liquid Glass Hero Banner */}
       <motion.div
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="relative overflow-hidden rounded-[28px] p-6 sm:p-8 bg-gradient-to-br from-rose-100/95 via-amber-50/90 to-violet-100/90 border border-white/95 backdrop-blur-2xl shadow-[0_14px_38px_-14px_rgba(148,163,184,0.25),inset_0_1.5px_1px_rgba(255,255,255,0.96)]"
+        transition={{ duration: 0.3, ease: LUCIAN_EASE }}
+        className="rounded-2xl p-6 sm:p-7 ios-hero-glass space-y-6"
       >
-        <span
-          aria-hidden="true"
-          className="pointer-events-none select-none absolute right-6 -bottom-6 font-hanzi-serif font-black text-[120px] text-rose-400/[0.10] leading-none"
-        >
-          学
-        </span>
-
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-          <div className="space-y-2.5">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/75 border border-white text-xs font-bold text-rose-600">
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              Bài học tiếp theo
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+          <div className="space-y-2 max-w-lg">
+            <span className="inline-flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.14em] text-[#BE123C] font-semibold">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#BE123C]" />
+              Bài học kế tiếp
             </span>
-            <h2 className="text-xl sm:text-2xl font-display font-extrabold text-slate-900 tracking-tight">
-              {loading ? 'Đang chuẩn bị bài học...' : 'Tiếp tục lộ trình học hôm nay'}
+            <h2 className="text-xl sm:text-2xl font-display font-bold text-zinc-950 tracking-tight">
+              {loading ? 'Đang chuẩn bị bài học...' : 'Tiếp tục chặng học hôm nay'}
             </h2>
-            <p className="text-sm text-slate-600 max-w-md leading-relaxed">
-              Học ngắn gọn từ vựng, nghe phát âm và làm bài tập nhanh chỉ trong {dailyMins} phút.
+            <p className="text-sm text-zinc-600 leading-relaxed">
+              Học ngắn gọn từ vựng, nghe hội thoại mẫu và làm bài tập nhanh trong {dailyMins} phút.
             </p>
           </div>
 
-          <ShimmerButton
+          <LucianLiquidButton
             href={`#/lessons/${nextLessonId}`}
+            variant="ink"
             size="lg"
             className="shrink-0"
           >
             <Play className="w-4 h-4 fill-current" />
-            <span>Học ngay</span>
-          </ShimmerButton>
+            <span>Vào học ngay</span>
+          </LucianLiquidButton>
+        </div>
+
+        <div className="pt-5 border-t border-zinc-100">
+          <LucianXpBar
+            current={completedLessons}
+            target={totalLessons}
+            label={`Tiến độ lộ trình ${targetGoal}`}
+          />
         </div>
       </motion.div>
 
-      {/* 3-Step Daily Checklist */}
-      <div className="space-y-3.5">
-        <h3 className="text-base font-extrabold text-gray-900">Việc cần làm hôm nay</h3>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-xs font-mono uppercase tracking-[0.14em] text-zinc-500 font-semibold">
+            Nhịp học đề xuất hôm nay
+          </h3>
+          <a
+            href="#/courses"
+            className="text-xs font-semibold text-zinc-700 hover:text-zinc-950 inline-flex items-center gap-1 transition-colors"
+          >
+            <span>Toàn bộ lộ trình HSK 1–6</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </a>
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {dailyActions.map((item, idx) => {
             const Icon = item.icon;
@@ -148,52 +146,40 @@ export const TodayPage: React.FC = () => {
               <motion.a
                 key={item.href}
                 href={item.href}
-                initial={{ opacity: 0, y: 12 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: idx * 0.06 }}
-                className="glass-light glass-light-hover rounded-3xl p-5 flex flex-col justify-between gap-5 group"
+                transition={{ duration: 0.28, delay: idx * 0.05, ease: LUCIAN_EASE }}
+                className="glass-light glass-light-hover rounded-2xl p-5 flex flex-col justify-between gap-6 group"
               >
-                <div className="flex items-center justify-between">
-                  <div
-                    className={`w-11 h-11 rounded-2xl bg-gradient-to-br ${item.accent} flex items-center justify-center shadow-sm`}
-                  >
-                    <Icon className="w-5 h-5" />
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-mono font-semibold text-[#BE123C]">
+                      {item.index}
+                    </span>
+                    <div className="w-8 h-8 rounded-lg bg-zinc-50 border border-zinc-200 text-zinc-700 group-hover:text-zinc-950 flex items-center justify-center transition-colors">
+                      <Icon className="w-4 h-4" />
+                    </div>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-primary-500 group-hover:translate-x-0.5 transition-all" />
+                  <div className="space-y-1.5">
+                    <p className="text-[10px] font-mono tracking-widest text-zinc-400 uppercase">
+                      {item.label}
+                    </p>
+                    <h4 className="font-display font-semibold text-[15px] text-zinc-950 group-hover:text-[#BE123C] transition-colors leading-snug">
+                      {item.title}
+                    </h4>
+                    <p className="text-xs text-zinc-600 leading-relaxed">{item.desc}</p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="font-extrabold text-gray-900 group-hover:text-primary-600 transition-colors">
-                    {item.title}
-                  </h4>
-                  <p className="text-xs text-gray-500 mt-1 leading-relaxed">{item.desc}</p>
+
+                <div className="pt-3 border-t border-zinc-100 flex items-center justify-between text-xs font-semibold text-zinc-700 group-hover:text-zinc-950 transition-colors">
+                  <span>Mở mục này</span>
+                  <ArrowRight className="w-3.5 h-3.5 transition-transform duration-150 group-hover:translate-x-0.5" />
                 </div>
               </motion.a>
             );
           })}
         </div>
       </div>
-
-      {/* Quick Link to Full Roadmap */}
-      <GlassCard hoverable className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-primary-50 text-primary-600 flex items-center justify-center shrink-0">
-            <Route className="w-5 h-5" />
-          </div>
-          <div>
-            <h4 className="text-sm font-extrabold text-gray-900">Xem toàn bộ lộ trình HSK 1 – 6</h4>
-            <p className="text-xs text-gray-500 mt-0.5">
-              Chọn khóa học và bài học theo từng chương
-            </p>
-          </div>
-        </div>
-        <a
-          href="#/courses"
-          className="px-4 py-2.5 rounded-xl bg-white/90 hover:bg-primary-50 border border-gray-200/80 hover:border-primary-200 text-gray-700 hover:text-primary-600 font-bold text-xs transition-all shrink-0 inline-flex items-center justify-center gap-1.5 shadow-sm"
-        >
-          <CheckCircle2 className="w-3.5 h-3.5" />
-          <span>Mở lộ trình</span>
-        </a>
-      </GlassCard>
     </div>
   );
 };

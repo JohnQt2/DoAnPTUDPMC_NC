@@ -82,6 +82,98 @@ export class AssessmentService {
 
   // ─── Tests (UC05 / UC07) ───────────────────────────────────────────
 
+  async listTests(
+    userId: number | undefined,
+    query: { test_type?: string; level?: string; includeUnpublished?: boolean }
+  ) {
+    const where: any = {};
+    if (!query.includeUnpublished) {
+      where.is_published = true;
+    }
+    if (query.test_type) {
+      where.test_type = query.test_type;
+    }
+
+    const tests = await prisma.tests.findMany({
+      where,
+      include: {
+        lesson: {
+          include: { chapter: { include: { course: true } } },
+        },
+        testQuestions: {
+          include: {
+            question: {
+              select: { difficulty_level: true, skill_category: true },
+            },
+          },
+        },
+      },
+      orderBy: { test_id: 'asc' },
+    });
+
+    const userSubsMap = new Map<number, { bestScore: number; attempts: number; passed: boolean }>();
+    if (userId) {
+      const subs = await prisma.testSubmissions.findMany({
+        where: { user_id: userId },
+        select: { test_id: true, score: true, is_passed: true },
+      });
+      for (const s of subs) {
+        const cur = userSubsMap.get(s.test_id);
+        if (!cur) {
+          userSubsMap.set(s.test_id, {
+            bestScore: s.score,
+            attempts: 1,
+            passed: s.is_passed,
+          });
+        } else {
+          userSubsMap.set(s.test_id, {
+            bestScore: Math.max(cur.bestScore, s.score),
+            attempts: cur.attempts + 1,
+            passed: cur.passed || s.is_passed,
+          });
+        }
+      }
+    }
+
+    const mapped = tests.map((t) => {
+      // Derive level from linked course, first question difficulty, or title
+      const titleMatch = t.title.match(/HSK\s*([1-6])/i);
+      const level =
+        t.lesson?.chapter?.course?.level?.toUpperCase() ||
+        t.testQuestions[0]?.question?.difficulty_level?.toUpperCase() ||
+        (titleMatch ? `HSK${titleMatch[1]}` : 'HSK1');
+
+      const skills = Array.from(
+        new Set(t.testQuestions.map((tq) => tq.question.skill_category).filter(Boolean))
+      );
+
+      const userStat = userSubsMap.get(t.test_id);
+
+      return {
+        testId: t.test_id,
+        title: t.title,
+        testType: t.test_type,
+        level,
+        passingScore: t.passing_score,
+        timeLimitMins: t.time_limit_mins,
+        isPublished: t.is_published,
+        lessonId: t.lesson_id,
+        questionsCount: t.testQuestions.length,
+        skills,
+        userBestScore: userStat?.bestScore ?? null,
+        userAttempts: userStat?.attempts ?? 0,
+        userPassed: userStat?.passed ?? false,
+      };
+    });
+
+    if (query.level && query.level !== 'ALL') {
+      const targetLevel = query.level.toUpperCase();
+      return mapped.filter((item) => item.level === targetLevel);
+    }
+
+    return mapped;
+  }
+
   async createTest(data: CreateTestInput) {
     return prisma.$transaction(async (tx) => {
       const test = await tx.tests.create({

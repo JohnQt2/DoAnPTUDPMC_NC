@@ -61,6 +61,21 @@ export class AssessmentController {
 
   // ─── Tests ───────────────────────────────────────────────────────────
 
+  listTests = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { test_type, level } = req.query;
+      const isStaff = req.user?.role === 'ADMIN' || req.user?.role === 'CONTENT_EDITOR';
+      const tests = await assessmentService.listTests(req.user?.userId, {
+        test_type: test_type as string | undefined,
+        level: level as string | undefined,
+        includeUnpublished: isStaff,
+      });
+      res.status(200).json({ success: true, data: tests });
+    } catch (err) {
+      next(err);
+    }
+  };
+
   createTest = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const dto = CreateTestDto.parse(req.body);

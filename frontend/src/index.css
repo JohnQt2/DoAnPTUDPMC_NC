@@ -3,24 +3,248 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+    overflow-y: scroll;
+    /* Pastel Rose-Peach Arrow Cursor (Zero circle, 0ms native hardware latency) */
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23fb7185'/%3E%3Cstop offset='100%25' stop-color='%23f59e0b'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M4 3 L20 12.5 L12.2 14.3 L9.2 22 Z' fill='url(%23g)' stroke='%23ffffff' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E") 3 3, auto;
+  }
+
   body {
-    @apply antialiased text-gray-900 bg-gray-50 selection:bg-primary-100 selection:text-primary-800;
+    @apply antialiased text-slate-800 bg-[#faf5fa] font-sans selection:bg-rose-100 selection:text-rose-700;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    line-height: 1.6;
+  }
+
+  /* Distinct Editorial Heading Typography */
+  h1, h2, h3 {
+    font-family: "Plus Jakarta Sans", "Be Vietnam Pro", sans-serif;
+    letter-spacing: -0.02em;
   }
 }
 
-/* Chinese TianZiGe Grid Pattern */
+/* Custom Pastel Hand-Pointer Cursor Skin — placed AFTER @tailwind utilities so Tailwind .cursor-pointer never overrides it! */
+a,
+button,
+[role='button'],
+summary,
+label[for],
+select,
+input[type='checkbox'],
+input[type='radio'],
+input[type='submit'],
+.cursor-pointer {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cdefs%3E%3ClinearGradient id='h' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23f472b6'/%3E%3Cstop offset='55%25' stop-color='%23fb7185'/%3E%3Cstop offset='100%25' stop-color='%23fbbf24'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M10.5 3.2 C10.5 2 12.6 2 12.6 3.2 L12.6 11.4 L14.4 10.6 C15.4 10.2 16.5 10.9 16.5 12 L16.5 12.3 L18 11.7 C19 11.3 20 12 20 13.1 L20 13.5 L21.2 13.1 C22.1 12.8 23 13.5 23 14.5 L23 18.6 C23 22.3 20.1 25 16.2 25 L13.2 25 C10.6 25 8.7 23.6 7.5 21.3 L4.8 16.2 C4.2 15.1 4.9 13.8 6.1 13.8 C6.9 13.8 7.6 14.2 8.1 14.9 L10.5 17.6 Z' fill='url(%23h)' stroke='%23ffffff' stroke-width='1.9' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E") 11 3, pointer !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PASTEL APPLE LIQUID GLASS — AIRY, CALM & 120FPS SMOOTH
+   ═══════════════════════════════════════════════════════════════════════════ */
+@layer components {
+  /* Complete Translucent Pastel Liquid Glass Panel */
+  .glass-light {
+    background: linear-gradient(
+      142deg,
+      rgba(255, 255, 255, 0.58) 0%,
+      rgba(255, 255, 255, 0.34) 50%,
+      rgba(255, 255, 255, 0.52) 100%
+    );
+    backdrop-filter: blur(22px) saturate(185%);
+    -webkit-backdrop-filter: blur(22px) saturate(185%);
+    border: 1px solid rgba(255, 255, 255, 0.84);
+    box-shadow:
+      0 12px 32px -12px rgba(148, 163, 184, 0.16),
+      0 4px 14px -4px rgba(244, 114, 182, 0.07),
+      inset 0 1.5px 1px rgba(255, 255, 255, 0.96),
+      inset 0 -1px 2px rgba(251, 207, 232, 0.14);
+  }
+
+  /* Ultra-Light 120fps Liquid Glass for Dense Grids (Vocab, Pinyin, Hanzi) */
+  .glass-card-grid {
+    background: linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.64) 0%,
+      rgba(255, 255, 255, 0.42) 52%,
+      rgba(255, 255, 255, 0.58) 100%
+    );
+    backdrop-filter: blur(10px) saturate(165%);
+    -webkit-backdrop-filter: blur(10px) saturate(165%);
+    border: 1px solid rgba(255, 255, 255, 0.86);
+    box-shadow:
+      0 8px 22px -10px rgba(148, 163, 184, 0.15),
+      0 2px 8px -2px rgba(15, 23, 42, 0.04),
+      inset 0 1.5px 1px rgba(255, 255, 255, 0.96);
+    transition:
+      background 200ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 200ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 200ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .glass-card-grid:hover {
+    background: linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.78) 0%,
+      rgba(255, 255, 255, 0.56) 52%,
+      rgba(255, 255, 255, 0.72) 100%
+    );
+    border-color: rgba(255, 255, 255, 0.98);
+    box-shadow:
+      0 14px 30px -10px rgba(244, 114, 182, 0.14),
+      0 4px 12px -4px rgba(167, 139, 250, 0.10),
+      inset 0 2px 2px rgba(255, 255, 255, 1);
+  }
+
+  /* Calm Zero-Jitter Liquid Hover Bloom */
+  .glass-light-hover {
+    transition:
+      box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 220ms cubic-bezier(0.22, 1, 0.36, 1),
+      background 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .glass-light-hover:hover {
+    background: linear-gradient(
+      142deg,
+      rgba(255, 255, 255, 0.74) 0%,
+      rgba(255, 255, 255, 0.52) 50%,
+      rgba(255, 255, 255, 0.68) 100%
+    );
+    border-color: rgba(255, 255, 255, 0.98);
+    box-shadow:
+      0 16px 36px -12px rgba(244, 114, 182, 0.15),
+      0 6px 16px -6px rgba(167, 139, 250, 0.10),
+      inset 0 2px 2px rgba(255, 255, 255, 1);
+  }
+
+  /* Floating Sculpted Pastel Liquid Glass Sidebar */
+  .liquid-sidebar {
+    background: linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.60) 0%,
+      rgba(255, 255, 255, 0.38) 55%,
+      rgba(255, 255, 255, 0.54) 100%
+    );
+    backdrop-filter: blur(26px) saturate(190%);
+    -webkit-backdrop-filter: blur(26px) saturate(190%);
+    border: 1px solid rgba(255, 255, 255, 0.88);
+    box-shadow:
+      0 18px 46px -14px rgba(148, 163, 184, 0.18),
+      inset 0 1.5px 1.5px rgba(255, 255, 255, 0.96),
+      inset 1.5px 0 2px rgba(255, 255, 255, 0.70);
+  }
+
+  /* Liquid Glass Modal */
+  .liquid-modal {
+    background: linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.90) 0%,
+      rgba(253, 246, 251, 0.84) 55%,
+      rgba(255, 251, 245, 0.88) 100%
+    );
+    backdrop-filter: blur(30px) saturate(195%);
+    -webkit-backdrop-filter: blur(30px) saturate(195%);
+    border: 1.5px solid rgba(255, 255, 255, 0.96);
+    box-shadow:
+      0 26px 64px -12px rgba(15, 23, 42, 0.20),
+      0 8px 24px -8px rgba(244, 114, 182, 0.12),
+      inset 0 2px 2px rgba(255, 255, 255, 1);
+  }
+
+  /* Liquid Glass Floating Reward / Notice Toast */
+  .liquid-toast {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.88) 0%,
+      rgba(253, 246, 251, 0.80) 100%
+    );
+    backdrop-filter: blur(24px) saturate(190%);
+    -webkit-backdrop-filter: blur(24px) saturate(190%);
+    border: 1.5px solid rgba(255, 255, 255, 0.96);
+    box-shadow:
+      0 18px 42px -12px rgba(244, 114, 182, 0.18),
+      0 6px 18px -6px rgba(167, 139, 250, 0.12),
+      inset 0 2px 2px rgba(255, 255, 255, 1);
+  }
+
+  /* Dark Liquid Glass (Landing & Login) */
+  .glass-dark {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.13) 0%,
+      rgba(255, 255, 255, 0.05) 50%,
+      rgba(255, 255, 255, 0.10) 100%
+    );
+    backdrop-filter: blur(24px) saturate(195%);
+    -webkit-backdrop-filter: blur(24px) saturate(195%);
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    box-shadow:
+      0 18px 54px -8px rgba(0, 0, 0, 0.48),
+      inset 0 1.5px 1px rgba(255, 255, 255, 0.34),
+      inset 0 -1px 1px rgba(255, 255, 255, 0.08);
+  }
+
+  .glass-dark-hover {
+    transition:
+      box-shadow 240ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 240ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .glass-dark-hover:hover {
+    border-color: rgba(255, 255, 255, 0.40);
+    box-shadow:
+      0 20px 54px -8px rgba(244, 114, 182, 0.24),
+      inset 0 1.5px 2px rgba(255, 255, 255, 0.45);
+  }
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Dreamy Pastel Silk Backdrop (Soft Blush, Apricot, Lavender, Mint & Sky) ── */
+.workspace-mesh-bg {
+  background-color: #faf6fb;
+  background-image:
+    radial-gradient(ellipse 56% 48% at 6% 8%, rgba(251, 207, 232, 0.62) 0%, transparent 62%),
+    radial-gradient(ellipse 52% 46% at 94% 10%, rgba(254, 215, 170, 0.56) 0%, transparent 60%),
+    radial-gradient(ellipse 54% 50% at 50% 42%, rgba(221, 214, 254, 0.44) 0%, transparent 64%),
+    radial-gradient(ellipse 56% 48% at 90% 92%, rgba(167, 243, 208, 0.50) 0%, transparent 62%),
+    radial-gradient(ellipse 56% 50% at 10% 90%, rgba(186, 230, 253, 0.54) 0%, transparent 62%);
+  background-attachment: fixed;
+}
+
+/* ── Chinese TianZiGe Grid Pattern ── */
 .tianzige-grid {
-  background-image: 
-    linear-gradient(to right, rgba(196, 30, 58, 0.15) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(196, 30, 58, 0.15) 1px, transparent 1px),
-    linear-gradient(45deg, transparent calc(50% - 0.5px), rgba(196, 30, 58, 0.1) calc(50% - 0.5px), rgba(196, 30, 58, 0.1) calc(50% + 0.5px), transparent calc(50% + 0.5px)),
-    linear-gradient(-45deg, transparent calc(50% - 0.5px), rgba(196, 30, 58, 0.1) calc(50% - 0.5px), rgba(196, 30, 58, 0.1) calc(50% + 0.5px), transparent calc(50% + 0.5px));
+  background-image:
+    linear-gradient(to right, rgba(244, 114, 182, 0.18) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(244, 114, 182, 0.18) 1px, transparent 1px),
+    linear-gradient(45deg, transparent calc(50% - 0.5px), rgba(244, 114, 182, 0.12) calc(50% - 0.5px), rgba(244, 114, 182, 0.12) calc(50% + 0.5px), transparent calc(50% + 0.5px)),
+    linear-gradient(-45deg, transparent calc(50% - 0.5px), rgba(244, 114, 182, 0.12) calc(50% - 0.5px), rgba(244, 114, 182, 0.12) calc(50% + 0.5px), transparent calc(50% + 0.5px));
   background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%;
   background-position: center;
 }
 
+/* Smooth brush-flow animation for Hanzi calligraphic stroke order */
+@keyframes hanzi-stroke-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-hanzi-stroke {
+  animation: hanzi-stroke-draw 0.62s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* ── Hardware-Accelerated 3D Flashcard Flip ── */
 .perspective-1000 {
-  perspective: 1000px;
+  perspective: 1100px;
 }
 
 .transform-style-3d {
@@ -29,8 +253,55 @@
 
 .backface-hidden {
   backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .rotate-y-180 {
   transform: rotateY(180deg);
+}
+
+.flip-3d-inner {
+  transform-style: preserve-3d;
+  transition: transform 440ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── Marquee & Shimmer Keyframes ── */
+@keyframes marquee-scroll {
+  0% { transform: translate3d(0%, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+
+@keyframes marquee-scroll-reverse {
+  0% { transform: translate3d(-50%, 0, 0); }
+  100% { transform: translate3d(0%, 0, 0); }
+}
+
+@keyframes shimmer-sweep {
+  0% { transform: translate3d(-120%, 0, 0) skewX(-18deg); }
+  100% { transform: translate3d(220%, 0, 0) skewX(-18deg); }
+}
+
+.animate-marquee {
+  animation: marquee-scroll 34s linear infinite;
+}
+
+.animate-marquee-reverse {
+  animation: marquee-scroll-reverse 38s linear infinite;
+}
+
+.group:hover .animate-marquee,
+.group:hover .animate-marquee-reverse {
+  animation-play-state: paused;
+}
+
+.animate-shimmer-sweep {
+  animation: shimmer-sweep 3.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee,
+  .animate-marquee-reverse,
+  .animate-shimmer-sweep {
+    animation: none !important;
+  }
 }

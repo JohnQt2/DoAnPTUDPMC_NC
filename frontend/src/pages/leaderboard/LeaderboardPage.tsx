@@ -1,5 +1,7 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
+import { GlassCard, ShimmerButton, NumberTicker } from '../../components/ui';
 import { Trophy, Flame, Medal } from 'lucide-react';
 
 const SAMPLE_LEADERS = [
@@ -16,76 +18,77 @@ export const LeaderboardPage: React.FC = () => {
   return (
     <div className="max-w-3xl mx-auto py-8 px-4 sm:px-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-extrabold text-gray-900 flex items-center gap-2">
-          <Trophy className="w-6 h-6 text-primary-500" />
-          Bảng xếp hạng tuần
+        <h1 className="text-2xl sm:text-3xl font-black text-gray-900 flex items-center gap-2.5 tracking-tight">
+          <span className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-secondary-500 to-amber-400 text-white flex items-center justify-center shadow-md shadow-amber-500/20">
+            <Trophy className="w-5 h-5" />
+          </span>
+          <span>Bảng xếp hạng tuần</span>
         </h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Học đều mỗi ngày để tích điểm và leo hạng cùng cộng đồng Hanzi4u.
+        <p className="text-sm text-gray-500 mt-1.5">
+          Học đều mỗi ngày để tích điểm và leo hạng cùng cộng đồng Hanzi4U.
         </p>
       </div>
 
-      <div className="bg-white rounded-3xl border border-gray-200 overflow-hidden shadow-sm divide-y divide-gray-100">
-        {SAMPLE_LEADERS.map((entry) => (
-          <div
+      <GlassCard className="overflow-hidden divide-y divide-gray-200/60">
+        {SAMPLE_LEADERS.map((entry, idx) => (
+          <motion.div
             key={entry.rank}
-            className="px-5 py-4 flex items-center justify-between gap-4 hover:bg-gray-50/70 transition-colors"
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.25, delay: idx * 0.05 }}
+            className="px-5 py-4 flex items-center justify-between gap-4 hover:bg-white/70 transition-colors"
           >
             <div className="flex items-center gap-4">
               <div
-                className={`w-9 h-9 rounded-xl flex items-center justify-center font-black text-sm ${
+                className={`w-10 h-10 rounded-2xl flex items-center justify-center font-black text-sm shadow-sm ${
                   entry.rank === 1
-                    ? 'bg-amber-100 text-amber-700'
+                    ? 'bg-gradient-to-tr from-amber-400 to-yellow-300 text-amber-950'
                     : entry.rank === 2
-                      ? 'bg-gray-200 text-gray-700'
+                      ? 'bg-gradient-to-tr from-gray-300 to-gray-100 text-gray-800'
                       : entry.rank === 3
-                        ? 'bg-orange-100 text-orange-700'
-                        : 'bg-gray-50 text-gray-500'
+                        ? 'bg-gradient-to-tr from-orange-300 to-amber-200 text-orange-950'
+                        : 'bg-white/80 border border-gray-200 text-gray-500'
                 }`}
               >
                 {entry.rank <= 3 ? <Medal className="w-5 h-5" /> : entry.rank}
               </div>
 
               <div>
-                <p className="text-sm font-bold text-gray-900">{entry.name}</p>
-                <p className="text-xs text-gray-500">{entry.level}</p>
+                <p className="text-sm font-extrabold text-gray-900">{entry.name}</p>
+                <p className="text-xs text-gray-500 font-medium">{entry.level}</p>
               </div>
             </div>
 
             <div className="flex items-center gap-4">
-              <span className="hidden sm:inline-flex items-center gap-1 text-xs font-semibold text-primary-600 bg-primary-50 px-2.5 py-1 rounded-lg">
-                <Flame className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline-flex items-center gap-1 text-xs font-bold text-primary-600 bg-primary-50/90 border border-primary-100 px-2.5 py-1 rounded-xl">
+                <Flame className="w-3.5 h-3.5 fill-primary-500 text-primary-500" />
                 {entry.streak} ngày
               </span>
-              <span className="text-sm font-extrabold text-gray-900 min-w-[70px] text-right">
-                {entry.points} XP
+              <span className="text-sm font-black text-gray-900 min-w-[76px] text-right">
+                <NumberTicker value={entry.points} suffix=" XP" />
               </span>
             </div>
-          </div>
+          </motion.div>
         ))}
 
         {/* Current User Row */}
         {user && (
-          <div className="px-5 py-4 bg-primary-50/60 flex items-center justify-between gap-4">
+          <div className="px-5 py-4 bg-gradient-to-r from-primary-500/10 via-rose-500/5 to-secondary-500/10 flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="w-9 h-9 rounded-xl bg-primary-500 text-white flex items-center justify-center font-black text-sm">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-primary-600 to-secondary-500 text-white flex items-center justify-center font-black text-xs shadow-sm">
                 Bạn
               </div>
               <div>
-                <p className="text-sm font-bold text-primary-700">{user.displayName}</p>
-                <p className="text-xs text-primary-600/80">Đang tích lũy điểm tuần này</p>
+                <p className="text-sm font-extrabold text-primary-700">{user.displayName}</p>
+                <p className="text-xs text-primary-600/80 font-medium">Đang tích lũy điểm tuần này</p>
               </div>
             </div>
-            <a
-              href="#/today"
-              className="px-4 py-2 rounded-xl bg-primary-500 hover:bg-primary-600 text-white text-xs font-bold transition-colors"
-            >
+            <ShimmerButton href="#/today" size="sm" className="rounded-xl">
               Học thêm ngay
-            </a>
+            </ShimmerButton>
           </div>
         )}
-      </div>
+      </GlassCard>
     </div>
   );
 };
-

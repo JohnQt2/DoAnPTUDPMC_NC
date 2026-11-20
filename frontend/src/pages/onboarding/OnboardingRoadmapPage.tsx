@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
+import { celebrateSuccess } from '../../lib/celebration';
 import { useAuth } from '../../context/AuthContext';
 import {
   CheckCircle2,
@@ -80,6 +81,11 @@ export const OnboardingRoadmapPage: React.FC = () => {
         reminder_time: reminderTime,
       });
       markOnboardingCompleted();
+      celebrateSuccess(
+        `Đã thiết lập lộ trình ${targetGoal}`,
+        'fireworks',
+        `Bắt đầu học ${dailyCommitmentMins} phút mỗi ngày.`
+      );
       window.location.hash = '#/today';
     } catch (err: any) {
       setErrorMsg(err.message || 'Không thể lưu lộ trình cá nhân. Vui lòng thử lại.');
@@ -104,9 +110,19 @@ export const OnboardingRoadmapPage: React.FC = () => {
         reminder_time: '20:00',
       });
       markOnboardingCompleted();
+      celebrateSuccess(
+        `Đã thiết lập lộ trình ${targetGoal}`,
+        'fireworks',
+        `Bắt đầu học ${dailyCommitmentMins} phút mỗi ngày.`
+      );
       window.location.hash = '#/today';
     } catch {
       markOnboardingCompleted();
+      celebrateSuccess(
+        `Đã thiết lập lộ trình ${targetGoal}`,
+        'fireworks',
+        `Bắt đầu học ${dailyCommitmentMins} phút mỗi ngày.`
+      );
       window.location.hash = '#/today';
     } finally {
       setIsConfirming(false);
@@ -187,7 +203,7 @@ export const OnboardingRoadmapPage: React.FC = () => {
       {/* MODE 3: ACTIVE ROADMAP */}
       {mode === 'active_roadmap' && activeRoadmapData && (
         <div className="space-y-6">
-          <div className="bg-white border border-gray-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-5">
+          <div className="glass-light rounded-[28px] p-6 sm:p-8 space-y-5">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
               <div className="space-y-1.5">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -263,7 +279,7 @@ export const OnboardingRoadmapPage: React.FC = () => {
               {activeRoadmapData.weeklyMilestones.map((milestone: any) => (
                 <div
                   key={milestone.week}
-                  className="p-5 rounded-2xl bg-white border border-gray-200 shadow-sm space-y-3"
+                  className="p-5 rounded-[24px] glass-light space-y-3"
                 >
                   <div className="flex items-center justify-between">
                     <span className="px-2.5 py-1 rounded-lg bg-primary-50 text-primary-700 text-xs font-bold">

@@ -45,21 +45,24 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['"Be Vietnam Pro"', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['"Plus Jakarta Sans"', '"Be Vietnam Pro"', 'sans-serif'],
         chinese: ['"Noto Sans SC"', '"Microsoft YaHei"', 'sans-serif'],
+        'hanzi-serif': ['"Noto Serif SC"', '"Noto Sans SC"', 'serif'],
+        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
       },
       animation: {
-        'shake': 'shake 0.5s ease-in-out',
-        'flip': 'flip 0.6s ease-in-out',
-        'fade-in': 'fadeIn 0.3s ease-in-out',
-        'slide-up': 'slideUp 0.3s ease-in-out',
-        'pulse-soft': 'pulseSoft 2s ease-in-out infinite',
+        shake: 'shake 0.5s ease-in-out',
+        flip: 'flip 0.55s cubic-bezier(0.22, 1, 0.36, 1)',
+        'fade-in': 'fadeIn 0.25s ease-out',
+        'slide-up': 'slideUp 0.28s cubic-bezier(0.22, 1, 0.36, 1)',
+        'pulse-soft': 'pulseSoft 2.4s ease-in-out infinite',
       },
       keyframes: {
         shake: {
           '0%, 100%': { transform: 'translateX(0)' },
-          '25%': { transform: 'translateX(-8px)' },
-          '75%': { transform: 'translateX(8px)' },
+          '25%': { transform: 'translateX(-6px)' },
+          '75%': { transform: 'translateX(6px)' },
         },
         flip: {
           '0%': { transform: 'rotateY(0deg)' },
@@ -70,12 +73,12 @@ export default {
           '100%': { opacity: '1' },
         },
         slideUp: {
-          '0%': { opacity: '0', transform: 'translateY(20px)' },
+          '0%': { opacity: '0', transform: 'translateY(12px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
         pulseSoft: {
           '0%, 100%': { opacity: '1' },
-          '50%': { opacity: '0.7' },
+          '50%': { opacity: '0.78' },
         },
       },
     },

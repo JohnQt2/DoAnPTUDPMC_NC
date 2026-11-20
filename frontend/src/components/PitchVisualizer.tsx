@@ -41,16 +41,16 @@ export const PitchVisualizer: React.FC<PitchVisualizerProps> = ({ tone, contour,
   const info = getToneDescription();
 
   return (
-    <div className="bg-white rounded-xl p-4 border border-gray-100 flex flex-col items-center">
+    <div className="glass-card-grid rounded-2xl p-4 flex flex-col items-center">
       <div className="flex items-center justify-between w-full mb-2">
         <span className={`text-xs font-bold ${info.color}`}>{info.name}</span>
-        <span className="text-[10px] font-mono bg-gray-100 px-2 py-0.5 rounded text-gray-600">
+        <span className="text-[10px] font-mono bg-white/75 border border-white px-2 py-0.5 rounded-md text-gray-600">
           {contour || info.chao}
         </span>
       </div>
 
       {/* Chao 5-scale coordinate grid */}
-      <div className="relative w-full h-28 bg-gray-50/70 rounded-lg p-2 border border-gray-100 flex items-center justify-center">
+      <div className="relative w-full h-28 bg-white/55 rounded-xl p-2 border border-white/80 flex items-center justify-center">
         <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">
           {/* 5-scale horizontal guide lines */}
           {[20, 37, 54, 71, 88].map((y, idx) => (

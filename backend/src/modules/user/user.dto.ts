@@ -16,7 +16,18 @@ export const UpdateProfileDto = z
   .object({
     full_name: z.string().min(2, 'Tên hiển thị tối thiểu 2 ký tự.').max(100).optional(),
     display_name: z.string().min(2, 'Tên hiển thị tối thiểu 2 ký tự.').max(100).optional(),
-    avatar_url: z.string().url('URL ảnh đại diện không hợp lệ.').optional(),
+    avatar_url: z
+      .string()
+      .max(450000, 'Ảnh đại diện quá lớn (tối đa 350KB sau khi nén).')
+      .refine(
+        (val) =>
+          val === '' ||
+          /^https?:\/\/.+/i.test(val) ||
+          /^data:image\/(png|jpeg|jpg|webp|gif);base64,/i.test(val),
+        { message: 'URL hoặc dữ liệu ảnh đại diện không hợp lệ.' }
+      )
+      .optional()
+      .nullable(),
     avatar_resource_id: z.number().int().positive().optional(),
     phone: z
       .string()

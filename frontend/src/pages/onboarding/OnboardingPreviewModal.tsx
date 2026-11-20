@@ -39,7 +39,7 @@ export const OnboardingPreviewModal: React.FC<OnboardingPreviewModalProps> = ({
   return (
     <div className="space-y-6">
       {/* Summary Card */}
-      <div className="bg-white border border-gray-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+      <div className="glass-light rounded-[28px] p-6 sm:p-8 space-y-6">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-2 max-w-2xl">
             <div className="flex items-center gap-2 flex-wrap">
@@ -107,7 +107,7 @@ export const OnboardingPreviewModal: React.FC<OnboardingPreviewModalProps> = ({
       </div>
 
       {/* Weekly Milestones */}
-      <div className="bg-white border border-gray-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+      <div className="glass-light rounded-[28px] p-6 sm:p-8 space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-base sm:text-lg font-extrabold text-gray-900 flex items-center gap-2">
             <Calendar className="w-5 h-5 text-primary-600" />
@@ -160,7 +160,7 @@ export const OnboardingPreviewModal: React.FC<OnboardingPreviewModalProps> = ({
       </div>
 
       {/* Action Buttons */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm">
+      <div className="glass-light rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-3">
         <button
           type="button"
           onClick={onEditSurvey}

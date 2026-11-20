@@ -3,7 +3,6 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
 import { HanziLogo } from './components/HanziLogo';
-import { requestLandingSection } from './lib/scrollNavigation';
 import {
   MeshBackground,
   PageTransition,
@@ -72,7 +71,7 @@ const AppContent: React.FC = () => {
   const basePath = currentHash.split('?')[0] || '#/';
 
   // ──────────────────────────────────────────────────────────────────────────
-  // 1. GUEST ROUTES (HANZI4U NATIVE IMPERIAL CRIMSON × PORCELAIN × FULL 3D)
+  // 1. GUEST ROUTES (AAA FULL-VIEWPORT CINEMA MICROSITE × 3D × GUOCHAO ART)
   // ──────────────────────────────────────────────────────────────────────────
   if (!user) {
     if (
@@ -83,73 +82,7 @@ const AppContent: React.FC = () => {
       basePath === '#thu-vien-anh' ||
       basePath === '#bat-dau'
     ) {
-      return (
-        <MeshBackground variant="light" className="min-h-screen flex flex-col">
-          <Navbar currentPath={currentHash} theme="light" />
-          <main className="flex-1">
-            <LandingPage />
-          </main>
-
-          {/* Original Hanzi4U Deep Sumi-Ink Footer with Crimson-Gold Top Rule */}
-          <footer className="bg-[#141112] text-white border-t border-white/10 relative">
-            <div
-              aria-hidden="true"
-              className="h-[2px] w-full bg-gradient-to-r from-[#C41E3A] via-[#D4A017] to-[#00A86B]"
-            />
-            <div className="max-w-7xl mx-auto px-5 sm:px-8 py-12 grid grid-cols-1 md:grid-cols-12 gap-8">
-              <div className="md:col-span-5 space-y-3">
-                <HanziLogo variant="dark" size="md" />
-                <p className="text-xs text-white/65 leading-relaxed max-w-sm">
-                  Nền tảng tự học tiếng Trung chuẩn HSK 1–6 cho người Việt — tích hợp phòng học 3D
-                  trực quan, 63 âm Pinyin, tập viết nét chữ Hán, thẻ nhớ SM-2 và 48+ bộ đề thi thử.
-                </p>
-              </div>
-
-              <div className="md:col-span-4 space-y-2.5">
-                <h3 className="font-display text-xs font-bold uppercase tracking-[0.16em] text-[#E6BE4C]">
-                  Chương trình HSK 1 — 6
-                </h3>
-                <ul className="space-y-1.5 text-xs text-white/70">
-                  <li>63 âm Pinyin chuẩn phổ thông & 4 thanh điệu 3D</li>
-                  <li>Mô phỏng thứ tự nét chữ Hán trên ô Điền Tự Cách</li>
-                  <li>30 Đề thi mô phỏng & 18 Bộ sách bài tập</li>
-                </ul>
-              </div>
-
-              <div className="md:col-span-3 space-y-2.5">
-                <h3 className="font-display text-xs font-bold uppercase tracking-[0.16em] text-[#E6BE4C]">
-                  Liên kết nhanh
-                </h3>
-                <div className="flex flex-col gap-1.5 text-xs text-white/70">
-                  <a href="#/login?tab=register" className="hover:text-[#E6BE4C] transition-colors">
-                    Đăng ký học miễn phí
-                  </a>
-                  <a href="#/login" className="hover:text-[#E6BE4C] transition-colors">
-                    Đăng nhập tài khoản
-                  </a>
-                  <a
-                    href="#khong-gian-3d"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      requestLandingSection('khong-gian-3d', 76);
-                    }}
-                    className="hover:text-[#E6BE4C] transition-colors"
-                  >
-                    Khám phá Phòng Học 3D
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            <div className="border-t border-white/10 py-4 px-5 sm:px-8">
-              <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-white/50">
-                <span>© 2026 Hanzi4U (hanzi4u.id.vn) — Nền tảng học tiếng Trung HSK</span>
-                <span className="font-mono text-[#E6BE4C]">Hanzi4U 3D Edition · HSK 1–6</span>
-              </div>
-            </div>
-          </footer>
-        </MeshBackground>
-      );
+      return <LandingPage />;
     }
 
     if (basePath === '#/login') {

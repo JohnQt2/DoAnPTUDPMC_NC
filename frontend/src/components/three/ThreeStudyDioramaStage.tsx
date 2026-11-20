@@ -11,6 +11,8 @@ export interface ThreeStudyDioramaStageProps {
   flippedCards: Record<string, boolean>;
   activeCardIdx: number;
   activeHskLevel: number;
+  /** 'dark' for obsidian cinema frame; 'light' for open stone-parchment canvas */
+  theme?: 'dark' | 'light';
   className?: string;
 }
 
@@ -44,10 +46,10 @@ const CARD_SPECS = [
   },
 ];
 
-function buildDioramaEnv(renderer: THREE.WebGLRenderer): THREE.Texture {
+function buildDioramaEnv(renderer: THREE.WebGLRenderer, isLight: boolean): THREE.Texture {
   const pmrem = new THREE.PMREMGenerator(renderer);
   const envScene = new THREE.Scene();
-  envScene.background = new THREE.Color(0x161214);
+  envScene.background = new THREE.Color(isLight ? 0xece8e2 : 0x161214);
 
   const top = new THREE.Mesh(
     new THREE.PlaneGeometry(24, 24),
@@ -288,8 +290,10 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
   flippedCards,
   activeCardIdx,
   activeHskLevel,
+  theme = 'dark',
   className = '',
 }) => {
+  const isLight = theme === 'light';
   const mountRef = useRef<HTMLDivElement | null>(null);
   const [webglUnsupported, setWebglUnsupported] = useState(false);
 
@@ -348,7 +352,7 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
     container.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
-    const envTex = buildDioramaEnv(renderer);
+    const envTex = buildDioramaEnv(renderer, isLight);
     scene.environment = envTex;
 
     const camera = new THREE.PerspectiveCamera(36, w / h, 0.1, 100);
@@ -416,9 +420,9 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
     // Architectural 3D pitch guide rails (high pitch 5 & low pitch 1)
     const railGeo = new THREE.BoxGeometry(4.6, 0.018, 0.018);
     const railMat = new THREE.MeshBasicMaterial({
-      color: 0xffffff,
+      color: isLight ? 0x181415 : 0xffffff,
       transparent: true,
-      opacity: 0.14,
+      opacity: isLight ? 0.2 : 0.14,
     });
     [-1.1, 0, 1.1].forEach((ry) => {
       const r = new THREE.Mesh(railGeo, railMat);
@@ -710,7 +714,11 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
     rootRig.add(instParticles);
 
     const sceneGroups = [tonesGroup, strokeGroup, cardsGroup, hskGroup];
-    const sceneScales = [1, 0.001, 0.001, 0.001];
+    const sceneScales = [0, 1, 2, 3].map((idx) => (idx === stateRef.current.activeScene ? 1 : 0));
+    sceneGroups.forEach((grp, idx) => {
+      grp.visible = sceneScales[idx] > 0.08;
+      grp.scale.setScalar(Math.max(0.001, sceneScales[idx]));
+    });
 
     // Interactive 360° pointer drag on the 3D stage
     let dragRotX = 0.08;
@@ -760,9 +768,12 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
       ([entry]) => {
         isVisible = entry.isIntersecting;
       },
-      { threshold: 0.02 }
+      { threshold: 0.0 }
     );
     io.observe(container);
+
+    // Paint frame 0 synchronously so cross-fading slides never flash an empty canvas
+    renderer.render(scene, camera);
 
     // Target hero camera pose per 3D exhibit
     const sceneCameraTargets: Array<{ y: number; z: number; rotX: number; rotY: number }> = [
@@ -946,7 +957,7 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
         container.removeChild(renderer.domElement);
       }
     };
-  }, []);
+  }, [isLight]);
 
   if (webglUnsupported) {
     return (

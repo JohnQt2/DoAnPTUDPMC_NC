@@ -490,9 +490,12 @@ export const ThreeMinimalZenSculpture: React.FC<ThreeMinimalZenSculptureProps> =
       ([entry]) => {
         isVisible = entry.isIntersecting;
       },
-      { threshold: 0.02 }
+      { threshold: 0.0 }
     );
     intersectionObserver.observe(container);
+
+    // Paint frame 0 synchronously so cross-fading slides never flash a blank canvas
+    renderer.render(scene, camera);
 
     let spinAccum = 0;
 

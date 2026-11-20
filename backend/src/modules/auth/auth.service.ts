@@ -4,6 +4,7 @@ import { prisma } from '../../shared/database/prisma.client';
 import { redisService } from '../../shared/redis/redis.service';
 import {
   generateOtp,
+  getRefreshTokenTtlMs,
   hashString,
   signAccessToken,
   signRefreshToken,
@@ -973,9 +974,9 @@ export class AuthService {
     // === CRITICAL SECURITY CHECK: TOKEN REUSE DETECTION ===
     if (session.is_revoked) {
       // An already revoked token was submitted again! This indicates token theft or replay attack.
-      // Revoke the ENTIRE session family immediately!
+      // Revoke ALL active sessions of this user immediately to protect their account & learning progress.
       await prisma.userSessions.updateMany({
-        where: { family_id: session.family_id },
+        where: { user_id: session.user_id, is_revoked: false },
         data: { is_revoked: true },
       });
 
@@ -985,15 +986,20 @@ export class AuthService {
           action_type: 'TOKEN_REUSE_DETECTED',
           target_entity: 'UserSessions',
           target_id: session.session_id.toString(),
-          old_value: JSON.stringify({ familyId: session.family_id, revokedAll: true }),
+          old_value: JSON.stringify({
+            familyId: session.family_id,
+            revokedAllUserSessions: true,
+          }),
           ip_address: clientInfo.ip,
         },
       });
 
-      console.warn(`🚨 SECURITY ALERT: Token reuse detected for family ${session.family_id}. All family sessions revoked.`);
+      console.warn(
+        `🚨 SECURITY ALERT: Token reuse detected for user ${session.user_id} (family ${session.family_id}). All active sessions revoked.`
+      );
 
       throw AppError.unauthorized(
-        'Phát hiện hành vi sử dụng lại token cũ (Token Reuse Detected). Toàn bộ phiên làm việc của bạn đã bị hủy bỏ để bảo vệ an toàn tài khoản.',
+        'Phát hiện hành vi sử dụng lại token cũ (Token Reuse Detected). Toàn bộ phiên đăng nhập của bạn đã bị hủy để bảo vệ tài khoản và tiến độ học.',
         'TOKEN_FAMILY_REVOKED'
       );
     }
@@ -1012,41 +1018,50 @@ export class AuthService {
       throw AppError.forbidden('Tài khoản đã bị tạm khóa.');
     }
 
-    // Mark current session as revoked/consumed
+    // Mark current session as revoked/consumed (Refresh Token Rotation)
     await prisma.userSessions.update({
       where: { session_id: session.session_id },
       data: { is_revoked: true },
     });
 
-    // Create a new session with the SAME family_id (Session Continuation)
+    // Create a new session with the SAME family_id + fresh 30-day Sliding Expiration
     return this.createSession(
       session.user_id,
       session.user.email,
       session.user.role,
       session.family_id,
-      clientInfo
+      clientInfo,
+      { enforceDeviceLimit: false }
     );
   }
 
   /**
-   * Đăng xuất phiên hiện tại
+   * Đăng xuất phiên hiện tại (thu hồi toàn bộ family của thiết bị này)
    */
   async logout(userId: number, sessionId?: number, refreshToken?: string): Promise<void> {
     if (sessionId) {
-      const where: any = { session_id: sessionId };
-      if (userId) where.user_id = userId;
-      await prisma.userSessions.updateMany({
-        where,
-        data: { is_revoked: true },
+      const target = await prisma.userSessions.findFirst({
+        where: { session_id: sessionId, ...(userId ? { user_id: userId } : {}) },
+        select: { family_id: true, user_id: true },
       });
+      if (target) {
+        await prisma.userSessions.updateMany({
+          where: { user_id: target.user_id, family_id: target.family_id, is_revoked: false },
+          data: { is_revoked: true },
+        });
+      }
     } else if (refreshToken) {
       const hash = hashString(refreshToken);
-      const where: any = { refresh_token_hash: hash };
-      if (userId) where.user_id = userId;
-      await prisma.userSessions.updateMany({
-        where,
-        data: { is_revoked: true },
+      const target = await prisma.userSessions.findFirst({
+        where: { refresh_token_hash: hash, ...(userId ? { user_id: userId } : {}) },
+        select: { family_id: true, user_id: true },
       });
+      if (target) {
+        await prisma.userSessions.updateMany({
+          where: { user_id: target.user_id, family_id: target.family_id, is_revoked: false },
+          data: { is_revoked: true },
+        });
+      }
     } else if (userId) {
       await prisma.userSessions.updateMany({
         where: { user_id: userId, is_revoked: false },
@@ -1105,8 +1120,8 @@ export class AuthService {
       throw AppError.notFound('Không tìm thấy phiên đăng nhập này.');
     }
 
-    await prisma.userSessions.update({
-      where: { session_id: targetSessionId },
+    await prisma.userSessions.updateMany({
+      where: { user_id: userId, family_id: session.family_id, is_revoked: false },
       data: { is_revoked: true },
     });
 
@@ -1121,13 +1136,20 @@ export class AuthService {
   }
 
   /**
-   * Thu hồi tất cả các phiên khác ngoại trừ phiên hiện tại
+   * Thu hồi tất cả các phiên khác ngoại trừ thiết bị hiện tại
    */
   async revokeOtherSessions(userId: number, currentSessionId: number): Promise<{ revokedCount: number }> {
+    const current = await prisma.userSessions.findFirst({
+      where: { session_id: currentSessionId, user_id: userId },
+      select: { family_id: true },
+    });
+
     const result = await prisma.userSessions.updateMany({
       where: {
         user_id: userId,
-        session_id: { not: currentSessionId },
+        ...(current?.family_id
+          ? { family_id: { not: current.family_id } }
+          : { session_id: { not: currentSessionId } }),
         is_revoked: false,
       },
       data: { is_revoked: true },
@@ -1147,17 +1169,74 @@ export class AuthService {
   }
 
   /**
-   * Helper phát hành phiên mới và token
+   * Giới hạn số thiết bị đăng nhập đồng thời (mặc định tối đa MAX_CONCURRENT_SESSIONS = 3).
+   * Khi vượt quá, tự động thu hồi thiết bị đăng nhập cũ nhất để giữ tài khoản gọn gàng & an toàn.
+   */
+  private async enforceConcurrentSessionLimit(
+    userId: number,
+    keepFamilyId: string,
+    clientInfo: ClientInfo
+  ): Promise<void> {
+    const maxSessions = env.MAX_CONCURRENT_SESSIONS;
+    const activeSessions = await prisma.userSessions.findMany({
+      where: {
+        user_id: userId,
+        is_revoked: false,
+        expires_at: { gt: new Date() },
+      },
+      orderBy: { created_at: 'desc' },
+      select: { session_id: true, family_id: true },
+    });
+
+    // Deduplicate active device families (newest first), ensuring current login family is kept first
+    const orderedFamilies: string[] = [keepFamilyId];
+    for (const s of activeSessions) {
+      if (!orderedFamilies.includes(s.family_id)) {
+        orderedFamilies.push(s.family_id);
+      }
+    }
+
+    if (orderedFamilies.length <= maxSessions) return;
+
+    const evictedFamilies = orderedFamilies.slice(maxSessions);
+    await prisma.userSessions.updateMany({
+      where: {
+        user_id: userId,
+        family_id: { in: evictedFamilies },
+        is_revoked: false,
+      },
+      data: { is_revoked: true },
+    });
+
+    await prisma.auditLogs.create({
+      data: {
+        user_id: userId,
+        action_type: 'SESSION_LIMIT_EVICTED',
+        target_entity: 'UserSessions',
+        target_id: userId.toString(),
+        new_value: JSON.stringify({
+          maxConcurrentSessions: maxSessions,
+          evictedDeviceCount: evictedFamilies.length,
+          evictedFamilies,
+        }),
+        ip_address: clientInfo.ip,
+      },
+    });
+  }
+
+  /**
+   * Helper phát hành phiên mới và cặp Access Token (1h) + Sliding Refresh Token (30d)
    */
   private async createSession(
     userId: number,
     email: string,
     role: string,
     familyId: string,
-    clientInfo: ClientInfo
+    clientInfo: ClientInfo,
+    options?: { enforceDeviceLimit?: boolean }
   ): Promise<{ accessToken: string; refreshToken: string; sessionId: number }> {
-    // 30 days expiration for refresh token
-    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    // 30 days Sliding Expiration for refresh token (refreshes full window on each rotation)
+    const expiresAt = new Date(Date.now() + getRefreshTokenTtlMs());
 
     // Initial placeholder hash to get auto-generated session_id
     const placeholderHash = randomUUID();
@@ -1191,6 +1270,11 @@ export class AuthService {
       where: { session_id: session.session_id },
       data: { refresh_token_hash: realHash },
     });
+
+    // Enforce max concurrent devices on new logins (auto-evicts oldest excess device)
+    if (options?.enforceDeviceLimit !== false) {
+      await this.enforceConcurrentSessionLimit(userId, familyId, clientInfo);
+    }
 
     return {
       accessToken,

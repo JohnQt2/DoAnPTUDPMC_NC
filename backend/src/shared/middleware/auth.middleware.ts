@@ -39,6 +39,27 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
       throw AppError.forbidden('Tài khoản đã bị tạm khóa. Vui lòng liên hệ bộ phận hỗ trợ.');
     }
 
+    // Ensure the device session family is still active (catches instant logout, device revocation,
+    // concurrent-device eviction, and RTR token-reuse account wipes even with 1h Access Token TTL)
+    if (payload.familyId || payload.sessionId) {
+      const activeDeviceSession = await prisma.userSessions.findFirst({
+        where: {
+          user_id: user.user_id,
+          ...(payload.familyId ? { family_id: payload.familyId } : { session_id: payload.sessionId }),
+          is_revoked: false,
+          expires_at: { gt: new Date() },
+        },
+        select: { session_id: true },
+      });
+
+      if (!activeDeviceSession) {
+        throw AppError.unauthorized(
+          'Phiên đăng nhập trên thiết bị này đã kết thúc hoặc bị thu hồi. Vui lòng đăng nhập lại.',
+          'SESSION_REVOKED'
+        );
+      }
+    }
+
     req.user = {
       userId: user.user_id,
       email: user.email,

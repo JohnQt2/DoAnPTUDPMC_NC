@@ -886,21 +886,12 @@ export const LoginPage: React.FC = () => {
 
                 {loginSubMode === 'password' && (
                   <div>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <label
-                        htmlFor="login-password"
-                        className="block text-xs font-semibold text-white/65"
-                      >
-                        Mật khẩu
-                      </label>
-                      <button
-                        type="button"
-                        onClick={openForgotPasswordFlow}
-                        className="text-xs font-semibold text-amber-300/90 hover:text-amber-200 transition-colors cursor-pointer"
-                      >
-                        Quên mật khẩu?
-                      </button>
-                    </div>
+                    <label
+                      htmlFor="login-password"
+                      className="block text-xs font-semibold text-white/65 mb-1.5"
+                    >
+                      Mật khẩu
+                    </label>
                     <div className="relative">
                       <Lock
                         className="w-5 h-5 absolute left-3.5 top-3.5 text-white/40"
@@ -922,6 +913,15 @@ export const LoginPage: React.FC = () => {
                         className="absolute right-3.5 top-3 text-white/45 hover:text-white/80 cursor-pointer"
                       >
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                    <div className="mt-2 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={openForgotPasswordFlow}
+                        className="text-xs font-semibold text-white/60 hover:text-amber-300 transition-colors cursor-pointer"
+                      >
+                        Quên mật khẩu?
                       </button>
                     </div>
                   </div>

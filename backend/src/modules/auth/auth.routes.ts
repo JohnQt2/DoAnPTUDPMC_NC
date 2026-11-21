@@ -32,16 +32,27 @@ router.post(
   authController.loginPassword
 );
 
-// Forgot Password via Gmail OTP
+// Forgot Password via Gmail OTP (3-step flow: forgot -> verify-otp -> reset)
 router.post(
   '/password/forgot',
   rateLimit({
     windowSeconds: 60,
     maxRequests: 3,
     keyPrefix: 'pwd-forgot',
-    message: 'Vui lòng chờ 1 phút trước khi yêu cầu mã đặt lại mật khẩu tiếp theo.',
+    message: 'Bạn vừa yêu cầu gửi mã đặt lại mật khẩu quá nhiều lần. Vui lòng chờ một lát.',
   }),
   authController.forgotPasswordSendOtp
+);
+
+router.post(
+  '/password/verify-otp',
+  rateLimit({
+    windowSeconds: 60,
+    maxRequests: 10,
+    keyPrefix: 'pwd-verify-otp',
+    message: 'Bạn đã thử xác thực mã OTP quá nhiều lần. Vui lòng chờ một lát.',
+  }),
+  authController.forgotPasswordVerifyOtp
 );
 
 router.post(

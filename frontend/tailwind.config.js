@@ -50,11 +50,12 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['"Be Vietnam Pro"', 'system-ui', '-apple-system', 'sans-serif'],
-        display: ['"Plus Jakarta Sans"', '"Be Vietnam Pro"', 'sans-serif'],
+        sans: ['"Be Vietnam Pro"', '"Noto Sans"', '"Segoe UI"', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['"Plus Jakarta Sans"', '"Be Vietnam Pro"', '"Noto Sans"', '"Segoe UI"', 'sans-serif'],
+        pinyin: ['"Noto Sans"', '"Segoe UI"', 'Arial', 'sans-serif'],
         chinese: ['"Noto Sans SC"', '"Microsoft YaHei"', 'sans-serif'],
         'hanzi-serif': ['"Noto Serif SC"', '"Noto Sans SC"', 'serif'],
-        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+        mono: ['"JetBrains Mono"', '"Noto Sans"', '"Segoe UI"', 'ui-monospace', 'monospace'],
       },
       animation: {
         shake: 'shake 0.5s ease-in-out',

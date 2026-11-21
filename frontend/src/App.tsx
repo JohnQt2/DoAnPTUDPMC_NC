@@ -102,7 +102,7 @@ const AppContent: React.FC = () => {
       return (
         <div className="h-[100dvh] w-full overflow-hidden flex flex-col bg-[#FAF8F6]">
           <Navbar currentPath={currentHash} theme="light" />
-          <main className="flex-1 flex flex-col min-h-0 overflow-y-auto overflow-x-hidden">
+          <main className="flex-1 flex flex-col min-h-0 overflow-y-auto overflow-x-hidden no-scrollbar">
             <LoginPage />
           </main>
         </div>

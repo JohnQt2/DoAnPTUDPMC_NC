@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { api } from '../../lib/api';
 import { HanziLogoMark } from '../../components/HanziLogo';
 import { SunbeamDustOverlay } from '../../components/landing/ArchitecturalOrnaments';
+import { AnimatedOtpInput } from '../../components/auth/AuthFormControls';
 import {
   Mail,
   Lock,
@@ -16,6 +17,8 @@ import {
   KeyRound,
   Eye,
   EyeOff,
+  Check,
+  Clock,
 } from 'lucide-react';
 
 declare global {
@@ -41,7 +44,7 @@ declare global {
 const DEFAULT_GOOGLE_CLIENT_ID =
   '236710689789-ipu0ad4sdke0paakb5ujmu0ukq9b4mc9.apps.googleusercontent.com';
 
-type AuthStep = 'form' | 'otp_verify' | 'forgot_email' | 'forgot_reset';
+type AuthStep = 'form' | 'otp_verify' | 'forgot_email' | 'forgot_otp' | 'forgot_new_password';
 
 export const LoginPage: React.FC = () => {
   const { login, refreshSession } = useAuth();
@@ -60,9 +63,13 @@ export const LoginPage: React.FC = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
 
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [resetToken, setResetToken] = useState<string | null>(null);
+  const [otpShakeKey, setOtpShakeKey] = useState(0);
   const [countdown, setCountdown] = useState(300);
+  const [actionCooldown, setActionCooldown] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const otpAutoVerifyingRef = useRef(false);
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [errorCode, setErrorCode] = useState<string | null>(null);
@@ -75,6 +82,17 @@ export const LoginPage: React.FC = () => {
     setErrorMessage(null);
     setErrorCode(null);
     setRemainingAttempts(null);
+  };
+
+  const applyRateLimitCooldown = (err: any) => {
+    const code = err?.data?.error?.code;
+    if (err?.status === 429 || code === 'RATE_LIMIT_EXCEEDED') {
+      const rawSec = Number(
+        err?.retryAfterSeconds ?? err?.data?.error?.details?.remainingSeconds ?? 30
+      );
+      const seconds = Number.isFinite(rawSec) && rawSec > 0 ? Math.min(300, Math.ceil(rawSec)) : 30;
+      setActionCooldown(seconds);
+    }
   };
 
   const getRedirectTarget = (isNewUser?: boolean): string => {
@@ -146,13 +164,34 @@ export const LoginPage: React.FC = () => {
   // Countdown timer for 300s OTP TTL (both login/register OTP and forgot-password OTP)
   useEffect(() => {
     let timer: ReturnType<typeof setInterval> | undefined;
-    if ((step === 'otp_verify' || step === 'forgot_reset') && countdown > 0) {
-      timer = setInterval(() => setCountdown((prev) => prev - 1), 1000);
+    if ((step === 'otp_verify' || step === 'forgot_otp') && countdown > 0) {
+      timer = setInterval(() => setCountdown((prev) => Math.max(0, prev - 1)), 1000);
     }
     return () => {
       if (timer) clearInterval(timer);
     };
   }, [step, countdown]);
+
+  // Live cooldown countdown when rate-limited (HTTP 429) so users know exact wait time
+  useEffect(() => {
+    if (actionCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setActionCooldown((prev) => {
+        if (prev <= 1) {
+          setErrorCode((cur) => {
+            if (cur === 'RATE_LIMIT_EXCEEDED') {
+              setErrorMessage(null);
+              return null;
+            }
+            return cur;
+          });
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [actionCooldown > 0]);
 
   const validateEmailFormat = (value: string): boolean => {
     const normalized = value.trim().toLowerCase();
@@ -219,7 +258,8 @@ export const LoginPage: React.FC = () => {
     } catch (err: any) {
       const code = err.data?.error?.code || null;
       setErrorCode(code);
-      setErrorMessage(err.message || 'Không thể gửi mã OTP.');
+      setErrorMessage(err.message || 'Không thể gửi mã OTP. Vui lòng thử lại sau ít giây.');
+      applyRateLimitCooldown(err);
       if (code === 'OTP_ACCOUNT_LOCKED') {
         setIsLocked(true);
       }
@@ -258,6 +298,7 @@ export const LoginPage: React.FC = () => {
       const code = err.data?.error?.code || null;
       setErrorCode(code);
       setErrorMessage(err.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
+      applyRateLimitCooldown(err);
       if (err.data?.error?.details?.remainingAttempts !== undefined) {
         setRemainingAttempts(err.data.error.details.remainingAttempts);
       }
@@ -266,7 +307,7 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  /** Quên mật khẩu (Bước 1): Gửi mã OTP về Gmail */
+  /** Quên mật khẩu (Bước 1/3): Gửi mã OTP về Gmail */
   const handleForgotSendOtp = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     const normalizedEmail = email.trim().toLowerCase();
@@ -288,17 +329,19 @@ export const LoginPage: React.FC = () => {
       });
       setCountdown(res?.expiresIn || 300);
       setIsLocked(false);
+      setResetToken(null);
       setInfoMessage(
         res?.message || `Mã OTP đặt lại mật khẩu đã được gửi tới ${normalizedEmail}.`
       );
       setOtp(['', '', '', '', '', '']);
       setNewPassword('');
       setConfirmPassword('');
-      setStep('forgot_reset');
+      setStep('forgot_otp');
     } catch (err: any) {
       const code = err.data?.error?.code || null;
       setErrorCode(code);
       setErrorMessage(err.message || 'Không thể gửi mã OTP đặt lại mật khẩu.');
+      applyRateLimitCooldown(err);
       if (code === 'OTP_ACCOUNT_LOCKED') {
         setIsLocked(true);
       }
@@ -307,12 +350,65 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  /** Quên mật khẩu (Bước 2): Xác nhận mã OTP từ Gmail và đặt mật khẩu mới */
-  const handleResetPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const fullOtp = otp.join('');
+  /** Quên mật khẩu (Bước 2/3): Xác thực riêng mã OTP 6 chữ số (tự động chạy ngay khi dán/nhập đủ 6 số) */
+  const verifyForgotOtpCode = async (codeOverride?: string) => {
+    if (otpAutoVerifyingRef.current || isLocked || actionCooldown > 0) return;
+
+    const fullOtp = codeOverride ?? otp.join('');
     if (fullOtp.length !== 6) {
       setErrorMessage('Vui lòng nhập đủ 6 chữ số mã OTP đã gửi về Gmail.');
+      setOtpShakeKey((k) => k + 1);
+      return;
+    }
+
+    otpAutoVerifyingRef.current = true;
+    setIsSubmitting(true);
+    clearAlerts();
+
+    try {
+      const res = await api.post<{ message: string; resetToken: string; expiresIn: number }>(
+        '/auth/password/verify-otp',
+        {
+          email: email.trim().toLowerCase(),
+          otp: fullOtp,
+        }
+      );
+      setResetToken(res.resetToken);
+      setNewPassword('');
+      setConfirmPassword('');
+      setInfoMessage(
+        res?.message || 'Xác thực OTP thành công! Bạn có thể tạo mật khẩu mới ngay bây giờ.'
+      );
+      setStep('forgot_new_password');
+    } catch (err: any) {
+      const code = err.data?.error?.code || null;
+      setErrorCode(code);
+      setErrorMessage(err.message || 'Mã OTP không chính xác hoặc đã hết hạn.');
+      setOtpShakeKey((k) => k + 1);
+      applyRateLimitCooldown(err);
+      if (code === 'OTP_ACCOUNT_LOCKED' || code === 'OTP_MAX_ATTEMPTS_EXCEEDED') {
+        setIsLocked(true);
+      }
+      if (err.data?.error?.details?.remainingAttempts !== undefined) {
+        setRemainingAttempts(err.data.error.details.remainingAttempts);
+      }
+    } finally {
+      otpAutoVerifyingRef.current = false;
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleForgotVerifyOtp = (e: React.FormEvent) => {
+    e.preventDefault();
+    void verifyForgotOtpCode();
+  };
+
+  /** Quên mật khẩu (Bước 3/3): Đặt mật khẩu mới sau khi đã xác thực OTP thành công */
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetToken) {
+      setErrorMessage('Phiên xác thực OTP đã hết hạn. Vui lòng xác thực lại từ đầu.');
+      setStep('forgot_email');
       return;
     }
     if (!newPassword || newPassword.length < 6) {
@@ -330,13 +426,14 @@ export const LoginPage: React.FC = () => {
     try {
       const res = await api.post<{ message: string }>('/auth/password/reset', {
         email: email.trim().toLowerCase(),
-        otp: fullOtp,
+        resetToken,
         newPassword,
       });
       setPassword('');
       setNewPassword('');
       setConfirmPassword('');
       setOtp(['', '', '', '', '', '']);
+      setResetToken(null);
       setAuthTab('login');
       setLoginSubMode('password');
       setStep('form');
@@ -348,59 +445,27 @@ export const LoginPage: React.FC = () => {
       const code = err.data?.error?.code || null;
       setErrorCode(code);
       setErrorMessage(err.message || 'Không thể đặt lại mật khẩu.');
-      if (code === 'OTP_ACCOUNT_LOCKED' || code === 'OTP_MAX_ATTEMPTS_EXCEEDED') {
-        setIsLocked(true);
-      }
-      if (err.data?.error?.details?.remainingAttempts !== undefined) {
-        setRemainingAttempts(err.data.error.details.remainingAttempts);
+      applyRateLimitCooldown(err);
+      if (code === 'RESET_TOKEN_INVALID' || code === 'RESET_TOKEN_EXPIRED') {
+        setResetToken(null);
+        setStep('forgot_email');
       }
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleOtpChange = (index: number, value: string, prefix = 'otp') => {
-    if (value.length > 1) {
-      const digits = value.replace(/\D/g, '').slice(0, 6).split('');
-      const newOtp = [...otp];
-      digits.forEach((d, i) => {
-        if (i < 6) newOtp[i] = d;
-      });
-      setOtp(newOtp);
-      const nextInput = document.getElementById(`${prefix}-${Math.min(5, digits.length)}`);
-      nextInput?.focus();
-      return;
-    }
+  const verifyLoginOtpCode = async (codeOverride?: string) => {
+    if (otpAutoVerifyingRef.current || isLocked || actionCooldown > 0) return;
 
-    const newOtp = [...otp];
-    newOtp[index] = value.replace(/\D/g, '');
-    setOtp(newOtp);
-
-    if (value && index < 5) {
-      const nextInput = document.getElementById(`${prefix}-${index + 1}`);
-      nextInput?.focus();
-    }
-  };
-
-  const handleOtpKeyDown = (
-    index: number,
-    e: React.KeyboardEvent<HTMLInputElement>,
-    prefix = 'otp'
-  ) => {
-    if (e.key === 'Backspace' && !otp[index] && index > 0) {
-      const prevInput = document.getElementById(`${prefix}-${index - 1}`);
-      prevInput?.focus();
-    }
-  };
-
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const fullOtp = otp.join('');
+    const fullOtp = codeOverride ?? otp.join('');
     if (fullOtp.length !== 6) {
       setErrorMessage('Vui lòng nhập đủ 6 chữ số mã OTP.');
+      setOtpShakeKey((k) => k + 1);
       return;
     }
 
+    otpAutoVerifyingRef.current = true;
     setIsSubmitting(true);
     clearAlerts();
 
@@ -415,6 +480,8 @@ export const LoginPage: React.FC = () => {
       const code = err.data?.error?.code || null;
       setErrorCode(code);
       setErrorMessage(err.message || 'Mã OTP không chính xác.');
+      setOtpShakeKey((k) => k + 1);
+      applyRateLimitCooldown(err);
       if (code === 'OTP_ACCOUNT_LOCKED' || code === 'OTP_MAX_ATTEMPTS_EXCEEDED') {
         setIsLocked(true);
       }
@@ -422,8 +489,14 @@ export const LoginPage: React.FC = () => {
         setRemainingAttempts(err.data.error.details.remainingAttempts);
       }
     } finally {
+      otpAutoVerifyingRef.current = false;
       setIsSubmitting(false);
     }
+  };
+
+  const handleVerifyOtp = (e: React.FormEvent) => {
+    e.preventDefault();
+    void verifyLoginOtpCode();
   };
 
   /** Đăng nhập Google OAuth2 qua GIS Popup hoặc Authorization Code Flow fallback */
@@ -517,6 +590,8 @@ export const LoginPage: React.FC = () => {
     setInfoMessage(null);
     setSuccessMessage(null);
     setIsLocked(false);
+    setResetToken(null);
+    setOtp(['', '', '', '', '', '']);
     setStep('forgot_email');
   };
 
@@ -556,7 +631,10 @@ export const LoginPage: React.FC = () => {
     </svg>
   );
 
-  const isForgotStep = step === 'forgot_email' || step === 'forgot_reset';
+  const isForgotStep =
+    step === 'forgot_email' || step === 'forgot_otp' || step === 'forgot_new_password';
+  const forgotStepIndex =
+    step === 'forgot_email' ? 1 : step === 'forgot_otp' ? 2 : step === 'forgot_new_password' ? 3 : 0;
 
   // 120fps zero-re-render 2.5D mouse parallax refs (HoYoverse /vi/home style)
   const bgLayerRef = useRef<HTMLDivElement>(null);
@@ -635,27 +713,81 @@ export const LoginPage: React.FC = () => {
       >
         <div className="p-5 sm:p-7 space-y-4 sm:space-y-5 rounded-2xl bg-white/95 backdrop-blur-md border border-[#EAE3DE] border-t-[3px] border-t-[#C41E3A] shadow-[0_22px_50px_-20px_rgba(24,20,21,0.18)]">
           {/* Header with Bespoke Hanzi4U Crimson Seal */}
-          <div className="text-center space-y-2">
+          <div className="text-center space-y-1.5">
             <div className="inline-flex items-center justify-center mb-1">
-              <HanziLogoMark variant="light" className="w-12 h-12" />
+              <HanziLogoMark variant="light" className="w-11 h-11 sm:w-12 sm:h-12" />
             </div>
-            <h2 className="text-2xl font-display font-extrabold text-[#181415] tracking-tight">
+            <h2 className="text-xl sm:text-2xl font-display font-extrabold text-[#181415] tracking-tight">
               {isForgotStep ? (
                 'Đặt lại mật khẩu'
+              ) : step === 'otp_verify' ? (
+                'Xác thực mã OTP'
               ) : (
                 <>
                   Chào mừng đến với <span className="text-[#C41E3A]">Hanzi4U</span>
                 </>
               )}
             </h2>
-            <p className="text-xs sm:text-sm text-[#5F5658]">
-              {step === 'forgot_email'
-                ? 'Nhập Gmail đã đăng ký để nhận mã xác thực OTP'
-                : step === 'forgot_reset'
-                  ? 'Nhập mã OTP từ Gmail và tạo mật khẩu mới của bạn'
+            {(step === 'form' || step === 'forgot_email') && (
+              <p className="text-xs sm:text-sm text-[#5F5658]">
+                {step === 'forgot_email'
+                  ? 'Nhập Gmail đã đăng ký để nhận mã OTP'
                   : 'Bắt đầu hành trình chinh phục tiếng Trung HSK'}
-            </p>
+              </p>
+            )}
           </div>
+
+          {/* 3-Step Visual Progress Stepper for Forgot Password */}
+          {isForgotStep && (
+            <div className="flex items-center justify-between gap-1.5 px-2 py-2 rounded-xl bg-[#FAF8F6] border border-[#EAE3DE]">
+              {[
+                { idx: 1, label: 'Email' },
+                { idx: 2, label: 'Mã OTP' },
+                { idx: 3, label: 'Mật khẩu mới' },
+              ].map((item, i) => {
+                const done = forgotStepIndex > item.idx;
+                const active = forgotStepIndex === item.idx;
+                return (
+                  <React.Fragment key={item.idx}>
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span
+                        className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold transition-colors shrink-0 ${
+                          done
+                            ? 'bg-[#00A86B] text-white'
+                            : active
+                              ? 'bg-[#C41E3A] text-white shadow-[0_0_0_3px_rgba(196,30,58,0.14)]'
+                              : 'bg-[#E8E1DC] text-[#78716C]'
+                        }`}
+                      >
+                        {done ? <Check className="w-3 h-3 stroke-[3]" /> : item.idx}
+                      </span>
+                      <span
+                        className={`text-[11px] font-semibold truncate ${
+                          active
+                            ? 'text-[#181415]'
+                            : done
+                              ? 'text-[#00A86B]'
+                              : 'text-[#8C7F82]'
+                        }`}
+                      >
+                        {item.label}
+                      </span>
+                    </div>
+                    {i < 2 && (
+                      <div className="flex-1 h-[2px] rounded-full bg-[#E8E1DC] overflow-hidden min-w-[14px]">
+                        <motion.div
+                          initial={false}
+                          animate={{ scaleX: forgotStepIndex > item.idx ? 1 : 0 }}
+                          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                          className="h-full w-full origin-left bg-[#00A86B]"
+                        />
+                      </div>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </div>
+          )}
 
           {/* Clean Segmented Tab Switcher */}
           {step === 'form' && (
@@ -691,91 +823,110 @@ export const LoginPage: React.FC = () => {
             </div>
           )}
 
-          {/* Success Alert (e.g. after password reset) */}
-          {successMessage && !errorMessage && (
-            <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs font-medium flex items-start gap-2.5">
-              <CheckCircle2 className="w-4 h-4 text-[#00A86B] shrink-0 mt-0.5" aria-hidden="true" />
-              <span>{successMessage}</span>
-            </div>
-          )}
+          {/* Animated Contextual Alerts */}
+          <AnimatePresence mode="wait">
+            {successMessage && !errorMessage && (
+              <motion.div
+                key="success-alert"
+                initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.2 }}
+                className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs font-medium flex items-start gap-2.5"
+              >
+                <CheckCircle2 className="w-4 h-4 text-[#00A86B] shrink-0 mt-0.5" aria-hidden="true" />
+                <span>{successMessage}</span>
+              </motion.div>
+            )}
 
-          {/* Info Notice */}
-          {infoMessage && step === 'form' && !errorMessage && !successMessage && (
-            <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-xs font-medium flex items-center gap-2.5">
-              <ShieldCheck className="w-4 h-4 text-[#D4A017] shrink-0" aria-hidden="true" />
-              <span>{infoMessage}</span>
-            </div>
-          )}
+            {infoMessage && step === 'form' && !errorMessage && !successMessage && (
+              <motion.div
+                key="info-alert"
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.2 }}
+                className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-xs font-medium flex items-center gap-2.5"
+              >
+                <ShieldCheck className="w-4 h-4 text-[#D4A017] shrink-0" aria-hidden="true" />
+                <span>{infoMessage}</span>
+              </motion.div>
+            )}
 
-          {/* Error Alert with Smart Contextual Shortcut */}
-          {errorMessage && (
-            <div
-              role="alert"
-              className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 flex items-start gap-2.5 text-[#9E162E] text-xs"
-            >
-              <AlertTriangle className="w-4 h-4 shrink-0 text-[#C41E3A] mt-0.5" aria-hidden="true" />
-              <div className="space-y-2 flex-1">
-                <p className="font-semibold leading-snug">{errorMessage}</p>
-                {remainingAttempts !== null && !isLocked && step !== 'form' && (
-                  <p className="text-[11px] text-[#9E162E]/85">
-                    Lưu ý: Nhập sai quá 5 lần sẽ tạm khóa xác thực trong 15 phút.
-                  </p>
-                )}
+            {errorMessage && (
+              <motion.div
+                key={`error-alert-${errorCode}-${errorMessage}`}
+                initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.2 }}
+                role="alert"
+                className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 flex items-start gap-2.5 text-[#9E162E] text-xs"
+              >
+                <AlertTriangle className="w-4 h-4 shrink-0 text-[#C41E3A] mt-0.5" aria-hidden="true" />
+                <div className="space-y-1.5 flex-1">
+                  <p className="font-semibold leading-snug">{errorMessage}</p>
 
-                {errorCode === 'ACCOUNT_NOT_FOUND' && (step === 'form' || step === 'forgot_email') && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAuthTab('register');
-                      setStep('form');
-                      clearAlerts();
-                    }}
-                    className="inline-flex items-center gap-1 text-xs font-bold text-[#C41E3A] hover:text-[#9E162E] underline underline-offset-2 cursor-pointer"
-                  >
-                    <span>Tạo tài khoản mới với email này</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-                )}
+                  {actionCooldown > 0 && (
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/80 border border-rose-200/80 text-[11px] font-semibold text-[#9E162E]">
+                      <Clock className="w-3.5 h-3.5 text-[#C41E3A]" aria-hidden="true" />
+                      <span>Có thể thao tác lại sau {actionCooldown} giây</span>
+                    </div>
+                  )}
 
-                {(errorCode === 'PASSWORD_NOT_SET' ||
-                  errorCode === 'INVALID_PASSWORD' ||
-                  errorCode === 'LOGIN_ACCOUNT_LOCKED') &&
-                  step === 'form' && (
+                  {remainingAttempts !== null && !isLocked && step !== 'form' && (
+                    <p className="text-[11px] text-[#9E162E]/85">
+                      Lưu ý: Nhập sai quá 5 lần sẽ tạm khóa xác thực trong 15 phút.
+                    </p>
+                  )}
+
+                  {errorCode === 'ACCOUNT_NOT_FOUND' && (step === 'form' || step === 'forgot_email') && (
                     <button
                       type="button"
-                      onClick={openForgotPasswordFlow}
+                      onClick={() => {
+                        setAuthTab('register');
+                        setStep('form');
+                        clearAlerts();
+                      }}
                       className="inline-flex items-center gap-1 text-xs font-bold text-[#C41E3A] hover:text-[#9E162E] underline underline-offset-2 cursor-pointer"
                     >
-                      <span>Quên mật khẩu? Đặt lại qua Gmail OTP</span>
+                      <span>Tạo tài khoản mới với email này</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </button>
                   )}
 
-                {errorCode === 'EMAIL_ALREADY_REGISTERED' && step === 'form' && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAuthTab('login');
-                      setLoginSubMode('password');
-                      clearAlerts();
-                    }}
-                    className="inline-flex items-center gap-1 text-xs font-bold text-[#C41E3A] hover:text-[#9E162E] underline underline-offset-2 cursor-pointer"
-                  >
-                    <span>Chuyển sang tab Đăng nhập</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
+                  {(errorCode === 'PASSWORD_NOT_SET' ||
+                    errorCode === 'INVALID_PASSWORD' ||
+                    errorCode === 'LOGIN_ACCOUNT_LOCKED') &&
+                    step === 'form' && (
+                      <button
+                        type="button"
+                        onClick={openForgotPasswordFlow}
+                        className="inline-flex items-center gap-1 text-xs font-bold text-[#C41E3A] hover:text-[#9E162E] underline underline-offset-2 cursor-pointer"
+                      >
+                        <span>Quên mật khẩu? Đặt lại qua Gmail OTP</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    )}
 
-          {/* OTP Dispatched Alert */}
-          {infoMessage && (step === 'otp_verify' || step === 'forgot_reset') && !errorMessage && (
-            <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-900 text-xs flex items-center gap-2.5">
-              <CheckCircle2 className="w-4 h-4 text-[#00A86B] shrink-0" aria-hidden="true" />
-              <span>{infoMessage}</span>
-            </div>
-          )}
+                  {errorCode === 'EMAIL_ALREADY_REGISTERED' && step === 'form' && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthTab('login');
+                        setLoginSubMode('password');
+                        clearAlerts();
+                      }}
+                      className="inline-flex items-center gap-1 text-xs font-bold text-[#C41E3A] hover:text-[#9E162E] underline underline-offset-2 cursor-pointer"
+                    >
+                      <span>Chuyển sang tab Đăng nhập</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <AnimatePresence mode="wait">
             {/* STEP 1A: Register */}
@@ -806,6 +957,7 @@ export const LoginPage: React.FC = () => {
                       type="text"
                       required
                       placeholder="Nguyễn Văn A"
+                      autoComplete="name"
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
                       className={inputCls}
@@ -830,6 +982,7 @@ export const LoginPage: React.FC = () => {
                       type="email"
                       required
                       placeholder="ten_cua_ban@gmail.com"
+                      autoComplete="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className={inputCls}
@@ -855,6 +1008,7 @@ export const LoginPage: React.FC = () => {
                       required
                       minLength={6}
                       placeholder="Tối thiểu 6 ký tự"
+                      autoComplete="new-password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className={passwordInputCls}
@@ -872,10 +1026,16 @@ export const LoginPage: React.FC = () => {
 
                 <button
                   type="submit"
-                  disabled={isSubmitting || isGoogleLoading}
+                  disabled={isSubmitting || isGoogleLoading || actionCooldown > 0}
                   className={submitBtnCls}
                 >
-                  <span>{isSubmitting ? 'Đang gửi mã xác nhận...' : 'Tiếp tục'}</span>
+                  <span>
+                    {actionCooldown > 0
+                      ? `Vui lòng chờ ${actionCooldown}s...`
+                      : isSubmitting
+                        ? 'Đang gửi mã xác nhận...'
+                        : 'Tiếp tục'}
+                  </span>
                   <ArrowRight className="w-4 h-4" aria-hidden="true" />
                 </button>
 
@@ -925,6 +1085,7 @@ export const LoginPage: React.FC = () => {
                       type="email"
                       required
                       placeholder="ten_cua_ban@gmail.com"
+                      autoComplete="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className={inputCls}
@@ -950,6 +1111,7 @@ export const LoginPage: React.FC = () => {
                         type={showPassword ? 'text' : 'password'}
                         required
                         placeholder="Nhập mật khẩu của bạn"
+                        autoComplete="current-password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         className={passwordInputCls}
@@ -977,15 +1139,17 @@ export const LoginPage: React.FC = () => {
 
                 <button
                   type="submit"
-                  disabled={isSubmitting || isGoogleLoading}
+                  disabled={isSubmitting || isGoogleLoading || actionCooldown > 0}
                   className={submitBtnCls}
                 >
                   <span>
-                    {isSubmitting
-                      ? 'Đang xử lý...'
-                      : loginSubMode === 'password'
-                        ? 'Đăng nhập'
-                        : 'Gửi mã xác nhận'}
+                    {actionCooldown > 0
+                      ? `Vui lòng chờ ${actionCooldown}s...`
+                      : isSubmitting
+                        ? 'Đang xử lý...'
+                        : loginSubMode === 'password'
+                          ? 'Đăng nhập'
+                          : 'Gửi mã xác nhận'}
                   </span>
                   <ArrowRight className="w-4 h-4" aria-hidden="true" />
                 </button>
@@ -1028,35 +1192,31 @@ export const LoginPage: React.FC = () => {
             {step === 'otp_verify' && (
               <motion.form
                 key="otp-form"
-                initial={{ opacity: 0, scale: 0.98 }}
+                initial={{ opacity: 0, scale: 0.97 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.98 }}
-                transition={{ duration: 0.16 }}
+                exit={{ opacity: 0, scale: 0.97 }}
+                transition={{ duration: 0.2 }}
                 onSubmit={handleVerifyOtp}
-                className="space-y-5"
+                className="space-y-4"
               >
-                <div className="text-center space-y-1">
-                  <span className="text-xs text-[#5F5658]">Mã xác nhận 6 chữ số đã gửi đến</span>
-                  <p className="text-sm font-semibold text-[#181415]">{email}</p>
+                <div
+                  title={email}
+                  className="flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-emerald-50/80 border border-emerald-200/75 text-xs text-emerald-900"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#00A86B] shrink-0" aria-hidden="true" />
+                  <span className="truncate">
+                    Đã gửi OTP về <strong className="font-semibold text-[#181415]">{email}</strong>
+                  </span>
                 </div>
 
-                <div className="flex items-center justify-center gap-2">
-                  {otp.map((digit, idx) => (
-                    <input
-                      key={idx}
-                      id={`otp-${idx}`}
-                      type="text"
-                      inputMode="numeric"
-                      aria-label={`Chữ số OTP thứ ${idx + 1}`}
-                      maxLength={1}
-                      value={digit}
-                      onChange={(e) => handleOtpChange(idx, e.target.value, 'otp')}
-                      onKeyDown={(e) => handleOtpKeyDown(idx, e, 'otp')}
-                      disabled={isLocked}
-                      className="w-11 h-12 text-center text-lg font-bold rounded-xl border border-[#EAE3DE] bg-white text-[#181415] focus:outline-none focus:border-[#C41E3A] focus:ring-2 focus:ring-[#C41E3A]/15 transition-all"
-                    />
-                  ))}
-                </div>
+                <AnimatedOtpInput
+                  value={otp}
+                  onChange={setOtp}
+                  disabled={isLocked || isSubmitting}
+                  errorShakeKey={otpShakeKey}
+                  idPrefix="otp"
+                  onComplete={(fullOtp) => void verifyLoginOtpCode(fullOtp)}
+                />
 
                 <div className="flex items-center justify-between text-xs px-1">
                   <div className="flex items-center gap-1.5 text-[#5F5658] font-mono">
@@ -1066,23 +1226,30 @@ export const LoginPage: React.FC = () => {
 
                   <button
                     type="button"
-                    disabled={countdown > 0 || isSubmitting || isLocked}
+                    disabled={countdown > 0 || isSubmitting || isLocked || actionCooldown > 0}
                     onClick={() => handleSendOtp()}
                     className="flex items-center gap-1 text-[#C41E3A] hover:text-[#9E162E] font-semibold cursor-pointer disabled:opacity-40"
                   >
                     <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
-                    Gửi lại mã
+                    <span>{actionCooldown > 0 ? `Chờ ${actionCooldown}s` : 'Gửi lại mã'}</span>
                   </button>
                 </div>
 
-                <button
+                <motion.button
+                  whileTap={{ scale: 0.985 }}
                   type="submit"
-                  disabled={isSubmitting || isLocked}
+                  disabled={isSubmitting || isLocked || actionCooldown > 0}
                   className={submitBtnCls}
                 >
-                  <span>{isSubmitting ? 'Đang xác nhận...' : 'Xác nhận & Đăng nhập'}</span>
+                  <span>
+                    {actionCooldown > 0
+                      ? `Vui lòng chờ ${actionCooldown}s...`
+                      : isSubmitting
+                        ? 'Đang xác nhận...'
+                        : 'Xác nhận & Đăng nhập'}
+                  </span>
                   <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
-                </button>
+                </motion.button>
 
                 <button
                   type="button"
@@ -1098,7 +1265,7 @@ export const LoginPage: React.FC = () => {
               </motion.form>
             )}
 
-            {/* STEP 3A: Forgot Password — Request Gmail OTP */}
+            {/* STEP 3A: Forgot Password — 1/3 Request Gmail OTP */}
             {step === 'forgot_email' && (
               <motion.form
                 key="forgot-email-form"
@@ -1126,6 +1293,7 @@ export const LoginPage: React.FC = () => {
                       type="email"
                       required
                       placeholder="ten_cua_ban@gmail.com"
+                      autoComplete="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className={inputCls}
@@ -1133,8 +1301,18 @@ export const LoginPage: React.FC = () => {
                   </div>
                 </div>
 
-                <button type="submit" disabled={isSubmitting} className={submitBtnCls}>
-                  <span>{isSubmitting ? 'Đang gửi mã OTP...' : 'Gửi mã OTP về Gmail'}</span>
+                <button
+                  type="submit"
+                  disabled={isSubmitting || actionCooldown > 0}
+                  className={submitBtnCls}
+                >
+                  <span>
+                    {actionCooldown > 0
+                      ? `Vui lòng chờ ${actionCooldown}s...`
+                      : isSubmitting
+                        ? 'Đang gửi mã OTP...'
+                        : 'Gửi mã OTP về Gmail'}
+                  </span>
                   <ArrowRight className="w-4 h-4" aria-hidden="true" />
                 </button>
 
@@ -1153,39 +1331,35 @@ export const LoginPage: React.FC = () => {
               </motion.form>
             )}
 
-            {/* STEP 3B: Forgot Password — Enter OTP + New Password */}
-            {step === 'forgot_reset' && (
+            {/* STEP 3B: Forgot Password — 2/3 Verify OTP ONLY (Password form unlocks next) */}
+            {step === 'forgot_otp' && (
               <motion.form
-                key="forgot-reset-form"
-                initial={{ opacity: 0, scale: 0.97 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.97 }}
-                transition={{ duration: 0.22 }}
-                onSubmit={handleResetPassword}
+                key="forgot-otp-form"
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.2 }}
+                onSubmit={handleForgotVerifyOtp}
                 className="space-y-4"
               >
-                <div className="text-center space-y-1">
-                  <span className="text-xs text-[#5F5658]">Mã OTP đặt lại mật khẩu đã gửi tới</span>
-                  <p className="text-sm font-bold text-[#181415]">{email}</p>
+                <div
+                  title={email}
+                  className="flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-emerald-50/80 border border-emerald-200/75 text-xs text-emerald-900"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#00A86B] shrink-0" aria-hidden="true" />
+                  <span className="truncate">
+                    Đã gửi OTP về <strong className="font-semibold text-[#181415]">{email}</strong>
+                  </span>
                 </div>
 
-                <div className="flex items-center justify-center gap-2">
-                  {otp.map((digit, idx) => (
-                    <input
-                      key={idx}
-                      id={`reset-otp-${idx}`}
-                      type="text"
-                      inputMode="numeric"
-                      aria-label={`Mã OTP đặt lại mật khẩu số ${idx + 1}`}
-                      maxLength={1}
-                      value={digit}
-                      onChange={(e) => handleOtpChange(idx, e.target.value, 'reset-otp')}
-                      onKeyDown={(e) => handleOtpKeyDown(idx, e, 'reset-otp')}
-                      disabled={isLocked}
-                      className="w-11 h-12 text-center text-lg font-extrabold rounded-xl border border-[#EAE3DE] bg-white text-[#181415] focus:outline-none focus:border-[#C41E3A] focus:ring-2 focus:ring-[#C41E3A]/15 transition-all"
-                    />
-                  ))}
-                </div>
+                <AnimatedOtpInput
+                  value={otp}
+                  onChange={setOtp}
+                  disabled={isLocked || isSubmitting}
+                  errorShakeKey={otpShakeKey}
+                  idPrefix="reset-otp"
+                  onComplete={(fullOtp) => void verifyForgotOtpCode(fullOtp)}
+                />
 
                 <div className="flex items-center justify-between text-xs px-1">
                   <div className="flex items-center gap-1.5 text-[#5F5658] font-mono">
@@ -1194,13 +1368,64 @@ export const LoginPage: React.FC = () => {
                   </div>
                   <button
                     type="button"
-                    disabled={countdown > 0 || isSubmitting || isLocked}
+                    disabled={countdown > 0 || isSubmitting || isLocked || actionCooldown > 0}
                     onClick={() => handleForgotSendOtp()}
                     className="flex items-center gap-1 text-[#C41E3A] hover:text-[#9E162E] font-semibold cursor-pointer disabled:opacity-40"
                   >
                     <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
-                    Gửi lại mã
+                    <span>{actionCooldown > 0 ? `Chờ ${actionCooldown}s` : 'Gửi lại mã'}</span>
                   </button>
+                </div>
+
+                <motion.button
+                  whileTap={{ scale: 0.985 }}
+                  type="submit"
+                  disabled={isSubmitting || isLocked || actionCooldown > 0}
+                  className={submitBtnCls}
+                >
+                  <span>
+                    {actionCooldown > 0
+                      ? `Vui lòng chờ ${actionCooldown}s...`
+                      : isSubmitting
+                        ? 'Đang kiểm tra mã OTP...'
+                        : 'Xác thực mã OTP'}
+                  </span>
+                  <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                </motion.button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStep('forgot_email');
+                    clearAlerts();
+                    setInfoMessage(null);
+                  }}
+                  className="w-full text-center text-xs text-[#5F5658] hover:text-[#181415] transition-colors cursor-pointer"
+                >
+                  ← Đổi email khác
+                </button>
+              </motion.form>
+            )}
+
+            {/* STEP 3C: Forgot Password — 3/3 Set New Password (Shown ONLY after OTP verified) */}
+            {step === 'forgot_new_password' && (
+              <motion.form
+                key="forgot-new-password-form"
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.22 }}
+                onSubmit={handleResetPassword}
+                className="space-y-3.5"
+              >
+                <div
+                  title={email}
+                  className="flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-emerald-50/80 border border-emerald-200/75 text-xs text-emerald-900"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#00A86B] shrink-0" aria-hidden="true" />
+                  <span className="truncate">
+                    Đã xác thực <strong className="font-semibold text-[#181415]">{email}</strong>
+                  </span>
                 </div>
 
                 <div>
@@ -1221,9 +1446,9 @@ export const LoginPage: React.FC = () => {
                       required
                       minLength={6}
                       placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)"
+                      autoComplete="new-password"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
-                      disabled={isLocked}
                       className={passwordInputCls}
                     />
                     <button
@@ -1255,33 +1480,46 @@ export const LoginPage: React.FC = () => {
                       required
                       minLength={6}
                       placeholder="Nhập lại mật khẩu mới"
+                      autoComplete="new-password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      disabled={isLocked}
                       className={inputCls}
                     />
                   </div>
+                  {confirmPassword.length > 0 && confirmPassword !== newPassword && (
+                    <p className="text-[11px] text-[#C41E3A] font-medium mt-1 px-1">
+                      Mật khẩu xác nhận chưa khớp.
+                    </p>
+                  )}
                 </div>
 
                 <button
                   type="submit"
-                  disabled={isSubmitting || isLocked}
+                  disabled={isSubmitting || actionCooldown > 0}
                   className={submitBtnCls}
                 >
-                  <span>{isSubmitting ? 'Đang cập nhật mật khẩu...' : 'Xác nhận đặt lại mật khẩu'}</span>
+                  <span>
+                    {actionCooldown > 0
+                      ? `Vui lòng chờ ${actionCooldown}s...`
+                      : isSubmitting
+                        ? 'Đang cập nhật mật khẩu...'
+                        : 'Cập nhật mật khẩu mới'}
+                  </span>
                   <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
                 </button>
 
                 <button
                   type="button"
                   onClick={() => {
-                    setStep('forgot_email');
+                    setStep('form');
+                    setAuthTab('login');
+                    setResetToken(null);
                     clearAlerts();
                     setInfoMessage(null);
                   }}
                   className="w-full text-center text-xs text-[#5F5658] hover:text-[#181415] transition-colors cursor-pointer"
                 >
-                  ← Đổi email khác
+                  ← Hủy & quay lại Đăng nhập
                 </button>
               </motion.form>
             )}

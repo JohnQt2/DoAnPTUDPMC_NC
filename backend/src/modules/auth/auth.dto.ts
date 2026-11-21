@@ -61,14 +61,25 @@ export const ForgotPasswordSendOtpDto = z.object({
   email: z.string().email('Địa chỉ email không đúng định dạng.').trim().toLowerCase(),
 });
 
-export const ResetPasswordWithOtpDto = z.object({
+export const ForgotPasswordVerifyOtpDto = z.object({
   email: z.string().email('Địa chỉ email không đúng định dạng.').trim().toLowerCase(),
   otp: z.string().regex(/^\d{6}$/, 'Mã OTP phải gồm đúng 6 chữ số.'),
-  newPassword: z
-    .string()
-    .min(6, 'Mật khẩu mới phải có ít nhất 6 ký tự.')
-    .max(128, 'Mật khẩu mới không được vượt quá 128 ký tự.'),
 });
+
+export const ResetPasswordWithOtpDto = z
+  .object({
+    email: z.string().email('Địa chỉ email không đúng định dạng.').trim().toLowerCase(),
+    otp: z.string().regex(/^\d{6}$/, 'Mã OTP phải gồm đúng 6 chữ số.').optional(),
+    resetToken: z.string().min(16, 'Phiên đặt lại mật khẩu không hợp lệ.').optional(),
+    newPassword: z
+      .string()
+      .min(6, 'Mật khẩu mới phải có ít nhất 6 ký tự.')
+      .max(128, 'Mật khẩu mới không được vượt quá 128 ký tự.'),
+  })
+  .refine((data) => Boolean(data.resetToken || data.otp), {
+    message: 'Thiếu mã xác thực OTP hoặc phiên đặt lại mật khẩu.',
+    path: ['otp'],
+  });
 
 export type RegisterInput = z.infer<typeof RegisterDto>;
 export type SendOtpInput = z.infer<typeof SendOtpDto>;
@@ -77,4 +88,5 @@ export type LoginPasswordInput = z.infer<typeof LoginPasswordDto>;
 export type GoogleAuthInput = z.infer<typeof GoogleAuthDto>;
 export type RefreshTokenInput = z.infer<typeof RefreshTokenDto>;
 export type ForgotPasswordSendOtpInput = z.infer<typeof ForgotPasswordSendOtpDto>;
+export type ForgotPasswordVerifyOtpInput = z.infer<typeof ForgotPasswordVerifyOtpDto>;
 export type ResetPasswordWithOtpInput = z.infer<typeof ResetPasswordWithOtpDto>;

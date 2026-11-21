@@ -4,6 +4,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import { saveInProgressLessonId } from './lib/resumeLesson';
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
+import { HanziLogo } from './components/HanziLogo';
 import { HanziLoadingScreen } from './components/landing/ArchitecturalOrnaments';
 import {
   MeshBackground,
@@ -111,15 +112,15 @@ const AppContent: React.FC = () => {
 
     const redirectUrl = `#/login?redirect=${encodeURIComponent(currentHash)}`;
     return (
-      <MeshBackground variant="dark" className="min-h-screen flex flex-col">
-        <Navbar currentPath={currentHash} theme="dark" />
+      <MeshBackground variant="light" showHanzi={false} className="min-h-screen flex flex-col text-[#1C1917]">
+        <Navbar currentPath={currentHash} theme="light" />
         <div className="flex-1 flex items-center justify-center px-4 py-16">
-          <GlassCard variant="dark" className="max-w-md w-full p-8 text-center space-y-5">
-            <div className="w-14 h-14 rounded-2xl bg-primary-500/20 border border-primary-400/30 text-primary-300 mx-auto flex items-center justify-center">
+          <GlassCard variant="light" className="max-w-md w-full p-8 text-center space-y-5">
+            <div className="w-14 h-14 rounded-2xl bg-[#C41E3A]/10 border border-[#C41E3A]/20 text-[#C41E3A] mx-auto flex items-center justify-center">
               <Lock className="w-7 h-7" />
             </div>
-            <h2 className="text-xl font-black text-white">Vui lòng đăng nhập</h2>
-            <p className="text-sm text-white/60 leading-relaxed">
+            <h2 className="text-xl font-black text-[#1C1917]">Vui lòng đăng nhập</h2>
+            <p className="text-sm text-[#57534E] leading-relaxed">
               Đăng nhập tài khoản Hanzi4U để tiếp tục học và lưu tiến độ cá nhân hóa của bạn.
             </p>
             <div className="space-y-2.5 pt-2">
@@ -129,9 +130,9 @@ const AppContent: React.FC = () => {
               </ShimmerButton>
               <a
                 href="#/"
-                className="w-full flex items-center justify-center gap-2 py-3 px-5 rounded-2xl border border-white/15 hover:bg-white/10 text-white/75 font-semibold text-xs transition-colors"
+                className="w-full flex items-center justify-center gap-2 py-3 px-5 rounded-2xl border border-[#1C1917]/15 bg-white/80 hover:bg-white text-[#57534E] hover:text-[#1C1917] font-semibold text-xs transition-colors"
               >
-                <Home className="w-4 h-4 text-white/50" />
+                <Home className="w-4 h-4 text-[#C41E3A]" />
                 <span>Về trang chủ</span>
               </a>
             </div>
@@ -156,7 +157,7 @@ const AppContent: React.FC = () => {
         : 'courses';
 
     return (
-      <MeshBackground variant="light" showHanzi={false} className="text-gray-900 font-sans">
+      <MeshBackground variant="light" showHanzi={false} className="text-[#1C1917] font-sans">
         <Sidebar
           currentPath={currentHash}
           collapsed={sidebarCollapsed}
@@ -191,16 +192,9 @@ const AppContent: React.FC = () => {
   // ──────────────────────────────────────────────────────────────────────────
   if (hasCompletedOnboarding === false) {
     return (
-      <MeshBackground variant="light" showHanzi={false} className="flex flex-col">
-        <header className="sticky top-0 z-40 bg-white/70 backdrop-blur-xl border-b border-white/80 h-16 px-4 sm:px-6 flex items-center justify-center shadow-sm shadow-gray-900/[0.02]">
-          <div className="flex items-center gap-2.5">
-            <span className="w-9 h-9 rounded-xl bg-gradient-to-tr from-primary-600 via-primary-500 to-secondary-500 text-white flex items-center justify-center font-chinese font-black text-lg shadow-sm">
-              汉
-            </span>
-            <span className="font-extrabold text-xl tracking-tight text-gray-900">
-              Hanzi<span className="text-primary-600">4U</span>
-            </span>
-          </div>
+      <MeshBackground variant="light" showHanzi={false} className="flex flex-col text-[#1C1917]">
+        <header className="sticky top-0 z-40 bg-[#FCFBF8]/88 backdrop-blur-xl border-b border-[#1C1917]/10 h-16 px-4 sm:px-6 flex items-center justify-center shadow-sm shadow-[#1C1917]/[0.03]">
+          <HanziLogo variant="light" size="md" showSubtitle={false} />
         </header>
         <main className="flex-1 pb-12">
           <PageTransition routeKey="onboarding-initial">

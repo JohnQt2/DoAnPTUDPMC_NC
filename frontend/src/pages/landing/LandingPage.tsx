@@ -596,16 +596,16 @@ export const LandingPage: React.FC = () => {
       ws.lastAbsDelta = absDelta;
 
       if (now < ws.lockUntil) {
-        // Allow intentional rapid discrete wheel notch after 260ms if user explicitly accelerated
-        if (!(isNewGesture && now >= ws.lockUntil - 160)) {
+        // Allow intentional rapid discrete wheel notch after 540ms if user explicitly accelerated
+        if (!(isNewGesture && now >= ws.lockUntil - 220)) {
           return;
         }
-      } else if (!isNewGesture && gap < 55) {
+      } else if (!isNewGesture && gap < 65) {
         // Ignore decaying trackpad inertia tail after lock expires
         return;
       }
 
-      ws.lockUntil = now + 420;
+      ws.lockUntil = now + 760;
       stepChapter(e.deltaY > 0 ? 1 : -1);
     };
 
@@ -665,19 +665,29 @@ export const LandingPage: React.FC = () => {
     setActiveHskLevel(level);
   }, []);
 
-  const resetSwipeOffset = useCallback(() => {
+  const resetSwipeOffset = useCallback((slideIdx: number) => {
     const el = swipeLayerRef.current;
     if (!el) return;
-    el.style.transition = 'transform 240ms cubic-bezier(0.22, 1, 0.36, 1)';
-    el.style.transform = 'translate3d(0, 0, 0)';
+    el.style.transitionDuration = '';
+    el.style.transform = `translate3d(0px, -${slideIdx * 100}%, 0px)`;
   }, []);
+
+  // Ensure vertical Swiper wrapper snaps cleanly to activeSlide with 800ms WuWa ease
+  useEffect(() => {
+    resetSwipeOffset(activeSlide);
+    const activeSec = document.querySelector<HTMLElement>(
+      `section[data-slide-idx="${activeSlide}"]`
+    );
+    if (activeSec && activeSec.scrollTop > 0) {
+      activeSec.scrollTop = 0;
+    }
+  }, [activeSlide, resetSwipeOffset]);
 
   const finishTouchSwipe = useCallback(
     (endY?: number, endX?: number) => {
       const g = touchGestureRef.current;
       if (!g.active) return;
       g.active = false;
-      resetSwipeOffset();
 
       const finalY = endY ?? g.lastY;
       const finalX = endX ?? g.lastX;
@@ -686,22 +696,35 @@ export const LandingPage: React.FC = () => {
       const elapsed = Math.max(1, performance.now() - g.startTime);
       const velocity = Math.abs(dy) / elapsed;
 
-      // Require vertical-dominant swipe and either >= 30px drag or crisp quick flick (>= 18px)
-      if (Math.abs(dy) < Math.abs(dx) * 1.05) return;
-      const isValidSwipe = Math.abs(dy) >= 30 || (Math.abs(dy) >= 18 && velocity >= 0.24);
-      if (!isValidSwipe) return;
+      // Require vertical-dominant swipe and either >= 28px drag or crisp quick flick (>= 16px)
+      if (Math.abs(dy) < Math.abs(dx) * 1.05) {
+        resetSwipeOffset(activeSlide);
+        return;
+      }
+      const isValidSwipe = Math.abs(dy) >= 28 || (Math.abs(dy) >= 16 && velocity >= 0.22);
+      if (!isValidSwipe) {
+        resetSwipeOffset(activeSlide);
+        return;
+      }
 
       if (g.isScrollable && g.section) {
         const atTopNow = g.section.scrollTop <= 14;
         const atBottomNow =
           g.section.scrollTop + g.section.clientHeight >= g.section.scrollHeight - 16;
-        if (dy > 0 && !(g.startedAtBottom || atBottomNow)) return;
-        if (dy < 0 && !(g.startedAtTop || atTopNow)) return;
+        if (dy > 0 && !(g.startedAtBottom || atBottomNow)) {
+          resetSwipeOffset(activeSlide);
+          return;
+        }
+        if (dy < 0 && !(g.startedAtTop || atTopNow)) {
+          resetSwipeOffset(activeSlide);
+          return;
+        }
       }
 
+      resetSwipeOffset(activeSlide);
       stepChapter(dy > 0 ? 1 : -1);
     },
-    [resetSwipeOffset, stepChapter]
+    [activeSlide, resetSwipeOffset, stepChapter]
   );
 
   const isHero = activeSlide === 0;
@@ -758,15 +781,15 @@ export const LandingPage: React.FC = () => {
         const dx = g.startX - touch.clientX;
         if (Math.abs(dy) <= Math.abs(dx)) return;
 
-        // Apply silky live elastic follow feedback when swiping across chapter boundaries (or on Hero)
+        // Live 120fps vertical Swiper drag preview across chapter boundaries (or on Hero)
         const canDragDown = !g.isScrollable || (dy > 0 && g.startedAtBottom);
         const canDragUp = !g.isScrollable || (dy < 0 && g.startedAtTop);
         if ((dy > 0 && canDragDown) || (dy < 0 && canDragUp && activeSlide > 0)) {
           const el = swipeLayerRef.current;
           if (el) {
-            const clamped = Math.max(-44, Math.min(44, -dy * 0.24));
-            el.style.transition = 'none';
-            el.style.transform = `translate3d(0, ${clamped.toFixed(1)}px, 0)`;
+            const clamped = Math.max(-72, Math.min(72, -dy * 0.35));
+            el.style.transitionDuration = '0ms';
+            el.style.transform = `translate3d(0px, calc(-${activeSlide * 100}% + ${clamped.toFixed(1)}px), 0px)`;
           }
         }
       }}
@@ -903,10 +926,12 @@ export const LandingPage: React.FC = () => {
       </nav>
 
       {/* ═══════════════════════════════════════════════════════════════════
-          PERSISTENT 5-CHAPTER FULL-VIEWPORT STAGE (1:1 SWIPER EFFECT-FADE)
-          All 5 chapters remain mounted in DOM & GPU memory for 0ms transitions!
+          1:1 WUTHERING WAVES 3.8 VERTICAL SWIPER (#page-swiper > .wuwa-swiper-wrapper)
+          - Vertical flex column translating -100% * activeSlide over 800ms ease
+          - Active slide toggles .an class for staggered left-slide & bottom-rise child entrances
       ═══════════════════════════════════════════════════════════════════ */}
       <div
+        id="page-swiper"
         style={{
           transform: showFooter
             ? 'translate3d(0, -136px, 0)'
@@ -915,20 +940,24 @@ export const LandingPage: React.FC = () => {
               : 'translate3d(0, 0, 0) scale(1)',
           opacity: isExitingToAuth ? 0 : 1,
         }}
-        className="relative w-full h-full transition-all duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform"
+        className="relative w-full h-full overflow-hidden transition-all duration-[400ms] ease-out will-change-transform"
       >
-        {/* Live 120fps Touch-Drag Follow Layer */}
-        <div ref={swipeLayerRef} className="relative w-full h-full will-change-transform">
+        <div
+          ref={swipeLayerRef}
+          style={{
+            transform: `translate3d(0px, -${activeSlide * 100}%, 0px)`,
+          }}
+          className="wuwa-swiper-wrapper"
+        >
         {/* ────────────────────────────────────────────────────────────────
             SLIDE 0: CALM DAYLIGHT EDITORIAL HERO (HoYoverse 2.5D Desk Parallax × Sunbeams)
         ──────────────────────────────────────────────────────────────── */}
         <section
           aria-hidden={activeSlide !== 0}
+          data-slide-idx={0}
           data-active-slide={activeSlide === 0 ? 'true' : undefined}
-          className={`absolute inset-0 w-full h-full overflow-hidden touch-none bg-[#F3EFE8] transition-opacity duration-[450ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[opacity] ${
-            activeSlide === 0
-              ? 'opacity-100 pointer-events-auto z-20'
-              : 'opacity-0 pointer-events-none z-10'
+          className={`wuwa-page-slide overflow-hidden touch-none bg-[#F3EFE8] ${
+            activeSlide === 0 && introLoaded ? 'an' : ''
           }`}
         >
           {/* Layer 1: 120fps 2.5D Perspective Mouse-Tracking Study Desk Photograph */}
@@ -967,51 +996,55 @@ export const LandingPage: React.FC = () => {
 
           <ArchitecturalBlueprintGrid className="opacity-50 sm:opacity-65" />
 
-          {/* Layer 4: Foreground Counter-Parallax Editorial Typography */}
+          {/* Layer 4: Foreground Counter-Parallax Editorial Typography (.main-container.component.an) */}
           <div className="relative z-20 h-full max-w-[1380px] mx-auto px-5 sm:px-12 lg:px-20 pt-14 pb-16 flex flex-col justify-center">
             <div ref={heroContentRef} className="max-w-xl space-y-3.5 sm:space-y-6 will-change-transform">
-              <div className="inline-flex items-center gap-2 sm:gap-3 text-[9.5px] sm:text-[11px] font-mono font-semibold uppercase tracking-[0.14em] sm:tracking-[0.2em] text-[#C41E3A]">
-                <span className="w-4 sm:w-6 h-[1.5px] bg-[#C41E3A]" />
-                <span>HỌC TIẾNG TRUNG CHUẨN HSK 1 — 6</span>
+              <div className="wuwa-hero-title space-y-2.5 sm:space-y-4">
+                <div className="inline-flex items-center gap-2 sm:gap-3 text-[9.5px] sm:text-[11px] font-mono font-semibold uppercase tracking-[0.14em] sm:tracking-[0.2em] text-[#C41E3A]">
+                  <span className="w-4 sm:w-6 h-[1.5px] bg-[#C41E3A]" />
+                  <span>HỌC TIẾNG TRUNG CHUẨN HSK 1 — 6</span>
+                </div>
+
+                <h1 className="font-display font-extrabold text-[24px] leading-[1.2] sm:text-5xl lg:text-[56px] sm:leading-[1.1] text-[#1C1917] tracking-[-0.025em] sm:tracking-[-0.028em]">
+                  Học tiếng Trung bài bản từ{' '}
+                  <span className="text-[#C41E3A]">những nét chữ đầu tiên</span>
+                </h1>
               </div>
 
-              <h1 className="font-display font-extrabold text-[24px] leading-[1.2] sm:text-5xl lg:text-[56px] sm:leading-[1.1] text-[#1C1917] tracking-[-0.025em] sm:tracking-[-0.028em]">
-                Học tiếng Trung bài bản từ{' '}
-                <span className="text-[#C41E3A]">những nét chữ đầu tiên</span>
-              </h1>
+              <div className="wuwa-hero-cta space-y-3.5 sm:space-y-5">
+                <p className="text-[13px] leading-[1.6] sm:text-[17px] sm:leading-relaxed text-[#44403C] max-w-lg">
+                  Luyện phát âm chuẩn đủ <strong>63 âm Pinyin</strong>, tập viết chữ Hán đúng thứ tự
+                  từng nét, ôn thẻ lật từ và giáo trình chuẩn HSK 1–6 trong không gian yên tĩnh, chỉ
+                  15 phút mỗi ngày.
+                </p>
 
-              <p className="text-[13px] leading-[1.6] sm:text-[17px] sm:leading-relaxed text-[#44403C] max-w-lg">
-                Luyện phát âm chuẩn đủ <strong>63 âm Pinyin</strong>, tập viết chữ Hán đúng thứ tự
-                từng nét, ôn thẻ lật từ và giáo trình chuẩn HSK 1–6 trong không gian yên tĩnh, chỉ
-                15 phút mỗi ngày.
-              </p>
+                <div className="pt-1 sm:pt-2 flex flex-wrap items-center gap-2.5 sm:gap-3.5">
+                  <a
+                    href="#/login?tab=register"
+                    onClick={handleNavigateAuth('#/login?tab=register')}
+                    className="h-10 sm:h-12 px-4 sm:px-7 rounded-lg bg-[#C41E3A] hover:bg-[#A51730] text-white font-semibold text-[12px] sm:text-sm inline-flex items-center gap-1.5 sm:gap-2 shadow-[0_10px_24px_-8px_rgba(196,30,58,0.45)] transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    <span>Bắt đầu học miễn phí</span>
+                    <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  </a>
 
-              <div className="pt-1 sm:pt-2 flex flex-wrap items-center gap-2.5 sm:gap-3.5">
-                <a
-                  href="#/login?tab=register"
-                  onClick={handleNavigateAuth('#/login?tab=register')}
-                  className="h-10 sm:h-12 px-4 sm:px-7 rounded-lg bg-[#C41E3A] hover:bg-[#A51730] text-white font-semibold text-[12px] sm:text-sm inline-flex items-center gap-1.5 sm:gap-2 shadow-[0_10px_24px_-8px_rgba(196,30,58,0.45)] transition-all hover:scale-[1.02] active:scale-[0.98]"
-                >
-                  <span>Bắt đầu học miễn phí</span>
-                  <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                </a>
+                  <button
+                    type="button"
+                    onClick={() => goToSlide(1)}
+                    className="h-10 sm:h-12 px-3.5 sm:px-6 rounded-lg bg-white/90 hover:bg-white text-[#1C1917] border border-[#1C1917]/20 hover:border-[#C41E3A]/50 font-semibold text-[12px] sm:text-sm inline-flex items-center gap-1.5 sm:gap-2 transition-colors cursor-pointer"
+                  >
+                    <span>Xem thử bài học</span>
+                    <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#C41E3A]" />
+                  </button>
+                </div>
 
-                <button
-                  type="button"
-                  onClick={() => goToSlide(1)}
-                  className="h-10 sm:h-12 px-3.5 sm:px-6 rounded-lg bg-white/90 hover:bg-white text-[#1C1917] border border-[#1C1917]/20 hover:border-[#C41E3A]/50 font-semibold text-[12px] sm:text-sm inline-flex items-center gap-1.5 sm:gap-2 transition-colors cursor-pointer"
-                >
-                  <span>Xem thử bài học</span>
-                  <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#C41E3A]" />
-                </button>
-              </div>
-
-              <div className="pt-3.5 sm:pt-6 border-t border-[#1C1917]/15 flex items-center gap-x-2 sm:gap-x-6 text-[9.5px] sm:text-xs font-mono text-[#57534E] whitespace-nowrap">
-                <span>63 Âm Pinyin</span>
-                <span className="text-[#C41E3A]">·</span>
-                <span>9.500+ Nét chữ Hán</span>
-                <span className="text-[#C41E3A]">·</span>
-                <span>Giáo trình HSK 1–6</span>
+                <div className="pt-3.5 sm:pt-6 border-t border-[#1C1917]/15 flex items-center gap-x-2 sm:gap-x-6 text-[9.5px] sm:text-xs font-mono text-[#57534E] whitespace-nowrap">
+                  <span>63 Âm Pinyin</span>
+                  <span className="text-[#C41E3A]">·</span>
+                  <span>9.500+ Nét chữ Hán</span>
+                  <span className="text-[#C41E3A]">·</span>
+                  <span>Giáo trình HSK 1–6</span>
+                </div>
               </div>
             </div>
           </div>
@@ -1023,20 +1056,22 @@ export const LandingPage: React.FC = () => {
           >
             <span className="sm:hidden">Vuốt lên · Bài 01 Thanh điệu</span>
             <span className="hidden sm:inline">Cuộn xuống · Bài 01 Thanh điệu</span>
-            <ChevronDown className="w-3 h-3 sm:w-3.5 sm:h-3.5 animate-bounce" />
+            <span className="relative inline-flex flex-col items-center justify-center w-3.5 h-4 -my-0.5">
+              <ChevronDown className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#C41E3A] animate-wuwa-chevron-1 -mb-2" />
+              <ChevronDown className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#C41E3A] animate-wuwa-chevron-2" />
+            </span>
           </button>
         </section>
 
         {/* ────────────────────────────────────────────────────────────────
-            SLIDE 1: 4 TONES & 63 PINYIN — CALM WATERCOLOR + PORCELAIN 3D
+            SLIDE 1: 4 TONES & 63 PINYIN — CALM WATERCOLOR + PORCELAIN 3D (.role-container.component.an)
         ──────────────────────────────────────────────────────────────── */}
         <section
           aria-hidden={activeSlide !== 1}
+          data-slide-idx={1}
           data-active-slide={activeSlide === 1 ? 'true' : undefined}
-          className={`absolute inset-0 w-full h-full overflow-y-auto lg:overflow-hidden bg-[#F5F2EC] transition-opacity duration-[450ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[opacity] ${
-            activeSlide === 1
-              ? 'opacity-100 pointer-events-auto z-20'
-              : 'opacity-0 pointer-events-none z-10'
+          className={`wuwa-page-slide overflow-y-auto lg:overflow-hidden bg-[#F5F2EC] ${
+            activeSlide === 1 ? 'an' : ''
           }`}
         >
           <div
@@ -1048,7 +1083,7 @@ export const LandingPage: React.FC = () => {
 
           <div className="relative z-10 min-h-full lg:h-full max-w-[1360px] mx-auto px-4 sm:px-14 lg:pl-24 lg:pr-14 pt-[62px] pb-[64px] lg:pt-14 lg:pb-16 grid grid-cols-1 lg:grid-cols-12 items-center gap-3 sm:gap-6">
             <div className="lg:col-span-5 flex flex-col justify-center space-y-3.5 sm:space-y-9 py-0.5 lg:py-2">
-              <div className="flex items-start justify-between gap-2">
+              <div className="wuwa-title-box flex items-start justify-between gap-2">
                 <div>
                   <span className="font-mono text-[9.5px] sm:text-[11px] font-semibold uppercase tracking-[0.18em] sm:tracking-[0.2em] text-[#C41E3A]">
                     01 · NGỮ ÂM PHỔ THÔNG
@@ -1084,7 +1119,7 @@ export const LandingPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="space-y-2 sm:space-y-4">
+              <div className="wuwa-intr-box space-y-2 sm:space-y-4">
                 <p className="font-hanzi-serif text-[11px] sm:text-sm tracking-[0.12em] sm:tracking-[0.16em] text-[#78716C]">
                   {activeSpecimen.phonetic}
                 </p>
@@ -1118,7 +1153,7 @@ export const LandingPage: React.FC = () => {
                 </p>
               </div>
 
-              <div className="space-y-1.5 sm:space-y-2.5">
+              <div className="wuwa-avatar-nav space-y-1.5 sm:space-y-2.5">
                 <p className="text-[9.5px] sm:text-[10.5px] font-mono uppercase tracking-[0.16em] sm:tracking-[0.18em] text-[#78716C]">
                   Chạm vào chữ để nghe phát âm
                 </p>
@@ -1157,7 +1192,7 @@ export const LandingPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="lg:col-span-7 relative h-[225px] sm:h-[400px] lg:h-[580px] flex flex-col items-center justify-center">
+            <div className="wuwa-stage-box lg:col-span-7 relative h-[225px] sm:h-[400px] lg:h-[580px] flex flex-col items-center justify-center">
               <div className="relative z-10 w-full flex-1 min-h-0">
                 <div
                   className={`absolute inset-0 transition-opacity duration-300 ${
@@ -1243,15 +1278,14 @@ export const LandingPage: React.FC = () => {
         </section>
 
         {/* ────────────────────────────────────────────────────────────────
-            SLIDE 2: CALLIGRAPHY & STROKE ORDER — REAL XUAN PAPER + 3D SLAB
+            SLIDE 2: CALLIGRAPHY & STROKE ORDER — REAL XUAN PAPER + 3D SLAB (.skin-show.component.an)
         ──────────────────────────────────────────────────────────────── */}
         <section
           aria-hidden={activeSlide !== 2}
+          data-slide-idx={2}
           data-active-slide={activeSlide === 2 ? 'true' : undefined}
-          className={`absolute inset-0 w-full h-full overflow-y-auto lg:overflow-hidden bg-[#F5F2EC] transition-opacity duration-[450ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[opacity] ${
-            activeSlide === 2
-              ? 'opacity-100 pointer-events-auto z-20'
-              : 'opacity-0 pointer-events-none z-10'
+          className={`wuwa-page-slide overflow-y-auto lg:overflow-hidden bg-[#F5F2EC] ${
+            activeSlide === 2 ? 'an' : ''
           }`}
         >
           <ArchitecturalBlueprintGrid />
@@ -1282,7 +1316,7 @@ export const LandingPage: React.FC = () => {
 
           <div className="relative z-10 min-h-full lg:h-full max-w-[1360px] mx-auto px-4 sm:px-14 lg:pl-24 lg:pr-10 pt-[62px] pb-[64px] lg:pt-14 lg:pb-16 grid grid-cols-1 lg:grid-cols-12 items-center gap-3 sm:gap-6">
             <div className="lg:col-span-5 space-y-3 sm:space-y-7">
-              <div>
+              <div className="wuwa-title-box">
                 <span className="font-mono text-[9.5px] sm:text-[11px] font-semibold uppercase tracking-[0.18em] sm:tracking-[0.2em] text-[#C41E3A]">
                   02 · QUY TẮC & THỨ TỰ NÉT
                 </span>
@@ -1291,7 +1325,8 @@ export const LandingPage: React.FC = () => {
                 </h2>
               </div>
 
-              <EditorialPaperFrame className="p-3.5 sm:p-6 max-w-md shadow-[0_20px_48px_-24px_rgba(28,25,23,0.18)]">
+              <div className="wuwa-intr-box">
+                <EditorialPaperFrame className="p-3.5 sm:p-6 max-w-md shadow-[0_20px_48px_-24px_rgba(28,25,23,0.18)]">
                 <div className="flex items-start justify-between gap-2.5 sm:gap-4 pb-2.5 sm:pb-4 border-b border-[#1C1917]/10">
                   <div>
                     <span className="text-[9.5px] sm:text-[10.5px] font-mono font-semibold text-[#C41E3A]">
@@ -1352,10 +1387,11 @@ export const LandingPage: React.FC = () => {
                     })}
                   </div>
                 </div>
-              </EditorialPaperFrame>
+                </EditorialPaperFrame>
+              </div>
             </div>
 
-            <div className="lg:col-span-5 relative h-[200px] sm:h-[380px] lg:h-[470px] flex flex-col items-center justify-center">
+            <div className="wuwa-stage-box lg:col-span-5 relative h-[200px] sm:h-[380px] lg:h-[470px] flex flex-col items-center justify-center">
               <div className="w-full max-w-[400px] h-full">
                 {isWarm(2) && (
                 <ThreeStudyDioramaStage
@@ -1383,15 +1419,14 @@ export const LandingPage: React.FC = () => {
         </section>
 
         {/* ────────────────────────────────────────────────────────────────
-            SLIDE 3: EDITORIAL CURRICULUM GALLERY & FILMSTRIP
+            SLIDE 3: EDITORIAL CURRICULUM GALLERY & FILMSTRIP (.activity-container.component.an)
         ──────────────────────────────────────────────────────────────── */}
         <section
           aria-hidden={activeSlide !== 3}
+          data-slide-idx={3}
           data-active-slide={activeSlide === 3 ? 'true' : undefined}
-          className={`absolute inset-0 w-full h-full overflow-y-auto lg:overflow-hidden bg-[#F5F2EC] transition-opacity duration-[450ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[opacity] ${
-            activeSlide === 3
-              ? 'opacity-100 pointer-events-auto z-20'
-              : 'opacity-0 pointer-events-none z-10'
+          className={`wuwa-page-slide overflow-y-auto lg:overflow-hidden bg-[#F5F2EC] ${
+            activeSlide === 3 ? 'an' : ''
           }`}
         >
           <ArchitecturalBlueprintGrid />
@@ -1400,7 +1435,7 @@ export const LandingPage: React.FC = () => {
             <MuseumExhibitionFrame
               chapterLabel="03 · CHƯƠNG TRÌNH HỌC"
               title="Hệ thống bài học HSK chuẩn cho người Việt"
-              className="w-full"
+              className="wuwa-intr-box w-full"
             >
               <div className="relative min-h-[345px] sm:h-[420px] lg:h-[450px] w-full bg-[#1C1917]">
                 <AnimatePresence mode="wait">
@@ -1537,7 +1572,7 @@ export const LandingPage: React.FC = () => {
               </div>
             </MuseumExhibitionFrame>
 
-            <div className="no-chapter-swipe flex items-center justify-start sm:justify-center gap-2 sm:gap-3 w-full overflow-x-auto no-scrollbar py-1">
+            <div className="wuwa-avatar-nav no-chapter-swipe flex items-center justify-start sm:justify-center gap-2 sm:gap-3 w-full overflow-x-auto no-scrollbar py-1">
               {CURRICULUM_SLIDES.map((slide, idx) => {
                 const active = idx === curriculumIdx;
                 return (
@@ -1573,18 +1608,17 @@ export const LandingPage: React.FC = () => {
         ──────────────────────────────────────────────────────────────── */}
         <section
           aria-hidden={activeSlide !== 4}
+          data-slide-idx={4}
           data-active-slide={activeSlide === 4 ? 'true' : undefined}
-          className={`absolute inset-0 w-full h-full overflow-y-auto lg:overflow-hidden bg-[#F5F2EC] transition-opacity duration-[450ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[opacity] ${
-            activeSlide === 4
-              ? 'opacity-100 pointer-events-auto z-20'
-              : 'opacity-0 pointer-events-none z-10'
+          className={`wuwa-page-slide overflow-y-auto lg:overflow-hidden bg-[#F5F2EC] ${
+            activeSlide === 4 ? 'an' : ''
           }`}
         >
           <ArchitecturalBlueprintGrid />
 
           <div className="relative z-10 min-h-full lg:h-full max-w-[1360px] mx-auto px-4 sm:px-14 lg:pl-24 lg:pr-12 pt-[62px] pb-[64px] lg:pt-16 lg:pb-16 flex flex-col justify-between gap-2.5 sm:gap-0">
             {/* TOP BAR: Clean Frameless Header & Mode Switcher */}
-            <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-4">
+            <div className="wuwa-title-box flex flex-wrap items-center justify-between gap-2 sm:gap-4">
               <div>
                 <span className="font-mono text-[9.5px] sm:text-[11px] font-semibold uppercase tracking-[0.18em] sm:tracking-[0.2em] text-[#C41E3A]">
                   04 · TRẢI NGHIỆM TRỰC QUAN
@@ -1624,7 +1658,7 @@ export const LandingPage: React.FC = () => {
             </div>
 
             {/* FRAMELESS OPEN-CANVAS 3D STAGE + OPTIONAL BOOK DETAIL DRAWER */}
-            <div className="relative flex-1 min-h-0 w-full grid grid-cols-1 lg:grid-cols-12 items-center gap-3 sm:gap-6 my-0.5 sm:my-2">
+            <div className="wuwa-stage-box relative flex-1 min-h-0 w-full grid grid-cols-1 lg:grid-cols-12 items-center gap-3 sm:gap-6 my-0.5 sm:my-2">
               {/* Open Frameless 3D Canvas (Full 12 cols in Flashcard mode, 8 cols in HSK Book mode) */}
               <div
                 className={`relative transition-all duration-300 ${

@@ -848,7 +848,7 @@ export const LandingPage: React.FC = () => {
         }`}
       />
 
-      {/* TOP-LEFT: Clean Hanzi4U Seal Mark → Vertical Lesson Tag on Inner Chapters */}
+      {/* TOP-LEFT: Consistent Hanzi4U Imperial Crimson Seal Mark across all slides */}
       <div className="fixed top-2.5 left-3.5 sm:top-6 sm:left-8 z-40">
         {isHero ? (
           <button
@@ -870,17 +870,20 @@ export const LandingPage: React.FC = () => {
             title="Về trang mở đầu"
             className="group flex items-center sm:flex-col gap-2 cursor-pointer focus-visible:outline-none"
           >
-            <span className="w-8 h-8 rounded-[6px] bg-[#C41E3A] text-white font-hanzi-serif text-[15px] sm:text-base font-bold flex items-center justify-center shadow-xs group-hover:bg-[#A51730] transition-colors">
-              汉
+            <span className="sm:hidden">
+              <HanziLogo variant="light" size="sm" showSubtitle={false} />
             </span>
-            <span className="sm:hidden font-display font-bold text-xs text-[#1C1917] tracking-tight">
-              Hanzi<span className="text-[#C41E3A]">4U</span>
-            </span>
-            <span
-              className="hidden sm:block text-[10.5px] font-hanzi-serif tracking-[0.26em] text-[#57534E]"
-              style={{ writingMode: 'vertical-rl' }}
-            >
-              {CHAPTERS[activeSlide].zhCaption}
+            <span className="hidden sm:flex flex-col items-center gap-2">
+              <HanziLogoMark
+                variant="light"
+                className="w-9 h-9 transition-transform duration-200 group-hover:scale-105"
+              />
+              <span
+                className="text-[10.5px] font-hanzi-serif tracking-[0.26em] text-[#57534E]"
+                style={{ writingMode: 'vertical-rl' }}
+              >
+                {CHAPTERS[activeSlide].zhCaption}
+              </span>
             </span>
           </button>
         )}

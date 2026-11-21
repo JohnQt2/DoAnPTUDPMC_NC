@@ -22,6 +22,9 @@ import {
   Camera,
   Sun,
   Moon,
+  RotateCcw,
+  RefreshCw,
+  CheckCircle2,
 } from 'lucide-react';
 
 const ROLE_LABEL: Record<string, string> = {
@@ -29,6 +32,31 @@ const ROLE_LABEL: Record<string, string> = {
   CONTENT_EDITOR: 'Biên tập nội dung',
   ADMIN: 'Quản trị viên',
 };
+
+function formatSessionIp(rawIp?: string | null): string {
+  const ip = (rawIp || '').trim();
+  if (!ip || ip === '::1' || ip === '127.0.0.1' || ip === '::ffff:127.0.0.1') {
+    return 'Thiết bị nội bộ (127.0.0.1)';
+  }
+  return ip.replace(/^::ffff:/i, '');
+}
+
+function formatSessionTimestamp(iso?: string | null): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const datePart = d.toLocaleDateString('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+  const timePart = d.toLocaleTimeString('vi-VN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+  return `${datePart} · ${timePart}`;
+}
 
 function parseDeviceInfo(rawUa?: string | null): {
   label: string;
@@ -96,7 +124,17 @@ export const ProfilePage: React.FC = () => {
   const [adminRoleFilter, setAdminRoleFilter] = useState('');
 
   const [isSaving, setIsSaving] = useState(false);
+  const [isRefreshingSessions, setIsRefreshingSessions] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [savedSnapshot, setSavedSnapshot] = useState<{
+    displayName: string;
+    reminderTime: string;
+    notifyEmail: boolean;
+    notifyWebpush: boolean;
+    startingLevel: string;
+    targetGoal: string;
+    dailyCommitment: number;
+  } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAvatarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -162,30 +200,46 @@ export const ProfilePage: React.FC = () => {
   const loadProfile = async () => {
     try {
       const data = await api.get<any>('/users/me');
-      setDisplayName(data.displayName || '');
+      const loadedDisplayName = data.displayName || '';
+      const loadedReminderTime = data.notificationSettings?.reminderTime || '20:00';
+      const loadedNotifyEmail = data.notificationSettings?.notifyEmail ?? true;
+      const loadedNotifyWebpush = data.notificationSettings?.notifyWebpush ?? false;
+      const loadedStartingLevel = data.activeRoadmap?.startingLevel || 'ZERO';
+      const loadedTargetGoal = data.activeRoadmap?.targetGoal || 'HSK1';
+      const loadedDailyCommitment = data.activeRoadmap?.dailyCommitmentMins || 15;
+
+      setDisplayName(loadedDisplayName);
       setAvatarUrl(data.avatarUrl || '');
       setCompletedLessonsCount(data.completedLessonsCount || 0);
-      if (data.notificationSettings) {
-        setReminderTime(data.notificationSettings.reminderTime || '20:00');
-        setNotifyEmail(data.notificationSettings.notifyEmail ?? true);
-        setNotifyWebpush(data.notificationSettings.notifyWebpush ?? false);
-      }
-      if (data.activeRoadmap) {
-        setStartingLevel(data.activeRoadmap.startingLevel);
-        setTargetGoal(data.activeRoadmap.targetGoal);
-        setDailyCommitment(data.activeRoadmap.dailyCommitmentMins);
-      }
+      setReminderTime(loadedReminderTime);
+      setNotifyEmail(loadedNotifyEmail);
+      setNotifyWebpush(loadedNotifyWebpush);
+      setStartingLevel(loadedStartingLevel);
+      setTargetGoal(loadedTargetGoal);
+      setDailyCommitment(loadedDailyCommitment);
+      setSavedSnapshot({
+        displayName: loadedDisplayName,
+        reminderTime: loadedReminderTime,
+        notifyEmail: loadedNotifyEmail,
+        notifyWebpush: loadedNotifyWebpush,
+        startingLevel: loadedStartingLevel,
+        targetGoal: loadedTargetGoal,
+        dailyCommitment: loadedDailyCommitment,
+      });
     } catch (err) {
       console.error('Failed to load profile:', err);
     }
   };
 
-  const loadSessions = async () => {
+  const loadSessions = async (showSpinner = false) => {
+    if (showSpinner) setIsRefreshingSessions(true);
     try {
       const data = await api.get<any[]>('/auth/sessions');
-      setSessions(data || []);
+      setSessions(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Failed to load sessions:', err);
+    } finally {
+      if (showSpinner) setIsRefreshingSessions(false);
     }
   };
 
@@ -251,6 +305,15 @@ export const ProfilePage: React.FC = () => {
         });
       }
 
+      setSavedSnapshot({
+        displayName,
+        reminderTime,
+        notifyEmail,
+        notifyWebpush,
+        startingLevel,
+        targetGoal,
+        dailyCommitment,
+      });
       celebrateSuccess('Đã lưu cài đặt tài khoản', 'sparkle');
     } catch (err: any) {
       appNotice(err.message || 'Lỗi cập nhật hồ sơ.', 'error');
@@ -258,6 +321,31 @@ export const ProfilePage: React.FC = () => {
       setIsSaving(false);
     }
   };
+
+  const hasUnsavedChanges = Boolean(
+    savedSnapshot &&
+      (displayName !== savedSnapshot.displayName ||
+        (!isAdminRole &&
+          (reminderTime !== savedSnapshot.reminderTime ||
+            notifyEmail !== savedSnapshot.notifyEmail ||
+            notifyWebpush !== savedSnapshot.notifyWebpush ||
+            startingLevel !== savedSnapshot.startingLevel ||
+            targetGoal !== savedSnapshot.targetGoal ||
+            dailyCommitment !== savedSnapshot.dailyCommitment)))
+  );
+
+  const handleResetChanges = () => {
+    if (!savedSnapshot) return;
+    setDisplayName(savedSnapshot.displayName);
+    setReminderTime(savedSnapshot.reminderTime);
+    setNotifyEmail(savedSnapshot.notifyEmail);
+    setNotifyWebpush(savedSnapshot.notifyWebpush);
+    setStartingLevel(savedSnapshot.startingLevel);
+    setTargetGoal(savedSnapshot.targetGoal);
+    setDailyCommitment(savedSnapshot.dailyCommitment);
+  };
+
+  const maxSessions = Number(sessions[0]?.maxSessions) || 3;
 
   const handleRevokeSession = async (sessionId: number) => {
     const ok = await appConfirm({
@@ -590,10 +678,56 @@ export const ProfilePage: React.FC = () => {
           </GlassCard>
         )}
 
-        <ShimmerButton type="submit" disabled={isSaving} size="lg">
-          <Save className="w-4 h-4" />
-          <span>{isSaving ? 'Đang lưu...' : 'Lưu cài đặt'}</span>
-        </ShimmerButton>
+        {/* Balanced Form Save Bar (Sticky when unsaved changes exist, right-aligned CTA) */}
+        <div
+          className={`rounded-2xl px-5 py-3.5 border backdrop-blur-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all ${
+            hasUnsavedChanges
+              ? 'sticky bottom-4 z-30 bg-[#FCFBF8]/95 dark:bg-[#141c2b]/95 border-[#C41E3A]/35 dark:border-rose-400/40 shadow-[0_14px_34px_-14px_rgba(196,30,58,0.28)]'
+              : 'glass-light border-white/80'
+          }`}
+        >
+          <div className="flex items-center gap-2.5 text-xs font-semibold">
+            {hasUnsavedChanges ? (
+              <>
+                <span className="w-2 h-2 rounded-full bg-[#C41E3A] animate-pulse shrink-0" />
+                <span className="text-gray-800">
+                  Bạn có thay đổi chưa lưu trong hồ sơ &amp; lịch học
+                </span>
+              </>
+            ) : (
+              <>
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <span className="text-gray-500">
+                  Mọi cài đặt cá nhân đã được lưu đồng bộ
+                </span>
+              </>
+            )}
+          </div>
+
+          <div className="flex items-center justify-end gap-2.5 shrink-0">
+            {hasUnsavedChanges && (
+              <button
+                type="button"
+                onClick={handleResetChanges}
+                disabled={isSaving}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-white/80 hover:bg-white border border-gray-200/80 text-xs font-bold text-gray-700 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Hủy thay đổi</span>
+              </button>
+            )}
+
+            <ShimmerButton
+              type="submit"
+              disabled={isSaving || (savedSnapshot !== null && !hasUnsavedChanges)}
+              size="md"
+              className="rounded-xl"
+            >
+              <Save className="w-4 h-4" />
+              <span>{isSaving ? 'Đang lưu...' : 'Lưu cài đặt'}</span>
+            </ShimmerButton>
+          </div>
+        </div>
       </form>
 
       {/* Section 4: Device Sessions Management (Compact Liquid Glass) */}
@@ -608,98 +742,137 @@ export const ProfilePage: React.FC = () => {
                 <h2 className="text-base sm:text-lg font-display font-bold text-gray-900 leading-tight">
                   Thiết bị đang đăng nhập
                 </h2>
-                <span className="px-2 py-0.5 rounded-full bg-white/80 border border-white text-[11px] font-bold text-slate-600 tabular-nums">
-                  {sessions.length}/3
+                <span
+                  className={`px-2 py-0.5 rounded-full border text-[11px] font-bold tabular-nums ${
+                    sessions.length >= maxSessions
+                      ? 'bg-amber-50/90 border-amber-200 text-amber-800 dark:bg-amber-950/40 dark:border-amber-700/60 dark:text-amber-300'
+                      : 'bg-white/80 border-white text-slate-600'
+                  }`}
+                >
+                  {sessions.length}/{maxSessions}
                 </span>
               </div>
               <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
-                Tối đa 3 thiết bị cùng lúc · Tự gia hạn 30 ngày
+                Tối đa {maxSessions} thiết bị cùng lúc · Tự gia hạn 30 ngày · Tự động thu hồi khi vượt quá giới hạn
               </p>
             </div>
           </div>
 
-          {sessions.length > 1 && (
+          <div className="flex items-center gap-2 self-start sm:self-center shrink-0">
             <button
               type="button"
-              onClick={handleRevokeOtherSessions}
-              className="self-start sm:self-center px-3 py-1.5 rounded-xl text-xs font-semibold text-rose-600 dark:text-rose-300 bg-rose-50/80 hover:bg-rose-100/90 border border-rose-200/70 transition-colors cursor-pointer shrink-0"
+              onClick={() => loadSessions(true)}
+              disabled={isRefreshingSessions}
+              title="Làm mới danh sách thiết bị"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-600 hover:text-gray-900 bg-white/75 hover:bg-white border border-white/90 transition-colors cursor-pointer disabled:opacity-60"
             >
-              Đăng xuất thiết bị khác
+              <RefreshCw
+                className={`w-3.5 h-3.5 ${isRefreshingSessions ? 'animate-spin' : ''}`}
+              />
+              <span>Làm mới</span>
             </button>
-          )}
+
+            {sessions.length > 1 && (
+              <button
+                type="button"
+                onClick={handleRevokeOtherSessions}
+                className="px-3 py-1.5 rounded-xl text-xs font-semibold text-rose-600 dark:text-rose-300 bg-rose-50/80 hover:bg-rose-100/90 border border-rose-200/70 transition-colors cursor-pointer"
+              >
+                Đăng xuất thiết bị khác
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="space-y-2.5">
-          {sessions.map((sess) => {
-            const { label: deviceLabel, isMobile } = parseDeviceInfo(sess.user_agent);
-            const loginDate = new Date(sess.created_at).toLocaleDateString('vi-VN');
-            return (
-              <div
-                key={sess.session_id}
-                className={`p-3 sm:p-3.5 rounded-2xl border flex items-center justify-between gap-2.5 transition-colors ${
-                  sess.isCurrent
-                    ? 'bg-white/75 border-emerald-200/75 shadow-[0_6px_18px_-14px_rgba(16,185,129,0.45)]'
-                    : 'bg-white/50 hover:bg-white/70 border-white/85'
-                }`}
-              >
-                <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <div
-                    className={`w-9 h-9 rounded-xl border flex items-center justify-center shrink-0 ${
-                      sess.isCurrent
-                        ? 'bg-emerald-50/90 border-emerald-200/80 text-emerald-700'
-                        : 'bg-white/80 border-white/90 text-gray-600'
-                    }`}
-                  >
-                    {isMobile ? <Smartphone className="w-4 h-4" /> : <Laptop className="w-4 h-4" />}
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span
-                        className="text-sm font-bold text-gray-900 truncate"
-                        title={sess.user_agent || deviceLabel}
-                      >
-                        {deviceLabel}
-                      </span>
-                      {sess.isCurrent && (
-                        <span className="inline-flex items-center gap-1 text-[10px] bg-emerald-500/12 text-emerald-700 border border-emerald-200/80 px-2 py-0.5 rounded-full font-bold shrink-0">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                          Hiện tại
-                        </span>
-                      )}
+          {sessions.length === 0 ? (
+            <div className="p-5 rounded-2xl bg-white/45 border border-white/80 text-center text-xs text-gray-500">
+              Không tìm thấy phiên đăng nhập nào đang hoạt động.
+            </div>
+          ) : (
+            sessions.map((sess) => {
+              const { label: deviceLabel, isMobile } = parseDeviceInfo(sess.user_agent);
+              const ipDisplay = formatSessionIp(sess.ip_address);
+              const loginTimestamp = formatSessionTimestamp(sess.created_at);
+              const expiryDate = sess.expires_at
+                ? new Date(sess.expires_at).toLocaleDateString('vi-VN')
+                : null;
+              return (
+                <div
+                  key={sess.session_id}
+                  className={`p-3 sm:p-3.5 rounded-2xl border flex items-center justify-between gap-2.5 transition-colors ${
+                    sess.isCurrent
+                      ? 'bg-white/75 border-emerald-200/75 shadow-[0_6px_18px_-14px_rgba(16,185,129,0.45)]'
+                      : 'bg-white/50 hover:bg-white/70 border-white/85'
+                  }`}
+                >
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div
+                      className={`w-9 h-9 rounded-xl border flex items-center justify-center shrink-0 ${
+                        sess.isCurrent
+                          ? 'bg-emerald-50/90 border-emerald-200/80 text-emerald-700'
+                          : 'bg-white/80 border-white/90 text-gray-600'
+                      }`}
+                    >
+                      {isMobile ? <Smartphone className="w-4 h-4" /> : <Laptop className="w-4 h-4" />}
                     </div>
-                    <p className="text-[11px] text-gray-500 mt-0.5 flex items-center gap-1.5 truncate">
-                      <span className="font-mono">{sess.ip_address || '127.0.0.1'}</span>
-                      <span aria-hidden="true">·</span>
-                      <span>{loginDate}</span>
-                    </p>
-                  </div>
-                </div>
 
-                {sess.isCurrent ? (
-                  <button
-                    type="button"
-                    onClick={logout}
-                    className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-gray-700 hover:text-rose-600 bg-white/85 hover:bg-rose-50/90 rounded-xl border border-gray-200/70 hover:border-rose-200 transition-colors cursor-pointer shrink-0"
-                    title="Đăng xuất phiên hiện tại"
-                  >
-                    <LogOut className="w-3.5 h-3.5" />
-                    <span>Đăng xuất</span>
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => handleRevokeSession(sess.session_id)}
-                    className="p-2 text-gray-400 hover:text-rose-600 hover:bg-rose-50/90 rounded-xl border border-transparent hover:border-rose-200/60 transition-colors cursor-pointer shrink-0"
-                    title="Đăng xuất thiết bị này"
-                    aria-label={`Đăng xuất ${deviceLabel}`}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-            );
-          })}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span
+                          className="text-sm font-bold text-gray-900 truncate"
+                          title={sess.user_agent || deviceLabel}
+                        >
+                          {deviceLabel}
+                        </span>
+                        {sess.isCurrent && (
+                          <span className="inline-flex items-center gap-1 text-[10px] bg-emerald-500/12 text-emerald-700 border border-emerald-200/80 px-2 py-0.5 rounded-full font-bold shrink-0">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                            Hiện tại
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-gray-500 mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                        <span className="font-medium">{ipDisplay}</span>
+                        <span aria-hidden="true">·</span>
+                        <span>Đăng nhập {loginTimestamp}</span>
+                        {expiryDate && (
+                          <>
+                            <span aria-hidden="true" className="hidden sm:inline">·</span>
+                            <span className="hidden sm:inline text-gray-400">
+                              Hết hạn {expiryDate}
+                            </span>
+                          </>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+
+                  {sess.isCurrent ? (
+                    <button
+                      type="button"
+                      onClick={logout}
+                      className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-gray-700 hover:text-rose-600 bg-white/85 hover:bg-rose-50/90 rounded-xl border border-gray-200/70 hover:border-rose-200 transition-colors cursor-pointer shrink-0"
+                      title="Đăng xuất phiên hiện tại"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      <span>Đăng xuất</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handleRevokeSession(sess.session_id)}
+                      className="p-2 text-gray-400 hover:text-rose-600 hover:bg-rose-50/90 rounded-xl border border-transparent hover:border-rose-200/60 transition-colors cursor-pointer shrink-0"
+                      title="Đăng xuất thiết bị này"
+                      aria-label={`Đăng xuất ${deviceLabel}`}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              );
+            })
+          )}
         </div>
       </GlassCard>
 

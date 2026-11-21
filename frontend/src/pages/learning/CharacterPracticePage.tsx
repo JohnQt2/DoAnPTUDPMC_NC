@@ -171,7 +171,7 @@ export const CharacterPracticePage: React.FC = () => {
                       </span>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="font-mono font-extrabold text-sm text-rose-600 dark:text-rose-300">
+                          <span className="font-pinyin font-extrabold text-sm text-[#C41E3A] dark:text-rose-300">
                             {c.pinyin}
                           </span>
                           {c.sinoVietnamese && (

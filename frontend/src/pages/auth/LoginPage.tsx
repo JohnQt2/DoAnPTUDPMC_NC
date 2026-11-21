@@ -69,6 +69,7 @@ export const LoginPage: React.FC = () => {
   const [actionCooldown, setActionCooldown] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const otpAutoVerifyingRef = useRef(false);
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [errorCode, setErrorCode] = useState<string | null>(null);
@@ -349,16 +350,18 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  /** Quên mật khẩu (Bước 2/3): Xác thực riêng mã OTP 6 chữ số trước khi mở form đổi mật khẩu */
-  const handleForgotVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const fullOtp = otp.join('');
+  /** Quên mật khẩu (Bước 2/3): Xác thực riêng mã OTP 6 chữ số (tự động chạy ngay khi dán/nhập đủ 6 số) */
+  const verifyForgotOtpCode = async (codeOverride?: string) => {
+    if (otpAutoVerifyingRef.current || isLocked || actionCooldown > 0) return;
+
+    const fullOtp = codeOverride ?? otp.join('');
     if (fullOtp.length !== 6) {
       setErrorMessage('Vui lòng nhập đủ 6 chữ số mã OTP đã gửi về Gmail.');
       setOtpShakeKey((k) => k + 1);
       return;
     }
 
+    otpAutoVerifyingRef.current = true;
     setIsSubmitting(true);
     clearAlerts();
 
@@ -390,8 +393,14 @@ export const LoginPage: React.FC = () => {
         setRemainingAttempts(err.data.error.details.remainingAttempts);
       }
     } finally {
+      otpAutoVerifyingRef.current = false;
       setIsSubmitting(false);
     }
+  };
+
+  const handleForgotVerifyOtp = (e: React.FormEvent) => {
+    e.preventDefault();
+    void verifyForgotOtpCode();
   };
 
   /** Quên mật khẩu (Bước 3/3): Đặt mật khẩu mới sau khi đã xác thực OTP thành công */
@@ -446,15 +455,17 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const fullOtp = otp.join('');
+  const verifyLoginOtpCode = async (codeOverride?: string) => {
+    if (otpAutoVerifyingRef.current || isLocked || actionCooldown > 0) return;
+
+    const fullOtp = codeOverride ?? otp.join('');
     if (fullOtp.length !== 6) {
       setErrorMessage('Vui lòng nhập đủ 6 chữ số mã OTP.');
       setOtpShakeKey((k) => k + 1);
       return;
     }
 
+    otpAutoVerifyingRef.current = true;
     setIsSubmitting(true);
     clearAlerts();
 
@@ -478,8 +489,14 @@ export const LoginPage: React.FC = () => {
         setRemainingAttempts(err.data.error.details.remainingAttempts);
       }
     } finally {
+      otpAutoVerifyingRef.current = false;
       setIsSubmitting(false);
     }
+  };
+
+  const handleVerifyOtp = (e: React.FormEvent) => {
+    e.preventDefault();
+    void verifyLoginOtpCode();
   };
 
   /** Đăng nhập Google OAuth2 qua GIS Popup hoặc Authorization Code Flow fallback */
@@ -1195,9 +1212,10 @@ export const LoginPage: React.FC = () => {
                 <AnimatedOtpInput
                   value={otp}
                   onChange={setOtp}
-                  disabled={isLocked}
+                  disabled={isLocked || isSubmitting}
                   errorShakeKey={otpShakeKey}
                   idPrefix="otp"
+                  onComplete={(fullOtp) => void verifyLoginOtpCode(fullOtp)}
                 />
 
                 <div className="flex items-center justify-between text-xs px-1">
@@ -1337,9 +1355,10 @@ export const LoginPage: React.FC = () => {
                 <AnimatedOtpInput
                   value={otp}
                   onChange={setOtp}
-                  disabled={isLocked}
+                  disabled={isLocked || isSubmitting}
                   errorShakeKey={otpShakeKey}
                   idPrefix="reset-otp"
+                  onComplete={(fullOtp) => void verifyForgotOtpCode(fullOtp)}
                 />
 
                 <div className="flex items-center justify-between text-xs px-1">

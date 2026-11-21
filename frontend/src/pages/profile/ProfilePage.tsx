@@ -6,6 +6,12 @@ import { celebrateSuccess } from '../../lib/celebration';
 import { appConfirm, appNotice } from '../../lib/dialog';
 import { GlassCard, UserAvatar, ShimmerButton } from '../../components/ui';
 import {
+  normalizeLevel,
+  normalizeGoal,
+  normalizeDailyMins,
+  normalizeReminderTime,
+} from '../onboarding/OnboardingRoadmapPage';
+import {
   User,
   Bell,
   Compass,
@@ -120,18 +126,52 @@ export const ProfilePage: React.FC = () => {
   const loadProfile = async () => {
     try {
       const data = await api.get<any>('/users/me');
-      setDisplayName(data.displayName || '');
-      setAvatarUrl(data.avatarUrl || '');
-      setCompletedLessonsCount(data.completedLessonsCount || 0);
+      setDisplayName(data.displayName || data.display_name || '');
+      setAvatarUrl(data.avatarUrl || data.avatar_url || '');
+      setCompletedLessonsCount(data.completedLessonsCount || data.completed_lessons_count || 0);
+
+      const activeRm = data.activeRoadmap || data.active_roadmap;
+      const userProf = data.profile;
+
+      const savedLevel =
+        activeRm?.startingLevel ||
+        activeRm?.starting_level ||
+        data.starting_level ||
+        data.startingLevel ||
+        data.current_level ||
+        userProf?.current_level;
+      if (savedLevel) setStartingLevel(normalizeLevel(savedLevel));
+
+      const savedGoal =
+        activeRm?.targetGoal ||
+        activeRm?.target_goal ||
+        data.target_goal ||
+        data.targetGoal ||
+        data.goal ||
+        userProf?.goal;
+      if (savedGoal) setTargetGoal(normalizeGoal(savedGoal));
+
+      const savedCommitment =
+        activeRm?.dailyCommitmentMins ||
+        activeRm?.daily_commitment_mins ||
+        data.daily_commitment_mins ||
+        data.dailyCommitmentMins ||
+        data.daily_study_minutes ||
+        userProf?.daily_study_minutes;
+      if (savedCommitment) setDailyCommitment(normalizeDailyMins(savedCommitment));
+
+      const savedReminder =
+        data.reminder_time ||
+        data.reminderTime ||
+        data.daily_reminder_time ||
+        data.notificationSettings?.reminderTime ||
+        data.notificationSettings?.reminder_time ||
+        activeRm?.reminder_time;
+      if (savedReminder) setReminderTime(normalizeReminderTime(savedReminder));
+
       if (data.notificationSettings) {
-        setReminderTime(data.notificationSettings.reminderTime || '20:00');
-        setNotifyEmail(data.notificationSettings.notifyEmail ?? true);
-        setNotifyWebpush(data.notificationSettings.notifyWebpush ?? false);
-      }
-      if (data.activeRoadmap) {
-        setStartingLevel(data.activeRoadmap.startingLevel);
-        setTargetGoal(data.activeRoadmap.targetGoal);
-        setDailyCommitment(data.activeRoadmap.dailyCommitmentMins);
+        setNotifyEmail(data.notificationSettings.notifyEmail ?? data.notificationSettings.notify_email ?? true);
+        setNotifyWebpush(data.notificationSettings.notifyWebpush ?? data.notificationSettings.notify_webpush ?? false);
       }
     } catch (err) {
       console.error('Failed to load profile:', err);
@@ -207,6 +247,8 @@ export const ProfilePage: React.FC = () => {
           daily_commitment_mins: dailyCommitment,
           reminder_time: reminderTime,
         });
+
+        await loadProfile();
       }
 
       celebrateSuccess('Đã lưu cài đặt tài khoản', 'sparkle');

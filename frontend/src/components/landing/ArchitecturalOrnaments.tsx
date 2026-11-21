@@ -65,7 +65,7 @@ export const MuseumExhibitionFrame: React.FC<{
     {/* Calm Editorial Top Header Bar straddling the gallery frame */}
     <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3 px-0.5">
       <div className="flex items-baseline gap-3">
-        <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-[#C41E3A]">
+        <span className="font-mono text-xs sm:text-[13px] font-bold uppercase tracking-[0.18em] text-[#C41E3A]">
           {chapterLabel}
         </span>
         <h2 className="font-display font-bold text-xl sm:text-2xl tracking-tight text-[#1C1917]">

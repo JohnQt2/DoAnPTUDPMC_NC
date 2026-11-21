@@ -27,7 +27,7 @@ import { ambientBgm } from '../../lib/ambientMusic';
 const CHAPTERS = [
   { id: 0, code: '序', label: 'Mở đầu', zhCaption: '汉语入门' },
   { id: 1, code: '一', label: 'Thanh điệu & Pinyin', zhCaption: '第一课 · 声调' },
-  { id: 2, code: '二', label: 'Nét chữ Điền Tự Cách', zhCaption: '第二课 · 书写' },
+  { id: 2, code: '二', label: 'Luyện viết chữ Hán', zhCaption: '第二课 · 书写' },
   { id: 3, code: '三', label: 'Chương trình HSK', zhCaption: '第三课 · 课程' },
   { id: 4, code: '四', label: 'Thẻ lật từ & Giáo trình HSK', zhCaption: '第四课 · 教材' },
 ];
@@ -118,7 +118,7 @@ const CALLIGRAPHY_SPECIMENS = [
     sino: 'Hảo',
     strokes: 6,
     title: 'Chữ 好 · Kết cấu trái – phải',
-    desc: 'Ghép từ bộ Nữ (女) bên trái và bộ Tử (子) bên phải. Ô Điền Tự Cách giúp canh chính xác tỷ lệ hai vế để nét viết cân đối và đẹp mắt.',
+    desc: 'Ghép từ bộ Nữ (女) bên trái và bộ Tử (子) bên phải. Khung ô vuông luyện chữ giúp canh chính xác tỷ lệ hai vế để nét viết cân đối và đẹp mắt.',
   },
   {
     char: '中',
@@ -144,9 +144,9 @@ const CURRICULUM_SLIDES = [
   {
     id: 'notebook',
     tag: '02 · LUYỆN VIẾT CHỮ HÁN',
-    title: 'Ô Điền Tự Cách & thứ tự nét chuẩn',
+    title: 'Thứ tự nét & cấu trúc chữ Hán chuẩn',
     image: '/images/intro-hanzi-notebook.webp',
-    thumbLabel: 'Điền Tự Cách',
+    thumbLabel: 'Luyện viết chữ',
     summary:
       'Hơn 9.500 chữ Hán có hướng dẫn thứ tự nét động, hỗ trợ tự viết tay bằng chuột hoặc màn hình cảm ứng và nhận diện nét đúng ngay lập tức.',
     points: ['9.500+ chữ Hán chuẩn nét', 'Phân tích bộ thủ trực quan', 'Kết nối âm Hán-Việt'],
@@ -304,8 +304,11 @@ export const LandingPage: React.FC = () => {
   const isWarm = (i: number) => warmSlides.includes(i);
   const [showFooter, setShowFooter] = useState<boolean>(false);
   const [bgmPlaying, setBgmPlaying] = useState<boolean>(false);
-  const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
+  const [speakingScope, setSpeakingScope] = useState<'tone' | 'calligraphy' | null>(null);
   const [heroParallax, setHeroParallax] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const speakTokenRef = useRef<number>(0);
+  const speakTimerRef = useRef<number | null>(null);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   // Slide 1 (Phonetics & 4 Tones)
   const [specimenIdx, setSpecimenIdx] = useState<number>(1);
@@ -344,20 +347,58 @@ export const LandingPage: React.FC = () => {
     return () => {
       unsub();
       ambientBgm.suspendOnLeave();
+      if (speakTimerRef.current !== null) {
+        window.clearTimeout(speakTimerRef.current);
+      }
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
     };
   }, []);
 
-  const speakChinese = useCallback((text: string, rate = 0.78) => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'zh-CN';
-    u.rate = rate;
-    u.onstart = () => setIsSpeaking(true);
-    u.onend = () => setIsSpeaking(false);
-    u.onerror = () => setIsSpeaking(false);
-    window.speechSynthesis.speak(u);
-  }, []);
+  const speakChinese = useCallback(
+    (text: string, rate = 0.78, pulseScope?: 'tone' | 'calligraphy') => {
+      const nextToken = ++speakTokenRef.current;
+      if (speakTimerRef.current !== null) {
+        window.clearTimeout(speakTimerRef.current);
+        speakTimerRef.current = null;
+      }
+
+      if (pulseScope) {
+        setSpeakingScope(pulseScope);
+        speakTimerRef.current = window.setTimeout(() => {
+          if (speakTokenRef.current === nextToken) {
+            setSpeakingScope(null);
+          }
+        }, 720);
+      } else {
+        setSpeakingScope(null);
+      }
+
+      if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+      try {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'zh-CN';
+        u.rate = rate;
+        utteranceRef.current = u;
+        u.onend = () => {
+          if (speakTokenRef.current === nextToken) {
+            setSpeakingScope(null);
+          }
+        };
+        u.onerror = () => {
+          if (speakTokenRef.current === nextToken) {
+            setSpeakingScope(null);
+          }
+        };
+        window.speechSynthesis.speak(u);
+      } catch {
+        // Ignore browser TTS errors gracefully
+      }
+    },
+    []
+  );
 
   const goToSlide = useCallback((idx: number) => {
     const clamped = Math.max(0, Math.min(CHAPTERS.length - 1, idx));
@@ -677,9 +718,9 @@ export const LandingPage: React.FC = () => {
               </h1>
 
               <p className="text-sm sm:text-[17px] text-[#44403C] leading-relaxed max-w-lg">
-                Luyện phát âm chuẩn đủ <strong>63 âm Pinyin</strong>, tập viết thứ tự từng nét
-                trên ô Điền Tự Cách, ôn thẻ lật từ và giáo trình chuẩn HSK 1–6 trong không gian
-                yên tĩnh, chỉ 15 phút mỗi ngày.
+                Luyện phát âm chuẩn đủ <strong>63 âm Pinyin</strong>, tập viết chữ Hán đúng thứ tự
+                từng nét, ôn thẻ lật từ và giáo trình chuẩn HSK 1–6 trong không gian yên tĩnh, chỉ
+                15 phút mỗi ngày.
               </p>
 
               <div className="pt-1 sm:pt-2 flex flex-wrap items-center gap-2.5 sm:gap-3.5">
@@ -740,13 +781,14 @@ export const LandingPage: React.FC = () => {
           <ArchitecturalBlueprintGrid />
 
           <div className="relative z-10 min-h-full lg:h-full max-w-[1360px] mx-auto px-4 sm:px-14 lg:pl-24 lg:pr-14 pt-14 pb-14 lg:pt-14 lg:pb-16 grid grid-cols-1 lg:grid-cols-12 items-center gap-3 sm:gap-6">
-            <div className="lg:col-span-5 flex flex-col justify-between lg:h-full lg:max-h-[600px] space-y-3 lg:space-y-0 py-1 lg:py-2">
+            <div className="lg:col-span-5 space-y-3 sm:space-y-5">
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <span className="font-mono text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.2em] text-[#C41E3A]">
-                    01 · NGỮ ÂM PHỔ THÔNG
+                  <span className="inline-flex items-center gap-2 font-mono text-xs sm:text-[13px] font-bold uppercase tracking-[0.18em] text-[#C41E3A]">
+                    <span className="w-4 h-[2px] bg-[#C41E3A]" />
+                    <span>01 · NGỮ ÂM PHỔ THÔNG</span>
                   </span>
-                  <h2 className="font-display font-extrabold text-2xl sm:text-4xl text-[#1C1917] tracking-tight mt-0.5 sm:mt-1">
+                  <h2 className="font-display font-extrabold text-2xl sm:text-4xl text-[#1C1917] tracking-tight mt-1">
                     4 Thanh điệu & Pinyin
                   </h2>
                 </div>
@@ -777,77 +819,81 @@ export const LandingPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="space-y-2.5 sm:space-y-4 my-auto py-1 sm:py-4">
-                <p className="font-hanzi-serif text-xs sm:text-sm tracking-[0.16em] text-[#78716C]">
-                  {activeSpecimen.phonetic}
-                </p>
-
-                <div className="flex items-center gap-3">
-                  <PronunciationPlayButton
-                    onClick={() => speakChinese(activeSpecimen.hanzi, 0.72)}
-                    active={isSpeaking}
-                    accentColor={activeSpecimen.accent}
-                    label={`Nghe phát âm ${activeSpecimen.pinyin}`}
-                  />
+              <EditorialPaperFrame className="p-4 sm:p-6 max-w-md shadow-[0_20px_48px_-24px_rgba(28,25,23,0.18)]">
+                <div className="flex items-start justify-between gap-3 sm:gap-4 pb-3 sm:pb-4 border-b border-[#1C1917]/10">
                   <div>
-                    <h3 className="font-display font-extrabold text-2xl sm:text-[34px] text-[#1C1917] leading-none">
+                    <span
+                      className="text-[10.5px] sm:text-[11px] font-hanzi-serif font-semibold tracking-[0.12em]"
+                      style={{ color: activeSpecimen.accent }}
+                    >
+                      {activeSpecimen.phonetic}
+                    </span>
+                    <h3 className="font-display font-bold text-xl sm:text-2xl text-[#1C1917] mt-0.5 sm:mt-1">
                       {activeSpecimen.title}
                     </h3>
-                    <p className="text-xs font-medium text-[#57534E] mt-1">
+                    <p className="text-xs font-medium text-[#57534E] mt-0.5">
                       {activeSpecimen.sino}
                     </p>
                   </div>
+
+                  <PronunciationPlayButton
+                    onClick={() => speakChinese(activeSpecimen.hanzi, 0.72, 'tone')}
+                    active={speakingScope === 'tone'}
+                    accentColor={activeSpecimen.accent}
+                    label={`Nghe phát âm ${activeSpecimen.pinyin}`}
+                  />
                 </div>
 
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 sm:px-3.5 sm:py-2 bg-white/85 border border-[#1C1917]/15 text-xs">
-                  <span className="font-mono text-[10px] sm:text-[10.5px] uppercase tracking-wider text-[#78716C]">
-                    Từ ghép:
-                  </span>
-                  <span className="font-semibold text-[#1C1917]">{activeSpecimen.compound}</span>
+                <div className="py-2.5 sm:py-4 space-y-2.5">
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#F5F2EC] border border-[#1C1917]/12 text-xs">
+                    <span className="font-mono text-[10px] sm:text-[10.5px] uppercase tracking-wider text-[#78716C]">
+                      Từ ghép:
+                    </span>
+                    <span className="font-semibold text-[#1C1917]">{activeSpecimen.compound}</span>
+                  </div>
+
+                  <p className="text-xs sm:text-sm text-[#44403C] leading-relaxed">
+                    {activeSpecimen.lore}
+                  </p>
                 </div>
 
-                <p className="text-xs sm:text-sm text-[#44403C] leading-relaxed max-w-md">
-                  {activeSpecimen.lore}
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <p className="text-[10px] sm:text-[10.5px] font-mono uppercase tracking-[0.18em] text-[#78716C]">
-                  Bấm vào chữ để nghe phát âm
-                </p>
-                <div className="flex items-center gap-2 sm:gap-2.5">
-                  {SPECIMEN_TONES.map((spec, idx) => {
-                    const selected = idx === specimenIdx;
-                    return (
-                      <button
-                        key={spec.hanzi}
-                        type="button"
-                        onClick={() => {
-                          setSpecimenIdx(idx);
-                          speakChinese(spec.hanzi, 0.72);
-                        }}
-                        className="w-11 h-11 sm:w-14 sm:h-14 rounded-full flex flex-col items-center justify-center cursor-pointer border transition-transform duration-150"
-                        style={{
-                          backgroundColor: selected ? '#1C1917' : 'rgba(255,255,255,0.9)',
-                          borderColor: selected ? spec.accent : 'rgba(28,25,23,0.16)',
-                          color: selected ? '#FFFFFF' : '#1C1917',
-                          transform: selected ? 'scale(1.08)' : 'scale(1)',
-                        }}
-                      >
-                        <span className="font-hanzi-serif text-lg sm:text-xl font-bold leading-none">
-                          {spec.hanzi}
-                        </span>
-                        <span
-                          className="text-[8.5px] sm:text-[9px] font-mono font-semibold mt-0.5"
-                          style={{ color: selected ? '#F2D16B' : '#78716C' }}
+                <div className="pt-2.5 sm:pt-3 border-t border-[#1C1917]/10">
+                  <p className="text-[10px] sm:text-[10.5px] font-mono uppercase tracking-[0.16em] text-[#78716C] mb-2">
+                    Chọn chữ mẫu
+                  </p>
+                  <div className="grid grid-cols-5 gap-1.5 sm:gap-2">
+                    {SPECIMEN_TONES.map((spec, idx) => {
+                      const selected = idx === specimenIdx;
+                      return (
+                        <button
+                          key={spec.hanzi}
+                          type="button"
+                          onClick={() => {
+                            setSpecimenIdx(idx);
+                            speakChinese(spec.hanzi, 0.72);
+                          }}
+                          className="py-2 sm:py-2.5 border text-center cursor-pointer transition-colors"
+                          style={{
+                            backgroundColor: selected ? spec.accent : '#FFFFFF',
+                            borderColor: selected ? spec.accent : 'rgba(28,25,23,0.16)',
+                            color: selected ? '#FFFFFF' : '#1C1917',
+                          }}
                         >
-                          {spec.pinyin}
-                        </span>
-                      </button>
-                    );
-                  })}
+                          <span className="font-hanzi-serif text-xl sm:text-2xl font-bold block leading-none">
+                            {spec.hanzi}
+                          </span>
+                          <span
+                            className="text-[9.5px] sm:text-[10px] font-mono mt-1 block"
+                            style={{ color: selected ? '#FDE68A' : '#78716C' }}
+                          >
+                            {spec.pinyin}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
+              </EditorialPaperFrame>
             </div>
 
             <div className="lg:col-span-7 relative h-[230px] sm:h-[400px] lg:h-[580px] flex items-center justify-center">
@@ -897,7 +943,7 @@ export const LandingPage: React.FC = () => {
 
               <span className="pointer-events-none absolute bottom-2 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 text-[10.5px] font-mono text-[#78716C]">
                 <Move className="w-3.5 h-3.5 text-[#C41E3A]" />
-                Kéo để xoay mặt trước & mặt sau 3D
+                Kéo xoay để xem mặt sau
               </span>
 
               <div className="hidden sm:flex flex-col gap-1.5 absolute right-0 top-1/2 -translate-y-1/2 z-20">
@@ -969,11 +1015,12 @@ export const LandingPage: React.FC = () => {
           <div className="relative z-10 min-h-full lg:h-full max-w-[1360px] mx-auto px-4 sm:px-14 lg:pl-24 lg:pr-10 pt-14 pb-14 lg:pt-14 lg:pb-16 grid grid-cols-1 lg:grid-cols-12 items-center gap-3 sm:gap-6">
             <div className="lg:col-span-5 space-y-3 sm:space-y-5">
               <div>
-                <span className="font-mono text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.2em] text-[#C41E3A]">
-                  02 · THỨ TỰ NÉT CHỮ HÁN
+                <span className="inline-flex items-center gap-2 font-mono text-xs sm:text-[13px] font-bold uppercase tracking-[0.18em] text-[#C41E3A]">
+                  <span className="w-4 h-[2px] bg-[#C41E3A]" />
+                  <span>02 · QUY TẮC & THỨ TỰ NÉT</span>
                 </span>
-                <h2 className="font-display font-extrabold text-2xl sm:text-4xl text-[#1C1917] tracking-tight mt-0.5 sm:mt-1">
-                  Ô Điền Tự Cách
+                <h2 className="font-display font-extrabold text-2xl sm:text-4xl text-[#1C1917] tracking-tight mt-1">
+                  Luyện viết chữ Hán
                 </h2>
               </div>
 
@@ -991,8 +1038,8 @@ export const LandingPage: React.FC = () => {
                     </p>
                   </div>
                   <PronunciationPlayButton
-                    onClick={() => speakChinese(activeCalligraphy.char, 0.75)}
-                    active={isSpeaking}
+                    onClick={() => speakChinese(activeCalligraphy.char, 0.75, 'calligraphy')}
+                    active={speakingScope === 'calligraphy'}
                     accentColor="#C41E3A"
                     label={`Nghe đọc ${activeCalligraphy.char}`}
                   />
@@ -1004,7 +1051,7 @@ export const LandingPage: React.FC = () => {
 
                 <div className="pt-2.5 sm:pt-3 border-t border-[#1C1917]/10">
                   <p className="text-[10px] sm:text-[10.5px] font-mono uppercase tracking-[0.16em] text-[#78716C] mb-2">
-                    Chọn chữ mẫu xem trên bia sứ 3D
+                    Chọn chữ mẫu
                   </p>
                   <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
                     {CALLIGRAPHY_SPECIMENS.map((item, idx) => {
@@ -1017,7 +1064,7 @@ export const LandingPage: React.FC = () => {
                             setCalligraphyIdx(idx);
                             speakChinese(item.char, 0.75);
                           }}
-                          className="py-2 sm:py-2.5 border text-center cursor-pointer"
+                          className="py-2 sm:py-2.5 border text-center cursor-pointer transition-colors"
                           style={{
                             backgroundColor: selected ? '#C41E3A' : '#FFFFFF',
                             borderColor: selected ? '#C41E3A' : 'rgba(28,25,23,0.16)',
@@ -1060,9 +1107,9 @@ export const LandingPage: React.FC = () => {
                 />
                 )}
               </div>
-              <span className="pointer-events-none inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-white/80 backdrop-blur-sm text-[10px] font-mono text-[#57534E]">
-                <Move className="w-3 h-3 text-[#C41E3A]" />
-                Kéo xoay 360° xem mặt trước & ấn chương mặt sau
+              <span className="pointer-events-none inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-white/80 backdrop-blur-sm text-[10.5px] font-mono text-[#57534E]">
+                <Move className="w-3.5 h-3.5 text-[#C41E3A]" />
+                Kéo xoay để xem mặt sau
               </span>
             </div>
           </div>
@@ -1268,8 +1315,9 @@ export const LandingPage: React.FC = () => {
             {/* TOP BAR: Clean Frameless Header & Mode Switcher */}
             <div className="flex flex-wrap items-center justify-between gap-2.5 sm:gap-4">
               <div>
-                <span className="font-mono text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.2em] text-[#C41E3A]">
-                  04 · TRẢI NGHIỆM TRỰC QUAN
+                <span className="inline-flex items-center gap-2 font-mono text-xs sm:text-[13px] font-bold uppercase tracking-[0.18em] text-[#C41E3A]">
+                  <span className="w-4 h-[2px] bg-[#C41E3A]" />
+                  <span>04 · TRẢI NGHIỆM TRỰC QUAN</span>
                 </span>
                 <h2 className="font-display font-extrabold text-xl sm:text-3xl text-[#1C1917] tracking-tight mt-0.5">
                   {studioMode === 'cards' ? 'Thẻ lật từ' : 'Giáo trình chuẩn HSK 1 → 6'}
@@ -1499,7 +1547,7 @@ export const LandingPage: React.FC = () => {
                 Hanzi<span className="text-[#C41E3A]">4U</span> · Nền tảng tự học tiếng Trung HSK 1–6
               </p>
               <p className="text-[11px] text-[#57534E]">
-                © 2026 Hanzi4U (hanzi4u.id.vn) · 63 Âm Pinyin · Ô Điền Tự Cách · Thẻ lật từ & Sách HSK
+                © 2026 Hanzi4U (hanzi4u.id.vn) · 63 Âm Pinyin · Luyện viết chữ Hán · Thẻ lật từ & Sách HSK
               </p>
             </div>
           </div>

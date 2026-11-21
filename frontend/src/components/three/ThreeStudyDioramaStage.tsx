@@ -234,7 +234,7 @@ function createTianZiGeBackTexture(
   // Top scholarly inscription
   ctx.fillStyle = '#E6BE4C';
   ctx.font = '600 17px "JetBrains Mono", monospace';
-  ctx.fillText('ĐIỀN TỰ CÁCH · QUY TẮC BÚT THUẬN', size / 2, 82);
+  ctx.fillText('LUYỆN VIẾT CHỮ HÁN · THỨ TỰ NÉT', size / 2, 82);
 
   // Central Traditional Vermilion Seal Square (印章)
   const sealSize = 216;

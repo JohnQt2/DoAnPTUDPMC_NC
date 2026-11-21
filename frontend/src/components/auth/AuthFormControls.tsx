@@ -231,7 +231,7 @@ export const AnimatedOtpInput: React.FC<AnimatedOtpInputProps> = ({
           />
         </div>
         <p className="text-center text-[11px] text-[#8C7F82]">
-          Bạn có thể <span className="font-semibold text-[#5F5658]">dán trực tiếp (Ctrl+V)</span> mã 6 chữ số từ Gmail
+          Hỗ trợ dán mã 6 số (<span className="font-semibold text-[#5F5658]">Ctrl+V</span>) · Kiểm tra cả mục Spam
         </p>
       </div>
     </div>

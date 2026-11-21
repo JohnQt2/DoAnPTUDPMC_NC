@@ -703,21 +703,21 @@ export const LoginPage: React.FC = () => {
             <h2 className="text-xl sm:text-2xl font-display font-extrabold text-[#181415] tracking-tight">
               {isForgotStep ? (
                 'Đặt lại mật khẩu'
+              ) : step === 'otp_verify' ? (
+                'Xác thực mã OTP'
               ) : (
                 <>
                   Chào mừng đến với <span className="text-[#C41E3A]">Hanzi4U</span>
                 </>
               )}
             </h2>
-            <p className="text-xs sm:text-sm text-[#5F5658]">
-              {step === 'forgot_email'
-                ? 'Bước 1: Nhập Gmail đã đăng ký để nhận mã xác thực OTP'
-                : step === 'forgot_otp'
-                  ? 'Bước 2: Xác thực mã OTP 6 chữ số đã gửi về Gmail'
-                  : step === 'forgot_new_password'
-                    ? 'Bước 3: Tạo mật khẩu mới cho tài khoản của bạn'
-                    : 'Bắt đầu hành trình chinh phục tiếng Trung HSK'}
-            </p>
+            {(step === 'form' || step === 'forgot_email') && (
+              <p className="text-xs sm:text-sm text-[#5F5658]">
+                {step === 'forgot_email'
+                  ? 'Nhập Gmail đã đăng ký để nhận mã OTP'
+                  : 'Bắt đầu hành trình chinh phục tiếng Trung HSK'}
+              </p>
+            )}
           </div>
 
           {/* 3-Step Visual Progress Stepper for Forgot Password */}
@@ -909,22 +909,6 @@ export const LoginPage: React.FC = () => {
                 </div>
               </motion.div>
             )}
-
-            {infoMessage &&
-              (step === 'otp_verify' || step === 'forgot_otp' || step === 'forgot_new_password') &&
-              !errorMessage && (
-                <motion.div
-                  key={`otp-info-${step}`}
-                  initial={{ opacity: 0, y: -6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -4 }}
-                  transition={{ duration: 0.2 }}
-                  className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-900 text-xs flex items-center gap-2.5"
-                >
-                  <CheckCircle2 className="w-4 h-4 text-[#00A86B] shrink-0" aria-hidden="true" />
-                  <span>{infoMessage}</span>
-                </motion.div>
-              )}
           </AnimatePresence>
 
           <AnimatePresence mode="wait">
@@ -1198,9 +1182,14 @@ export const LoginPage: React.FC = () => {
                 onSubmit={handleVerifyOtp}
                 className="space-y-4"
               >
-                <div className="text-center space-y-0.5">
-                  <span className="text-xs text-[#5F5658]">Mã xác nhận 6 chữ số đã gửi đến</span>
-                  <p className="text-sm font-semibold text-[#181415]">{email}</p>
+                <div
+                  title={email}
+                  className="flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-emerald-50/80 border border-emerald-200/75 text-xs text-emerald-900"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#00A86B] shrink-0" aria-hidden="true" />
+                  <span className="truncate">
+                    Đã gửi OTP về <strong className="font-semibold text-[#181415]">{email}</strong>
+                  </span>
                 </div>
 
                 <AnimatedOtpInput
@@ -1335,9 +1324,14 @@ export const LoginPage: React.FC = () => {
                 onSubmit={handleForgotVerifyOtp}
                 className="space-y-4"
               >
-                <div className="text-center space-y-0.5">
-                  <span className="text-xs text-[#5F5658]">Mã OTP đặt lại mật khẩu đã gửi tới</span>
-                  <p className="text-sm font-bold text-[#181415]">{email}</p>
+                <div
+                  title={email}
+                  className="flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-emerald-50/80 border border-emerald-200/75 text-xs text-emerald-900"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#00A86B] shrink-0" aria-hidden="true" />
+                  <span className="truncate">
+                    Đã gửi OTP về <strong className="font-semibold text-[#181415]">{email}</strong>
+                  </span>
                 </div>
 
                 <AnimatedOtpInput
@@ -1405,10 +1399,13 @@ export const LoginPage: React.FC = () => {
                 onSubmit={handleResetPassword}
                 className="space-y-3.5"
               >
-                <div className="flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-[#FAF8F6] border border-[#EAE3DE] text-xs">
-                  <ShieldCheck className="w-4 h-4 text-[#00A86B] shrink-0" aria-hidden="true" />
-                  <span className="text-[#5F5658] truncate">
-                    Đã xác thực: <strong className="text-[#181415]">{email}</strong>
+                <div
+                  title={email}
+                  className="flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-emerald-50/80 border border-emerald-200/75 text-xs text-emerald-900"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#00A86B] shrink-0" aria-hidden="true" />
+                  <span className="truncate">
+                    Đã xác thực <strong className="font-semibold text-[#181415]">{email}</strong>
                   </span>
                 </div>
 

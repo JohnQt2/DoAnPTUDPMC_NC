@@ -270,9 +270,8 @@ export const SmoothAuthInput: React.FC<SmoothAuthInputProps> = ({
   disallowSpaces = false,
 }) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const measureRef = useRef<HTMLSpanElement | null>(null);
-  const ghostMeasureRef = useRef<HTMLSpanElement | null>(null);
   const viewportRef = useRef<HTMLDivElement | null>(null);
+  const charRefs = useRef<Array<HTMLSpanElement | null>>([]);
   const nextTokenIdRef = useRef<number>(1);
   const nextGhostIdRef = useRef<number>(1);
   const typingTimerRef = useRef<number | null>(null);
@@ -345,18 +344,7 @@ export const SmoothAuthInput: React.FC<SmoothAuthInputProps> = ({
 
   const tokens = tokensRef.current;
 
-  const measureTextWidth = useCallback(
-    (str: string): number => {
-      if (isMaskedPassword) return Array.from(str).length * 9;
-      const probe = ghostMeasureRef.current;
-      if (!probe) return 0;
-      probe.textContent = str;
-      return probe.getBoundingClientRect().width;
-    },
-    [isMaskedPassword]
-  );
-
-  // Spawn detached GPU ghost characters whenever text is deleted (never disturbs remaining layout!)
+  // Spawn detached GPU ghost characters directly from their exact rendered DOM offsetLeft
   const spawnDeletedGhosts = useCallback(
     (oldVal: string, newVal: string) => {
       if (oldVal.length <= newVal.length) return;
@@ -387,11 +375,16 @@ export const SmoothAuthInput: React.FC<SmoothAuthInputProps> = ({
       // Cap animated ghosts on bulk select-all delete to 18 chars for crisp 120fps
       const sliced = removed.slice(0, 18);
       const created: ExitingGhost[] = sliced.map((ch, i) => {
-        const prefixBeforeChar = oldChars.slice(0, prefix + i).join('');
+        const domEl = charRefs.current[prefix + i];
+        const exactX = domEl
+          ? domEl.offsetLeft
+          : isMaskedPassword
+            ? (prefix + i) * 9
+            : 0;
         return {
           id: nextGhostIdRef.current++,
           ch,
-          x: measureTextWidth(prefixBeforeChar),
+          x: exactX,
           isMask: isMaskedPassword,
         };
       });
@@ -402,7 +395,7 @@ export const SmoothAuthInput: React.FC<SmoothAuthInputProps> = ({
         setExitingGhosts((prev) => prev.filter((g) => !createdIds.has(g.id)));
       }, 170);
     },
-    [isMaskedPassword, measureTextWidth]
+    [isMaskedPassword]
   );
 
   const syncCaretAndScroll = useCallback(() => {
@@ -415,13 +408,21 @@ export const SmoothAuthInput: React.FC<SmoothAuthInputProps> = ({
     setScrollLeft(el.scrollLeft || 0);
   }, []);
 
-  // Measure exact caret X pixel position and drive spring caret immediately before paint
+  // Measure exact caret X directly from the rendered character spans (0.0px drift!)
   useLayoutEffect(() => {
     let nextX = 0;
-    if (isMaskedPassword) {
-      nextX = caretPos * 9;
-    } else if (measureRef.current) {
-      nextX = measureRef.current.getBoundingClientRect().width;
+    const clampedPos = Math.max(0, Math.min(caretPos, tokens.length));
+    if (clampedPos > 0) {
+      if (clampedPos < tokens.length && charRefs.current[clampedPos]) {
+        nextX = charRefs.current[clampedPos]!.offsetLeft;
+      } else {
+        const prevEl = charRefs.current[clampedPos - 1];
+        if (prevEl) {
+          nextX = prevEl.offsetLeft + prevEl.offsetWidth;
+        } else if (isMaskedPassword) {
+          nextX = clampedPos * 9;
+        }
+      }
     }
 
     setCaretX(nextX);
@@ -435,7 +436,7 @@ export const SmoothAuthInput: React.FC<SmoothAuthInputProps> = ({
     } else {
       caretTargetX.set(nextX);
     }
-  }, [value, caretPos, isMaskedPassword, caretTargetX, smoothCaretX]);
+  }, [value, caretPos, tokens.length, isMaskedPassword, isFocused, caretTargetX, smoothCaretX]);
 
   // Keep scrollLeft synced on next frame after keyboard edits
   useEffect(() => {
@@ -466,10 +467,13 @@ export const SmoothAuthInput: React.FC<SmoothAuthInputProps> = ({
   const showNativeText = isComposing || hasSelection || isAutofilled;
   const rightPaddingCls = rightSlot ? 'pr-10' : 'pr-4';
   const overlayRightCls = rightSlot ? 'right-10' : 'right-4';
-  const caretPrefixText = value.slice(0, caretPos);
+  const maxTrackWidth = viewportRef.current?.clientWidth || 240;
   const effectiveScrollLeft = isMaskedPassword
-    ? Math.max(0, caretX - Math.max(120, (viewportRef.current?.clientWidth || 220) - 8))
-    : scrollLeft;
+    ? Math.max(0, caretX - Math.max(120, maxTrackWidth - 8))
+    : Math.max(scrollLeft, Math.max(0, caretX - (maxTrackWidth - 6)));
+
+  // Trim stale DOM refs past current token count
+  charRefs.current.length = tokens.length;
 
   return (
     <div className="w-full">
@@ -501,22 +505,6 @@ export const SmoothAuthInput: React.FC<SmoothAuthInputProps> = ({
           </span>
         )}
 
-        {/* Hidden exact-width caret measurement probes (kerning disabled to match input 1:1) */}
-        <span
-          ref={measureRef}
-          aria-hidden="true"
-          style={{ fontKerning: 'none', fontVariantLigatures: 'none' }}
-          className="pointer-events-none invisible fixed -top-96 left-0 whitespace-pre text-sm font-sans leading-5"
-        >
-          {caretPrefixText}
-        </span>
-        <span
-          ref={ghostMeasureRef}
-          aria-hidden="true"
-          style={{ fontKerning: 'none', fontVariantLigatures: 'none' }}
-          className="pointer-events-none invisible fixed -top-96 left-0 whitespace-pre text-sm font-sans leading-5"
-        />
-
         {/* Soft Airy Placeholder (light muted tone that glides smoothly away on first char) */}
         <AnimatePresence initial={false}>
           {value.length === 0 && !isComposing && !isAutofilled && (
@@ -547,13 +535,16 @@ export const SmoothAuthInput: React.FC<SmoothAuthInputProps> = ({
                 fontKerning: 'none',
                 fontVariantLigatures: 'none',
               }}
-              className="relative flex items-center whitespace-pre text-sm font-sans leading-5 text-[#181415]"
+              className="relative flex items-center h-5 whitespace-pre text-sm font-sans leading-5 text-[#181415]"
             >
               {/* Active Characters (0ms synchronous — only newly inserted char springs smoothly in!) */}
-              {tokens.map((tok) =>
+              {tokens.map((tok, idx) =>
                 isMaskedPassword ? (
                   <motion.span
                     key={tok.id}
+                    ref={(el) => {
+                      charRefs.current[idx] = el;
+                    }}
                     initial={{ opacity: 0, scale: 0.18 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ type: 'spring', stiffness: 650, damping: 28, mass: 0.4 }}
@@ -564,6 +555,9 @@ export const SmoothAuthInput: React.FC<SmoothAuthInputProps> = ({
                 ) : (
                   <motion.span
                     key={tok.id}
+                    ref={(el) => {
+                      charRefs.current[idx] = el;
+                    }}
                     initial={{ opacity: 0, x: -4, scale: 0.88 }}
                     animate={{ opacity: 1, x: 0, scale: 1 }}
                     transition={{ type: 'spring', stiffness: 580, damping: 32, mass: 0.45 }}
@@ -598,14 +592,14 @@ export const SmoothAuthInput: React.FC<SmoothAuthInputProps> = ({
                 </motion.span>
               ))}
 
-              {/* Real Spring-Physics Gliding Crimson Caret (Apple / Craft.do / Telegram style) */}
+              {/* Real Spring-Physics Gliding Crimson Caret (Fixed top-[1px] inside h-5 — never clipped/shifted!) */}
               {isFocused && !disabled && (
                 <motion.span
                   style={{
                     x: smoothCaretX,
                     scaleX: caretStretchX,
                   }}
-                  className={`pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 w-[1.8px] h-[18px] rounded-full bg-[#C41E3A] shadow-[0_0_6px_rgba(196,30,58,0.28)] origin-center ${
+                  className={`pointer-events-none absolute left-0 top-[1px] w-[1.8px] h-[18px] rounded-full bg-[#C41E3A] shadow-[0_0_6px_rgba(196,30,58,0.28)] origin-center ${
                     isTyping ? 'opacity-100' : 'animate-smooth-caret'
                   }`}
                 />

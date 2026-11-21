@@ -1,74 +1,55 @@
 import React from 'react';
 import { cn } from '../../lib/cn';
 
-interface ShimmerButtonProps {
-  variant?: 'primary' | 'secondary' | 'emerald' | 'dark' | 'outline' | 'glass-light';
-  size?: 'sm' | 'md' | 'lg';
+interface ShimmerButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   href?: string;
-  className?: string;
+  variant?: 'primary' | 'glass-dark' | 'glass-light';
+  size?: 'sm' | 'md' | 'lg';
   children: React.ReactNode;
-  onClick?: React.MouseEventHandler<HTMLElement>;
-  type?: 'button' | 'submit' | 'reset';
-  disabled?: boolean;
-  title?: string;
 }
 
-const variantClasses = {
-  primary:
-    'bg-[#C41E3A] hover:bg-[#A51730] text-white border border-transparent shadow-[0_6px_18px_-6px_rgba(196,30,58,0.5)]',
-  secondary:
-    'bg-[#D4A017] hover:bg-[#B8860B] text-[#141112] border border-transparent shadow-[0_6px_18px_-6px_rgba(212,160,23,0.45)]',
-  emerald:
-    'bg-[#00A86B] hover:bg-[#059652] text-white border border-transparent shadow-[0_6px_18px_-6px_rgba(0,168,107,0.4)]',
-  dark:
-    'bg-[#181415] hover:bg-[#2A2325] text-white border border-transparent shadow-[0_6px_18px_-6px_rgba(24,20,21,0.35)]',
-  outline:
-    'bg-white hover:bg-[#FAF8F6] text-[#181415] border border-[#EAE3DE] hover:border-[#C41E3A]/40 shadow-xs',
-  'glass-light':
-    'bg-white hover:bg-[#FAF8F6] text-[#181415] border border-[#EAE3DE] hover:border-[#C41E3A]/40 shadow-xs',
-};
-
-const sizeClasses = {
-  sm: 'h-9 px-3.5 text-xs rounded-lg gap-1.5',
-  md: 'h-10 px-4 text-sm rounded-lg gap-2',
-  lg: 'h-11 px-6 text-sm rounded-xl gap-2',
-};
-
 export const ShimmerButton: React.FC<ShimmerButtonProps> = ({
+  href,
   variant = 'primary',
   size = 'md',
-  href,
   className,
   children,
-  onClick,
-  type = 'button',
-  disabled,
-  title,
+  ...props
 }) => {
-  const baseClass = cn(
-    'relative inline-flex items-center justify-center font-semibold tracking-tight transition-[background-color,border-color,box-shadow,transform] duration-150 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C41E3A] focus-visible:ring-offset-2 active:scale-[0.985] disabled:opacity-50 disabled:cursor-not-allowed',
-    variantClasses[variant],
-    sizeClasses[size],
+  const baseClasses = cn(
+    'relative inline-flex items-center justify-center gap-2 overflow-hidden font-bold rounded-2xl transition-[background,box-shadow,border-color,opacity] duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 whitespace-nowrap',
+    size === 'sm' && 'px-4 py-2 text-xs min-h-[38px]',
+    size === 'md' && 'px-5 py-3 text-sm min-h-[46px]',
+    size === 'lg' && 'px-7 py-4 text-base min-h-[52px]',
+    variant === 'primary' &&
+      'bg-gradient-to-r from-rose-500 via-pink-500 to-amber-400 hover:brightness-105 text-white shadow-md shadow-rose-400/25 hover:shadow-lg hover:shadow-rose-400/30',
+    variant === 'glass-dark' &&
+      'bg-white/10 hover:bg-white/16 text-white border border-white/25 backdrop-blur-md shadow-lg shadow-black/20',
+    variant === 'glass-light' &&
+      'bg-white/85 hover:bg-white text-gray-800 border border-white/90 backdrop-blur-md shadow-sm hover:shadow-md',
     className
+  );
+
+  const sheen = (
+    <span
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 -translate-x-full animate-shimmer-sweep bg-gradient-to-r from-transparent via-white/25 to-transparent"
+    />
   );
 
   if (href) {
     return (
-      <a href={href} onClick={onClick} title={title} className={baseClass}>
-        <span className="inline-flex items-center gap-2">{children}</span>
+      <a href={href} className={baseClasses}>
+        {variant === 'primary' && sheen}
+        <span className="relative z-10 inline-flex items-center gap-2">{children}</span>
       </a>
     );
   }
 
   return (
-    <button
-      type={type}
-      disabled={disabled}
-      onClick={onClick}
-      title={title}
-      className={baseClass}
-    >
-      <span className="inline-flex items-center gap-2">{children}</span>
+    <button className={baseClasses} {...props}>
+      {variant === 'primary' && sheen}
+      <span className="relative z-10 inline-flex items-center gap-2">{children}</span>
     </button>
   );
 };

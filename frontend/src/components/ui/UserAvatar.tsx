@@ -15,6 +15,10 @@ const SIZE_MAP = {
   xl: 'w-20 h-20 text-2xl',
 };
 
+/**
+ * Displays Google / uploaded avatar cleanly (with referrerPolicy="no-referrer" for Google photos).
+ * Falls back gracefully to an editorial monogram initial for email-only users without avatar.
+ */
 export const UserAvatar: React.FC<UserAvatarProps> = ({
   avatarUrl,
   displayName = 'U',
@@ -38,7 +42,7 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
         referrerPolicy="no-referrer"
         onError={() => setImgFailed(true)}
         className={cn(
-          'rounded-full object-cover border border-zinc-200 shrink-0 bg-white',
+          'rounded-full object-cover border-2 border-white shadow-sm shrink-0 bg-white',
           SIZE_MAP[size],
           className
         )}
@@ -50,7 +54,7 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
     <div
       aria-label={displayName}
       className={cn(
-        'rounded-full bg-zinc-900 text-white flex items-center justify-center font-display font-semibold uppercase shrink-0 border border-zinc-800',
+        'rounded-full bg-gradient-to-tr from-primary-600 via-rose-500 to-amber-500 text-white flex items-center justify-center font-display font-extrabold uppercase shrink-0 shadow-sm border-2 border-white/80',
         SIZE_MAP[size],
         className
       )}

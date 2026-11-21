@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GlassCard, ShimmerButton, NumberTicker } from '../../components/ui';
+import { GlassCard, BorderBeam, ShimmerButton, NumberTicker } from '../../components/ui';
 import { celebrateSuccess } from '../../lib/celebration';
 import {
   Volume2,
@@ -144,26 +144,23 @@ export const SpeakingPracticePage: React.FC = () => {
   const cleanSpokenForHighlight = (spokenText || '').replace(/[，。？！?.,\s]/g, '');
 
   return (
-    <div className="max-w-5xl mx-auto py-8 px-5 sm:px-8 space-y-6">
+    <div className="max-w-5xl mx-auto py-8 px-4 sm:px-6 space-y-6">
       {/* Header + Mode Switcher */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-5 border-b border-zinc-200">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <p className="text-[11px] font-mono uppercase tracking-[0.16em] text-zinc-400">
-            Khẩu ngữ thực hành
-          </p>
-          <h1 className="text-2xl sm:text-3xl font-display font-bold text-zinc-950 flex items-center gap-2.5 tracking-tight mt-1">
-            <span className="w-9 h-9 rounded-xl bg-zinc-950 text-white flex items-center justify-center shrink-0">
-              <MessagesSquare className="w-4 h-4" />
+          <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-gray-900 flex items-center gap-2.5 tracking-tight">
+            <span className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-500 via-primary-600 to-violet-600 text-white flex items-center justify-center shadow-lg">
+              <MessagesSquare className="w-5 h-5" />
             </span>
             <span>Luyện nói giao tiếp</span>
           </h1>
-          <p className="text-sm text-zinc-600 mt-1">
+          <p className="text-sm text-gray-600 mt-1">
             Luyện đọc theo mẫu và đối đáp theo tình huống thực tế từ HSK 1 đến HSK 4.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="inline-flex p-1 rounded-xl bg-zinc-100 border border-zinc-200/80">
+          <div className="inline-flex p-1 rounded-2xl glass-light">
             {[
               { id: 'shadowing' as const, label: 'Đọc theo mẫu' },
               { id: 'roleplay' as const, label: 'Hội thoại tình huống' },
@@ -174,15 +171,14 @@ export const SpeakingPracticePage: React.FC = () => {
                   key={m.id}
                   type="button"
                   onClick={() => setMode(m.id)}
-                  className={`relative px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
-                    active ? 'text-white' : 'text-zinc-600 hover:text-zinc-950'
+                  className={`relative px-4 py-2 rounded-xl text-xs font-extrabold transition-colors cursor-pointer ${
+                    active ? 'text-white' : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
                   {active && (
                     <motion.span
                       layoutId="speaking-mode-pill"
-                      transition={{ type: 'spring', stiffness: 450, damping: 36 }}
-                      className="absolute inset-0 rounded-lg bg-zinc-900 shadow-xs"
+                      className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary-600 to-violet-600 shadow-sm"
                     />
                   )}
                   <span className="relative z-10">{m.label}</span>
@@ -204,10 +200,10 @@ export const SpeakingPracticePage: React.FC = () => {
                 setLevelFilter(lvl);
                 selectSentence(0);
               }}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer border ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
                 levelFilter === lvl
-                  ? 'bg-zinc-900 text-white border-zinc-900'
-                  : 'bg-white text-zinc-600 hover:bg-zinc-50 border-zinc-200'
+                  ? 'bg-gradient-to-r from-primary-600 to-amber-500 text-white shadow-md'
+                  : 'glass-light text-gray-600 hover:bg-white'
               }`}
             >
               {lvl === 'ALL' ? 'Tất cả cấp độ' : lvl.replace('HSK', 'HSK ')}
@@ -215,27 +211,29 @@ export const SpeakingPracticePage: React.FC = () => {
           ))}
         </div>
 
-        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold">
-          <Flame className="w-3.5 h-3.5 text-emerald-600" />
-          Đã hoàn thành: {completedIds.length}/{HANPEAK_SPEAKING_BANK.length} câu
+        <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-black">
+          <Flame className="w-3.5 h-3.5 text-emerald-600 fill-emerald-500" />
+          Đã chinh phục: {completedIds.length}/{HANPEAK_SPEAKING_BANK.length} câu
         </span>
       </div>
 
-      {/* Main Interactive Studio Card */}
-      <GlassCard className="p-6 sm:p-8 space-y-6">
+      {/* Main Hanpeak Interactive Studio Card */}
+      <GlassCard className="p-6 sm:p-8 relative overflow-hidden space-y-6">
+        <BorderBeam duration={8} colorFrom="#f43f5e" colorTo="#8b5cf6" />
+
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-md bg-zinc-900 text-white text-xs font-mono font-semibold">
+            <span className="px-3 py-1 rounded-full bg-gradient-to-r from-primary-600 to-rose-500 text-white text-xs font-black">
               {item.level.replace('HSK', 'HSK ')}
             </span>
-            <span className="px-2.5 py-0.5 rounded-md bg-zinc-100 border border-zinc-200 text-zinc-700 text-xs font-medium">
+            <span className="px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold">
               {item.topic}
             </span>
           </div>
 
           {/* Speed Control */}
-          <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-zinc-50 border border-zinc-200 text-xs font-medium text-zinc-600">
-            <Gauge className="w-3.5 h-3.5 text-zinc-400 mr-0.5" />
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/80 border border-gray-200 text-xs font-bold text-gray-600">
+            <Gauge className="w-3.5 h-3.5 text-primary-500" />
             {[
               { label: '0.6x', rate: 0.6 },
               { label: '0.85x', rate: 0.85 },
@@ -245,8 +243,8 @@ export const SpeakingPracticePage: React.FC = () => {
                 key={sp.label}
                 type="button"
                 onClick={() => setSpeechRate(sp.rate)}
-                className={`px-2 py-0.5 rounded-md cursor-pointer transition-colors ${
-                  speechRate === sp.rate ? 'bg-zinc-900 text-white' : 'hover:bg-zinc-200'
+                className={`px-2 py-0.5 rounded-lg cursor-pointer transition-colors ${
+                  speechRate === sp.rate ? 'bg-primary-600 text-white' : 'hover:bg-gray-100'
                 }`}
               >
                 {sp.label}
@@ -255,25 +253,25 @@ export const SpeakingPracticePage: React.FC = () => {
           </div>
         </div>
 
-        {/* Roleplay Prompt Bubble */}
+        {/* Roleplay AI Bubble */}
         {mode === 'roleplay' && item.aiPromptCn && (
-          <div className="p-4 rounded-xl bg-zinc-50 border border-zinc-200 flex items-start justify-between gap-4">
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-violet-50 via-fuchsia-50/60 to-white border border-violet-200/80 flex items-start justify-between gap-4">
             <div className="space-y-1">
-              <span className="inline-flex items-center gap-1 text-[11px] font-mono font-semibold uppercase text-[#BE123C]">
+              <span className="inline-flex items-center gap-1 text-[11px] font-black uppercase text-violet-700">
                 <Sparkles className="w-3.5 h-3.5" />
                 Câu hỏi tình huống:
               </span>
-              <p className="font-hanzi-serif text-xl font-bold text-zinc-950">{item.aiPromptCn}</p>
-              <p className="text-xs font-mono font-semibold text-zinc-600">{item.aiPromptPy}</p>
-              <p className="text-xs text-zinc-500">{item.aiPromptVi}</p>
+              <p className="font-chinese text-xl font-black text-gray-900">{item.aiPromptCn}</p>
+              <p className="text-xs font-bold text-violet-600">{item.aiPromptPy}</p>
+              <p className="text-xs text-gray-500">{item.aiPromptVi}</p>
             </div>
             <button
               type="button"
               onClick={() => speakText(item.aiPromptCn!, speechRate)}
-              className="w-10 h-10 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white flex items-center justify-center shrink-0 cursor-pointer transition-colors"
-              aria-label="Nghe câu hỏi tình huống"
+              className="w-11 h-11 rounded-2xl bg-violet-600 hover:bg-violet-500 text-white flex items-center justify-center shadow-md shrink-0 cursor-pointer"
+              aria-label="Nghe câu hỏi của AI"
             >
-              <Volume2 className="w-4 h-4" />
+              <Volume2 className="w-5 h-5" />
             </button>
           </div>
         )}
@@ -281,7 +279,7 @@ export const SpeakingPracticePage: React.FC = () => {
         {/* Target Sentence with Per-Character Scoring Highlight */}
         <div className="py-5 text-center space-y-3">
           {mode === 'roleplay' && (
-            <span className="text-xs font-mono font-semibold uppercase tracking-wider text-[#BE123C]">
+            <span className="text-xs font-extrabold uppercase tracking-wider text-primary-600">
               Lượt của bạn đáp lại:
             </span>
           )}
@@ -293,12 +291,12 @@ export const SpeakingPracticePage: React.FC = () => {
               return (
                 <span
                   key={`${item.id}-${i}`}
-                  className={`font-hanzi-serif text-3xl sm:text-4xl font-bold px-1 py-0.5 rounded-lg transition-colors ${
+                  className={`font-chinese text-3xl sm:text-5xl font-black px-1 py-0.5 rounded-xl transition-all ${
                     evaluated
                       ? matched
-                        ? 'text-emerald-700 bg-emerald-50'
-                        : 'text-[#BE123C] bg-rose-50 underline decoration-wavy decoration-rose-400'
-                      : 'text-zinc-950'
+                        ? 'text-emerald-600 bg-emerald-50'
+                        : 'text-rose-600 bg-rose-50 underline decoration-wavy decoration-rose-400'
+                      : 'text-gray-900'
                   }`}
                 >
                   {ch}
@@ -306,8 +304,8 @@ export const SpeakingPracticePage: React.FC = () => {
               );
             })}
           </div>
-          <p className="text-base sm:text-lg font-mono font-semibold text-[#BE123C]">{item.pinyin}</p>
-          <p className="text-sm text-zinc-600">{item.vietnamese}</p>
+          <p className="text-lg sm:text-xl font-extrabold text-primary-600">{item.pinyin}</p>
+          <p className="text-sm text-gray-600 font-medium">{item.vietnamese}</p>
         </div>
 
         {/* Live Animated Waveform when recording */}
@@ -324,7 +322,7 @@ export const SpeakingPracticePage: React.FC = () => {
                   key={i}
                   animate={{ height: [10, h, 12] }}
                   transition={{ repeat: Infinity, duration: 0.65, delay: i * 0.06 }}
-                  className="w-1.5 rounded-full bg-[#BE123C]"
+                  className="w-1.5 rounded-full bg-gradient-to-t from-primary-600 via-rose-500 to-amber-400"
                 />
               ))}
             </motion.div>
@@ -336,9 +334,9 @@ export const SpeakingPracticePage: React.FC = () => {
           <button
             type="button"
             onClick={() => speakText(item.hanzi, speechRate)}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white hover:bg-zinc-50 border border-zinc-200 text-zinc-800 font-semibold text-sm transition-colors cursor-pointer"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-white hover:bg-primary-50 border border-gray-200 text-gray-800 font-bold text-sm shadow-sm transition-all cursor-pointer"
           >
-            <Volume2 className="w-4 h-4 text-[#BE123C]" />
+            <Volume2 className="w-4 h-4 text-primary-600" />
             <span>Nghe mẫu ({speechRate}x)</span>
           </button>
 
@@ -349,32 +347,34 @@ export const SpeakingPracticePage: React.FC = () => {
             size="lg"
             className={isListening ? 'animate-pulse' : ''}
           >
-            {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+            {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
             <span>{isListening ? 'Đang thu âm & phân tích...' : 'Bấm Micro để nói'}</span>
           </ShimmerButton>
         </div>
 
-        {/* Score & Feedback Banner */}
+        {/* Score & AI Feedback Banner */}
         {scorePercent !== null && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.98 }}
+            initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
-            className={`p-5 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+            className={`p-5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
               feedback === 'good'
-                ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
-                : 'bg-amber-50 border-amber-200 text-amber-950'
+                ? 'bg-emerald-50/90 border-emerald-200 text-emerald-900'
+                : 'bg-amber-50/90 border-amber-200 text-amber-950'
             }`}
           >
             <div className="flex items-center gap-3.5">
               <div
-                className={`w-12 h-12 rounded-xl flex items-center justify-center font-mono font-bold text-base text-white shrink-0 ${
-                  feedback === 'good' ? 'bg-emerald-600' : 'bg-amber-600'
+                className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-lg text-white shadow-md shrink-0 ${
+                  feedback === 'good'
+                    ? 'bg-gradient-to-tr from-emerald-500 to-teal-500'
+                    : 'bg-gradient-to-tr from-amber-500 to-orange-500'
                 }`}
               >
                 <NumberTicker value={scorePercent} suffix="%" />
               </div>
               <div>
-                <p className="text-sm font-semibold flex items-center gap-1.5">
+                <p className="text-sm font-black flex items-center gap-1.5">
                   {feedback === 'good' ? (
                     <>
                       <CheckCircle2 className="w-4 h-4 text-emerald-600" />
@@ -396,7 +396,7 @@ export const SpeakingPracticePage: React.FC = () => {
             <button
               type="button"
               onClick={() => selectSentence((safeIndex + 1) % filteredList.length)}
-              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg bg-white border border-zinc-200 text-zinc-900 font-semibold text-xs hover:bg-zinc-50 cursor-pointer shrink-0"
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-white text-primary-700 font-extrabold text-xs shadow-sm hover:bg-primary-50 cursor-pointer shrink-0"
             >
               <span>Câu tiếp theo</span>
               <ChevronRight className="w-4 h-4" />
@@ -405,14 +405,14 @@ export const SpeakingPracticePage: React.FC = () => {
         )}
 
         {feedback === 'unsupported' && (
-          <div className="p-4 rounded-xl bg-zinc-50 border border-zinc-200 text-zinc-600 text-xs text-center">
+          <div className="p-4 rounded-2xl bg-white/60 border border-white/85 text-gray-600 text-xs text-center">
             Trình duyệt hiện tại chưa hỗ trợ thu âm giọng nói (nên dùng Chrome hoặc Edge). Bạn vẫn có thể bấm “Nghe mẫu” để luyện đọc theo.
           </div>
         )}
       </GlassCard>
 
       {/* Sentence Selector List */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
         {filteredList.map((s, idx) => {
           const isCurrent = idx === safeIndex;
           const isDone = completedIds.includes(s.id);
@@ -421,23 +421,23 @@ export const SpeakingPracticePage: React.FC = () => {
               key={s.id}
               type="button"
               onClick={() => selectSentence(idx)}
-              className={`text-left p-4 rounded-xl border transition-colors cursor-pointer flex items-center justify-between gap-3 ${
+              className={`text-left p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
                 isCurrent
-                  ? 'bg-zinc-50 border-zinc-900 ring-1 ring-zinc-900'
-                  : 'bg-white border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50/60'
+                  ? 'bg-gradient-to-br from-primary-50 via-white to-amber-50 border-primary-400 shadow-md ring-1 ring-primary-300'
+                  : 'glass-light hover:bg-white'
               }`}
             >
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <span className="text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-zinc-100 border border-zinc-200 text-zinc-700">
+                  <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-primary-100 text-primary-700">
                     {s.level}
                   </span>
-                  <span className="text-[10px] font-medium text-zinc-400">{s.topic}</span>
+                  <span className="text-[10px] font-semibold text-gray-400">{s.topic}</span>
                 </div>
-                <p className="font-hanzi-serif font-bold text-base text-zinc-950 truncate">{s.hanzi}</p>
-                <p className="text-xs text-zinc-500 truncate">{s.vietnamese}</p>
+                <p className="font-chinese font-black text-base text-gray-900 truncate">{s.hanzi}</p>
+                <p className="text-xs text-gray-500 truncate">{s.vietnamese}</p>
               </div>
-              {isDone && <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />}
+              {isDone && <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />}
             </button>
           );
         })}

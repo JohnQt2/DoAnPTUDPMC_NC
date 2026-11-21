@@ -78,7 +78,7 @@ export const HanziLogo: React.FC<HanziLogoProps> = ({
   variant = 'light',
   size = 'md',
   showSubtitle = true,
-  subtitle = 'HỌC VIỆN HÁN NGỮ',
+  subtitle = 'HỌC TIẾNG TRUNG HSK',
   className = '',
 }) => {
   const isDark = variant === 'dark';

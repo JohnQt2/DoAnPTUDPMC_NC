@@ -50,23 +50,23 @@ const STEP_TITLES: Record<number, { label: string; question: string }> = {
 const FixedRadioCheck: React.FC<{ selected: boolean }> = ({ selected }) => (
   <span
     aria-hidden="true"
-    className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 transition-colors duration-150 ${
+    className={`w-[22px] h-[22px] rounded-full flex items-center justify-center shrink-0 mt-0.5 transition-colors duration-200 ${
       selected
-        ? 'bg-zinc-900 text-white'
-        : 'border border-zinc-300 bg-white'
+        ? 'bg-gradient-to-tr from-primary-600 via-rose-500 to-amber-500 text-white shadow-sm'
+        : 'border-2 border-gray-300/80 bg-white/60'
     }`}
   >
-    {selected && <Check className="w-3 h-3" strokeWidth={3} />}
+    {selected && <Check className="w-3.5 h-3.5" strokeWidth={3} />}
   </span>
 );
 
 const OPTION_CARD_BASE =
-  'w-full text-left p-4 sm:p-5 rounded-xl border transition-colors duration-150 cursor-pointer flex items-start justify-between gap-3.5';
+  'w-full text-left p-4 sm:p-5 rounded-[22px] border-2 transition-[background,border-color,box-shadow] duration-200 cursor-pointer flex items-start justify-between gap-3.5';
 
 const optionCardStyle = (selected: boolean) =>
   selected
-    ? 'bg-zinc-50 border-zinc-900 ring-1 ring-zinc-900'
-    : 'bg-white hover:bg-zinc-50/70 border-zinc-200 hover:border-zinc-300';
+    ? 'bg-gradient-to-br from-rose-50/85 via-white/90 to-amber-50/75 border-primary-500 shadow-[0_8px_24px_-6px_rgba(225,29,72,0.18),inset_0_1.5px_1px_rgba(255,255,255,0.95)]'
+    : 'bg-white/62 hover:bg-white/85 border-white/85 hover:border-rose-200/80 shadow-[0_4px_14px_-4px_rgba(15,23,42,0.04),inset_0_1px_1px_rgba(255,255,255,0.92)]';
 
 export const OnboardingSurveyForm: React.FC<OnboardingSurveyFormProps> = ({
   surveyStep,
@@ -107,20 +107,20 @@ export const OnboardingSurveyForm: React.FC<OnboardingSurveyFormProps> = ({
           </span>
         </div>
 
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-4 gap-2.5">
           {[1, 2, 3, 4].map((s) => (
             <button
               key={s}
               type="button"
               onClick={() => setSurveyStep(s as 1 | 2 | 3 | 4)}
-              className="h-1.5 rounded-full bg-zinc-100 overflow-hidden cursor-pointer"
+              className="h-2 rounded-full bg-white/65 border border-white/80 overflow-hidden cursor-pointer"
               aria-label={`Bước ${s}`}
             >
               <motion.div
                 initial={false}
                 animate={{ width: s <= surveyStep ? '100%' : '0%' }}
-                transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-                className="h-full rounded-full bg-zinc-900"
+                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                className="h-full rounded-full bg-gradient-to-r from-primary-600 via-rose-500 to-amber-500"
               />
             </button>
           ))}

@@ -18,7 +18,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   return (
     <motion.div
       className={cn(
-        'rounded-2xl',
+        'rounded-3xl',
         variant === 'dark' ? 'glass-dark' : 'glass-light',
         hoverable && (variant === 'dark' ? 'glass-dark-hover' : 'glass-light-hover'),
         className

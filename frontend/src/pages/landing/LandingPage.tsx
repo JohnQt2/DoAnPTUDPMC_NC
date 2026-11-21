@@ -289,6 +289,16 @@ const HSK_TEXTBOOKS = [
 
 export const LandingPage: React.FC = () => {
   const [activeSlide, setActiveSlide] = useState<number>(0);
+  // Lazy-mount WebGL canvases: only the visited chapter and the next one (prefetch) are created,
+  // so entering the guest home from login stays instant instead of booting 4 renderers at once.
+  const [warmSlides, setWarmSlides] = useState<number[]>([0, 1]);
+  useEffect(() => {
+    setWarmSlides((prev) => {
+      const next = [activeSlide, activeSlide + 1].filter((n) => n <= 4 && !prev.includes(n));
+      return next.length ? [...prev, ...next] : prev;
+    });
+  }, [activeSlide]);
+  const isWarm = (i: number) => warmSlides.includes(i);
   const [showFooter, setShowFooter] = useState<boolean>(false);
   const [bgmPlaying, setBgmPlaying] = useState<boolean>(false);
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
@@ -794,6 +804,7 @@ export const LandingPage: React.FC = () => {
                       : 'opacity-0 pointer-events-none'
                   }`}
                 >
+                  {isWarm(1) && (
                   <ThreeMinimalZenSculpture
                     activeHanzi={activeSpecimen.hanzi}
                     activePinyin={activeSpecimen.pinyin}
@@ -801,6 +812,7 @@ export const LandingPage: React.FC = () => {
                     isActive={activeSlide === 1 && slide1Mode === 'medallion'}
                     className="w-full h-full"
                   />
+                  )}
                 </div>
                 <div
                   className={`absolute inset-0 transition-opacity duration-300 ${
@@ -809,6 +821,7 @@ export const LandingPage: React.FC = () => {
                       : 'opacity-0 pointer-events-none'
                   }`}
                 >
+                  {slide1Mode === 'curves' && (
                   <ThreeStudyDioramaStage
                     activeScene={0}
                     activeToneIdx={activeSpecimen.toneIdx}
@@ -822,6 +835,7 @@ export const LandingPage: React.FC = () => {
                     theme="light"
                     className="w-full h-full"
                   />
+                  )}
                 </div>
               </div>
 
@@ -973,6 +987,7 @@ export const LandingPage: React.FC = () => {
 
             <div className="lg:col-span-5 relative h-[320px] sm:h-[420px] lg:h-[470px] flex items-center justify-center">
               <div className="w-full max-w-[400px] h-full">
+                {isWarm(2) && (
                 <ThreeStudyDioramaStage
                   activeScene={1}
                   activeToneIdx={0}
@@ -986,6 +1001,7 @@ export const LandingPage: React.FC = () => {
                   theme="light"
                   className="w-full h-full"
                 />
+                )}
               </div>
             </div>
           </div>
@@ -1235,6 +1251,7 @@ export const LandingPage: React.FC = () => {
                   studioMode === 'cards' ? 'lg:col-span-12' : 'lg:col-span-8'
                 }`}
               >
+                {isWarm(4) && (
                 <ThreeStudyDioramaStage
                   activeScene={studioMode === 'cards' ? 2 : 3}
                   activeToneIdx={0}
@@ -1250,6 +1267,7 @@ export const LandingPage: React.FC = () => {
                   theme="light"
                   className="w-full h-full"
                 />
+                )}
 
                 {/* Subtle Frameless Hint Pill */}
                 <div className="pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2 inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/75 backdrop-blur-sm border border-[#1C1917]/10 text-[11px] font-mono text-[#57534E]">

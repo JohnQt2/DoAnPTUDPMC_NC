@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../lib/api';
-import { GlassCard, ShimmerButton } from '../../components/ui';
 import { HanziLogoMark } from '../../components/HanziLogo';
 import {
   Mail,
@@ -532,6 +531,9 @@ export const LoginPage: React.FC = () => {
   const passwordInputCls =
     'w-full pl-10 pr-10 py-2.5 rounded-xl border border-[#EAE3DE] bg-white text-sm text-[#181415] placeholder-[#8C7F82] focus:outline-none focus:border-[#C41E3A] focus:ring-2 focus:ring-[#C41E3A]/15 transition-all';
 
+  const submitBtnCls =
+    'w-full h-10 px-5 rounded-xl bg-[#C41E3A] hover:bg-[#A51730] text-white font-semibold text-xs sm:text-sm inline-flex items-center justify-center gap-2 shadow-[0_8px_20px_-6px_rgba(196,30,58,0.5)] transition-colors cursor-pointer disabled:opacity-50 disabled:pointer-events-none';
+
   const GoogleIcon = (
     <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
       <path
@@ -571,13 +573,7 @@ export const LoginPage: React.FC = () => {
       />
 
       <div className="relative z-10 w-full max-w-[436px] space-y-5">
-        <GlassCard
-          variant="light"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-          className="p-7 sm:p-8 space-y-6 rounded-2xl bg-white/95 backdrop-blur-md border border-[#EAE3DE] border-t-[3px] border-t-[#C41E3A] shadow-[0_22px_50px_-20px_rgba(24,20,21,0.18)]"
-        >
+        <div className="p-7 sm:p-8 space-y-6 rounded-2xl bg-white/95 backdrop-blur-md border border-[#EAE3DE] border-t-[3px] border-t-[#C41E3A] shadow-[0_22px_50px_-20px_rgba(24,20,21,0.18)]">
           {/* Header with Bespoke Hanzi4U Crimson Seal */}
           <div className="text-center space-y-2">
             <div className="inline-flex items-center justify-center mb-1">
@@ -814,14 +810,14 @@ export const LoginPage: React.FC = () => {
                   </div>
                 </div>
 
-                <ShimmerButton
+                <button
                   type="submit"
                   disabled={isSubmitting || isGoogleLoading}
-                  className="w-full"
+                  className={submitBtnCls}
                 >
                   <span>{isSubmitting ? 'Đang gửi mã xác nhận...' : 'Tiếp tục'}</span>
                   <ArrowRight className="w-4 h-4" aria-hidden="true" />
-                </ShimmerButton>
+                </button>
 
                 <div className="relative flex items-center justify-center my-1">
                   <div className="border-t border-[#EAE3DE] w-full" />
@@ -919,10 +915,10 @@ export const LoginPage: React.FC = () => {
                   </div>
                 )}
 
-                <ShimmerButton
+                <button
                   type="submit"
                   disabled={isSubmitting || isGoogleLoading}
-                  className="w-full"
+                  className={submitBtnCls}
                 >
                   <span>
                     {isSubmitting
@@ -932,7 +928,7 @@ export const LoginPage: React.FC = () => {
                         : 'Gửi mã xác nhận'}
                   </span>
                   <ArrowRight className="w-4 h-4" aria-hidden="true" />
-                </ShimmerButton>
+                </button>
 
                 <button
                   type="button"
@@ -1019,14 +1015,14 @@ export const LoginPage: React.FC = () => {
                   </button>
                 </div>
 
-                <ShimmerButton
+                <button
                   type="submit"
                   disabled={isSubmitting || isLocked}
-                  className="w-full"
+                  className={submitBtnCls}
                 >
                   <span>{isSubmitting ? 'Đang xác nhận...' : 'Xác nhận & Đăng nhập'}</span>
                   <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
-                </ShimmerButton>
+                </button>
 
                 <button
                   type="button"
@@ -1077,10 +1073,10 @@ export const LoginPage: React.FC = () => {
                   </div>
                 </div>
 
-                <ShimmerButton type="submit" disabled={isSubmitting} className="w-full">
+                <button type="submit" disabled={isSubmitting} className={submitBtnCls}>
                   <span>{isSubmitting ? 'Đang gửi mã OTP...' : 'Gửi mã OTP về Gmail'}</span>
                   <ArrowRight className="w-4 h-4" aria-hidden="true" />
-                </ShimmerButton>
+                </button>
 
                 <button
                   type="button"
@@ -1207,14 +1203,14 @@ export const LoginPage: React.FC = () => {
                   </div>
                 </div>
 
-                <ShimmerButton
+                <button
                   type="submit"
                   disabled={isSubmitting || isLocked}
-                  className="w-full"
+                  className={submitBtnCls}
                 >
                   <span>{isSubmitting ? 'Đang cập nhật mật khẩu...' : 'Xác nhận đặt lại mật khẩu'}</span>
                   <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
-                </ShimmerButton>
+                </button>
 
                 <button
                   type="button"
@@ -1230,7 +1226,7 @@ export const LoginPage: React.FC = () => {
               </motion.form>
             )}
           </AnimatePresence>
-        </GlassCard>
+        </div>
 
         <p className="text-center text-xs text-[#5F5658]">
           Bằng cách tiếp tục, bạn đồng ý với điều khoản sử dụng của Hanzi4U.

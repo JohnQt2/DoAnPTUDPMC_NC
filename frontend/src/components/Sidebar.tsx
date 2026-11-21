@@ -360,7 +360,15 @@ export const Sidebar: React.FC<{
       if (basePath.startsWith('#/admin/users') && isSuperAdmin) return '#/admin/users';
       return '#/admin/courses';
     }
-    if (basePath === '#/today' || basePath === '#/' || basePath === '') return '#/today';
+    if (
+      basePath === '#/today' ||
+      basePath === '#/' ||
+      basePath === '' ||
+      basePath === '#/landing' ||
+      basePath === '#/login'
+    ) {
+      return '#/today';
+    }
     if (
       basePath.startsWith('#/courses') ||
       basePath.startsWith('#/lessons') ||

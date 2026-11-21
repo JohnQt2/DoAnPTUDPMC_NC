@@ -690,16 +690,12 @@ export const ProfilePage: React.FC = () => {
             {hasUnsavedChanges ? (
               <>
                 <span className="w-2 h-2 rounded-full bg-[#C41E3A] animate-pulse shrink-0" />
-                <span className="text-gray-800">
-                  Bạn có thay đổi chưa lưu trong hồ sơ &amp; lịch học
-                </span>
+                <span className="text-gray-800">Có thay đổi chưa lưu</span>
               </>
             ) : (
               <>
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                <span className="text-gray-500">
-                  Mọi cài đặt cá nhân đã được lưu đồng bộ
-                </span>
+                <span className="text-gray-600">Đã lưu mọi thay đổi</span>
               </>
             )}
           </div>
@@ -753,7 +749,7 @@ export const ProfilePage: React.FC = () => {
                 </span>
               </div>
               <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
-                Tối đa {maxSessions} thiết bị cùng lúc · Tự gia hạn 30 ngày · Tự động thu hồi khi vượt quá giới hạn
+                Tối đa {maxSessions} thiết bị cùng lúc
               </p>
             </div>
           </div>

@@ -73,7 +73,7 @@ export const TodayPage: React.FC = () => {
   ];
 
   return (
-    <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 space-y-7">
+    <div className="max-w-4xl mx-auto py-6 sm:py-7 px-4 sm:px-6 space-y-6">
       {/* Greeting Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

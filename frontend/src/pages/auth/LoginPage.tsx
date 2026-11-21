@@ -96,16 +96,7 @@ export const LoginPage: React.FC = () => {
   };
 
   const getRedirectTarget = (isNewUser?: boolean): string => {
-    const rawHash = window.location.hash || '';
-    if (rawHash.includes('?')) {
-      const queryStr = rawHash.split('?')[1];
-      const params = new URLSearchParams(queryStr);
-      const redirectParam = params.get('redirect');
-      if (redirectParam) {
-        return decodeURIComponent(redirectParam);
-      }
-    }
-    return isNewUser ? '#/onboarding' : '#/courses';
+    return isNewUser ? '#/onboarding' : '#/today';
   };
 
   // Sync authTab whenever URL hash changes (handles clicking Navbar links while on #/login)

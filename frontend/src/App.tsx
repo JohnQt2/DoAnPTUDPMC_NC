@@ -84,12 +84,25 @@ const AppContent: React.FC = () => {
   }, []);
 
   const isStudent = user?.role === 'STUDENT';
+  const basePath = currentHash.split('?')[0] || '#/';
+
+  // Normalize root / login / landing routes to #/today for authenticated students
+  useEffect(() => {
+    if (!user || !isStudent || hasCompletedOnboarding !== true) return;
+    if (
+      basePath === '#/' ||
+      basePath === '' ||
+      basePath === '#/landing' ||
+      basePath === '#/login'
+    ) {
+      window.history.replaceState(null, '', '#/today');
+      setCurrentHash('#/today');
+    }
+  }, [user, isStudent, hasCompletedOnboarding, basePath]);
 
   if (isLoading || (isStudent && hasCompletedOnboarding === null)) {
     return <HanziLoadingScreen visible={true} progress={82} />;
   }
-
-  const basePath = currentHash.split('?')[0] || '#/';
 
   // ──────────────────────────────────────────────────────────────────────────
   // 1. GUEST / UNAUTHENTICATED ROUTES (DARK GLASSMORPHISM)
@@ -317,7 +330,7 @@ const AppContent: React.FC = () => {
           sidebarCollapsed ? 'lg:pl-[6.25rem]' : 'lg:pl-[17.25rem]'
         } min-h-screen flex flex-col transition-[padding] duration-300 ease-out`}
       >
-        <main className="flex-1 pb-16">
+        <main className="flex-1 pb-8">
           <PageTransition routeKey={basePath}>{renderCurrentPage()}</PageTransition>
         </main>
       </div>

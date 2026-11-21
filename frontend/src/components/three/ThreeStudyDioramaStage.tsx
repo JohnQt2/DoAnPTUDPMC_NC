@@ -1403,7 +1403,7 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
     <div
       ref={mountRef}
       role="img"
-      aria-label="Mô hình học tiếng Trung 3D Hanzi4U"
+      aria-label="Không gian học tiếng Trung Hanzi4U"
       className={`relative w-full h-full select-none touch-none ${className}`}
     />
   );

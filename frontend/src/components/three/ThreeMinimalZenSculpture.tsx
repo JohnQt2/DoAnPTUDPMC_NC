@@ -590,32 +590,32 @@ export const ThreeMinimalZenSculpture: React.FC<ThreeMinimalZenSculptureProps> =
     <div
       ref={mountRef}
       role="img"
-      aria-label={`Mô hình chữ Hán 3D ${activeHanzi}`}
+      aria-label={`Mô hình chữ Hán ${activeHanzi}`}
       className={`relative w-full h-full select-none touch-none ${className}`}
     >
-      {/* Quick Pill Switcher: Crystal Glass Sphere + 3D Strokes vs Pure 3D Extruded Strokes Only */}
+      {/* Quick Pill Switcher: Crystal Sphere vs Pure Extruded Strokes */}
       <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 inline-flex items-center p-0.5 rounded-full bg-white/85 backdrop-blur-sm border border-[#1C1917]/15 shadow-xs">
         <button
           type="button"
           onClick={() => setShowCrystalOrb(true)}
-          className={`px-2.5 py-1 rounded-full text-[10px] font-mono font-semibold transition-colors cursor-pointer ${
+          className={`px-3 py-1 rounded-full text-[10px] font-mono font-semibold transition-colors cursor-pointer ${
             showCrystalOrb
               ? 'bg-[#1C1917] text-white'
               : 'text-[#57534E] hover:text-[#1C1917]'
           }`}
         >
-          Cầu pha lê 3D
+          Cầu pha lê
         </button>
         <button
           type="button"
           onClick={() => setShowCrystalOrb(false)}
-          className={`px-2.5 py-1 rounded-full text-[10px] font-mono font-semibold transition-colors cursor-pointer ${
+          className={`px-3 py-1 rounded-full text-[10px] font-mono font-semibold transition-colors cursor-pointer ${
             !showCrystalOrb
               ? 'bg-[#C41E3A] text-white'
               : 'text-[#57534E] hover:text-[#1C1917]'
           }`}
         >
-          Chỉ chữ 3D nét nổi
+          Nét chữ
         </button>
       </div>
     </div>

@@ -1121,8 +1121,8 @@ export const LandingPage: React.FC = () => {
                 {/* Mobile 2-Mode Switcher (Visible on phones < 640px) */}
                 <div className="flex sm:hidden items-center gap-1.5 pt-0.5 shrink-0">
                   {[
-                    { id: 'medallion' as const, label: 'Chữ 3D' },
-                    { id: 'curves' as const, label: 'Sóng thanh' },
+                    { id: 'medallion' as const, label: 'Chữ Hán' },
+                    { id: 'curves' as const, label: 'Thanh điệu' },
                   ].map((m) => {
                     const active = slide1Mode === m.id;
                     return (
@@ -1262,17 +1262,15 @@ export const LandingPage: React.FC = () => {
                 </div>
               </div>
 
-              <span className="pointer-events-none relative z-20 mt-1 sm:mt-0 sm:absolute sm:bottom-2 sm:left-1/2 sm:-translate-x-1/2 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/85 backdrop-blur-sm border border-[#1C1917]/10 text-[10px] sm:text-[10.5px] font-mono text-[#57534E]">
+              <span className="pointer-events-none relative z-20 mt-1 sm:mt-0 sm:absolute sm:bottom-2 sm:left-1/2 sm:-translate-x-1/2 inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-white/85 backdrop-blur-sm border border-[#1C1917]/10 text-[10px] sm:text-[10.5px] font-mono text-[#57534E]">
                 <Move className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#C41E3A]" />
-                {slide1Mode === 'medallion'
-                  ? 'Kéo xoay 360° chữ Hán 3D & cầu pha lê'
-                  : 'Kéo xoay sân khấu sóng âm thanh điệu 3D'}
+                {slide1Mode === 'medallion' ? 'Kéo để xoay chữ' : 'Kéo để xoay góc nhìn'}
               </span>
 
               <div className="hidden sm:flex flex-col gap-1.5 absolute right-0 top-1/2 -translate-y-1/2 z-20">
                 {[
-                  { id: 'medallion' as const, label: 'Chữ 3D & Cầu', glyph: '字' },
-                  { id: 'curves' as const, label: 'Sóng thanh 3D', glyph: '声' },
+                  { id: 'medallion' as const, label: 'Chữ Hán', glyph: '字' },
+                  { id: 'curves' as const, label: 'Thanh điệu', glyph: '声' },
                 ].map((m) => {
                   const active = slide1Mode === m.id;
                   return (
@@ -1454,11 +1452,11 @@ export const LandingPage: React.FC = () => {
                       className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#C41E3A] hover:bg-[#A51730] text-white text-[10.5px] sm:text-[11px] font-mono font-semibold shadow-xs transition-colors cursor-pointer"
                     >
                       <PenTool className="w-3 h-3" />
-                      <span>Bấm vào ô chữ để tập viết ({activeCalligraphy.strokes} nét)</span>
+                      <span>Bấm ô chữ để tập viết</span>
                     </button>
                     <span className="pointer-events-none inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/85 backdrop-blur-sm border border-[#1C1917]/10 text-[10px] font-mono text-[#57534E]">
                       <Move className="w-3 h-3 text-[#C41E3A]" />
-                      <span>Kéo xoay 3D</span>
+                      <span>Kéo để xoay</span>
                     </span>
                   </div>
                 </>
@@ -1736,17 +1734,12 @@ export const LandingPage: React.FC = () => {
                 )}
 
                 {/* Subtle Frameless Hint Pill */}
-                <div className="pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 rounded-full bg-white/85 backdrop-blur-sm border border-[#1C1917]/10 text-[9.5px] sm:text-[11px] font-mono text-[#57534E] whitespace-nowrap max-w-[92vw] overflow-hidden text-ellipsis">
+                <div className="pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 rounded-full bg-white/85 backdrop-blur-sm border border-[#1C1917]/10 text-[9.5px] sm:text-[11px] font-mono text-[#57534E] whitespace-nowrap max-w-[92vw] overflow-hidden text-ellipsis">
                   <Move className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#C41E3A] shrink-0" />
-                  <span className="sm:hidden truncate">
+                  <span className="truncate">
                     {studioMode === 'cards'
-                      ? 'Chạm thẻ để lật & nghe · Kéo xoay'
-                      : 'Chạm sách HSK 1–6 · Kéo xoay'}
-                  </span>
-                  <span className="hidden sm:inline truncate">
-                    {studioMode === 'cards'
-                      ? 'Bấm trực tiếp vào từng thẻ để lật & nghe phát âm · Kéo để xoay thẻ'
-                      : 'Bấm vào quyển sách HSK 1 → 6 và kéo để xoay riêng từng quyển'}
+                      ? 'Chạm thẻ để lật và nghe · Kéo để xoay'
+                      : 'Chọn sách để xem chi tiết · Kéo để xoay'}
                   </span>
                 </div>
               </div>

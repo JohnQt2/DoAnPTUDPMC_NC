@@ -441,7 +441,7 @@ export const InteractiveTianZiGeBoard: React.FC<InteractiveTianZiGeBoardProps> =
             {isLimitReached && (
               <div className="pointer-events-none absolute bottom-2.5 left-3 right-11 z-20 px-2.5 py-1 rounded bg-[#157A57]/95 text-white text-[10px] sm:text-[11px] font-mono font-semibold flex items-center gap-1.5 shadow-sm">
                 <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-                <span className="truncate">Đủ {maxStrokes} nét · Bấm Xóa nét để viết lại</span>
+                <span className="truncate">Hoàn thành {maxStrokes} nét</span>
               </div>
             )}
 
@@ -449,14 +449,14 @@ export const InteractiveTianZiGeBoard: React.FC<InteractiveTianZiGeBoardProps> =
             {!isLimitReached && (
               <div className="pointer-events-none absolute bottom-2.5 left-3.5 z-20 inline-flex items-center gap-1 px-2 py-0.5 rounded bg-white/90 border border-[#1C1917]/12 text-[9.5px] sm:text-[10.5px] font-mono text-[#57534E]">
                 <PenTool className="w-3 h-3 text-[#C41E3A]" />
-                <span>Viết nét thứ {completedCount + 1}/{maxStrokes}</span>
+                <span>Nét {completedCount + 1}/{maxStrokes}</span>
               </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* Tactile Calligraphy Action Toolbar: Xóa nét · Thứ tự viết · Xem mẫu · Xoay 3D */}
+      {/* Tactile Calligraphy Action Toolbar: Xóa nét · Thứ tự viết · Xem mẫu · Xoay chữ */}
       <div className="flex flex-wrap items-center justify-center gap-1.5">
         <button
           type="button"
@@ -465,7 +465,7 @@ export const InteractiveTianZiGeBoard: React.FC<InteractiveTianZiGeBoardProps> =
           className="px-2.5 py-1.5 rounded-md bg-white hover:bg-[#C41E3A] text-[#1C1917] hover:text-white border border-[#1C1917]/20 text-[10.5px] sm:text-[11px] font-mono font-semibold inline-flex items-center gap-1 transition-colors cursor-pointer disabled:opacity-45 disabled:pointer-events-none"
         >
           <RotateCcw className="w-3 h-3" />
-          <span>Xóa nét ({completedCount}/{maxStrokes})</span>
+          <span>Xóa nét</span>
         </button>
 
         <button
@@ -497,7 +497,7 @@ export const InteractiveTianZiGeBoard: React.FC<InteractiveTianZiGeBoardProps> =
             className="px-2.5 py-1.5 rounded-md bg-white/90 hover:bg-white text-[#57534E] hover:text-[#1C1917] border border-[#1C1917]/15 text-[10.5px] sm:text-[11px] font-mono font-semibold inline-flex items-center gap-1 transition-colors cursor-pointer"
           >
             <Box className="w-3 h-3 text-[#C41E3A]" />
-            <span>Xoay 3D</span>
+            <span>Xoay chữ</span>
           </button>
         )}
       </div>

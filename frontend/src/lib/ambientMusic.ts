@@ -231,6 +231,20 @@ class AmbientMusicController {
     return this.isEnabled;
   }
 
+  public suspendOnLeave(): void {
+    if (this.timerId !== null) {
+      window.clearInterval(this.timerId);
+      this.timerId = null;
+    }
+    this.isRunning = false;
+    if (this.ctx && this.masterGain && this.ctx.state === 'running') {
+      const now = this.ctx.currentTime;
+      this.masterGain.gain.cancelScheduledValues(now);
+      this.masterGain.gain.setValueAtTime(Math.max(0.0001, this.masterGain.gain.value), now);
+      this.masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
+    }
+  }
+
   public getEnabled(): boolean {
     return this.isEnabled;
   }

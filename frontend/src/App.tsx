@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
@@ -13,9 +13,7 @@ import {
 } from './components/ui';
 
 // Pages
-const LandingPage = lazy(() =>
-  import('./pages/landing/LandingPage').then((m) => ({ default: m.LandingPage }))
-);
+import { LandingPage } from './pages/landing/LandingPage';
 import { LoginPage } from './pages/auth/LoginPage';
 import { ProfilePage } from './pages/profile/ProfilePage';
 import { ProgressPage } from './pages/profile/ProgressPage';
@@ -73,11 +71,7 @@ const AppContent: React.FC = () => {
   // ──────────────────────────────────────────────────────────────────────────
   if (!user) {
     if (basePath === '#/' || basePath === '' || basePath === '#/landing') {
-      return (
-        <Suspense fallback={<div className="w-screen h-screen bg-[#F5F2EC]" />}>
-          <LandingPage />
-        </Suspense>
-      );
+      return <LandingPage />;
     }
 
     if (basePath === '#/login') {

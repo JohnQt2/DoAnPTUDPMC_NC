@@ -13,6 +13,8 @@ export interface ThreeStudyDioramaStageProps {
   activeHskLevel: number;
   /** When false, keeps WebGL context warm in memory while pausing rAF render work */
   isActive?: boolean;
+  /** Optional subset of scenes to allocate in this instance (avoids creating unused textures) */
+  enabledScenes?: Array<0 | 1 | 2 | 3>;
   /** Called when the user clicks directly on a 3D flashcard mesh in Scene 2 */
   onCardClick?: (cardId: string, cardIdx: number) => void;
   /** Called when the user clicks directly on a 3D HSK textbook mesh in Scene 3 */
@@ -374,6 +376,7 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
   activeCardIdx,
   activeHskLevel,
   isActive = true,
+  enabledScenes = [0, 1, 2, 3],
   onCardClick,
   onBookClick,
   theme = 'light',
@@ -574,17 +577,18 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
     const strokeGroup = new THREE.Group();
     rootRig.add(strokeGroup);
 
-    const tabletTex = createTianZiGeTexture(
-      activeStrokeChar,
-      activeStrokePinyin,
-      activeStrokeCount
-    );
+    const hasStrokeScene = enabledScenes.includes(1);
+    const tabletTex = hasStrokeScene
+      ? createTianZiGeTexture(activeStrokeChar, activeStrokePinyin, activeStrokeCount)
+      : null;
     const tabletFaceMat = new THREE.MeshStandardMaterial({
       map: tabletTex,
       roughness: 0.42,
       metalness: 0.04,
     });
-    tabletMatRef.current = tabletFaceMat;
+    if (hasStrokeScene) {
+      tabletMatRef.current = tabletFaceMat;
+    }
 
     const tabletGeo = new THREE.BoxGeometry(2.95, 2.95, 0.18);
     const tabletMesh = new THREE.Mesh(tabletGeo, [
@@ -614,7 +618,8 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
     rootRig.add(cardsGroup);
 
     const cardGeo = new THREE.BoxGeometry(1.96, 2.66, 0.08);
-    const cardEntries = CARD_SPECS.map((spec, idx) => {
+    const hasCardsScene = enabledScenes.includes(2);
+    const cardEntries = (hasCardsScene ? CARD_SPECS : []).map((spec, idx) => {
       const frontTex = createCardFrontTexture(spec);
       const backTex = createCardBackTexture(spec);
       const frontMat = new THREE.MeshStandardMaterial({
@@ -656,8 +661,9 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
     const hskGroup = new THREE.Group();
     rootRig.add(hskGroup);
 
+    const hasHskScene = enabledScenes.includes(3);
     const textureLoader = new THREE.TextureLoader();
-    const pageEdgeTex = createBookPageEdgeTexture();
+    const pageEdgeTex = hasHskScene ? createBookPageEdgeTexture() : null;
     const pageEdgeMat = new THREE.MeshStandardMaterial({
       map: pageEdgeTex,
       roughness: 0.65,
@@ -676,7 +682,7 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
       baseRotY: number;
     }> = [];
 
-    HSK_BOOK_SPECS.forEach((spec, i) => {
+    (hasHskScene ? HSK_BOOK_SPECS : []).forEach((spec, i) => {
       const spineTex = createBookSpineTexture(spec.level, spec.spineHex);
       const spineMat = new THREE.MeshStandardMaterial({
         map: spineTex,
@@ -1045,7 +1051,7 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
         c.backMat.dispose();
       });
       bookGeo.dispose();
-      pageEdgeTex.dispose();
+      pageEdgeTex?.dispose();
       pageEdgeMat.dispose();
       hskBookEntries.forEach((b) => {
         b.frontMat.map?.dispose();

@@ -289,14 +289,17 @@ const HSK_TEXTBOOKS = [
 
 export const LandingPage: React.FC = () => {
   const [activeSlide, setActiveSlide] = useState<number>(0);
-  // Lazy-mount WebGL canvases: only the visited chapter and the next one (prefetch) are created,
-  // so entering the guest home from login stays instant instead of booting 4 renderers at once.
-  const [warmSlides, setWarmSlides] = useState<number[]>([0, 1]);
+  // Start with [0] on frame 0 so navigating #/login -> #/ renders Slide 0 in <2ms with 0 WebGL blocking,
+  // then pre-warm the next slide in idle background time so scrolling is 0ms instant.
+  const [warmSlides, setWarmSlides] = useState<number[]>([0]);
   useEffect(() => {
-    setWarmSlides((prev) => {
-      const next = [activeSlide, activeSlide + 1].filter((n) => n <= 4 && !prev.includes(n));
-      return next.length ? [...prev, ...next] : prev;
-    });
+    const timer = window.setTimeout(() => {
+      setWarmSlides((prev) => {
+        const next = [activeSlide, activeSlide + 1].filter((n) => n <= 4 && !prev.includes(n));
+        return next.length ? [...prev, ...next] : prev;
+      });
+    }, activeSlide === 0 ? 110 : 0);
+    return () => window.clearTimeout(timer);
   }, [activeSlide]);
   const isWarm = (i: number) => warmSlides.includes(i);
   const [showFooter, setShowFooter] = useState<boolean>(false);
@@ -334,12 +337,13 @@ export const LandingPage: React.FC = () => {
   const activeCurriculum = CURRICULUM_SLIDES[curriculumIdx];
   const activeBook = HSK_TEXTBOOKS[Math.min(5, Math.max(0, activeHskLevel - 1))];
 
-  // Auto-start gentle chill East-Asian ambient music on page entry
+  // Auto-start gentle chill East-Asian ambient music on page entry, and fade out when leaving to Login
   useEffect(() => {
     ambientBgm.initAutoStart();
     const unsub = ambientBgm.subscribe(setBgmPlaying);
     return () => {
       unsub();
+      ambientBgm.suspendOnLeave();
     };
   }, []);
 
@@ -832,6 +836,7 @@ export const LandingPage: React.FC = () => {
                     activeCardIdx={0}
                     activeHskLevel={1}
                     isActive={activeSlide === 1 && slide1Mode === 'curves'}
+                    enabledScenes={[0]}
                     theme="light"
                     className="w-full h-full"
                   />
@@ -998,6 +1003,7 @@ export const LandingPage: React.FC = () => {
                   activeCardIdx={0}
                   activeHskLevel={1}
                   isActive={activeSlide === 2}
+                  enabledScenes={[1]}
                   theme="light"
                   className="w-full h-full"
                 />
@@ -1262,6 +1268,7 @@ export const LandingPage: React.FC = () => {
                   activeCardIdx={activeCardIdx}
                   activeHskLevel={activeHskLevel}
                   isActive={activeSlide === 4}
+                  enabledScenes={[2, 3]}
                   onCardClick={handleDirectCardClick}
                   onBookClick={handleDirectBookClick}
                   theme="light"

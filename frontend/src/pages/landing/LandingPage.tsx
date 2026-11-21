@@ -346,14 +346,36 @@ export const LandingPage: React.FC = () => {
   const [flippedCards, setFlippedCards] = useState<Record<string, boolean>>({});
   const [activeHskLevel, setActiveHskLevel] = useState<number>(1);
 
-  // 1:1 WuWa-Grade Wheel / Trackpad Gesture State
+  // 1:1 WuWa-Grade Wheel / Trackpad & Mobile Touch Swipe State
   const wheelStateRef = useRef({
     lockUntil: 0,
     lastEventTime: 0,
     lastAbsDelta: 0,
   });
-  const touchStartYRef = useRef<number | null>(null);
-  const touchStartXRef = useRef<number | null>(null);
+  const swipeLayerRef = useRef<HTMLDivElement>(null);
+  const touchGestureRef = useRef<{
+    active: boolean;
+    startY: number;
+    startX: number;
+    lastY: number;
+    lastX: number;
+    startTime: number;
+    section: HTMLElement | null;
+    isScrollable: boolean;
+    startedAtTop: boolean;
+    startedAtBottom: boolean;
+  }>({
+    active: false,
+    startY: 0,
+    startX: 0,
+    lastY: 0,
+    lastX: 0,
+    startTime: 0,
+    section: null,
+    isScrollable: false,
+    startedAtTop: true,
+    startedAtBottom: true,
+  });
 
   const activeSpecimen = SPECIMEN_TONES[specimenIdx];
   const activeCalligraphy = CALLIGRAPHY_SPECIMENS[calligraphyIdx];
@@ -543,10 +565,23 @@ export const LandingPage: React.FC = () => {
     return () => cancelAnimationFrame(rafId);
   }, []);
 
-  // 1:1 WuWa Swiper Mouse-Wheel & Trackpad Inertia Onset Detector
+  // 1:1 WuWa Swiper Mouse-Wheel & Trackpad Inertia Onset Detector (works on Desktop & Mobile Emulator)
   useEffect(() => {
     const onWheel = (e: WheelEvent) => {
-      if (window.innerWidth < 1024) return;
+      // On narrow viewports where an inner slide scrolls vertically, let native scroll run until reaching top/bottom
+      if (window.innerWidth < 1024) {
+        const activeSection = document.querySelector<HTMLElement>(
+          'section[data-active-slide="true"]'
+        );
+        if (activeSection && activeSection.scrollHeight > activeSection.clientHeight + 8) {
+          const atTop = activeSection.scrollTop <= 8;
+          const atBottom =
+            activeSection.scrollTop + activeSection.clientHeight >= activeSection.scrollHeight - 10;
+          if (e.deltaY > 0 && !atBottom) return;
+          if (e.deltaY < 0 && !atTop) return;
+        }
+      }
+
       e.preventDefault();
 
       const absDelta = Math.abs(e.deltaY);
@@ -575,7 +610,6 @@ export const LandingPage: React.FC = () => {
     };
 
     const onKeyDown = (e: KeyboardEvent) => {
-      if (window.innerWidth < 1024) return;
       if (['ArrowDown', 'PageDown'].includes(e.key)) {
         e.preventDefault();
         stepChapter(1);
@@ -631,6 +665,45 @@ export const LandingPage: React.FC = () => {
     setActiveHskLevel(level);
   }, []);
 
+  const resetSwipeOffset = useCallback(() => {
+    const el = swipeLayerRef.current;
+    if (!el) return;
+    el.style.transition = 'transform 240ms cubic-bezier(0.22, 1, 0.36, 1)';
+    el.style.transform = 'translate3d(0, 0, 0)';
+  }, []);
+
+  const finishTouchSwipe = useCallback(
+    (endY?: number, endX?: number) => {
+      const g = touchGestureRef.current;
+      if (!g.active) return;
+      g.active = false;
+      resetSwipeOffset();
+
+      const finalY = endY ?? g.lastY;
+      const finalX = endX ?? g.lastX;
+      const dy = g.startY - finalY;
+      const dx = g.startX - finalX;
+      const elapsed = Math.max(1, performance.now() - g.startTime);
+      const velocity = Math.abs(dy) / elapsed;
+
+      // Require vertical-dominant swipe and either >= 30px drag or crisp quick flick (>= 18px)
+      if (Math.abs(dy) < Math.abs(dx) * 1.05) return;
+      const isValidSwipe = Math.abs(dy) >= 30 || (Math.abs(dy) >= 18 && velocity >= 0.24);
+      if (!isValidSwipe) return;
+
+      if (g.isScrollable && g.section) {
+        const atTopNow = g.section.scrollTop <= 14;
+        const atBottomNow =
+          g.section.scrollTop + g.section.clientHeight >= g.section.scrollHeight - 16;
+        if (dy > 0 && !(g.startedAtBottom || atBottomNow)) return;
+        if (dy < 0 && !(g.startedAtTop || atTopNow)) return;
+      }
+
+      stepChapter(dy > 0 ? 1 : -1);
+    },
+    [resetSwipeOffset, stepChapter]
+  );
+
   const isHero = activeSlide === 0;
 
   return (
@@ -641,36 +714,69 @@ export const LandingPage: React.FC = () => {
         const target = e.target as HTMLElement | null;
         // Never hijack touch gestures on 3D WebGL canvas or horizontal scrollers (e.g. filmstrip)
         if (target?.closest('canvas') || target?.closest('.no-chapter-swipe')) {
-          touchStartYRef.current = null;
-          touchStartXRef.current = null;
+          touchGestureRef.current.active = false;
           return;
         }
-        touchStartYRef.current = e.touches[0]?.clientY ?? null;
-        touchStartXRef.current = e.touches[0]?.clientX ?? null;
+        const touch = e.touches[0];
+        if (!touch) return;
+
+        const section =
+          (target?.closest('section') as HTMLElement | null) ||
+          document.querySelector<HTMLElement>('section[data-active-slide="true"]');
+        const isScrollable = Boolean(
+          section && section.scrollHeight > section.clientHeight + 8
+        );
+        const startedAtTop = !isScrollable || (section ? section.scrollTop <= 14 : true);
+        const startedAtBottom =
+          !isScrollable ||
+          (section
+            ? section.scrollTop + section.clientHeight >= section.scrollHeight - 16
+            : true);
+
+        touchGestureRef.current = {
+          active: true,
+          startY: touch.clientY,
+          startX: touch.clientX,
+          lastY: touch.clientY,
+          lastX: touch.clientX,
+          startTime: performance.now(),
+          section,
+          isScrollable,
+          startedAtTop,
+          startedAtBottom,
+        };
+      }}
+      onTouchMove={(e) => {
+        const g = touchGestureRef.current;
+        if (!g.active) return;
+        const touch = e.touches[0];
+        if (!touch) return;
+        g.lastY = touch.clientY;
+        g.lastX = touch.clientX;
+
+        const dy = g.startY - touch.clientY;
+        const dx = g.startX - touch.clientX;
+        if (Math.abs(dy) <= Math.abs(dx)) return;
+
+        // Apply silky live elastic follow feedback when swiping across chapter boundaries (or on Hero)
+        const canDragDown = !g.isScrollable || (dy > 0 && g.startedAtBottom);
+        const canDragUp = !g.isScrollable || (dy < 0 && g.startedAtTop);
+        if ((dy > 0 && canDragDown) || (dy < 0 && canDragUp && activeSlide > 0)) {
+          const el = swipeLayerRef.current;
+          if (el) {
+            const clamped = Math.max(-44, Math.min(44, -dy * 0.24));
+            el.style.transition = 'none';
+            el.style.transform = `translate3d(0, ${clamped.toFixed(1)}px, 0)`;
+          }
+        }
       }}
       onTouchEnd={(e) => {
-        if (touchStartYRef.current === null || touchStartXRef.current === null) return;
-        const endY = e.changedTouches[0]?.clientY ?? touchStartYRef.current;
-        const endX = e.changedTouches[0]?.clientX ?? touchStartXRef.current;
-        const dy = touchStartYRef.current - endY;
-        const dx = touchStartXRef.current - endX;
-        touchStartYRef.current = null;
-        touchStartXRef.current = null;
-
-        // Ignore horizontal swipes or short taps
-        if (Math.abs(dy) < 56 || Math.abs(dx) > Math.abs(dy) * 0.9) return;
-
-        // If inside a scrollable section on mobile, only switch chapter at scroll boundaries
-        const target = e.target as HTMLElement | null;
-        const scrollSection = target?.closest('section');
-        if (scrollSection && scrollSection.scrollHeight > scrollSection.clientHeight + 8) {
-          const atTop = scrollSection.scrollTop <= 4;
-          const atBottom =
-            scrollSection.scrollTop + scrollSection.clientHeight >= scrollSection.scrollHeight - 6;
-          if (dy > 0 && !atBottom) return;
-          if (dy < 0 && !atTop) return;
-        }
-        stepChapter(dy > 0 ? 1 : -1);
+        const touch = e.changedTouches[0];
+        finishTouchSwipe(touch?.clientY, touch?.clientX);
+      }}
+      onTouchCancel={(e) => {
+        const touch = e.changedTouches[0];
+        finishTouchSwipe(touch?.clientY, touch?.clientX);
       }}
     >
       {/* HoYoverse-Caliber Entrance Loading Curtain (with Imperial Seal & Golden Astrolabe Ring) */}
@@ -811,12 +917,15 @@ export const LandingPage: React.FC = () => {
         }}
         className="relative w-full h-full transition-all duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform"
       >
+        {/* Live 120fps Touch-Drag Follow Layer */}
+        <div ref={swipeLayerRef} className="relative w-full h-full will-change-transform">
         {/* ────────────────────────────────────────────────────────────────
             SLIDE 0: CALM DAYLIGHT EDITORIAL HERO (HoYoverse 2.5D Desk Parallax × Sunbeams)
         ──────────────────────────────────────────────────────────────── */}
         <section
           aria-hidden={activeSlide !== 0}
-          className={`absolute inset-0 w-full h-full overflow-hidden bg-[#F3EFE8] transition-opacity duration-[450ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[opacity] ${
+          data-active-slide={activeSlide === 0 ? 'true' : undefined}
+          className={`absolute inset-0 w-full h-full overflow-hidden touch-none bg-[#F3EFE8] transition-opacity duration-[450ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[opacity] ${
             activeSlide === 0
               ? 'opacity-100 pointer-events-auto z-20'
               : 'opacity-0 pointer-events-none z-10'
@@ -912,9 +1021,9 @@ export const LandingPage: React.FC = () => {
             onClick={() => goToSlide(1)}
             className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-30 inline-flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-1.5 rounded-full bg-white/90 hover:bg-white border border-[#1C1917]/15 text-[10px] sm:text-[11px] font-mono text-[#57534E] hover:text-[#C41E3A] backdrop-blur-sm transition-colors cursor-pointer whitespace-nowrap"
           >
-            <span className="sm:hidden">Khám phá · Bài 01 Thanh điệu</span>
+            <span className="sm:hidden">Vuốt lên · Bài 01 Thanh điệu</span>
             <span className="hidden sm:inline">Cuộn xuống · Bài 01 Thanh điệu</span>
-            <ChevronDown className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+            <ChevronDown className="w-3 h-3 sm:w-3.5 sm:h-3.5 animate-bounce" />
           </button>
         </section>
 
@@ -923,6 +1032,7 @@ export const LandingPage: React.FC = () => {
         ──────────────────────────────────────────────────────────────── */}
         <section
           aria-hidden={activeSlide !== 1}
+          data-active-slide={activeSlide === 1 ? 'true' : undefined}
           className={`absolute inset-0 w-full h-full overflow-y-auto lg:overflow-hidden bg-[#F5F2EC] transition-opacity duration-[450ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[opacity] ${
             activeSlide === 1
               ? 'opacity-100 pointer-events-auto z-20'
@@ -1137,6 +1247,7 @@ export const LandingPage: React.FC = () => {
         ──────────────────────────────────────────────────────────────── */}
         <section
           aria-hidden={activeSlide !== 2}
+          data-active-slide={activeSlide === 2 ? 'true' : undefined}
           className={`absolute inset-0 w-full h-full overflow-y-auto lg:overflow-hidden bg-[#F5F2EC] transition-opacity duration-[450ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[opacity] ${
             activeSlide === 2
               ? 'opacity-100 pointer-events-auto z-20'
@@ -1276,6 +1387,7 @@ export const LandingPage: React.FC = () => {
         ──────────────────────────────────────────────────────────────── */}
         <section
           aria-hidden={activeSlide !== 3}
+          data-active-slide={activeSlide === 3 ? 'true' : undefined}
           className={`absolute inset-0 w-full h-full overflow-y-auto lg:overflow-hidden bg-[#F5F2EC] transition-opacity duration-[450ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[opacity] ${
             activeSlide === 3
               ? 'opacity-100 pointer-events-auto z-20'
@@ -1461,6 +1573,7 @@ export const LandingPage: React.FC = () => {
         ──────────────────────────────────────────────────────────────── */}
         <section
           aria-hidden={activeSlide !== 4}
+          data-active-slide={activeSlide === 4 ? 'true' : undefined}
           className={`absolute inset-0 w-full h-full overflow-y-auto lg:overflow-hidden bg-[#F5F2EC] transition-opacity duration-[450ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[opacity] ${
             activeSlide === 4
               ? 'opacity-100 pointer-events-auto z-20'
@@ -1651,6 +1764,7 @@ export const LandingPage: React.FC = () => {
             </div>
           </div>
         </section>
+        </div>
 
         {/* ── QUIET EDITORIAL CHAPTER STATUS BAR (Includes Ergonomic Mobile Thumb Switcher) ── */}
         <div

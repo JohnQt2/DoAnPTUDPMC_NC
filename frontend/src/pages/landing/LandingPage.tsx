@@ -41,8 +41,9 @@ const SPECIMEN_TONES = [
     hanzi: '妈',
     pinyin: 'mā',
     toneLabel: 'Thanh 1',
-    phonetic: 'Cao độ 5–5 · Giọng ngang và đều',
-    sino: 'Chữ 妈 · Nghĩa: Mẹ (Hán-Việt: Ma)',
+    phonetic: 'Giọng ngang và đều',
+    meaning: 'Mẹ',
+    sinoVi: 'Ma',
     compoundHanzi: '妈妈',
     compoundPinyin: 'māma',
     compoundVi: 'Mẹ',
@@ -55,8 +56,9 @@ const SPECIMEN_TONES = [
     hanzi: '麻',
     pinyin: 'má',
     toneLabel: 'Thanh 2',
-    phonetic: 'Cao độ 3–5 · Giọng đi lên',
-    sino: 'Chữ 麻 · Nghĩa: Cây gai, tê (Hán-Việt: Ma)',
+    phonetic: 'Giọng đi lên',
+    meaning: 'Cây gai, tê',
+    sinoVi: 'Ma',
     compoundHanzi: '麻烦',
     compoundPinyin: 'máfán',
     compoundVi: 'Phiền phức',
@@ -69,8 +71,9 @@ const SPECIMEN_TONES = [
     hanzi: '马',
     pinyin: 'mǎ',
     toneLabel: 'Thanh 3',
-    phonetic: 'Cao độ 2–1–4 · Giọng trầm xuống rồi lên',
-    sino: 'Chữ 马 · Nghĩa: Con ngựa (Hán-Việt: Mã)',
+    phonetic: 'Giọng trầm xuống rồi lên',
+    meaning: 'Con ngựa',
+    sinoVi: 'Mã',
     compoundHanzi: '马上',
     compoundPinyin: 'mǎshàng',
     compoundVi: 'Ngay lập tức',
@@ -83,8 +86,9 @@ const SPECIMEN_TONES = [
     hanzi: '骂',
     pinyin: 'mà',
     toneLabel: 'Thanh 4',
-    phonetic: 'Cao độ 5–1 · Giọng xuống nhanh, dứt khoát',
-    sino: 'Chữ 骂 · Nghĩa: Trách mắng (Hán-Việt: Mạ)',
+    phonetic: 'Giọng xuống nhanh, dứt khoát',
+    meaning: 'Trách mắng',
+    sinoVi: 'Mạ',
     compoundHanzi: '责骂',
     compoundPinyin: 'zémà',
     compoundVi: 'Trách mắng',
@@ -1157,12 +1161,29 @@ export const LandingPage: React.FC = () => {
                     label={`Nghe phát âm ${activeSpecimen.pinyin}`}
                   />
                   <div>
-                    <h3 className="font-display font-extrabold text-[19px] sm:text-[34px] text-[#1C1917] leading-none">
-                      {activeSpecimen.toneLabel} ·{' '}
-                      <span className="font-pinyin">{activeSpecimen.pinyin}</span>
-                    </h3>
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+                      <h3 className="font-display font-extrabold text-[19px] sm:text-[32px] text-[#1C1917] leading-none">
+                        {activeSpecimen.toneLabel}
+                      </h3>
+                      <span
+                        className="inline-flex items-center gap-1.5 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md border leading-none"
+                        style={{
+                          backgroundColor: `${activeSpecimen.accent}12`,
+                          borderColor: `${activeSpecimen.accent}35`,
+                          color: activeSpecimen.accent,
+                        }}
+                      >
+                        <span className="font-sans text-[10px] sm:text-[11px] font-semibold opacity-80">
+                          Pinyin
+                        </span>
+                        <span className="font-pinyin text-[13px] sm:text-base font-bold">
+                          {activeSpecimen.pinyin}
+                        </span>
+                      </span>
+                    </div>
                     <p className="text-[11px] sm:text-xs font-medium text-[#57534E] mt-1 sm:mt-1.5">
-                      {activeSpecimen.sino}
+                      Chữ <span className="font-hanzi-serif font-bold text-[#1C1917]">{activeSpecimen.hanzi}</span> ·
+                      Nghĩa: {activeSpecimen.meaning} · Hán-Việt: {activeSpecimen.sinoVi}
                     </p>
                   </div>
                 </div>

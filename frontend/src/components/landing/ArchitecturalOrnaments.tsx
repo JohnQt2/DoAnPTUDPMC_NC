@@ -129,9 +129,9 @@ export const HanziLoadingScreen: React.FC<{
     />
     <ArchitecturalBlueprintGrid className="opacity-70" />
 
-    <div className="relative z-10 flex flex-col items-center px-6 text-center">
+    <div className="relative z-10 flex flex-col items-center px-5 text-center">
       {/* Animated Golden-Crimson Astrolabe & Seal Ring */}
-      <div className="relative w-28 h-28 flex items-center justify-center mb-5">
+      <div className="relative w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center mb-4 sm:mb-5">
         <svg
           viewBox="0 0 120 120"
           className="pointer-events-none absolute inset-0 w-full h-full animate-[spin_14s_linear_infinite]"
@@ -161,23 +161,23 @@ export const HanziLoadingScreen: React.FC<{
           <circle cx="60" cy="114" r="2.2" fill="#D4A017" />
         </svg>
 
-        <div className="relative p-2.5 rounded-2xl bg-white/85 border border-[#1C1917]/12 shadow-[0_16px_36px_-12px_rgba(196,30,58,0.28)]">
-          <HanziLogoMark variant="light" className="w-14 h-14" />
+        <div className="relative p-2 sm:p-2.5 rounded-2xl bg-white/85 border border-[#1C1917]/12 shadow-[0_16px_36px_-12px_rgba(196,30,58,0.28)]">
+          <HanziLogoMark variant="light" className="w-12 h-12 sm:w-14 sm:h-14" />
         </div>
       </div>
 
       {/* Brand Title & Academic Kicker */}
-      <div className="space-y-1.5">
-        <div className="font-display font-extrabold text-2xl sm:text-[26px] tracking-[-0.03em] text-[#1C1917]">
+      <div className="space-y-1 sm:space-y-1.5">
+        <div className="font-display font-extrabold text-xl sm:text-[26px] tracking-[-0.03em] text-[#1C1917]">
           Hanzi<span className="text-[#C41E3A]">4U</span>
         </div>
-        <p className="font-mono text-[10px] sm:text-[10.5px] font-semibold uppercase tracking-[0.24em] text-[#C41E3A]">
+        <p className="font-mono text-[9.5px] sm:text-[10.5px] font-semibold uppercase tracking-[0.2em] sm:tracking-[0.24em] text-[#C41E3A]">
           HỌC TIẾNG TRUNG CHUẨN HSK 1 — 6
         </p>
       </div>
 
       {/* Delicate Diamond-Tipped Progress Line */}
-      <div className="mt-6 mb-3 flex items-center gap-2.5 w-52 sm:w-60">
+      <div className="mt-5 mb-2.5 sm:mt-6 sm:mb-3 flex items-center gap-2.5 w-48 sm:w-60">
         <span className="text-[8px] text-[#C41E3A]">◆</span>
         <div className="relative flex-1 h-[2px] bg-[#1C1917]/12 overflow-hidden rounded-full">
           <div
@@ -188,7 +188,7 @@ export const HanziLoadingScreen: React.FC<{
         <span className="text-[8px] text-[#D4A017]">◆</span>
       </div>
 
-      <p className="text-[11px] sm:text-xs font-hanzi-serif text-[#57534E] tracking-wide max-w-sm">
+      <p className="text-[10.5px] sm:text-xs font-hanzi-serif text-[#57534E] tracking-wide max-w-[280px] sm:max-w-sm leading-relaxed">
         {subtitle}
       </p>
     </div>
@@ -209,12 +209,12 @@ export const EditorialPaperFrame: React.FC<{
       className
     )}
   >
-    {/* Subtle 8px architectural L-brackets in Imperial Crimson */}
-    <span aria-hidden="true" className="pointer-events-none absolute -top-px -left-px w-2.5 h-2.5 border-t-2 border-l-2 border-[#C41E3A]" />
-    <span aria-hidden="true" className="pointer-events-none absolute -top-px -right-px w-2.5 h-2.5 border-t-2 border-r-2 border-[#C41E3A]" />
-    <span aria-hidden="true" className="pointer-events-none absolute -bottom-px -left-px w-2.5 h-2.5 border-b-2 border-l-2 border-[#C41E3A]" />
-    <span aria-hidden="true" className="pointer-events-none absolute -bottom-px -right-px w-2.5 h-2.5 border-b-2 border-r-2 border-[#C41E3A]" />
-    <div className="relative z-10">{children}</div>
+    {/* Subtle 8px architectural L-brackets in Imperial Crimson (!mt-0 protects against parent space-y-*) */}
+    <span aria-hidden="true" className="pointer-events-none !mt-0 absolute -top-px -left-px w-2.5 h-2.5 border-t-2 border-l-2 border-[#C41E3A]" />
+    <span aria-hidden="true" className="pointer-events-none !mt-0 absolute -top-px -right-px w-2.5 h-2.5 border-t-2 border-r-2 border-[#C41E3A]" />
+    <span aria-hidden="true" className="pointer-events-none !mt-0 absolute -bottom-px -left-px w-2.5 h-2.5 border-b-2 border-l-2 border-[#C41E3A]" />
+    <span aria-hidden="true" className="pointer-events-none !mt-0 absolute -bottom-px -right-px w-2.5 h-2.5 border-b-2 border-r-2 border-[#C41E3A]" />
+    <div className="relative z-10 !mt-0">{children}</div>
   </div>
 );
 
@@ -230,12 +230,12 @@ export const MuseumExhibitionFrame: React.FC<{
 }> = ({ chapterLabel, title, children, className = '' }) => (
   <div className={cn('relative', className)}>
     {/* Calm Editorial Top Header Bar straddling the gallery frame */}
-    <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3 px-0.5">
-      <div className="flex items-baseline gap-3">
-        <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-[#C41E3A]">
+    <div className="flex flex-wrap items-baseline justify-between gap-1.5 sm:gap-2 mb-2 sm:mb-3 px-0.5">
+      <div className="flex flex-col sm:flex-row sm:items-baseline gap-0.5 sm:gap-3">
+        <span className="font-mono text-[9.5px] sm:text-[11px] font-semibold uppercase tracking-[0.18em] sm:tracking-[0.2em] text-[#C41E3A]">
           {chapterLabel}
         </span>
-        <h2 className="font-display font-bold text-xl sm:text-2xl tracking-tight text-[#1C1917]">
+        <h2 className="font-display font-bold text-[17px] leading-snug sm:text-2xl tracking-tight text-[#1C1917]">
           {title}
         </h2>
       </div>
@@ -243,7 +243,7 @@ export const MuseumExhibitionFrame: React.FC<{
     </div>
 
     {/* Clean 1px Exhibition Matting */}
-    <div className="relative p-2 bg-[#FCFBF8] border border-[#1C1917]/15 shadow-[0_24px_60px_-28px_rgba(28,25,23,0.22)]">
+    <div className="relative p-1.5 sm:p-2 bg-[#FCFBF8] border border-[#1C1917]/15 shadow-[0_24px_60px_-28px_rgba(28,25,23,0.22)]">
       <span aria-hidden="true" className="pointer-events-none absolute -top-px -left-px w-3 h-3 border-t-2 border-l-2 border-[#C41E3A]" />
       <span aria-hidden="true" className="pointer-events-none absolute -bottom-px -right-px w-3 h-3 border-b-2 border-r-2 border-[#C41E3A]" />
       <div className="relative overflow-hidden">{children}</div>
@@ -265,17 +265,17 @@ export const PronunciationPlayButton: React.FC<{
     onClick={onClick}
     aria-label={label}
     title={label}
-    className="group relative w-11 h-11 rounded-full flex items-center justify-center border bg-white shadow-xs transition-transform duration-150 hover:scale-105 active:scale-95 cursor-pointer shrink-0"
+    className="group relative w-9 h-9 sm:w-11 sm:h-11 rounded-full flex items-center justify-center border bg-white shadow-xs transition-transform duration-150 hover:scale-105 active:scale-95 cursor-pointer shrink-0"
     style={{ borderColor: active ? accentColor : 'rgba(28, 25, 23, 0.2)' }}
   >
     <span
-      className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+      className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-colors"
       style={{
         backgroundColor: active ? accentColor : `${accentColor}14`,
         color: active ? '#FFFFFF' : accentColor,
       }}
     >
-      <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 translate-x-[1px] fill-current">
+      <svg viewBox="0 0 24 24" className="w-3 h-3 sm:w-3.5 sm:h-3.5 translate-x-[1px] fill-current">
         <path d="M6 4l14 8-14 8V4z" />
       </svg>
     </span>

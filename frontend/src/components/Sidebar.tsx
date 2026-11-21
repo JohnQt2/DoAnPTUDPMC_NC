@@ -155,7 +155,7 @@ const SidebarNavContent: React.FC<NavContentProps> = ({
         >
           <span
             aria-hidden="true"
-            className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-400 via-pink-400 to-amber-300 text-white flex items-center justify-center font-hanzi-serif font-black text-xl shadow-md shadow-rose-300/35 shrink-0"
+            className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-400 via-pink-400 to-amber-300 text-slate-950 flex items-center justify-center font-hanzi-serif font-black text-xl shadow-md shadow-rose-300/35 shrink-0"
           >
             汉
           </span>
@@ -429,7 +429,7 @@ export const Sidebar: React.FC<{
       {/* Mobile Liquid Glass Top Bar */}
       <header className="lg:hidden sticky top-0 z-40 liquid-sidebar px-4 h-14 flex items-center justify-between">
         <a href={isAdmin ? '#/admin/courses' : '#/today'} className="flex items-center gap-2">
-          <span className="w-8 h-8 rounded-xl bg-gradient-to-tr from-rose-400 to-amber-300 text-white flex items-center justify-center font-hanzi-serif font-black text-base shadow-sm">
+          <span className="w-8 h-8 rounded-xl bg-gradient-to-tr from-rose-400 to-amber-300 text-slate-950 flex items-center justify-center font-hanzi-serif font-black text-base shadow-sm">
             汉
           </span>
           <span className="font-display font-extrabold text-lg tracking-tight text-slate-800">

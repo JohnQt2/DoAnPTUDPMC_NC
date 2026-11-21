@@ -348,7 +348,7 @@ export const CourseListPage: React.FC = () => {
         <div>
           <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-slate-900 flex items-center gap-2.5 tracking-tight">
             <span
-              className={`w-11 h-11 rounded-2xl bg-gradient-to-tr ${meta.unitBadge} text-white flex items-center justify-center shadow-md`}
+              className={`w-11 h-11 rounded-2xl bg-gradient-to-tr ${meta.unitBadge} text-slate-950 flex items-center justify-center shadow-md`}
             >
               <Route className="w-5 h-5" />
             </span>
@@ -378,7 +378,7 @@ export const CourseListPage: React.FC = () => {
               width: sliderStyle.width,
               height: sliderStyle.height,
             }}
-            className={`pointer-events-none absolute top-0 left-0 rounded-[18px] bg-gradient-to-br ${meta.pillGradient} border border-white/95 shadow-sm transition-[transform,width,height,background] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]`}
+            className={`pointer-events-none absolute top-0 left-0 rounded-[18px] bg-gradient-to-br ${meta.pillGradient} dark:bg-none dark:bg-slate-800 border border-white/95 dark:border-slate-700 shadow-sm transition-[transform,width,height,background] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]`}
           />
         )}
 
@@ -394,7 +394,7 @@ export const CourseListPage: React.FC = () => {
               type="button"
               onClick={() => startTransition(() => setSelectedLevel(lvl))}
               className={`relative z-10 rounded-[18px] px-3 py-2.5 text-left transition-colors duration-200 cursor-pointer ${
-                isSelected ? 'text-slate-900' : 'text-slate-600 hover:text-slate-900'
+                isSelected ? 'text-slate-900 dark:text-slate-100' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               <div className="flex items-center justify-between">

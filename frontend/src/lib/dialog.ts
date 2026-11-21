@@ -9,7 +9,7 @@ export interface ConfirmOptions {
 export interface NoticePayload {
   id: number;
   message: string;
-  variant: 'error' | 'info' | 'success';
+  variant: 'error' | 'info' | 'success' | 'warning';
 }
 
 type ConfirmResolver = (result: boolean) => void;
@@ -40,7 +40,7 @@ export function appConfirm(options: ConfirmOptions): Promise<boolean> {
 /**
  * Replaces ugly native browser alert() with a sleek Liquid Glass banner
  */
-export function appNotice(message: string, variant: 'error' | 'info' | 'success' = 'error') {
+export function appNotice(message: string, variant: 'error' | 'info' | 'success' | 'warning' = 'error') {
   if (typeof window === 'undefined') return;
   window.dispatchEvent(
     new CustomEvent<NoticePayload>('hanzi-notice', {

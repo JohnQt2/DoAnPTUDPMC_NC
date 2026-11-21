@@ -309,21 +309,21 @@ export const PinyinPage: React.FC = () => {
         onClick={() => handleSelectChar(item)}
         className={`p-3 rounded-2xl border text-center transition-colors duration-150 cursor-pointer group ${
           isSelected
-            ? 'bg-gradient-to-br from-rose-400 via-pink-400 to-amber-300 text-white border-transparent shadow-md'
+            ? 'bg-gradient-to-br from-rose-400 via-pink-400 to-amber-300 text-slate-950 border-transparent shadow-md'
             : 'glass-card-grid text-slate-800'
         }`}
       >
         <div className="flex items-center justify-between gap-1">
           <span
             className={`text-[10px] font-hanzi-serif font-bold ${
-              isSelected ? 'text-white/85' : 'text-slate-400'
+              isSelected ? 'text-slate-800' : 'text-slate-400'
             }`}
           >
             {item.speakHanzi}
           </span>
           <Volume2
             className={`w-3.5 h-3.5 ${
-              isSelected ? 'text-white' : 'text-slate-300 group-hover:text-rose-500'
+              isSelected ? 'text-slate-950' : 'text-slate-300 group-hover:text-rose-500'
             }`}
           />
         </div>
@@ -332,7 +332,7 @@ export const PinyinPage: React.FC = () => {
         </span>
         <span
           className={`text-[10px] font-semibold block mt-1 truncate ${
-            isSelected ? 'text-white/90' : 'text-slate-500'
+            isSelected ? 'text-slate-800' : 'text-slate-500'
           }`}
         >
           {item.vnHint}
@@ -377,7 +377,7 @@ export const PinyinPage: React.FC = () => {
               type="button"
               onClick={() => setTab(t.key)}
               className={`relative inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-colors cursor-pointer ${
-                active ? 'text-white' : 'text-slate-600 hover:text-slate-900'
+                active ? 'text-slate-950' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               {active && (
@@ -432,7 +432,7 @@ export const PinyinPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => playSound(activeChar.speakHanzi, 0.75)}
-                  className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-rose-400 via-pink-400 to-amber-300 text-white flex flex-col items-center justify-center shadow-md shrink-0 cursor-pointer"
+                  className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-rose-400 via-pink-400 to-amber-300 text-slate-950 flex flex-col items-center justify-center shadow-md shrink-0 cursor-pointer"
                   title="Nghe phát âm mẫu"
                 >
                   <span className="text-2xl font-display font-black leading-none">
@@ -623,7 +623,7 @@ export const PinyinPage: React.FC = () => {
                   <SpotlightCard key={rule.title} className="p-5 space-y-4">
                     <div className="space-y-1.5">
                       <span
-                        className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black text-white bg-gradient-to-r ${rule.gradient}`}
+                        className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black text-slate-950 bg-gradient-to-r ${rule.gradient}`}
                       >
                         {rule.badge}
                       </span>
@@ -692,7 +692,7 @@ export const PinyinPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={playSecretAudio}
-                  className="w-24 h-24 rounded-full bg-gradient-to-tr from-rose-400 via-pink-400 to-amber-300 text-white flex items-center justify-center mx-auto shadow-xl shadow-rose-300/40 hover:brightness-105 transition-all cursor-pointer"
+                  className="w-24 h-24 rounded-full bg-gradient-to-tr from-rose-400 via-pink-400 to-amber-300 text-slate-950 flex items-center justify-center mx-auto shadow-xl shadow-rose-300/40 hover:brightness-105 transition-all cursor-pointer"
                   aria-label="Nghe âm mẫu"
                 >
                   <Volume2 className="w-10 h-10" />
@@ -802,7 +802,7 @@ export const PinyinPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => playSound(activeChar.speakHanzi, 0.75)}
-                    className="w-14 h-14 rounded-2xl bg-rose-500 text-white flex flex-col items-center justify-center shrink-0 cursor-pointer shadow-sm"
+                    className="w-14 h-14 rounded-2xl bg-rose-500 text-slate-950 flex flex-col items-center justify-center shrink-0 cursor-pointer shadow-sm"
                   >
                     <span className="text-xl font-extrabold leading-none">{activeChar.syllable}</span>
                     <span className="text-[10px] font-chinese opacity-90 mt-0.5">{activeChar.speakHanzi}</span>
@@ -848,7 +848,7 @@ export const PinyinPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => markNodeDone(activePracticeGroup.id)}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold shadow-sm cursor-pointer"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-700 text-slate-950 hover:text-white text-xs font-bold shadow-sm cursor-pointer"
                 >
                   <CheckCircle2 className="w-4 h-4" />
                   <span>Hoàn thành bài này</span>

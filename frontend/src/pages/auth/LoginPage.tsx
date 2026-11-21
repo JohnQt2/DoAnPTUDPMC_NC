@@ -781,10 +781,11 @@ export const LoginPage: React.FC = () => {
                       id="register-email"
                       type="email"
                       required
+                      autoComplete="email"
                       placeholder="ten_cua_ban@gmail.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className={glassInputCls}
+                      className={`${glassInputCls} auth-input`}
                     />
                   </div>
                 </div>
@@ -806,10 +807,11 @@ export const LoginPage: React.FC = () => {
                       type={showPassword ? 'text' : 'password'}
                       required
                       minLength={6}
+                      autoComplete="new-password"
                       placeholder="Tối thiểu 6 ký tự"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className={glassPasswordInputCls}
+                      className={`${glassPasswordInputCls} auth-input`}
                     />
                     <button
                       type="button"
@@ -841,7 +843,7 @@ export const LoginPage: React.FC = () => {
                   type="button"
                   onClick={handleGoogleLogin}
                   disabled={isSubmitting || isGoogleLoading}
-                  className="w-full min-h-[48px] flex items-center justify-center gap-3 px-5 py-3 rounded-2xl border border-white/15 bg-white/[0.06] hover:bg-white/[0.12] hover:border-white/30 text-white font-semibold text-sm transition-all cursor-pointer disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
+                  className="w-full min-h-[48px] flex items-center justify-center gap-3 px-5 py-3 rounded-2xl border border-white/15 bg-white/[0.06] hover:bg-white/[0.12] hover:border-white/30 text-white font-semibold text-sm transition-all cursor-pointer disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
                 >
                   {GoogleIcon}
                   <span>{isGoogleLoading ? 'Đang xử lý...' : 'Đăng nhập với Google'}</span>
@@ -876,10 +878,11 @@ export const LoginPage: React.FC = () => {
                       id="login-email"
                       type="email"
                       required
+                      autoComplete="email"
                       placeholder="ten_cua_ban@gmail.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className={glassInputCls}
+                      className={`${glassInputCls} auth-input`}
                     />
                   </div>
                 </div>
@@ -901,10 +904,11 @@ export const LoginPage: React.FC = () => {
                         id="login-password"
                         type={showPassword ? 'text' : 'password'}
                         required
+                        autoComplete="current-password"
                         placeholder="Nhập mật khẩu của bạn"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className={glassPasswordInputCls}
+                        className={`${glassPasswordInputCls} auth-input`}
                       />
                       <button
                         type="button"
@@ -968,7 +972,7 @@ export const LoginPage: React.FC = () => {
                   type="button"
                   onClick={handleGoogleLogin}
                   disabled={isSubmitting || isGoogleLoading}
-                  className="w-full min-h-[48px] flex items-center justify-center gap-3 px-5 py-3 rounded-2xl border border-white/15 bg-white/[0.06] hover:bg-white/[0.12] hover:border-white/30 text-white font-semibold text-sm transition-all cursor-pointer disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
+                  className="w-full min-h-[48px] flex items-center justify-center gap-3 px-5 py-3 rounded-2xl border border-white/15 bg-white/[0.06] hover:bg-white/[0.12] hover:border-white/30 text-white font-semibold text-sm transition-all cursor-pointer disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
                 >
                   {GoogleIcon}
                   <span>{isGoogleLoading ? 'Đang xử lý...' : 'Đăng nhập với Google'}</span>
@@ -1020,7 +1024,7 @@ export const LoginPage: React.FC = () => {
                     type="button"
                     disabled={countdown > 0 || isSubmitting || isLocked}
                     onClick={() => handleSendOtp()}
-                    className="flex items-center gap-1 text-secondary-300 hover:text-secondary-200 font-semibold cursor-pointer disabled:opacity-40"
+                    className="flex items-center gap-1 text-secondary-300 hover:text-secondary-200 font-semibold cursor-pointer disabled:opacity-70"
                   >
                     <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
                     Gửi lại mã
@@ -1077,10 +1081,11 @@ export const LoginPage: React.FC = () => {
                       id="forgot-email"
                       type="email"
                       required
+                      autoComplete="email"
                       placeholder="ten_cua_ban@gmail.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className={glassInputCls}
+                      className={`${glassInputCls} auth-input`}
                     />
                   </div>
                 </div>
@@ -1148,7 +1153,7 @@ export const LoginPage: React.FC = () => {
                     type="button"
                     disabled={countdown > 0 || isSubmitting || isLocked}
                     onClick={() => handleForgotSendOtp()}
-                    className="flex items-center gap-1 text-secondary-300 hover:text-secondary-200 font-semibold cursor-pointer disabled:opacity-40"
+                    className="flex items-center gap-1 text-secondary-300 hover:text-secondary-200 font-semibold cursor-pointer disabled:opacity-70"
                   >
                     <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
                     Gửi lại mã
@@ -1172,11 +1177,12 @@ export const LoginPage: React.FC = () => {
                       type={showNewPassword ? 'text' : 'password'}
                       required
                       minLength={6}
+                      autoComplete="new-password"
                       placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       disabled={isLocked}
-                      className={glassPasswordInputCls}
+                      className={`${glassPasswordInputCls} auth-input`}
                     />
                     <button
                       type="button"
@@ -1206,11 +1212,12 @@ export const LoginPage: React.FC = () => {
                       type={showNewPassword ? 'text' : 'password'}
                       required
                       minLength={6}
+                      autoComplete="new-password"
                       placeholder="Nhập lại mật khẩu mới"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       disabled={isLocked}
-                      className={glassInputCls}
+                      className={`${glassInputCls} auth-input`}
                     />
                   </div>
                 </div>

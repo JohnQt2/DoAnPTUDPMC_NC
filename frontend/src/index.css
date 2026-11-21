@@ -424,3 +424,20 @@ html.dark .tianzige-grid {
     linear-gradient(45deg, transparent calc(50% - 0.5px), rgba(251, 113, 133, 0.14) calc(50% - 0.5px), rgba(251, 113, 133, 0.14) calc(50% + 0.5px), transparent calc(50% + 0.5px)),
     linear-gradient(-45deg, transparent calc(50% - 0.5px), rgba(251, 113, 133, 0.14) calc(50% - 0.5px), rgba(251, 113, 133, 0.14) calc(50% + 0.5px), transparent calc(50% + 0.5px));
 }
+
+html:not(.dark) .auth-input:-webkit-autofill,
+html:not(.dark) .auth-input:-webkit-autofill:hover,
+html:not(.dark) .auth-input:-webkit-autofill:focus,
+html:not(.dark) .auth-input:-webkit-autofill:active {
+  -webkit-text-fill-color: #fff !important;
+  caret-color: #fff !important;
+  -webkit-box-shadow:
+    var(--tw-ring-offset-shadow, 0 0 #0000),
+    var(--tw-ring-shadow, 0 0 #0000),
+    0 0 0 1000px #3b2b40 inset !important;
+  box-shadow:
+    var(--tw-ring-offset-shadow, 0 0 #0000),
+    var(--tw-ring-shadow, 0 0 #0000),
+    0 0 0 1000px #3b2b40 inset !important;
+  transition: background-color 9999s ease-out 0s;
+}

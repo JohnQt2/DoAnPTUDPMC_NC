@@ -93,7 +93,7 @@ export const PathMap: React.FC<{
               <div
                 className={`relative w-[72px] h-[72px] rounded-[18px] flex items-center justify-center font-chinese font-black text-3xl transition-transform ${
                   isLocked
-                    ? 'bg-slate-100 text-slate-400 border border-slate-200'
+                    ? 'bg-slate-100 text-slate-600 border border-slate-200'
                     : 'bg-rose-500 text-white shadow-[0_6px_0_#be123c] hover:-translate-y-0.5'
                 }`}
               >
@@ -101,12 +101,12 @@ export const PathMap: React.FC<{
                 {node.glyph}
               </div>
               {isLocked && (
-                <span className="absolute -bottom-2 -right-2 w-7 h-7 rounded-full bg-slate-300 text-white flex items-center justify-center border-2 border-white">
+                <span className="absolute -bottom-2 -right-2 w-7 h-7 rounded-full bg-slate-600 text-white flex items-center justify-center border-2 border-white">
                   <Lock className="w-3.5 h-3.5" />
                 </span>
               )}
               {isDone && (
-                <span className="absolute -bottom-2 -right-2 w-7 h-7 rounded-full bg-emerald-500 text-white flex items-center justify-center border-2 border-white">
+                <span className="absolute -bottom-2 -right-2 w-7 h-7 rounded-full bg-emerald-700 text-white flex items-center justify-center border-2 border-white">
                   <Check className="w-4 h-4" />
                 </span>
               )}
@@ -140,9 +140,9 @@ export const PathMap: React.FC<{
               <span
                 className={`max-w-[150px] truncate px-3 py-1 rounded-lg text-xs font-bold ${
                   isCurrent
-                    ? 'bg-rose-500 text-white'
+                    ? 'bg-rose-700 text-white'
                     : isLocked
-                      ? 'bg-white/80 text-slate-400 border border-slate-200'
+                      ? 'bg-white/80 text-slate-600 border border-slate-200'
                       : 'bg-white text-rose-700 border border-rose-200'
                 }`}
               >
@@ -162,7 +162,7 @@ export const TodayFloatingButton: React.FC<{
   label?: string;
 }> = ({ fallbackLessonId, label = 'Bài hôm nay' }) => {
   const cls =
-    'fixed bottom-6 left-1/2 lg:left-[calc(50%+var(--sidebar-offset,17.25rem)/2)] -translate-x-1/2 z-30 inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-sm shadow-lg shadow-rose-500/30 cursor-pointer transition-transform hover:-translate-y-0.5';
+    'fixed bottom-6 left-1/2 lg:left-[calc(50%+var(--sidebar-offset,17.25rem)/2)] -translate-x-1/2 z-30 inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-rose-700 hover:bg-rose-800 text-white font-bold text-sm shadow-lg shadow-rose-500/30 cursor-pointer transition-transform hover:-translate-y-0.5';
   return (
     <button
       type="button"

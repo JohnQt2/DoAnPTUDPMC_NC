@@ -97,7 +97,7 @@ export const ExamListPage: React.FC = () => {
       <div className="relative overflow-hidden rounded-[28px] p-6 sm:p-8 bg-gradient-to-br from-rose-100/92 via-violet-100/82 to-sky-100/92 border border-white/90 backdrop-blur-2xl shadow-[0_14px_38px_-14px_rgba(148,163,184,0.25),inset_0_1.5px_1px_rgba(255,255,255,0.96)]">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div className="space-y-2 max-w-2xl">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/75 border border-white text-xs font-extrabold uppercase tracking-wider text-rose-600">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/75 border border-white text-xs font-extrabold uppercase tracking-wider text-rose-600 dark:text-rose-300">
               <Sparkles className="w-3.5 h-3.5 text-amber-500" />
               Trung tâm Đề thi & Sách bài tập HSK 1–6
             </span>
@@ -112,13 +112,13 @@ export const ExamListPage: React.FC = () => {
 
           <div className="grid grid-cols-2 gap-3 shrink-0">
             <div className="px-4 py-3 rounded-2xl bg-white/70 border border-white/95 text-center shadow-sm">
-              <p className="text-2xl font-display font-black text-rose-600">
+              <p className="text-2xl font-display font-black text-rose-600 dark:text-rose-300">
                 <NumberTicker value={mockCount} />
               </p>
               <p className="text-[11px] font-bold text-slate-600">Đề thi mô phỏng</p>
             </div>
             <div className="px-4 py-3 rounded-2xl bg-white/70 border border-white/95 text-center shadow-sm">
-              <p className="text-2xl font-display font-black text-indigo-600">
+              <p className="text-2xl font-display font-black text-indigo-600 dark:text-indigo-300">
                 <NumberTicker value={workbookCount} />
               </p>
               <p className="text-[11px] font-bold text-slate-600">Bộ Sách bài tập</p>
@@ -142,14 +142,14 @@ export const ExamListPage: React.FC = () => {
             <div
               className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-colors ${
                 section === 'MOCK_EXAM'
-                  ? 'bg-gradient-to-tr from-rose-400 to-amber-300 text-white shadow-sm'
+                  ? 'bg-gradient-to-tr from-rose-400 to-amber-300 text-slate-950 shadow-sm'
                   : 'bg-rose-50 text-rose-500'
               }`}
             >
               <Trophy className="w-6 h-6" />
             </div>
             <div>
-              <span className="text-[10px] font-black uppercase tracking-wider text-rose-600">
+              <span className="text-[10px] font-black uppercase tracking-wider text-rose-600 dark:text-rose-300">
                 Phần 1 • Đề thi mẫu HSK
               </span>
               <h2 className="text-lg font-display font-extrabold text-slate-900">
@@ -175,14 +175,14 @@ export const ExamListPage: React.FC = () => {
             <div
               className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-colors ${
                 section === 'WORKBOOK'
-                  ? 'bg-gradient-to-tr from-indigo-400 to-sky-400 text-white shadow-sm'
+                  ? 'bg-gradient-to-tr from-indigo-400 to-sky-400 text-slate-950 shadow-sm'
                   : 'bg-indigo-50 text-indigo-500'
               }`}
             >
               <BookOpenCheck className="w-6 h-6" />
             </div>
             <div>
-              <span className="text-[10px] font-black uppercase tracking-wider text-indigo-600">
+              <span className="text-[10px] font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-300">
                 Phần 2 • Giáo trình chuẩn HSK
               </span>
               <h2 className="text-lg font-display font-extrabold text-slate-900">
@@ -207,7 +207,7 @@ export const ExamListPage: React.FC = () => {
               type="button"
               onClick={() => setSelectedLevel(lvl)}
               className={`relative px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-colors cursor-pointer ${
-                active ? 'text-white' : 'text-slate-600 hover:text-slate-900'
+                active ? 'text-slate-950' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               {active && (

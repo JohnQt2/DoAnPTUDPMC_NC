@@ -30,6 +30,48 @@ const ROLE_LABEL: Record<string, string> = {
   ADMIN: 'Quản trị viên',
 };
 
+function parseDeviceInfo(rawUa?: string | null): {
+  label: string;
+  isMobile: boolean;
+} {
+  const ua = (rawUa || '').trim();
+  if (!ua) return { label: 'Trình duyệt web', isMobile: false };
+
+  const lower = ua.toLowerCase();
+
+  let browser = 'Trình duyệt';
+  if (lower.includes('coc_coc_browser')) browser = 'Cốc Cốc';
+  else if (lower.includes('edg/') || lower.includes('edge/')) browser = 'Edge';
+  else if (lower.includes('opr/') || lower.includes('opera')) browser = 'Opera';
+  else if (lower.includes('samsungbrowser')) browser = 'Samsung';
+  else if (lower.includes('firefox/') || lower.includes('fxios')) browser = 'Firefox';
+  else if (lower.includes('chrome/') || lower.includes('crios')) browser = 'Chrome';
+  else if (lower.includes('safari/')) browser = 'Safari';
+
+  let os = 'Thiết bị khác';
+  let isMobile = false;
+  if (lower.includes('iphone')) {
+    os = 'iPhone';
+    isMobile = true;
+  } else if (lower.includes('ipad')) {
+    os = 'iPad';
+    isMobile = true;
+  } else if (lower.includes('android')) {
+    os = 'Android';
+    isMobile = true;
+  } else if (lower.includes('windows')) {
+    os = 'Windows';
+  } else if (lower.includes('macintosh') || lower.includes('mac os')) {
+    os = 'macOS';
+  } else if (lower.includes('linux')) {
+    os = 'Linux';
+  }
+
+  if (lower.includes('mobile')) isMobile = true;
+
+  return { label: `${browser} · ${os}`, isMobile };
+}
+
 export const ProfilePage: React.FC = () => {
   const { user, updateUser, logout } = useAuth();
   const { theme, setTheme } = useTheme();
@@ -554,22 +596,24 @@ export const ProfilePage: React.FC = () => {
         </ShimmerButton>
       </form>
 
-      {/* Section 4: Device Sessions Management (Complete Liquid Glass) */}
-      <GlassCard className="p-6 sm:p-8 space-y-5 rounded-[28px]">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/75 pb-4">
-          <div className="flex items-center gap-3">
-            <Monitor className="w-5 h-5 text-gray-700" />
-            <div>
+      {/* Section 4: Device Sessions Management (Compact Liquid Glass) */}
+      <GlassCard className="p-5 sm:p-6 space-y-4 rounded-[24px]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-white/75">
+          <div className="flex items-start gap-3 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-white/75 border border-white/90 flex items-center justify-center text-gray-700 shrink-0 mt-0.5">
+              <Monitor className="w-4 h-4" />
+            </div>
+            <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-lg font-display font-bold text-gray-900">
+                <h2 className="text-base sm:text-lg font-display font-bold text-gray-900 leading-tight">
                   Thiết bị đang đăng nhập
                 </h2>
-                <span className="px-2.5 py-0.5 rounded-full bg-white/75 border border-white text-[11px] font-bold text-slate-600">
-                  {sessions.length}/3 thiết bị
+                <span className="px-2 py-0.5 rounded-full bg-white/80 border border-white text-[11px] font-bold text-slate-600 tabular-nums">
+                  {sessions.length}/3
                 </span>
               </div>
-              <p className="text-xs text-gray-500 mt-0.5">
-                Phiên tự động gia hạn 30 ngày khi học lại. Tối đa 3 thiết bị cùng lúc — thiết bị cũ nhất sẽ tự đăng xuất khi vượt quá.
+              <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
+                Tối đa 3 thiết bị cùng lúc · Tự gia hạn 30 ngày
               </p>
             </div>
           </div>
@@ -578,37 +622,57 @@ export const ProfilePage: React.FC = () => {
             <button
               type="button"
               onClick={handleRevokeOtherSessions}
-              className="text-xs text-rose-600 dark:text-rose-300 hover:text-rose-700 dark:hover:text-rose-200 font-bold underline cursor-pointer"
+              className="self-start sm:self-center px-3 py-1.5 rounded-xl text-xs font-semibold text-rose-600 dark:text-rose-300 bg-rose-50/80 hover:bg-rose-100/90 border border-rose-200/70 transition-colors cursor-pointer shrink-0"
             >
-              Đăng xuất tất cả thiết bị khác
+              Đăng xuất thiết bị khác
             </button>
           )}
         </div>
 
-        <div className="divide-y divide-white/65">
+        <div className="space-y-2.5">
           {sessions.map((sess) => {
-            const isMobile = sess.user_agent?.toLowerCase().includes('mobile');
+            const { label: deviceLabel, isMobile } = parseDeviceInfo(sess.user_agent);
+            const loginDate = new Date(sess.created_at).toLocaleDateString('vi-VN');
             return (
-              <div key={sess.session_id} className="py-4 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-white/65 border border-white/85 flex items-center justify-center text-gray-600 shrink-0">
-                    {isMobile ? <Smartphone className="w-5 h-5" /> : <Laptop className="w-5 h-5" />}
+              <div
+                key={sess.session_id}
+                className={`p-3 sm:p-3.5 rounded-2xl border flex items-center justify-between gap-2.5 transition-colors ${
+                  sess.isCurrent
+                    ? 'bg-white/75 border-emerald-200/75 shadow-[0_6px_18px_-14px_rgba(16,185,129,0.45)]'
+                    : 'bg-white/50 hover:bg-white/70 border-white/85'
+                }`}
+              >
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <div
+                    className={`w-9 h-9 rounded-xl border flex items-center justify-center shrink-0 ${
+                      sess.isCurrent
+                        ? 'bg-emerald-50/90 border-emerald-200/80 text-emerald-700'
+                        : 'bg-white/80 border-white/90 text-gray-600'
+                    }`}
+                  >
+                    {isMobile ? <Smartphone className="w-4 h-4" /> : <Laptop className="w-4 h-4" />}
                   </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-bold text-gray-900 truncate">
-                        {sess.user_agent?.slice(0, 42) || 'Thiết bị trình duyệt'}
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span
+                        className="text-sm font-bold text-gray-900 truncate"
+                        title={sess.user_agent || deviceLabel}
+                      >
+                        {deviceLabel}
                       </span>
                       {sess.isCurrent && (
-                        <span className="text-[10px] bg-emerald-500/15 text-emerald-800 border border-emerald-200/70 px-2.5 py-0.5 rounded-full font-bold">
-                          Thiết bị hiện tại
+                        <span className="inline-flex items-center gap-1 text-[10px] bg-emerald-500/12 text-emerald-700 border border-emerald-200/80 px-2 py-0.5 rounded-full font-bold shrink-0">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          Hiện tại
                         </span>
                       )}
                     </div>
-                    <span className="text-xs text-gray-500">
-                      IP: {sess.ip_address || '127.0.0.1'} • Đăng nhập:{' '}
-                      {new Date(sess.created_at).toLocaleDateString('vi-VN')}
-                    </span>
+                    <p className="text-[11px] text-gray-500 mt-0.5 flex items-center gap-1.5 truncate">
+                      <span className="font-mono">{sess.ip_address || '127.0.0.1'}</span>
+                      <span aria-hidden="true">·</span>
+                      <span>{loginDate}</span>
+                    </p>
                   </div>
                 </div>
 
@@ -616,7 +680,7 @@ export const ProfilePage: React.FC = () => {
                   <button
                     type="button"
                     onClick={logout}
-                    className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-gray-700 hover:text-rose-600 bg-white/65 hover:bg-rose-50/90 rounded-xl border border-white/85 transition-colors cursor-pointer shrink-0"
+                    className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-gray-700 hover:text-rose-600 bg-white/85 hover:bg-rose-50/90 rounded-xl border border-gray-200/70 hover:border-rose-200 transition-colors cursor-pointer shrink-0"
                     title="Đăng xuất phiên hiện tại"
                   >
                     <LogOut className="w-3.5 h-3.5" />
@@ -626,8 +690,9 @@ export const ProfilePage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handleRevokeSession(sess.session_id)}
-                    className="p-2 text-gray-500 hover:text-rose-600 hover:bg-rose-50/90 rounded-xl transition-colors cursor-pointer shrink-0"
-                    title="Thu hồi phiên"
+                    className="p-2 text-gray-400 hover:text-rose-600 hover:bg-rose-50/90 rounded-xl border border-transparent hover:border-rose-200/60 transition-colors cursor-pointer shrink-0"
+                    title="Đăng xuất thiết bị này"
+                    aria-label={`Đăng xuất ${deviceLabel}`}
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>

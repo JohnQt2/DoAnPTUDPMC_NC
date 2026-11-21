@@ -8,6 +8,7 @@ import {
   GoogleAuthDto,
   RefreshTokenDto,
   ForgotPasswordSendOtpDto,
+  ForgotPasswordVerifyOtpDto,
   ResetPasswordWithOtpDto,
 } from './auth.dto';
 import { env } from '../../config/env';
@@ -122,11 +123,33 @@ export class AuthController {
     }
   };
 
+  forgotPasswordVerifyOtp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { email, otp } = ForgotPasswordVerifyOtpDto.parse(req.body);
+      const result = await authService.verifyPasswordResetOtp(email, otp);
+      res.status(200).json({
+        success: true,
+        data: {
+          message: result.message,
+          resetToken: result.resetToken,
+          expiresIn: result.expiresIn,
+        },
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
+
   resetPasswordWithOtp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { email, otp, newPassword } = ResetPasswordWithOtpDto.parse(req.body);
+      const { email, otp, resetToken, newPassword } = ResetPasswordWithOtpDto.parse(req.body);
       const clientInfo = this.getClientInfo(req);
-      const result = await authService.resetPasswordWithOtp(email, otp, newPassword, clientInfo);
+      const result = await authService.resetPasswordWithOtp(
+        email,
+        { otp, resetToken },
+        newPassword,
+        clientInfo
+      );
       this.clearRefreshTokenCookie(res);
       res.status(200).json({
         success: true,

@@ -48,7 +48,6 @@ export default {
       fontFamily: {
         sans: ['"Be Vietnam Pro"', 'system-ui', '-apple-system', 'sans-serif'],
         display: ['"Plus Jakarta Sans"', '"Be Vietnam Pro"', 'sans-serif'],
-        editorial: ['"Playfair Display"', 'Georgia', 'serif'],
         chinese: ['"Noto Sans SC"', '"Microsoft YaHei"', 'sans-serif'],
         'hanzi-serif': ['"Noto Serif SC"', '"Noto Sans SC"', 'serif'],
         mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],

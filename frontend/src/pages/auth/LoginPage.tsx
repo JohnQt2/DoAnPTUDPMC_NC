@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { api } from '../../lib/api';
 import { HanziLogoMark } from '../../components/HanziLogo';
 import { SunbeamDustOverlay } from '../../components/landing/ArchitecturalOrnaments';
-import { AnimatedOtpInput } from '../../components/auth/AuthFormControls';
+import { AnimatedOtpInput, SmoothAuthInput } from '../../components/auth/AuthFormControls';
 import {
   Mail,
   Lock,
@@ -96,16 +96,7 @@ export const LoginPage: React.FC = () => {
   };
 
   const getRedirectTarget = (isNewUser?: boolean): string => {
-    const rawHash = window.location.hash || '';
-    if (rawHash.includes('?')) {
-      const queryStr = rawHash.split('?')[1];
-      const params = new URLSearchParams(queryStr);
-      const redirectParam = params.get('redirect');
-      if (redirectParam) {
-        return decodeURIComponent(redirectParam);
-      }
-    }
-    return isNewUser ? '#/onboarding' : '#/courses';
+    return isNewUser ? '#/onboarding' : '#/today';
   };
 
   // Sync authTab whenever URL hash changes (handles clicking Navbar links while on #/login)
@@ -213,7 +204,7 @@ export const LoginPage: React.FC = () => {
     const normalizedEmail = email.trim().toLowerCase();
 
     if (!normalizedEmail || !validateGmailFormat(normalizedEmail)) {
-      setErrorMessage('Vui lòng nhập địa chỉ Gmail hợp lệ (vd: ten_cua_ban@gmail.com).');
+      setErrorMessage('Vui lòng nhập địa chỉ Gmail hợp lệ (vd: example@hanzi4u.vn).');
       setErrorCode('INVALID_EMAIL');
       return;
     }
@@ -225,6 +216,10 @@ export const LoginPage: React.FC = () => {
       }
       if (!password || password.length < 6) {
         setErrorMessage('Mật khẩu cần có tối thiểu 6 ký tự.');
+        return;
+      }
+      if (/\s/.test(password)) {
+        setErrorMessage('Mật khẩu không được chứa dấu cách.');
         return;
       }
     }
@@ -274,12 +269,16 @@ export const LoginPage: React.FC = () => {
     const normalizedEmail = email.trim().toLowerCase();
 
     if (!normalizedEmail || !validateEmailFormat(normalizedEmail)) {
-      setErrorMessage('Địa chỉ email không đúng định dạng (vd: ten_cua_ban@gmail.com).');
+      setErrorMessage('Địa chỉ email không đúng định dạng (vd: example@hanzi4u.vn).');
       setErrorCode('INVALID_EMAIL');
       return;
     }
     if (!password) {
       setErrorMessage('Vui lòng nhập mật khẩu.');
+      return;
+    }
+    if (/\s/.test(password)) {
+      setErrorMessage('Mật khẩu không được chứa dấu cách.');
       return;
     }
 
@@ -413,6 +412,10 @@ export const LoginPage: React.FC = () => {
     }
     if (!newPassword || newPassword.length < 6) {
       setErrorMessage('Mật khẩu mới phải có tối thiểu 6 ký tự.');
+      return;
+    }
+    if (/\s/.test(newPassword)) {
+      setErrorMessage('Mật khẩu mới không được chứa dấu cách.');
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -600,12 +603,6 @@ export const LoginPage: React.FC = () => {
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
-
-  const inputCls =
-    'w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#EAE3DE] bg-white text-sm text-[#181415] placeholder-[#8C7F82] focus:outline-none focus:border-[#C41E3A] focus:ring-2 focus:ring-[#C41E3A]/15 transition-all';
-
-  const passwordInputCls =
-    'w-full pl-10 pr-10 py-2.5 rounded-xl border border-[#EAE3DE] bg-white text-sm text-[#181415] placeholder-[#8C7F82] focus:outline-none focus:border-[#C41E3A] focus:ring-2 focus:ring-[#C41E3A]/15 transition-all';
 
   const submitBtnCls =
     'w-full h-10 px-5 rounded-xl bg-[#C41E3A] hover:bg-[#A51730] text-white font-semibold text-xs sm:text-sm inline-flex items-center justify-center gap-2 shadow-[0_8px_20px_-6px_rgba(196,30,58,0.5)] transition-colors cursor-pointer disabled:opacity-50 disabled:pointer-events-none';
@@ -947,22 +944,16 @@ export const LoginPage: React.FC = () => {
                   >
                     Họ và tên
                   </label>
-                  <div className="relative">
-                    <UserIcon
-                      className="w-4 h-4 absolute left-3.5 top-3 text-[#8C7F82]"
-                      aria-hidden="true"
-                    />
-                    <input
-                      id="register-display-name"
-                      type="text"
-                      required
-                      placeholder="Nguyễn Văn A"
-                      autoComplete="name"
-                      value={displayName}
-                      onChange={(e) => setDisplayName(e.target.value)}
-                      className={inputCls}
-                    />
-                  </div>
+                  <SmoothAuthInput
+                    id="register-display-name"
+                    type="text"
+                    required
+                    placeholder="Nguyễn Văn A"
+                    autoComplete="name"
+                    value={displayName}
+                    onChange={setDisplayName}
+                    leftIcon={<UserIcon className="w-4 h-4" />}
+                  />
                 </div>
 
                 <div>
@@ -972,22 +963,16 @@ export const LoginPage: React.FC = () => {
                   >
                     Email
                   </label>
-                  <div className="relative">
-                    <Mail
-                      className="w-4 h-4 absolute left-3.5 top-3 text-[#8C7F82]"
-                      aria-hidden="true"
-                    />
-                    <input
-                      id="register-email"
-                      type="email"
-                      required
-                      placeholder="ten_cua_ban@gmail.com"
-                      autoComplete="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className={inputCls}
-                    />
-                  </div>
+                  <SmoothAuthInput
+                    id="register-email"
+                    type="email"
+                    required
+                    placeholder="example@hanzi4u.vn"
+                    autoComplete="email"
+                    value={email}
+                    onChange={setEmail}
+                    leftIcon={<Mail className="w-4 h-4" />}
+                  />
                 </div>
 
                 <div>
@@ -997,31 +982,28 @@ export const LoginPage: React.FC = () => {
                   >
                     Mật khẩu
                   </label>
-                  <div className="relative">
-                    <Lock
-                      className="w-4 h-4 absolute left-3.5 top-3 text-[#8C7F82]"
-                      aria-hidden="true"
-                    />
-                    <input
-                      id="register-password"
-                      type={showPassword ? 'text' : 'password'}
-                      required
-                      minLength={6}
-                      placeholder="Tối thiểu 6 ký tự"
-                      autoComplete="new-password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className={passwordInputCls}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword((v) => !v)}
-                      aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
-                      className="absolute right-3.5 top-3 text-[#8C7F82] hover:text-[#181415] cursor-pointer"
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
+                  <SmoothAuthInput
+                    id="register-password"
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    minLength={6}
+                    disallowSpaces
+                    placeholder="Tối thiểu 6 ký tự"
+                    autoComplete="new-password"
+                    value={password}
+                    onChange={setPassword}
+                    leftIcon={<Lock className="w-4 h-4" />}
+                    rightSlot={
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((v) => !v)}
+                        aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                        className="p-0.5 text-[#AFA5A3] hover:text-[#181415] transition-colors cursor-pointer"
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    }
+                  />
                 </div>
 
                 <button
@@ -1075,22 +1057,16 @@ export const LoginPage: React.FC = () => {
                   >
                     Email
                   </label>
-                  <div className="relative">
-                    <Mail
-                      className="w-4 h-4 absolute left-3.5 top-3 text-[#8C7F82]"
-                      aria-hidden="true"
-                    />
-                    <input
-                      id="login-email"
-                      type="email"
-                      required
-                      placeholder="ten_cua_ban@gmail.com"
-                      autoComplete="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className={inputCls}
-                    />
-                  </div>
+                  <SmoothAuthInput
+                    id="login-email"
+                    type="email"
+                    required
+                    placeholder="example@hanzi4u.vn"
+                    autoComplete="email"
+                    value={email}
+                    onChange={setEmail}
+                    leftIcon={<Mail className="w-4 h-4" />}
+                  />
                 </div>
 
                 {loginSubMode === 'password' && (
@@ -1101,30 +1077,27 @@ export const LoginPage: React.FC = () => {
                     >
                       Mật khẩu
                     </label>
-                    <div className="relative">
-                      <Lock
-                        className="w-4 h-4 absolute left-3.5 top-3 text-[#8C7F82]"
-                        aria-hidden="true"
-                      />
-                      <input
-                        id="login-password"
-                        type={showPassword ? 'text' : 'password'}
-                        required
-                        placeholder="Nhập mật khẩu của bạn"
-                        autoComplete="current-password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className={passwordInputCls}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword((v) => !v)}
-                        aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
-                        className="absolute right-3.5 top-3 text-[#8C7F82] hover:text-[#181415] cursor-pointer"
-                      >
-                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
+                    <SmoothAuthInput
+                      id="login-password"
+                      type={showPassword ? 'text' : 'password'}
+                      required
+                      disallowSpaces
+                      placeholder="Nhập mật khẩu của bạn"
+                      autoComplete="current-password"
+                      value={password}
+                      onChange={setPassword}
+                      leftIcon={<Lock className="w-4 h-4" />}
+                      rightSlot={
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword((v) => !v)}
+                          aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                          className="p-0.5 text-[#AFA5A3] hover:text-[#181415] transition-colors cursor-pointer"
+                        >
+                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      }
+                    />
                     <div className="mt-2 flex justify-end">
                       <button
                         type="button"
@@ -1283,22 +1256,16 @@ export const LoginPage: React.FC = () => {
                   >
                     Email tài khoản
                   </label>
-                  <div className="relative">
-                    <Mail
-                      className="w-4 h-4 absolute left-3.5 top-3 text-[#8C7F82]"
-                      aria-hidden="true"
-                    />
-                    <input
-                      id="forgot-email"
-                      type="email"
-                      required
-                      placeholder="ten_cua_ban@gmail.com"
-                      autoComplete="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className={inputCls}
-                    />
-                  </div>
+                  <SmoothAuthInput
+                    id="forgot-email"
+                    type="email"
+                    required
+                    placeholder="example@hanzi4u.vn"
+                    autoComplete="email"
+                    value={email}
+                    onChange={setEmail}
+                    leftIcon={<Mail className="w-4 h-4" />}
+                  />
                 </div>
 
                 <button
@@ -1435,31 +1402,28 @@ export const LoginPage: React.FC = () => {
                   >
                     Mật khẩu mới
                   </label>
-                  <div className="relative">
-                    <Lock
-                      className="w-4 h-4 absolute left-3.5 top-3 text-[#8C7F82]"
-                      aria-hidden="true"
-                    />
-                    <input
-                      id="reset-new-password"
-                      type={showNewPassword ? 'text' : 'password'}
-                      required
-                      minLength={6}
-                      placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)"
-                      autoComplete="new-password"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      className={passwordInputCls}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowNewPassword((v) => !v)}
-                      aria-label={showNewPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
-                      className="absolute right-3.5 top-3 text-[#8C7F82] hover:text-[#181415] cursor-pointer"
-                    >
-                      {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
+                  <SmoothAuthInput
+                    id="reset-new-password"
+                    type={showNewPassword ? 'text' : 'password'}
+                    required
+                    minLength={6}
+                    disallowSpaces
+                    placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)"
+                    autoComplete="new-password"
+                    value={newPassword}
+                    onChange={setNewPassword}
+                    leftIcon={<Lock className="w-4 h-4" />}
+                    rightSlot={
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword((v) => !v)}
+                        aria-label={showNewPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                        className="p-0.5 text-[#AFA5A3] hover:text-[#181415] transition-colors cursor-pointer"
+                      >
+                        {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    }
+                  />
                 </div>
 
                 <div>
@@ -1469,23 +1433,18 @@ export const LoginPage: React.FC = () => {
                   >
                     Xác nhận mật khẩu mới
                   </label>
-                  <div className="relative">
-                    <Lock
-                      className="w-4 h-4 absolute left-3.5 top-3 text-[#8C7F82]"
-                      aria-hidden="true"
-                    />
-                    <input
-                      id="reset-confirm-password"
-                      type={showNewPassword ? 'text' : 'password'}
-                      required
-                      minLength={6}
-                      placeholder="Nhập lại mật khẩu mới"
-                      autoComplete="new-password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      className={inputCls}
-                    />
-                  </div>
+                  <SmoothAuthInput
+                    id="reset-confirm-password"
+                    type={showNewPassword ? 'text' : 'password'}
+                    required
+                    minLength={6}
+                    disallowSpaces
+                    placeholder="Nhập lại mật khẩu mới"
+                    autoComplete="new-password"
+                    value={confirmPassword}
+                    onChange={setConfirmPassword}
+                    leftIcon={<Lock className="w-4 h-4" />}
+                  />
                   {confirmPassword.length > 0 && confirmPassword !== newPassword && (
                     <p className="text-[11px] text-[#C41E3A] font-medium mt-1 px-1">
                       Mật khẩu xác nhận chưa khớp.

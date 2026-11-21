@@ -1,5 +1,6 @@
 import React from 'react';
 import { cn } from '../../lib/cn';
+import { HanziLogoMark } from '../HanziLogo';
 
 /**
  * Subtle Architectural Editorial Folio Lines:
@@ -26,6 +27,172 @@ export const ArchitecturalBlueprintGrid: React.FC<{ className?: string }> = ({ c
       <circle cx="520" cy="610" r="1.5" />
     </g>
   </svg>
+);
+
+/**
+ * HoYoverse /vi/home Inspired Afternoon Sunbeams & Floating Golden Dust Motes (斜阳丁达尔光束 & 浮尘).
+ * Controlled at 120fps via refs (`beamRef` & `dustRef`) for zero-React-rerender 2.5D mouse parallax!
+ */
+const DUST_MOTES = [
+  { left: '18%', top: '22%', size: 3.5, delay: '0s', duration: '5.5s', opacity: 0.65 },
+  { left: '29%', top: '38%', size: 2.5, delay: '1.1s', duration: '4.8s', opacity: 0.5 },
+  { left: '42%', top: '16%', size: 4.0, delay: '0.6s', duration: '6.2s', opacity: 0.7 },
+  { left: '54%', top: '32%', size: 3.0, delay: '1.8s', duration: '5.1s', opacity: 0.6 },
+  { left: '64%', top: '24%', size: 4.5, delay: '0.3s', duration: '6.8s', opacity: 0.75 },
+  { left: '73%', top: '46%', size: 2.8, delay: '2.1s', duration: '5.4s', opacity: 0.55 },
+  { left: '82%', top: '19%', size: 3.6, delay: '0.9s', duration: '5.9s', opacity: 0.68 },
+  { left: '48%', top: '58%', size: 3.2, delay: '1.5s', duration: '6.4s', opacity: 0.52 },
+  { left: '68%', top: '66%', size: 3.8, delay: '0.4s', duration: '5.7s', opacity: 0.62 },
+  { left: '86%', top: '54%', size: 2.6, delay: '2.4s', duration: '4.9s', opacity: 0.48 },
+  { left: '35%', top: '72%', size: 3.0, delay: '1.2s', duration: '6.0s', opacity: 0.45 },
+  { left: '59%', top: '44%', size: 4.2, delay: '0.7s', duration: '5.3s', opacity: 0.72 },
+];
+
+export const SunbeamDustOverlay: React.FC<{
+  beamRef?: React.RefObject<HTMLDivElement>;
+  dustRef?: React.RefObject<HTMLDivElement>;
+}> = ({ beamRef, dustRef }) => (
+  <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden select-none">
+    {/* Layer 2: Diagonal Afternoon Window Sunbeams (Tyndall Effect) */}
+    <div
+      ref={beamRef}
+      className="absolute -inset-24 will-change-transform"
+      style={{
+        background:
+          'linear-gradient(122deg, rgba(255,244,214,0) 14%, rgba(255,241,202,0.34) 26%, rgba(255,248,225,0.06) 36%, rgba(255,239,196,0.42) 48%, rgba(255,246,218,0.12) 58%, rgba(255,241,200,0.3) 68%, rgba(255,244,214,0) 82%)',
+        mixBlendMode: 'soft-light',
+      }}
+    />
+
+    {/* Subtle warm sunlight vignette from upper-right window */}
+    <div
+      className="absolute inset-0"
+      style={{
+        background:
+          'radial-gradient(ellipse 68% 54% at 78% 12%, rgba(255, 236, 189, 0.36) 0%, rgba(255, 236, 189, 0.08) 48%, transparent 78%)',
+      }}
+    />
+
+    {/* Layer 3: Floating Golden Sunlit Dust Motes */}
+    <div ref={dustRef} className="absolute -inset-12 will-change-transform">
+      {DUST_MOTES.map((m, idx) => (
+        <span
+          key={idx}
+          className="absolute rounded-full animate-pulse"
+          style={{
+            left: m.left,
+            top: m.top,
+            width: `${m.size}px`,
+            height: `${m.size}px`,
+            opacity: m.opacity,
+            animationDelay: m.delay,
+            animationDuration: m.duration,
+            background:
+              'radial-gradient(circle, rgba(255,252,235,0.98) 0%, rgba(235,192,94,0.65) 55%, rgba(235,192,94,0) 100%)',
+            boxShadow: '0 0 10px 2px rgba(242, 201, 76, 0.45)',
+          }}
+        />
+      ))}
+    </div>
+  </div>
+);
+
+/**
+ * Refined HoYoverse-Caliber Loading Screen with Imperial Crimson Seal,
+ * Golden Astrolabe Ring, and Classical Study Motto.
+ */
+export const HanziLoadingScreen: React.FC<{
+  visible?: boolean;
+  progress?: number;
+  subtitle?: string;
+}> = ({
+  visible = true,
+  progress = 100,
+  subtitle = '千里之行，始于足下 · Hành trình vạn dặm bắt đầu từ nét chữ đầu tiên',
+}) => (
+  <div
+    aria-hidden={!visible}
+    className={`fixed inset-0 z-[80] flex flex-col items-center justify-center bg-[#F5F2EC] text-[#1C1917] select-none transition-all duration-[460ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
+      visible
+        ? 'opacity-100 scale-100 pointer-events-auto'
+        : 'opacity-0 scale-[1.045] pointer-events-none'
+    }`}
+  >
+    {/* Warm afternoon radial glow */}
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0"
+      style={{
+        background:
+          'radial-gradient(circle at 50% 44%, rgba(212, 160, 23, 0.14) 0%, rgba(196, 30, 58, 0.05) 36%, rgba(245, 242, 236, 0) 70%)',
+      }}
+    />
+    <ArchitecturalBlueprintGrid className="opacity-70" />
+
+    <div className="relative z-10 flex flex-col items-center px-6 text-center">
+      {/* Animated Golden-Crimson Astrolabe & Seal Ring */}
+      <div className="relative w-28 h-28 flex items-center justify-center mb-5">
+        <svg
+          viewBox="0 0 120 120"
+          className="pointer-events-none absolute inset-0 w-full h-full animate-[spin_14s_linear_infinite]"
+        >
+          <circle
+            cx="60"
+            cy="60"
+            r="54"
+            fill="none"
+            stroke="#1C1917"
+            strokeOpacity="0.12"
+            strokeWidth="1"
+            strokeDasharray="4 6"
+          />
+          <circle
+            cx="60"
+            cy="60"
+            r="46"
+            fill="none"
+            stroke="#C41E3A"
+            strokeOpacity="0.45"
+            strokeWidth="1.4"
+            strokeDasharray="72 24"
+            strokeLinecap="round"
+          />
+          <circle cx="60" cy="6" r="2.2" fill="#C41E3A" />
+          <circle cx="60" cy="114" r="2.2" fill="#D4A017" />
+        </svg>
+
+        <div className="relative p-2.5 rounded-2xl bg-white/85 border border-[#1C1917]/12 shadow-[0_16px_36px_-12px_rgba(196,30,58,0.28)]">
+          <HanziLogoMark variant="light" className="w-14 h-14" />
+        </div>
+      </div>
+
+      {/* Brand Title & Academic Kicker */}
+      <div className="space-y-1.5">
+        <div className="font-display font-extrabold text-2xl sm:text-[26px] tracking-[-0.03em] text-[#1C1917]">
+          Hanzi<span className="text-[#C41E3A]">4U</span>
+        </div>
+        <p className="font-mono text-[10px] sm:text-[10.5px] font-semibold uppercase tracking-[0.24em] text-[#C41E3A]">
+          HỌC TIẾNG TRUNG CHUẨN HSK 1 — 6
+        </p>
+      </div>
+
+      {/* Delicate Diamond-Tipped Progress Line */}
+      <div className="mt-6 mb-3 flex items-center gap-2.5 w-52 sm:w-60">
+        <span className="text-[8px] text-[#C41E3A]">◆</span>
+        <div className="relative flex-1 h-[2px] bg-[#1C1917]/12 overflow-hidden rounded-full">
+          <div
+            className="h-full bg-gradient-to-r from-[#C41E3A] via-[#D4A017] to-[#C41E3A] transition-all duration-300 ease-out"
+            style={{ width: `${Math.min(100, Math.max(15, progress))}%` }}
+          />
+        </div>
+        <span className="text-[8px] text-[#D4A017]">◆</span>
+      </div>
+
+      <p className="text-[11px] sm:text-xs font-hanzi-serif text-[#57534E] tracking-wide max-w-sm">
+        {subtitle}
+      </p>
+    </div>
+  </div>
 );
 
 /**

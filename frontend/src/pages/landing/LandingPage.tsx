@@ -20,6 +20,8 @@ import {
   MuseumExhibitionFrame,
   PronunciationPlayButton,
   EqualizerBars,
+  SunbeamDustOverlay,
+  HanziLoadingScreen,
 } from '../../components/landing/ArchitecturalOrnaments';
 import { ambientBgm } from '../../lib/ambientMusic';
 
@@ -305,7 +307,24 @@ export const LandingPage: React.FC = () => {
   const [showFooter, setShowFooter] = useState<boolean>(false);
   const [bgmPlaying, setBgmPlaying] = useState<boolean>(false);
   const [speakingScope, setSpeakingScope] = useState<'tone' | 'calligraphy' | null>(null);
-  const [heroParallax, setHeroParallax] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [isExitingToAuth, setIsExitingToAuth] = useState<boolean>(false);
+
+  // HoYoverse-Caliber Initial Entrance Loading Curtain (runs once per browser session)
+  const [introLoaded, setIntroLoaded] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return true;
+    return window.sessionStorage.getItem('hanzi4u_intro_loaded') === '1';
+  });
+  const [loadProgress, setLoadProgress] = useState<number>(introLoaded ? 100 : 28);
+
+  // 120fps Zero-React-Rerender 2.5D Mouse-Tracking Parallax Refs (HoYoverse /vi/home physics)
+  const heroBgRef = useRef<HTMLDivElement>(null);
+  const heroBeamRef = useRef<HTMLDivElement>(null);
+  const heroDustRef = useRef<HTMLDivElement>(null);
+  const heroContentRef = useRef<HTMLDivElement>(null);
+  const calligraphyBgRef = useRef<HTMLDivElement>(null);
+  const mouseTargetRef = useRef({ x: 0, y: 0 });
+  const mouseCurrentRef = useRef({ x: 0, y: 0 });
+
   const speakTokenRef = useRef<number>(0);
   const speakTimerRef = useRef<number | null>(null);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
@@ -425,10 +444,12 @@ export const LandingPage: React.FC = () => {
     }
   }, []);
 
-  // Preload all editorial photographs & 6 real HSK book covers on mount for 0ms transitions
+  // Preload all editorial photographs & 6 real HSK book covers + drive smooth initial loading curtain
   useEffect(() => {
+    const heroImg = new Image();
+    heroImg.src = '/images/editorial-hero-chinese.webp';
+
     [
-      '/images/editorial-hero-chinese.webp',
       '/images/intro-hanzi-notebook.webp',
       '/images/login-study-desk.webp',
       '/images/hero-chinese-study.webp',
@@ -442,6 +463,82 @@ export const LandingPage: React.FC = () => {
       const img = new Image();
       img.src = src;
     });
+
+    if (introLoaded) return;
+
+    const t1 = window.setTimeout(() => setLoadProgress(68), 140);
+    const t2 = window.setTimeout(() => setLoadProgress(94), 310);
+    const finishIntro = () => {
+      setLoadProgress(100);
+      window.setTimeout(() => {
+        setIntroLoaded(true);
+        try {
+          window.sessionStorage.setItem('hanzi4u_intro_loaded', '1');
+        } catch {
+          // Ignore storage restrictions
+        }
+      }, 180);
+    };
+
+    const t3 = window.setTimeout(finishIntro, 480);
+    return () => {
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+      window.clearTimeout(t3);
+    };
+  }, [introLoaded]);
+
+  // 120fps Lerped 2.5D Mouse-Tracking Parallax Engine (0 React re-renders on mouse move!)
+  useEffect(() => {
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reducedMotion) return;
+
+    let rafId = 0;
+    const startTime = performance.now();
+
+    const tick = (now: number) => {
+      rafId = requestAnimationFrame(tick);
+      const elapsed = (now - startTime) * 0.001;
+      const cur = mouseCurrentRef.current;
+      const tgt = mouseTargetRef.current;
+
+      // Silky exponential damping + subtle idle breathing drift like HoYoverse /vi/home
+      const idleX = Math.sin(elapsed * 0.55) * 0.12;
+      const idleY = Math.cos(elapsed * 0.42) * 0.1;
+      cur.x += (tgt.x + idleX - cur.x) * 0.062;
+      cur.y += (tgt.y + idleY - cur.y) * 0.062;
+
+      if (heroBgRef.current) {
+        const bx = (cur.x * -24).toFixed(2);
+        const by = (cur.y * -15).toFixed(2);
+        const rx = (cur.y * 1.45).toFixed(2);
+        const ry = (cur.x * -1.85).toFixed(2);
+        heroBgRef.current.style.transform = `perspective(1200px) translate3d(${bx}px, ${by}px, 0) scale(1.075) rotateX(${rx}deg) rotateY(${ry}deg)`;
+      }
+      if (heroBeamRef.current) {
+        const lx = (cur.x * 30).toFixed(2);
+        const ly = (cur.y * 18).toFixed(2);
+        heroBeamRef.current.style.transform = `translate3d(${lx}px, ${ly}px, 0)`;
+      }
+      if (heroDustRef.current) {
+        const dx = (cur.x * 46).toFixed(2);
+        const dy = (cur.y * 28).toFixed(2);
+        heroDustRef.current.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+      }
+      if (heroContentRef.current) {
+        const cx = (cur.x * 7).toFixed(2);
+        const cy = (cur.y * 4.5).toFixed(2);
+        heroContentRef.current.style.transform = `translate3d(${cx}px, ${cy}px, 0)`;
+      }
+      if (calligraphyBgRef.current) {
+        const nbx = (cur.x * -18).toFixed(2);
+        const nby = (cur.y * -11).toFixed(2);
+        calligraphyBgRef.current.style.transform = `translate3d(${nbx}px, ${nby}px, 0) scale(1.05)`;
+      }
+    };
+
+    rafId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafId);
   }, []);
 
   // 1:1 WuWa Swiper Mouse-Wheel & Trackpad Inertia Onset Detector
@@ -494,11 +591,24 @@ export const LandingPage: React.FC = () => {
     };
   }, [stepChapter]);
 
-  const handleHeroPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    const nx = (e.clientX / window.innerWidth - 0.5) * -10;
-    const ny = (e.clientY / window.innerHeight - 0.5) * -6;
-    setHeroParallax({ x: nx, y: ny });
-  };
+  const handleStagePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    mouseTargetRef.current.x = (e.clientX / Math.max(1, window.innerWidth) - 0.5) * 2;
+    mouseTargetRef.current.y = (e.clientY / Math.max(1, window.innerHeight) - 0.5) * 2;
+  }, []);
+
+  // Cinematic HoYoverse Camera Dolly Zoom-In Transition into Login / Register
+  const handleNavigateAuth = useCallback(
+    (targetHash: string) => (e: React.MouseEvent<HTMLAnchorElement>) => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      e.preventDefault();
+      if (isExitingToAuth) return;
+      setIsExitingToAuth(true);
+      window.setTimeout(() => {
+        window.location.hash = targetHash;
+      }, 220);
+    },
+    [isExitingToAuth]
+  );
 
   const handleDirectCardClick = useCallback(
     (cardId: string, cardIdx: number) => {
@@ -523,7 +633,10 @@ export const LandingPage: React.FC = () => {
 
   return (
     <div
-      className="relative w-screen h-[100dvh] overflow-hidden bg-[#F5F2EC] text-[#1C1917] select-none"
+      onPointerMove={handleStagePointerMove}
+      className={`relative w-screen h-[100dvh] overflow-hidden bg-[#F5F2EC] text-[#1C1917] select-none transition-all duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        isExitingToAuth ? 'opacity-0 scale-[1.055]' : 'opacity-100 scale-100'
+      }`}
       onTouchStart={(e) => {
         const target = e.target as HTMLElement | null;
         // Never hijack touch gestures when user is rotating a 3D WebGL canvas
@@ -552,6 +665,9 @@ export const LandingPage: React.FC = () => {
         stepChapter(dy > 0 ? 1 : -1);
       }}
     >
+      {/* HoYoverse-Caliber Entrance Loading Curtain (with Imperial Seal & Golden Astrolabe Ring) */}
+      <HanziLoadingScreen visible={!introLoaded} progress={loadProgress} />
+
       {/* ═══════════════════════════════════════════════════════════════════
           QUIET FLOATING EDITORIAL CHROME (RESPONSIVE MOBILE + DESKTOP)
       ═══════════════════════════════════════════════════════════════════ */}
@@ -611,6 +727,7 @@ export const LandingPage: React.FC = () => {
 
         <a
           href="#/login"
+          onClick={handleNavigateAuth('#/login')}
           className="h-8 sm:h-9 px-3 sm:px-4 rounded-full bg-white/90 hover:bg-white text-[#1C1917] hover:text-[#C41E3A] border border-[#1C1917]/15 shadow-xs backdrop-blur-sm text-[11px] sm:text-xs font-semibold inline-flex items-center justify-center transition-colors"
         >
           Đăng nhập
@@ -618,6 +735,7 @@ export const LandingPage: React.FC = () => {
 
         <a
           href="#/login?tab=register"
+          onClick={handleNavigateAuth('#/login?tab=register')}
           className="h-8 sm:h-9 px-3.5 sm:px-5 rounded-full bg-[#C41E3A] hover:bg-[#A51730] text-white text-[11px] sm:text-xs font-semibold inline-flex items-center justify-center shadow-xs transition-colors"
         >
           <span className="sm:hidden">Đăng ký</span>
@@ -668,23 +786,24 @@ export const LandingPage: React.FC = () => {
         className="relative w-full h-full transition-transform duration-[420ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform"
       >
         {/* ────────────────────────────────────────────────────────────────
-            SLIDE 0: CALM DAYLIGHT EDITORIAL HERO (Kinfolk × Chinese Study)
+            SLIDE 0: CALM DAYLIGHT EDITORIAL HERO (HoYoverse 2.5D Desk Parallax × Sunbeams)
         ──────────────────────────────────────────────────────────────── */}
         <section
           aria-hidden={activeSlide !== 0}
-          onPointerMove={activeSlide === 0 ? handleHeroPointerMove : undefined}
           className={`absolute inset-0 w-full h-full overflow-hidden bg-[#F3EFE8] transition-opacity duration-[450ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[opacity] ${
             activeSlide === 0
               ? 'opacity-100 pointer-events-auto z-20'
               : 'opacity-0 pointer-events-none z-10'
           }`}
         >
+          {/* Layer 1: 120fps 2.5D Perspective Mouse-Tracking Study Desk Photograph */}
           <div
+            ref={heroBgRef}
             aria-hidden="true"
             style={{
-              transform: `translate3d(${heroParallax.x.toFixed(1)}px, ${heroParallax.y.toFixed(1)}px, 0) scale(1.03)`,
+              transform: 'perspective(1200px) scale(1.075)',
             }}
-            className="pointer-events-none absolute inset-0 transition-transform duration-300 ease-out will-change-transform"
+            className="pointer-events-none absolute inset-0 will-change-transform"
           >
             <img
               src="/images/editorial-hero-chinese.webp"
@@ -693,6 +812,9 @@ export const LandingPage: React.FC = () => {
               className="w-full h-full object-cover object-right"
             />
           </div>
+
+          {/* Layer 2 & 3: Afternoon Window Sunbeam Rays & Floating Golden Sunlit Dust Motes */}
+          <SunbeamDustOverlay beamRef={heroBeamRef} dustRef={heroDustRef} />
 
           <div
             aria-hidden="true"
@@ -705,8 +827,9 @@ export const LandingPage: React.FC = () => {
 
           <ArchitecturalBlueprintGrid className="opacity-65" />
 
+          {/* Layer 4: Foreground Counter-Parallax Editorial Typography */}
           <div className="relative z-20 h-full max-w-[1380px] mx-auto px-5 sm:px-12 lg:px-20 pt-14 pb-16 flex flex-col justify-center">
-            <div className="max-w-xl space-y-4 sm:space-y-6">
+            <div ref={heroContentRef} className="max-w-xl space-y-4 sm:space-y-6 will-change-transform">
               <div className="inline-flex items-center gap-2.5 sm:gap-3 text-[10px] sm:text-[11px] font-mono font-semibold uppercase tracking-[0.18em] sm:tracking-[0.2em] text-[#C41E3A]">
                 <span className="w-5 sm:w-6 h-[1.5px] bg-[#C41E3A]" />
                 <span>HỌC TIẾNG TRUNG CHUẨN HSK 1 — 6</span>
@@ -726,7 +849,8 @@ export const LandingPage: React.FC = () => {
               <div className="pt-1 sm:pt-2 flex flex-wrap items-center gap-2.5 sm:gap-3.5">
                 <a
                   href="#/login?tab=register"
-                  className="h-11 sm:h-12 px-5 sm:px-7 rounded-lg bg-[#C41E3A] hover:bg-[#A51730] text-white font-semibold text-xs sm:text-sm inline-flex items-center gap-2 shadow-[0_10px_24px_-8px_rgba(196,30,58,0.45)] transition-colors"
+                  onClick={handleNavigateAuth('#/login?tab=register')}
+                  className="h-11 sm:h-12 px-5 sm:px-7 rounded-lg bg-[#C41E3A] hover:bg-[#A51730] text-white font-semibold text-xs sm:text-sm inline-flex items-center gap-2 shadow-[0_10px_24px_-8px_rgba(196,30,58,0.45)] transition-all hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <span>Bắt đầu học miễn phí</span>
                   <ArrowRight className="w-4 h-4" />
@@ -999,12 +1123,18 @@ export const LandingPage: React.FC = () => {
                 'linear-gradient(96deg, transparent 0%, rgba(0,0,0,0.35) 22%, rgba(0,0,0,0.92) 48%, #000 100%)',
             }}
           >
-            <img
-              src="/images/intro-hanzi-notebook.webp"
-              alt=""
-              decoding="async"
-              className="w-full h-full object-cover object-center opacity-90"
-            />
+            <div
+              ref={calligraphyBgRef}
+              className="w-full h-full will-change-transform"
+              style={{ transform: 'scale(1.05)' }}
+            >
+              <img
+                src="/images/intro-hanzi-notebook.webp"
+                alt=""
+                decoding="async"
+                className="w-full h-full object-cover object-center opacity-90"
+              />
+            </div>
           </div>
 
           <div className="relative z-10 min-h-full lg:h-full max-w-[1360px] mx-auto px-4 sm:px-14 lg:pl-24 lg:pr-10 pt-14 pb-14 lg:pt-14 lg:pb-16 grid grid-cols-1 lg:grid-cols-12 items-center gap-3 sm:gap-6">
@@ -1465,6 +1595,7 @@ export const LandingPage: React.FC = () => {
 
                       <a
                         href="#/login?tab=register"
+                        onClick={handleNavigateAuth('#/login?tab=register')}
                         className="w-full h-9 sm:h-10 rounded-md bg-[#C41E3A] hover:bg-[#A51730] text-white text-xs font-semibold inline-flex items-center justify-center gap-2 transition-colors"
                       >
                         <BookOpen className="w-3.5 h-3.5" />
@@ -1515,6 +1646,7 @@ export const LandingPage: React.FC = () => {
 
           <a
             href="#/login?tab=register"
+            onClick={handleNavigateAuth('#/login?tab=register')}
             className="text-[11px] sm:text-xs font-semibold text-[#C41E3A] hover:text-[#9E162E] inline-flex items-center gap-1 sm:gap-1.5 transition-colors"
           >
             <span>Bắt đầu học miễn phí</span>

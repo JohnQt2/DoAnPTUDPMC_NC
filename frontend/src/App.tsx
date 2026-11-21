@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
+import { HanziLoadingScreen } from './components/landing/ArchitecturalOrnaments';
 import {
   MeshBackground,
   PageTransition,
@@ -49,19 +50,7 @@ const AppContent: React.FC = () => {
   const isStudent = user?.role === 'STUDENT';
 
   if (isLoading || (isStudent && hasCompletedOnboarding === null)) {
-    return (
-      <MeshBackground variant="light" showHanzi={false} className="flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3.5">
-          <span
-            aria-hidden="true"
-            className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-primary-600 via-primary-500 to-secondary-500 text-white flex items-center justify-center font-chinese font-black text-2xl shadow-xl shadow-primary-500/25 motion-safe:animate-pulse"
-          >
-            汉
-          </span>
-          <span className="text-sm font-bold text-gray-600">Đang tải Hanzi4U...</span>
-        </div>
-      </MeshBackground>
-    );
+    return <HanziLoadingScreen visible={true} progress={82} />;
   }
 
   const basePath = currentHash.split('?')[0] || '#/';

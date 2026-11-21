@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../lib/api';
 import { HanziLogoMark } from '../../components/HanziLogo';
+import { SunbeamDustOverlay } from '../../components/landing/ArchitecturalOrnaments';
 import {
   Mail,
   Lock,
@@ -557,23 +558,80 @@ export const LoginPage: React.FC = () => {
 
   const isForgotStep = step === 'forgot_email' || step === 'forgot_reset';
 
+  // 120fps zero-re-render 2.5D mouse parallax refs (HoYoverse /vi/home style)
+  const bgLayerRef = useRef<HTMLDivElement>(null);
+  const beamLayerRef = useRef<HTMLDivElement>(null);
+  const dustLayerRef = useRef<HTMLDivElement>(null);
+  const mouseTargetRef = useRef({ x: 0, y: 0 });
+  const mouseCurrentRef = useRef({ x: 0, y: 0 });
+
+  useEffect(() => {
+    let rafId = 0;
+    const tick = () => {
+      rafId = requestAnimationFrame(tick);
+      const cur = mouseCurrentRef.current;
+      const tgt = mouseTargetRef.current;
+      cur.x += (tgt.x - cur.x) * 0.065;
+      cur.y += (tgt.y - cur.y) * 0.065;
+
+      if (bgLayerRef.current) {
+        const bx = (cur.x * -18).toFixed(2);
+        const by = (cur.y * -12).toFixed(2);
+        const rx = (cur.y * 1.1).toFixed(2);
+        const ry = (cur.x * -1.4).toFixed(2);
+        bgLayerRef.current.style.transform = `perspective(1200px) translate3d(${bx}px, ${by}px, 0) scale(1.06) rotateX(${rx}deg) rotateY(${ry}deg)`;
+      }
+      if (beamLayerRef.current) {
+        const lx = (cur.x * 24).toFixed(2);
+        const ly = (cur.y * 14).toFixed(2);
+        beamLayerRef.current.style.transform = `translate3d(${lx}px, ${ly}px, 0)`;
+      }
+      if (dustLayerRef.current) {
+        const dx = (cur.x * 36).toFixed(2);
+        const dy = (cur.y * 22).toFixed(2);
+        dustLayerRef.current.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+      }
+    };
+    rafId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafId);
+  }, []);
+
   return (
-    <div className="relative flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 overflow-hidden bg-[#FAF8F6]">
-      {/* Real Chinese Study Desk .webp Backdrop */}
-      <img
-        src="/images/login-study-desk.webp"
-        alt=""
+    <motion.div
+      initial={{ opacity: 0, scale: 1.03 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
+      onPointerMove={(e) => {
+        mouseTargetRef.current.x = (e.clientX / Math.max(1, window.innerWidth) - 0.5) * 2;
+        mouseTargetRef.current.y = (e.clientY / Math.max(1, window.innerHeight) - 0.5) * 2;
+      }}
+      className="relative flex-1 flex items-center justify-center py-10 sm:py-12 px-4 sm:px-6 lg:px-8 overflow-hidden bg-[#FAF8F6]"
+    >
+      {/* Layer 1: 2.5D Mouse-Tracking Chinese Study Desk .webp Backdrop */}
+      <div
+        ref={bgLayerRef}
         aria-hidden="true"
-        decoding="async"
-        className="pointer-events-none absolute inset-0 w-full h-full object-cover opacity-30"
-      />
+        className="pointer-events-none absolute inset-0 will-change-transform"
+        style={{ transform: 'perspective(1200px) scale(1.06)' }}
+      >
+        <img
+          src="/images/login-study-desk.webp"
+          alt=""
+          decoding="async"
+          className="w-full h-full object-cover opacity-38"
+        />
+      </div>
+
+      {/* Layer 2 & 3: Afternoon Window Sunbeams & Floating Golden Dust Motes */}
+      <SunbeamDustOverlay beamRef={beamLayerRef} dustRef={dustLayerRef} />
+
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#FAF8F6]/75 via-[#FAF8F6]/80 to-[#FAF8F6]/92"
+        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#FAF8F6]/70 via-[#FAF8F6]/75 to-[#FAF8F6]/90"
       />
 
       <div className="relative z-10 w-full max-w-[436px] space-y-5">
-        <div className="p-7 sm:p-8 space-y-6 rounded-2xl bg-white/95 backdrop-blur-md border border-[#EAE3DE] border-t-[3px] border-t-[#C41E3A] shadow-[0_22px_50px_-20px_rgba(24,20,21,0.18)]">
+        <div className="p-6 sm:p-8 space-y-6 rounded-2xl bg-white/95 backdrop-blur-md border border-[#EAE3DE] border-t-[3px] border-t-[#C41E3A] shadow-[0_22px_50px_-20px_rgba(24,20,21,0.18)]">
           {/* Header with Bespoke Hanzi4U Crimson Seal */}
           <div className="text-center space-y-2">
             <div className="inline-flex items-center justify-center mb-1">
@@ -1232,6 +1290,6 @@ export const LoginPage: React.FC = () => {
           Bằng cách tiếp tục, bạn đồng ý với điều khoản sử dụng của Hanzi4U.
         </p>
       </div>
-    </div>
+    </motion.div>
   );
 };

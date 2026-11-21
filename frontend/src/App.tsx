@@ -4,6 +4,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import { saveInProgressLessonId } from './lib/resumeLesson';
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
+import { HanziLoadingScreen } from './components/landing/ArchitecturalOrnaments';
 import {
   MeshBackground,
   PageTransition,
@@ -84,19 +85,7 @@ const AppContent: React.FC = () => {
   const isStudent = user?.role === 'STUDENT';
 
   if (isLoading || (isStudent && hasCompletedOnboarding === null)) {
-    return (
-      <MeshBackground variant="light" showHanzi={false} className="flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3.5">
-          <span
-            aria-hidden="true"
-            className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-primary-600 via-primary-500 to-secondary-500 text-white flex items-center justify-center font-chinese font-black text-2xl shadow-xl shadow-primary-500/25 motion-safe:animate-pulse"
-          >
-            汉
-          </span>
-          <span className="text-sm font-bold text-gray-600">Đang tải Hanzi4U...</span>
-        </div>
-      </MeshBackground>
-    );
+    return <HanziLoadingScreen visible={true} progress={82} />;
   }
 
   const basePath = currentHash.split('?')[0] || '#/';
@@ -106,27 +95,17 @@ const AppContent: React.FC = () => {
   // ──────────────────────────────────────────────────────────────────────────
   if (!user) {
     if (basePath === '#/' || basePath === '' || basePath === '#/landing') {
-      return (
-        <MeshBackground variant="dark" className="min-h-screen flex flex-col">
-          <Navbar currentPath={currentHash} theme="dark" />
-          <main className="flex-1">
-            <LandingPage />
-          </main>
-          <footer className="border-t border-white/[0.08] bg-black/20 backdrop-blur-md py-6 text-center text-xs text-white/40">
-            © 2026 Hanzi4U (hanzi4u.id.vn) — Nền tảng học tiếng Trung HSK cho người Việt
-          </footer>
-        </MeshBackground>
-      );
+      return <LandingPage />;
     }
 
     if (basePath === '#/login') {
       return (
-        <MeshBackground variant="dark" className="min-h-screen flex flex-col">
-          <Navbar currentPath={currentHash} theme="dark" />
-          <main className="flex-1 flex flex-col">
+        <div className="h-[100dvh] w-full overflow-hidden flex flex-col bg-[#FAF8F6]">
+          <Navbar currentPath={currentHash} theme="light" />
+          <main className="flex-1 flex flex-col min-h-0 overflow-y-auto overflow-x-hidden">
             <LoginPage />
           </main>
-        </MeshBackground>
+        </div>
       );
     }
 

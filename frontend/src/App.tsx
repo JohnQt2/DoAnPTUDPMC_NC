@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
+import { saveInProgressLessonId } from './lib/resumeLesson';
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
+import { HanziLoadingScreen } from './components/landing/ArchitecturalOrnaments';
 import {
   MeshBackground,
   PageTransition,
@@ -35,10 +38,43 @@ import { Lock, ShieldAlert, ArrowRight, Home } from 'lucide-react';
 const AppContent: React.FC = () => {
   const { user, isLoading, hasCompletedOnboarding } = useAuth();
   const [currentHash, setCurrentHash] = useState(window.location.hash || '#/');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('hanzi4u_sidebar_collapsed') === '1';
+    } catch {
+      return false;
+    }
+  });
+
+  const toggleSidebarCollapsed = () => {
+    setSidebarCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('hanzi4u_sidebar_collapsed', next ? '1' : '0');
+      } catch {
+        // ignore storage errors
+      }
+      return next;
+    });
+  };
 
   useEffect(() => {
+    const syncHash = (hash: string) => {
+      const clean = hash.split('?')[0] || '#/';
+      if (clean.startsWith('#/lessons/')) {
+        const lid = parseInt(clean.replace('#/lessons/', ''), 10);
+        if (Number.isFinite(lid) && lid > 0) {
+          saveInProgressLessonId(lid);
+        }
+      }
+    };
+
+    syncHash(window.location.hash || '#/');
+
     const handleHashChange = () => {
-      setCurrentHash(window.location.hash || '#/');
+      const next = window.location.hash || '#/';
+      setCurrentHash(next);
+      syncHash(next);
       window.scrollTo(0, 0);
     };
 
@@ -49,19 +85,7 @@ const AppContent: React.FC = () => {
   const isStudent = user?.role === 'STUDENT';
 
   if (isLoading || (isStudent && hasCompletedOnboarding === null)) {
-    return (
-      <MeshBackground variant="light" showHanzi={false} className="flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3.5">
-          <span
-            aria-hidden="true"
-            className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-primary-600 via-primary-500 to-secondary-500 text-white flex items-center justify-center font-chinese font-black text-2xl shadow-xl shadow-primary-500/25 motion-safe:animate-pulse"
-          >
-            汉
-          </span>
-          <span className="text-sm font-bold text-gray-600">Đang tải Hanzi4U...</span>
-        </div>
-      </MeshBackground>
-    );
+    return <HanziLoadingScreen visible={true} progress={82} />;
   }
 
   const basePath = currentHash.split('?')[0] || '#/';
@@ -71,27 +95,17 @@ const AppContent: React.FC = () => {
   // ──────────────────────────────────────────────────────────────────────────
   if (!user) {
     if (basePath === '#/' || basePath === '' || basePath === '#/landing') {
-      return (
-        <MeshBackground variant="dark" className="min-h-screen flex flex-col">
-          <Navbar currentPath={currentHash} theme="dark" />
-          <main className="flex-1">
-            <LandingPage />
-          </main>
-          <footer className="border-t border-white/[0.08] bg-black/20 backdrop-blur-md py-6 text-center text-xs text-white/40">
-            © 2026 Hanzi4U (hanzi4u.id.vn) — Nền tảng học tiếng Trung HSK cho người Việt
-          </footer>
-        </MeshBackground>
-      );
+      return <LandingPage />;
     }
 
     if (basePath === '#/login') {
       return (
-        <MeshBackground variant="dark" className="min-h-screen flex flex-col">
-          <Navbar currentPath={currentHash} theme="dark" />
-          <main className="flex-1 flex flex-col">
+        <div className="h-[100dvh] w-full overflow-hidden flex flex-col bg-[#FAF8F6]">
+          <Navbar currentPath={currentHash} theme="light" />
+          <main className="flex-1 flex flex-col min-h-0 overflow-y-auto overflow-x-hidden">
             <LoginPage />
           </main>
-        </MeshBackground>
+        </div>
       );
     }
 
@@ -143,8 +157,17 @@ const AppContent: React.FC = () => {
 
     return (
       <MeshBackground variant="light" showHanzi={false} className="text-gray-900 font-sans">
-        <Sidebar currentPath={currentHash} />
-        <div className="lg:pl-[17.25rem] min-h-screen flex flex-col">
+        <Sidebar
+          currentPath={currentHash}
+          collapsed={sidebarCollapsed}
+          onToggleCollapse={toggleSidebarCollapsed}
+        />
+        <div
+          style={{ ['--sidebar-offset' as any]: sidebarCollapsed ? '6.25rem' : '17.25rem' }}
+          className={`${
+            sidebarCollapsed ? 'lg:pl-[6.25rem]' : 'lg:pl-[17.25rem]'
+          } min-h-screen flex flex-col transition-[padding] duration-300 ease-out`}
+        >
           <main className="flex-1 pb-16">
             <PageTransition
               routeKey={isAdminProfile ? 'admin-profile' : isAdminLessonPreview ? basePath : adminTab}
@@ -289,8 +312,17 @@ const AppContent: React.FC = () => {
 
   return (
     <MeshBackground variant="light" showHanzi={false} className="text-gray-900 font-sans">
-      <Sidebar currentPath={currentHash} />
-      <div className="lg:pl-[17.25rem] min-h-screen flex flex-col">
+      <Sidebar
+        currentPath={currentHash}
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={toggleSidebarCollapsed}
+      />
+      <div
+        style={{ ['--sidebar-offset' as any]: sidebarCollapsed ? '6.25rem' : '17.25rem' }}
+        className={`${
+          sidebarCollapsed ? 'lg:pl-[6.25rem]' : 'lg:pl-[17.25rem]'
+        } min-h-screen flex flex-col transition-[padding] duration-300 ease-out`}
+      >
         <main className="flex-1 pb-16">
           <PageTransition routeKey={basePath}>{renderCurrentPage()}</PageTransition>
         </main>
@@ -301,12 +333,14 @@ const AppContent: React.FC = () => {
 
 export const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <CustomCursor />
-      <CelebrationOverlay />
-      <DialogOverlay />
-      <AppContent />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <CustomCursor />
+        <CelebrationOverlay />
+        <DialogOverlay />
+        <AppContent />
+      </AuthProvider>
+    </ThemeProvider>
   );
 };
 

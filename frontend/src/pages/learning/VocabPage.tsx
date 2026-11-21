@@ -95,8 +95,8 @@ const VocabFlashcard = React.memo(
                   title="Đánh dấu đã thuộc"
                   className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors duration-200 cursor-pointer ${
                     isMastered
-                      ? 'bg-emerald-500 text-white shadow-sm'
-                      : 'bg-white/75 hover:bg-emerald-500 text-slate-400 hover:text-white border border-white'
+                      ? 'bg-emerald-600 text-white shadow-sm'
+                      : 'bg-white/75 hover:bg-emerald-600 text-slate-400 hover:text-white border border-white'
                   }`}
                 >
                   <CheckCircle2 className="w-4 h-4" />
@@ -290,7 +290,7 @@ export const VocabPage: React.FC<{ initialTab?: 'bank' | 'srs' | 'writing' }> = 
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 border-b border-white/75">
         <div>
           <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-slate-900 flex items-center gap-2.5">
-            <span className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-400 via-pink-400 to-amber-300 text-white flex items-center justify-center shadow-md shrink-0">
+            <span className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-400 via-pink-400 to-amber-300 text-slate-950 flex items-center justify-center shadow-md shrink-0">
               <Library className="w-5 h-5" />
             </span>
             <span>Từ vựng & Chữ Hán HSK 1–6</span>
@@ -311,7 +311,7 @@ export const VocabPage: React.FC<{ initialTab?: 'bank' | 'srs' | 'writing' }> = 
                 type="button"
                 onClick={() => startTransition(() => setTab(item.id))}
                 className={`relative flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full text-xs sm:text-[13px] font-bold whitespace-nowrap transition-colors duration-200 cursor-pointer ${
-                  active ? 'text-white' : 'text-slate-600 hover:text-slate-900'
+                  active ? 'text-slate-950' : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 {active && (
@@ -343,7 +343,7 @@ export const VocabPage: React.FC<{ initialTab?: 'bank' | 'srs' | 'writing' }> = 
                     onClick={() => startTransition(() => setLevelFilter(lvl))}
                     className={`px-3.5 py-2 rounded-full text-xs font-bold transition-colors duration-200 cursor-pointer whitespace-nowrap border ${
                       active
-                        ? `bg-gradient-to-r ${LEVEL_COLORS[lvl]} text-white border-transparent shadow-sm`
+                        ? `bg-gradient-to-r ${LEVEL_COLORS[lvl]} text-slate-950 border-transparent shadow-sm`
                         : 'bg-white/60 hover:bg-white text-slate-700 border-white/85'
                     }`}
                   >
@@ -402,7 +402,7 @@ export const VocabPage: React.FC<{ initialTab?: 'bank' | 'srs' | 'writing' }> = 
                     type="button"
                     disabled={page === 1}
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    className="inline-flex items-center gap-1 px-4 py-2 rounded-full glass-light hover:bg-white text-xs font-bold text-slate-700 disabled:opacity-40 cursor-pointer transition-colors"
+                    className="inline-flex items-center gap-1 px-4 py-2 rounded-full glass-light hover:bg-white text-xs font-bold text-slate-700 disabled:opacity-70 cursor-pointer transition-colors"
                   >
                     <ChevronLeft className="w-4 h-4" />
                     Trang trước
@@ -414,7 +414,7 @@ export const VocabPage: React.FC<{ initialTab?: 'bank' | 'srs' | 'writing' }> = 
                     type="button"
                     disabled={page === totalPages}
                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                    className="inline-flex items-center gap-1 px-4 py-2 rounded-full glass-light hover:bg-white text-xs font-bold text-slate-700 disabled:opacity-40 cursor-pointer transition-colors"
+                    className="inline-flex items-center gap-1 px-4 py-2 rounded-full glass-light hover:bg-white text-xs font-bold text-slate-700 disabled:opacity-70 cursor-pointer transition-colors"
                   >
                     Trang sau
                     <ChevronRight className="w-4 h-4" />

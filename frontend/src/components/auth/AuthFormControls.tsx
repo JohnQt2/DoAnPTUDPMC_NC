@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue, useSpring, useVelocity, useTransform } from 'framer-motion';
 
 interface AnimatedOtpInputProps {
   value: string[];
@@ -224,6 +224,13 @@ interface CharToken {
   ch: string;
 }
 
+interface ExitingGhost {
+  id: number;
+  ch: string;
+  x: number;
+  isMask: boolean;
+}
+
 interface SmoothAuthInputProps {
   id: string;
   type?: 'text' | 'email' | 'password';
@@ -236,14 +243,16 @@ interface SmoothAuthInputProps {
   leftIcon?: React.ReactNode;
   rightSlot?: React.ReactNode;
   disabled?: boolean;
+  disallowSpaces?: boolean;
 }
 
 /**
- * Silky Tactile Auth Input (Apple / Telegram / Linear-inspired):
- * - Stable prefix/suffix diff so ONLY newly typed chars softly blur-fade in (140ms)
- *   and ONLY deleted chars softly dissolve out (115ms) with zero jitter on existing text
- * - Smooth spring-like gliding crimson caret (`85ms` ease-out) with gentle breathing idle pulse
- * - Light airy placeholder that gently glides away on first keystroke
+ * Craft.do / Apple / Telegram-Grade Smooth Typing & Deleting Input:
+ * - 0ms synchronous token diff during render (zero 1-frame lag between caret & characters)
+ * - Real Framer Motion spring-physics gliding caret (`useSpring` + velocity micro-stretch)
+ * - Crisp zero-blur GPU horizontal ink-glide on type (`x: -4 → 0, scale: 0.88 → 1`)
+ * - Detached ghost dissolution on delete (never shifts remaining chars, 120fps even on rapid Backspace)
+ * - Optional `disallowSpaces` with tactile micro-shake + auto-fading hint for password fields
  * - 100% native Vietnamese IME (Telex/VNI), text selection, autofill & horizontal scroll safe
  */
 export const SmoothAuthInput: React.FC<SmoothAuthInputProps> = ({
@@ -258,16 +267,21 @@ export const SmoothAuthInput: React.FC<SmoothAuthInputProps> = ({
   leftIcon,
   rightSlot,
   disabled = false,
+  disallowSpaces = false,
 }) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const measureRef = useRef<HTMLSpanElement | null>(null);
+  const ghostMeasureRef = useRef<HTMLSpanElement | null>(null);
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const nextTokenIdRef = useRef<number>(1);
+  const nextGhostIdRef = useRef<number>(1);
   const typingTimerRef = useRef<number | null>(null);
-
-  const [tokens, setTokens] = useState<CharToken[]>(() =>
+  const spaceHintTimerRef = useRef<number | null>(null);
+  const prevValueRef = useRef<string>(value);
+  const tokensRef = useRef<CharToken[]>(
     Array.from(value).map((ch) => ({ id: nextTokenIdRef.current++, ch }))
   );
+
   const [isFocused, setIsFocused] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [isComposing, setIsComposing] = useState(false);
@@ -276,46 +290,120 @@ export const SmoothAuthInput: React.FC<SmoothAuthInputProps> = ({
   const [caretPos, setCaretPos] = useState(value.length);
   const [caretX, setCaretX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
+  const [exitingGhosts, setExitingGhosts] = useState<ExitingGhost[]>([]);
+  const [spaceRejectKey, setSpaceRejectKey] = useState(0);
+  const [showSpaceHint, setShowSpaceHint] = useState(false);
 
   const isMaskedPassword = type === 'password';
+  const prevIsMaskedRef = useRef<boolean>(isMaskedPassword);
 
-  // Diff value into stable CharToken[] so only inserted/deleted characters animate
-  useEffect(() => {
-    setTokens((prev) => {
-      const nextChars = Array.from(value);
+  // Spring-physics gliding caret (continuous velocity inertia — zero stutter on rapid typing/deleting!)
+  const caretTargetX = useMotionValue(0);
+  const smoothCaretX = useSpring(caretTargetX, {
+    stiffness: 680,
+    damping: 42,
+    mass: 0.42,
+  });
+  const caretVelocity = useVelocity(smoothCaretX);
+  const caretStretchX = useTransform(caretVelocity, [-900, 0, 900], [1.45, 1, 1.45]);
+  const hasInitializedCaretRef = useRef(false);
+
+  // 0ms synchronous prefix/suffix token reconciliation during render (zero frame delay!)
+  if (prevValueRef.current !== value) {
+    const prev = tokensRef.current;
+    const nextChars = Array.from(value);
+
+    let prefix = 0;
+    while (
+      prefix < prev.length &&
+      prefix < nextChars.length &&
+      prev[prefix].ch === nextChars[prefix]
+    ) {
+      prefix++;
+    }
+
+    let suffix = 0;
+    while (
+      suffix < prev.length - prefix &&
+      suffix < nextChars.length - prefix &&
+      prev[prev.length - 1 - suffix].ch === nextChars[nextChars.length - 1 - suffix]
+    ) {
+      suffix++;
+    }
+
+    const middle: CharToken[] = nextChars
+      .slice(prefix, nextChars.length - suffix)
+      .map((ch) => ({ id: nextTokenIdRef.current++, ch }));
+
+    tokensRef.current = [
+      ...prev.slice(0, prefix),
+      ...middle,
+      ...prev.slice(prev.length - suffix),
+    ];
+    prevValueRef.current = value;
+  }
+
+  const tokens = tokensRef.current;
+
+  const measureTextWidth = useCallback(
+    (str: string): number => {
+      if (isMaskedPassword) return Array.from(str).length * 9;
+      const probe = ghostMeasureRef.current;
+      if (!probe) return 0;
+      probe.textContent = str;
+      return probe.getBoundingClientRect().width;
+    },
+    [isMaskedPassword]
+  );
+
+  // Spawn detached GPU ghost characters whenever text is deleted (never disturbs remaining layout!)
+  const spawnDeletedGhosts = useCallback(
+    (oldVal: string, newVal: string) => {
+      if (oldVal.length <= newVal.length) return;
+      const oldChars = Array.from(oldVal);
+      const newChars = Array.from(newVal);
+
       let prefix = 0;
       while (
-        prefix < prev.length &&
-        prefix < nextChars.length &&
-        prev[prefix].ch === nextChars[prefix]
+        prefix < oldChars.length &&
+        prefix < newChars.length &&
+        oldChars[prefix] === newChars[prefix]
       ) {
         prefix++;
       }
 
       let suffix = 0;
       while (
-        suffix < prev.length - prefix &&
-        suffix < nextChars.length - prefix &&
-        prev[prev.length - 1 - suffix].ch === nextChars[nextChars.length - 1 - suffix]
+        suffix < oldChars.length - prefix &&
+        suffix < newChars.length - prefix &&
+        oldChars[oldChars.length - 1 - suffix] === newChars[newChars.length - 1 - suffix]
       ) {
         suffix++;
       }
 
-      if (prefix + suffix === prev.length && prefix + suffix === nextChars.length) {
-        return prev;
-      }
+      const removed = oldChars.slice(prefix, oldChars.length - suffix);
+      if (removed.length === 0) return;
 
-      const middle: CharToken[] = nextChars
-        .slice(prefix, nextChars.length - suffix)
-        .map((ch) => ({ id: nextTokenIdRef.current++, ch }));
+      // Cap animated ghosts on bulk select-all delete to 18 chars for crisp 120fps
+      const sliced = removed.slice(0, 18);
+      const created: ExitingGhost[] = sliced.map((ch, i) => {
+        const prefixBeforeChar = oldChars.slice(0, prefix + i).join('');
+        return {
+          id: nextGhostIdRef.current++,
+          ch,
+          x: measureTextWidth(prefixBeforeChar),
+          isMask: isMaskedPassword,
+        };
+      });
 
-      return [
-        ...prev.slice(0, prefix),
-        ...middle,
-        ...prev.slice(prev.length - suffix),
-      ];
-    });
-  }, [value]);
+      setExitingGhosts((prev) => [...prev.slice(-16), ...created]);
+      const createdIds = new Set(created.map((g) => g.id));
+      window.setTimeout(() => {
+        setExitingGhosts((prev) => prev.filter((g) => !createdIds.has(g.id)));
+      }, 170);
+    },
+    [isMaskedPassword, measureTextWidth]
+  );
 
   const syncCaretAndScroll = useCallback(() => {
     const el = inputRef.current;
@@ -327,18 +415,29 @@ export const SmoothAuthInput: React.FC<SmoothAuthInputProps> = ({
     setScrollLeft(el.scrollLeft || 0);
   }, []);
 
-  // Measure exact caret X pixel position in proportional font or fixed-width password dots
+  // Measure exact caret X pixel position and drive spring caret immediately before paint
   useLayoutEffect(() => {
+    let nextX = 0;
     if (isMaskedPassword) {
-      setCaretX(caretPos * 9);
-      return;
+      nextX = caretPos * 9;
+    } else if (measureRef.current) {
+      nextX = measureRef.current.getBoundingClientRect().width;
     }
-    if (measureRef.current) {
-      setCaretX(measureRef.current.getBoundingClientRect().width);
-    }
-  }, [value, caretPos, isMaskedPassword]);
 
-  // Keep scrollLeft synced on next frame after programmatic or keyboard text edits
+    setCaretX(nextX);
+
+    // Jump instantaneously on first focus or password eye-toggle so caret doesn't fly across screen
+    if (!hasInitializedCaretRef.current || prevIsMaskedRef.current !== isMaskedPassword) {
+      caretTargetX.jump(nextX);
+      smoothCaretX.jump(nextX);
+      hasInitializedCaretRef.current = true;
+      prevIsMaskedRef.current = isMaskedPassword;
+    } else {
+      caretTargetX.set(nextX);
+    }
+  }, [value, caretPos, isMaskedPassword, caretTargetX, smoothCaretX]);
+
+  // Keep scrollLeft synced on next frame after keyboard edits
   useEffect(() => {
     const idRaf = window.requestAnimationFrame(syncCaretAndScroll);
     return () => window.cancelAnimationFrame(idRaf);
@@ -347,42 +446,62 @@ export const SmoothAuthInput: React.FC<SmoothAuthInputProps> = ({
   useEffect(() => {
     return () => {
       if (typingTimerRef.current) window.clearTimeout(typingTimerRef.current);
+      if (spaceHintTimerRef.current) window.clearTimeout(spaceHintTimerRef.current);
     };
   }, []);
 
   const pulseTypingState = () => {
     setIsTyping(true);
     if (typingTimerRef.current) window.clearTimeout(typingTimerRef.current);
-    typingTimerRef.current = window.setTimeout(() => setIsTyping(false), 380);
+    typingTimerRef.current = window.setTimeout(() => setIsTyping(false), 420);
+  };
+
+  const triggerSpaceRejected = () => {
+    setSpaceRejectKey((k) => k + 1);
+    setShowSpaceHint(true);
+    if (spaceHintTimerRef.current) window.clearTimeout(spaceHintTimerRef.current);
+    spaceHintTimerRef.current = window.setTimeout(() => setShowSpaceHint(false), 2400);
   };
 
   const showNativeText = isComposing || hasSelection || isAutofilled;
   const rightPaddingCls = rightSlot ? 'pr-10' : 'pr-4';
   const overlayRightCls = rightSlot ? 'right-10' : 'right-4';
   const caretPrefixText = value.slice(0, caretPos);
+  const effectiveScrollLeft = isMaskedPassword
+    ? Math.max(0, caretX - Math.max(120, (viewportRef.current?.clientWidth || 220) - 8))
+    : scrollLeft;
 
   return (
-    <div
-      className={`relative w-full rounded-xl border bg-white transition-all duration-200 ${
-        isFocused
-          ? 'border-[#C41E3A] ring-2 ring-[#C41E3A]/15 shadow-[0_6px_18px_-12px_rgba(196,30,58,0.38)]'
-          : 'border-[#EAE3DE] hover:border-[#D9CFC8]'
-      } ${disabled ? 'opacity-60 bg-[#FAF8F6]' : ''}`}
-    >
-      {/* Left Icon with subtle focus tint */}
-      {leftIcon && (
-        <span
-          aria-hidden="true"
-          className={`pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors duration-200 z-20 ${
-            isFocused ? 'text-[#C41E3A]' : 'text-[#AFA5A3]'
-          }`}
-        >
-          {leftIcon}
-        </span>
-      )}
+    <div className="w-full">
+      <motion.div
+        key={`field-shake-${spaceRejectKey}`}
+        animate={
+          spaceRejectKey > 0
+            ? { x: [0, -4.5, 4.5, -2.5, 2.5, 0] }
+            : { x: 0 }
+        }
+        transition={{ duration: 0.24, ease: 'easeInOut' }}
+        className={`relative w-full rounded-xl border bg-white transition-all duration-200 ${
+          showSpaceHint
+            ? 'border-[#C41E3A] ring-2 ring-[#C41E3A]/20'
+            : isFocused
+              ? 'border-[#C41E3A] ring-2 ring-[#C41E3A]/15 shadow-[0_6px_18px_-12px_rgba(196,30,58,0.38)]'
+              : 'border-[#EAE3DE] hover:border-[#D9CFC8]'
+        } ${disabled ? 'opacity-60 bg-[#FAF8F6]' : ''}`}
+      >
+        {/* Left Icon with subtle focus tint */}
+        {leftIcon && (
+          <span
+            aria-hidden="true"
+            className={`pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors duration-200 z-20 ${
+              isFocused ? 'text-[#C41E3A]' : 'text-[#B8AEA9]'
+            }`}
+          >
+            {leftIcon}
+          </span>
+        )}
 
-      {/* Hidden exact-width caret measurement probe (kerning disabled to match input 1:1) */}
-      {!isMaskedPassword && (
+        {/* Hidden exact-width caret measurement probes (kerning disabled to match input 1:1) */}
         <span
           ref={measureRef}
           aria-hidden="true"
@@ -391,49 +510,53 @@ export const SmoothAuthInput: React.FC<SmoothAuthInputProps> = ({
         >
           {caretPrefixText}
         </span>
-      )}
-
-      {/* Soft Airy Placeholder (noticeably lighter & softly glides away when typing) */}
-      <AnimatePresence initial={false}>
-        {value.length === 0 && !isComposing && !isAutofilled && (
-          <motion.span
-            key="smooth-placeholder"
-            aria-hidden="true"
-            initial={{ opacity: 0, x: 4 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 6 }}
-            transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
-            className={`pointer-events-none absolute inset-y-0 left-10 ${overlayRightCls} flex items-center text-sm font-sans text-[#C2B8B4] truncate select-none z-0`}
-          >
-            {placeholder}
-          </motion.span>
-        )}
-      </AnimatePresence>
-
-      {/* Silky Per-Character Enter/Delete Overlay & Smooth Gliding Crimson Caret */}
-      {!showNativeText && (
-        <div
-          ref={viewportRef}
+        <span
+          ref={ghostMeasureRef}
           aria-hidden="true"
-          className={`pointer-events-none absolute inset-y-0 left-10 ${overlayRightCls} flex items-center overflow-hidden z-0`}
-        >
+          style={{ fontKerning: 'none', fontVariantLigatures: 'none' }}
+          className="pointer-events-none invisible fixed -top-96 left-0 whitespace-pre text-sm font-sans leading-5"
+        />
+
+        {/* Soft Airy Placeholder (light muted tone that glides smoothly away on first char) */}
+        <AnimatePresence initial={false}>
+          {value.length === 0 && !isComposing && !isAutofilled && (
+            <motion.span
+              key="smooth-placeholder"
+              aria-hidden="true"
+              initial={{ opacity: 0, x: 5 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 8 }}
+              transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
+              className={`pointer-events-none absolute inset-y-0 left-10 ${overlayRightCls} flex items-center text-sm font-sans text-[#C8BFB9] truncate select-none z-0`}
+            >
+              {placeholder}
+            </motion.span>
+          )}
+        </AnimatePresence>
+
+        {/* Crisp 120fps Ink-Glide Typing, Detached Ghost Deletion & Spring Gliding Caret */}
+        {!showNativeText && (
           <div
-            style={{
-              transform: `translate3d(${-(isMaskedPassword ? Math.max(0, caretX - Math.max(120, (viewportRef.current?.clientWidth || 220) - 8)) : scrollLeft)}px, 0, 0)`,
-              fontKerning: 'none',
-              fontVariantLigatures: 'none',
-            }}
-            className="relative flex items-center whitespace-pre text-sm font-sans leading-5 text-[#181415]"
+            ref={viewportRef}
+            aria-hidden="true"
+            className={`pointer-events-none absolute inset-y-0 left-10 ${overlayRightCls} flex items-center overflow-hidden z-0`}
           >
-            <AnimatePresence initial={false} mode="popLayout">
+            <div
+              style={{
+                transform: `translate3d(${-effectiveScrollLeft}px, 0, 0)`,
+                fontKerning: 'none',
+                fontVariantLigatures: 'none',
+              }}
+              className="relative flex items-center whitespace-pre text-sm font-sans leading-5 text-[#181415]"
+            >
+              {/* Active Characters (0ms synchronous — only newly inserted char springs smoothly in!) */}
               {tokens.map((tok) =>
                 isMaskedPassword ? (
                   <motion.span
                     key={tok.id}
-                    initial={{ opacity: 0, scale: 0.35 }}
+                    initial={{ opacity: 0, scale: 0.18 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.35 }}
-                    transition={{ duration: 0.14, ease: [0.22, 1, 0.36, 1] }}
+                    transition={{ type: 'spring', stiffness: 650, damping: 28, mass: 0.4 }}
                     className="inline-flex items-center justify-center w-[9px] h-5 shrink-0"
                   >
                     <span className="w-[5.5px] h-[5.5px] rounded-full bg-[#181415]" />
@@ -441,95 +564,149 @@ export const SmoothAuthInput: React.FC<SmoothAuthInputProps> = ({
                 ) : (
                   <motion.span
                     key={tok.id}
-                    initial={{ opacity: 0, y: 2.5, scale: 0.94, filter: 'blur(1.5px)' }}
-                    animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
-                    exit={{
-                      opacity: 0,
-                      y: -2,
-                      scale: 0.88,
-                      filter: 'blur(1.5px)',
-                      transition: { duration: 0.11, ease: 'easeOut' },
-                    }}
-                    transition={{ duration: 0.15, ease: [0.22, 1, 0.36, 1] }}
+                    initial={{ opacity: 0, x: -4, scale: 0.88 }}
+                    animate={{ opacity: 1, x: 0, scale: 1 }}
+                    transition={{ type: 'spring', stiffness: 580, damping: 32, mass: 0.45 }}
                     className="inline-block whitespace-pre"
                   >
                     {tok.ch}
                   </motion.span>
                 )
               )}
-            </AnimatePresence>
 
-            {/* Smooth Gliding Crimson Caret (VS Code / macOS Smooth Caret physics) */}
-            {isFocused && !disabled && (
-              <span
-                style={{
-                  transform: `translate3d(${caretX}px, -50%, 0)`,
-                  transition: 'transform 85ms cubic-bezier(0.22, 1, 0.36, 1)',
-                }}
-                className={`pointer-events-none absolute left-0 top-1/2 w-[1.75px] h-[18px] rounded-full bg-[#C41E3A] ${
-                  isTyping ? 'opacity-100' : 'animate-smooth-caret'
-                }`}
-              />
-            )}
+              {/* Detached Ghost Layer for Silky Backspace/Delete Dissolution (Zero Layout Reflow!) */}
+              {exitingGhosts.map((g) => (
+                <motion.span
+                  key={`ghost-${g.id}`}
+                  initial={{ opacity: 0.85, x: 0, scale: 1 }}
+                  animate={{
+                    opacity: 0,
+                    x: g.isMask ? -2 : -5,
+                    scale: g.isMask ? 0.2 : 0.82,
+                  }}
+                  transition={{ duration: 0.145, ease: [0.22, 1, 0.36, 1] }}
+                  style={{ left: g.x }}
+                  className="pointer-events-none absolute top-0 flex items-center h-5 whitespace-pre text-[#181415]"
+                >
+                  {g.isMask ? (
+                    <span className="inline-flex items-center justify-center w-[9px] h-5">
+                      <span className="w-[5.5px] h-[5.5px] rounded-full bg-[#181415]" />
+                    </span>
+                  ) : (
+                    g.ch
+                  )}
+                </motion.span>
+              ))}
+
+              {/* Real Spring-Physics Gliding Crimson Caret (Apple / Craft.do / Telegram style) */}
+              {isFocused && !disabled && (
+                <motion.span
+                  style={{
+                    x: smoothCaretX,
+                    scaleX: caretStretchX,
+                  }}
+                  className={`pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 w-[1.8px] h-[18px] rounded-full bg-[#C41E3A] shadow-[0_0_6px_rgba(196,30,58,0.28)] origin-center ${
+                    isTyping ? 'opacity-100' : 'animate-smooth-caret'
+                  }`}
+                />
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Real Native Input (Full keyboard, IME, paste, autofill, accessibility & selection) */}
-      <input
-        ref={inputRef}
-        id={id}
-        type={type}
-        required={required}
-        minLength={minLength}
-        autoComplete={autoComplete}
-        disabled={disabled}
-        value={value}
-        style={{ fontKerning: 'none', fontVariantLigatures: 'none' }}
-        onChange={(e) => {
-          setIsAutofilled(false);
-          onChange(e.target.value);
-          pulseTypingState();
-          syncCaretAndScroll();
-        }}
-        onFocus={() => {
-          setIsFocused(true);
-          syncCaretAndScroll();
-        }}
-        onBlur={() => {
-          setIsFocused(false);
-          setHasSelection(false);
-          setIsTyping(false);
-        }}
-        onSelect={syncCaretAndScroll}
-        onKeyUp={syncCaretAndScroll}
-        onClick={syncCaretAndScroll}
-        onScroll={syncCaretAndScroll}
-        onCompositionStart={() => setIsComposing(true)}
-        onCompositionEnd={(e) => {
-          setIsComposing(false);
-          onChange(e.currentTarget.value);
-          pulseTypingState();
-          syncCaretAndScroll();
-        }}
-        onAnimationStart={(e) => {
-          if (e.animationName === 'onAutoFillStart') {
-            setIsAutofilled(true);
-          }
-        }}
-        className={`auth-smooth-input relative z-10 w-full pl-10 ${rightPaddingCls} py-2.5 rounded-xl bg-transparent text-sm font-sans leading-5 focus:outline-none ${
-          showNativeText
-            ? 'text-[#181415] caret-[#C41E3A]'
-            : 'text-transparent caret-transparent selection:bg-[#C41E3A]/18 selection:text-[#181415]'
-        }`}
-      />
+        {/* Real Native Input (Full keyboard, IME, paste, autofill, accessibility & selection) */}
+        <input
+          ref={inputRef}
+          id={id}
+          type={type}
+          required={required}
+          minLength={minLength}
+          autoComplete={autoComplete}
+          disabled={disabled}
+          value={value}
+          style={{ fontKerning: 'none', fontVariantLigatures: 'none' }}
+          onKeyDown={(e) => {
+            if (disallowSpaces && (e.key === ' ' || e.code === 'Space')) {
+              e.preventDefault();
+              triggerSpaceRejected();
+            }
+          }}
+          onChange={(e) => {
+            setIsAutofilled(false);
+            let nextVal = e.target.value;
+            if (disallowSpaces && /\s/.test(nextVal)) {
+              nextVal = nextVal.replace(/\s+/g, '');
+              triggerSpaceRejected();
+            }
+            if (nextVal !== value) {
+              if (nextVal.length < value.length) {
+                spawnDeletedGhosts(value, nextVal);
+              }
+              onChange(nextVal);
+              pulseTypingState();
+            }
+            syncCaretAndScroll();
+          }}
+          onFocus={() => {
+            setIsFocused(true);
+            hasInitializedCaretRef.current = false;
+            syncCaretAndScroll();
+          }}
+          onBlur={() => {
+            setIsFocused(false);
+            setHasSelection(false);
+            setIsTyping(false);
+          }}
+          onSelect={syncCaretAndScroll}
+          onKeyUp={syncCaretAndScroll}
+          onClick={syncCaretAndScroll}
+          onScroll={syncCaretAndScroll}
+          onCompositionStart={() => setIsComposing(true)}
+          onCompositionEnd={(e) => {
+            setIsComposing(false);
+            let nextVal = e.currentTarget.value;
+            if (disallowSpaces && /\s/.test(nextVal)) {
+              nextVal = nextVal.replace(/\s+/g, '');
+              triggerSpaceRejected();
+            }
+            onChange(nextVal);
+            pulseTypingState();
+            syncCaretAndScroll();
+          }}
+          onAnimationStart={(e) => {
+            if (e.animationName === 'onAutoFillStart') {
+              setIsAutofilled(true);
+            }
+          }}
+          className={`auth-smooth-input relative z-10 w-full pl-10 ${rightPaddingCls} py-2.5 rounded-xl bg-transparent text-sm font-sans leading-5 focus:outline-none ${
+            showNativeText
+              ? 'text-[#181415] caret-[#C41E3A]'
+              : 'text-transparent caret-transparent selection:bg-[#C41E3A]/18 selection:text-[#181415]'
+          }`}
+        />
 
-      {/* Optional Right Slot (Password Visibility Eye Toggle) */}
-      {rightSlot && (
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 z-20 flex items-center">
-          {rightSlot}
-        </div>
-      )}
+        {/* Optional Right Slot (Password Visibility Eye Toggle) */}
+        {rightSlot && (
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 z-20 flex items-center">
+            {rightSlot}
+          </div>
+        )}
+      </motion.div>
+
+      {/* Brief Tactile Warning if Spacebar is pressed inside Password */}
+      <AnimatePresence>
+        {showSpaceHint && (
+          <motion.p
+            initial={{ opacity: 0, y: -3 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -3 }}
+            transition={{ duration: 0.16 }}
+            className="text-[11px] font-medium text-[#C41E3A] mt-1 px-1"
+          >
+            Mật khẩu không được chứa dấu cách.
+          </motion.p>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

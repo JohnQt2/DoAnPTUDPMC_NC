@@ -227,6 +227,10 @@ export const LoginPage: React.FC = () => {
         setErrorMessage('Mật khẩu cần có tối thiểu 6 ký tự.');
         return;
       }
+      if (/\s/.test(password)) {
+        setErrorMessage('Mật khẩu không được chứa dấu cách.');
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -280,6 +284,10 @@ export const LoginPage: React.FC = () => {
     }
     if (!password) {
       setErrorMessage('Vui lòng nhập mật khẩu.');
+      return;
+    }
+    if (/\s/.test(password)) {
+      setErrorMessage('Mật khẩu không được chứa dấu cách.');
       return;
     }
 
@@ -413,6 +421,10 @@ export const LoginPage: React.FC = () => {
     }
     if (!newPassword || newPassword.length < 6) {
       setErrorMessage('Mật khẩu mới phải có tối thiểu 6 ký tự.');
+      return;
+    }
+    if (/\s/.test(newPassword)) {
+      setErrorMessage('Mật khẩu mới không được chứa dấu cách.');
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -984,6 +996,7 @@ export const LoginPage: React.FC = () => {
                     type={showPassword ? 'text' : 'password'}
                     required
                     minLength={6}
+                    disallowSpaces
                     placeholder="Tối thiểu 6 ký tự"
                     autoComplete="new-password"
                     value={password}
@@ -1077,6 +1090,7 @@ export const LoginPage: React.FC = () => {
                       id="login-password"
                       type={showPassword ? 'text' : 'password'}
                       required
+                      disallowSpaces
                       placeholder="Nhập mật khẩu của bạn"
                       autoComplete="current-password"
                       value={password}
@@ -1402,6 +1416,7 @@ export const LoginPage: React.FC = () => {
                     type={showNewPassword ? 'text' : 'password'}
                     required
                     minLength={6}
+                    disallowSpaces
                     placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)"
                     autoComplete="new-password"
                     value={newPassword}
@@ -1432,6 +1447,7 @@ export const LoginPage: React.FC = () => {
                     type={showNewPassword ? 'text' : 'password'}
                     required
                     minLength={6}
+                    disallowSpaces
                     placeholder="Nhập lại mật khẩu mới"
                     autoComplete="new-password"
                     value={confirmPassword}

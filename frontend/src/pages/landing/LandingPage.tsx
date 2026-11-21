@@ -382,6 +382,14 @@ export const LandingPage: React.FC = () => {
   const activeCurriculum = CURRICULUM_SLIDES[curriculumIdx];
   const activeBook = HSK_TEXTBOOKS[Math.min(5, Math.max(0, activeHskLevel - 1))];
 
+  // Lock root html/body scrollbars completely while on full-viewport LandingPage
+  useEffect(() => {
+    document.documentElement.classList.add('landing-lock');
+    return () => {
+      document.documentElement.classList.remove('landing-lock');
+    };
+  }, []);
+
   // Auto-start gentle chill East-Asian ambient music on page entry, and fade out when leaving to Login
   useEffect(() => {
     ambientBgm.initAutoStart();
@@ -1070,7 +1078,7 @@ export const LandingPage: React.FC = () => {
           aria-hidden={activeSlide !== 1}
           data-slide-idx={1}
           data-active-slide={activeSlide === 1 ? 'true' : undefined}
-          className={`wuwa-page-slide overflow-y-auto lg:overflow-hidden bg-[#F5F2EC] ${
+          className={`wuwa-page-slide overflow-y-auto no-scrollbar lg:overflow-hidden bg-[#F5F2EC] ${
             activeSlide === 1 ? 'an' : ''
           }`}
         >
@@ -1284,7 +1292,7 @@ export const LandingPage: React.FC = () => {
           aria-hidden={activeSlide !== 2}
           data-slide-idx={2}
           data-active-slide={activeSlide === 2 ? 'true' : undefined}
-          className={`wuwa-page-slide overflow-y-auto lg:overflow-hidden bg-[#F5F2EC] ${
+          className={`wuwa-page-slide overflow-y-auto no-scrollbar lg:overflow-hidden bg-[#F5F2EC] ${
             activeSlide === 2 ? 'an' : ''
           }`}
         >
@@ -1425,7 +1433,7 @@ export const LandingPage: React.FC = () => {
           aria-hidden={activeSlide !== 3}
           data-slide-idx={3}
           data-active-slide={activeSlide === 3 ? 'true' : undefined}
-          className={`wuwa-page-slide overflow-y-auto lg:overflow-hidden bg-[#F5F2EC] ${
+          className={`wuwa-page-slide overflow-y-auto no-scrollbar lg:overflow-hidden bg-[#F5F2EC] ${
             activeSlide === 3 ? 'an' : ''
           }`}
         >
@@ -1610,7 +1618,7 @@ export const LandingPage: React.FC = () => {
           aria-hidden={activeSlide !== 4}
           data-slide-idx={4}
           data-active-slide={activeSlide === 4 ? 'true' : undefined}
-          className={`wuwa-page-slide overflow-y-auto lg:overflow-hidden bg-[#F5F2EC] ${
+          className={`wuwa-page-slide overflow-y-auto no-scrollbar lg:overflow-hidden bg-[#F5F2EC] ${
             activeSlide === 4 ? 'an' : ''
           }`}
         >

@@ -232,7 +232,7 @@ export const SrsReviewPage: React.FC = () => {
                   type="button"
                   onClick={() => handleRate('again')}
                   disabled={isReviewing}
-                  className="flex flex-col items-center justify-center p-3 rounded-2xl bg-rose-50/85 hover:bg-rose-100/90 border border-rose-200/80 text-rose-700 font-bold transition-colors disabled:opacity-50 cursor-pointer"
+                  className="flex flex-col items-center justify-center p-3 rounded-2xl bg-rose-50/85 hover:bg-rose-100/90 border border-rose-200/80 text-rose-700 font-bold transition-colors disabled:opacity-70 cursor-pointer"
                 >
                   <span className="text-sm">Quên</span>
                   <span className="text-[10px] text-rose-500 font-normal mt-0.5">
@@ -244,7 +244,7 @@ export const SrsReviewPage: React.FC = () => {
                   type="button"
                   onClick={() => handleRate('hard')}
                   disabled={isReviewing}
-                  className="flex flex-col items-center justify-center p-3 rounded-2xl bg-amber-50/85 hover:bg-amber-100/90 border border-amber-200/80 text-amber-800 font-bold transition-colors disabled:opacity-50 cursor-pointer"
+                  className="flex flex-col items-center justify-center p-3 rounded-2xl bg-amber-50/85 hover:bg-amber-100/90 border border-amber-200/80 text-amber-800 font-bold transition-colors disabled:opacity-70 cursor-pointer"
                 >
                   <span className="text-sm">Khó</span>
                   <span className="text-[10px] text-amber-600 font-normal mt-0.5">
@@ -256,7 +256,7 @@ export const SrsReviewPage: React.FC = () => {
                   type="button"
                   onClick={() => handleRate('good')}
                   disabled={isReviewing}
-                  className="flex flex-col items-center justify-center p-3 rounded-2xl bg-sky-50/85 hover:bg-sky-100/90 border border-sky-200/80 text-sky-700 font-bold transition-colors disabled:opacity-50 cursor-pointer"
+                  className="flex flex-col items-center justify-center p-3 rounded-2xl bg-sky-50/85 hover:bg-sky-100/90 border border-sky-200/80 text-sky-700 font-bold transition-colors disabled:opacity-70 cursor-pointer"
                 >
                   <span className="text-sm">Tốt</span>
                   <span className="text-[10px] text-sky-600 font-normal mt-0.5">
@@ -268,7 +268,7 @@ export const SrsReviewPage: React.FC = () => {
                   type="button"
                   onClick={() => handleRate('easy')}
                   disabled={isReviewing}
-                  className="flex flex-col items-center justify-center p-3 rounded-2xl bg-emerald-50/85 hover:bg-emerald-100/90 border border-emerald-200/80 text-emerald-800 font-bold transition-colors disabled:opacity-50 cursor-pointer"
+                  className="flex flex-col items-center justify-center p-3 rounded-2xl bg-emerald-50/85 hover:bg-emerald-100/90 border border-emerald-200/80 text-emerald-800 font-bold transition-colors disabled:opacity-70 cursor-pointer"
                 >
                   <span className="text-sm">Dễ</span>
                   <span className="text-[10px] text-emerald-600 font-normal mt-0.5">

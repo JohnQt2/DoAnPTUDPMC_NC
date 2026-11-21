@@ -44,7 +44,7 @@ export const LeaderboardPage: React.FC = () => {
                   entry.rank === 1
                     ? 'bg-gradient-to-tr from-amber-400 to-yellow-300 text-amber-950'
                     : entry.rank === 2
-                      ? 'bg-gradient-to-tr from-gray-300 to-gray-100 text-gray-800'
+                      ? 'bg-gradient-to-tr from-gray-300 to-gray-100 text-gray-800 dark:from-slate-700 dark:to-slate-800 dark:text-slate-100'
                       : entry.rank === 3
                         ? 'bg-gradient-to-tr from-orange-300 to-amber-200 text-orange-950'
                         : 'bg-white/80 border border-gray-200 text-gray-500'

@@ -172,13 +172,14 @@ function createTianZiGeTexture(char: string, pinyin: string, strokes: number): T
   ctx.stroke();
   ctx.setLineDash([]);
 
-  // Clean minimalist metadata header
+  // Clean minimalist metadata header (Noto Sans / Segoe UI renders Pinyin carons ǒ/ǎ/ǐ cleanly)
   ctx.fillStyle = '#C41E3A';
-  ctx.font = '600 18px "JetBrains Mono", monospace';
+  ctx.font = '700 20px "Noto Sans", "Segoe UI", Arial, sans-serif';
   ctx.textAlign = 'left';
   ctx.fillText(pinyin, 62, 80);
   ctx.textAlign = 'right';
   ctx.fillStyle = '#6B625C';
+  ctx.font = '600 18px "Be Vietnam Pro", "Noto Sans", "Segoe UI", sans-serif';
   ctx.fillText(`${strokes} nét`, size - 62, 80);
 
   // Calligraphic Hanzi in sumi ink
@@ -235,7 +236,7 @@ function createTianZiGeBackTexture(
 
   // Top scholarly inscription
   ctx.fillStyle = '#E6BE4C';
-  ctx.font = '600 17px "JetBrains Mono", monospace';
+  ctx.font = '600 17px "Be Vietnam Pro", "Noto Sans", "Segoe UI", sans-serif';
   ctx.fillText('LUYỆN VIẾT CHỮ HÁN · THỨ TỰ NÉT', size / 2, 82);
 
   // Central Traditional Vermilion Seal Square (印章)
@@ -256,7 +257,7 @@ function createTianZiGeBackTexture(
 
   // Pinyin & stroke metadata below seal
   ctx.fillStyle = '#F5EFE6';
-  ctx.font = '700 24px "JetBrains Mono", monospace';
+  ctx.font = '700 24px "Noto Sans", "Segoe UI", Arial, sans-serif';
   ctx.fillText(`${pinyin} · ${strokes} nét chuẩn`, size / 2, 392);
 
   ctx.fillStyle = 'rgba(230, 190, 76, 0.78)';
@@ -295,7 +296,7 @@ function createCardFrontTexture(spec: (typeof CARD_SPECS)[number]): THREE.Canvas
   ctx.textBaseline = 'middle';
 
   ctx.fillStyle = '#78716C';
-  ctx.font = '600 20px "JetBrains Mono", monospace';
+  ctx.font = '600 20px "Be Vietnam Pro", "Noto Sans", "Segoe UI", sans-serif';
   ctx.fillText('HSK 1 · THẺ LẬT TỪ', w / 2, 88);
 
   ctx.fillStyle = spec.ink;
@@ -303,16 +304,16 @@ function createCardFrontTexture(spec: (typeof CARD_SPECS)[number]): THREE.Canvas
   ctx.fillText(spec.hanzi, w / 2, h / 2 - 28);
 
   ctx.fillStyle = spec.accent;
-  ctx.font = '700 40px "JetBrains Mono", monospace';
+  ctx.font = '700 40px "Noto Sans", "Segoe UI", Arial, sans-serif';
   ctx.fillText(spec.pinyin, w / 2, h / 2 + 114);
 
   ctx.fillStyle = '#44403C';
-  ctx.font = '600 30px "Be Vietnam Pro", sans-serif';
+  ctx.font = '600 30px "Be Vietnam Pro", "Noto Sans", sans-serif';
   ctx.fillText(spec.meaning, w / 2, h - 122);
 
   // Subtle interactive click prompt on bottom of card face
   ctx.fillStyle = 'rgba(28, 25, 23, 0.42)';
-  ctx.font = '500 16px "JetBrains Mono", monospace';
+  ctx.font = '500 16px "Be Vietnam Pro", "Noto Sans", "Segoe UI", sans-serif';
   ctx.fillText('↻ BẤM VÀO THẺ ĐỂ LẬT', w / 2, h - 62);
 
   const tex = new THREE.CanvasTexture(canvas);
@@ -345,7 +346,7 @@ function createCardBackTexture(spec: (typeof CARD_SPECS)[number]): THREE.CanvasT
   ctx.textBaseline = 'middle';
 
   ctx.fillStyle = '#F2C94C';
-  ctx.font = '600 22px "JetBrains Mono", monospace';
+  ctx.font = '600 22px "Be Vietnam Pro", "Noto Sans", "Segoe UI", sans-serif';
   ctx.fillText(`HÁN-VIỆT: ${spec.sino.toUpperCase()}`, w / 2, 102);
 
   ctx.fillStyle = '#FFFFFF';
@@ -353,7 +354,7 @@ function createCardBackTexture(spec: (typeof CARD_SPECS)[number]): THREE.CanvasT
   ctx.fillText(spec.hanzi, w / 2, 214);
 
   ctx.fillStyle = '#F5EFE6';
-  ctx.font = '600 32px "Be Vietnam Pro", sans-serif';
+  ctx.font = '600 32px "Be Vietnam Pro", "Noto Sans", sans-serif';
   ctx.fillText(spec.meaning, w / 2, 306);
 
   ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
@@ -366,11 +367,11 @@ function createCardBackTexture(spec: (typeof CARD_SPECS)[number]): THREE.CanvasT
   ctx.fillText(spec.example, w / 2, 426);
 
   ctx.fillStyle = '#D6D0C8';
-  ctx.font = '500 20px "Be Vietnam Pro", sans-serif';
+  ctx.font = '500 20px "Be Vietnam Pro", "Noto Sans", sans-serif';
   ctx.fillText(spec.exampleVi, w / 2, 494);
 
   ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-  ctx.font = '500 16px "JetBrains Mono", monospace';
+  ctx.font = '500 16px "Be Vietnam Pro", "Noto Sans", "Segoe UI", sans-serif';
   ctx.fillText('↻ BẤM ĐỂ LẬT MẶT TRƯỚC', w / 2, h - 62);
 
   const tex = new THREE.CanvasTexture(canvas);

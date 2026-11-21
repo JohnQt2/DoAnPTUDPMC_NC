@@ -16,10 +16,14 @@
     line-height: 1.6;
   }
 
-  /* Distinct Editorial Heading Typography */
+  /* Distinct Editorial Heading Typography (with Noto Sans & Segoe UI for Pinyin carons ǎ/ǐ/ǒ/ǔ) */
   h1, h2, h3 {
-    font-family: "Plus Jakarta Sans", "Be Vietnam Pro", sans-serif;
+    font-family: "Plus Jakarta Sans", "Be Vietnam Pro", "Noto Sans", "Segoe UI", sans-serif;
     letter-spacing: -0.02em;
+  }
+
+  .font-pinyin {
+    font-family: "Noto Sans", "Segoe UI", Arial, sans-serif;
   }
 }
 

@@ -241,11 +241,11 @@ export const InteractiveTianZiGeBoard: React.FC<InteractiveTianZiGeBoardProps> =
           <div className="relative w-full h-full bg-[#FCF9F4] overflow-hidden">
             {/* Metadata Header inside TianZiGe Slab */}
             <div className="pointer-events-none absolute top-2.5 inset-x-3.5 z-20 flex items-center justify-between">
-              <span className="font-mono text-[11px] sm:text-xs font-bold text-[#C41E3A]">
+              <span className="font-pinyin text-[12px] sm:text-[13px] font-bold text-[#C41E3A]">
                 {pinyin}
               </span>
               <span
-                className={`px-2 py-0.5 rounded-full font-mono text-[10px] sm:text-[11px] font-bold transition-colors ${
+                className={`px-2 py-0.5 rounded-full font-sans text-[10px] sm:text-[11px] font-bold transition-colors ${
                   isLimitReached
                     ? 'bg-[#157A57] text-white'
                     : 'bg-[#1C1917]/8 text-[#1C1917]'

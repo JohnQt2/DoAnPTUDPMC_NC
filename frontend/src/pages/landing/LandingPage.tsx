@@ -30,7 +30,7 @@ import { ambientBgm } from '../../lib/ambientMusic';
 /* ── CHAPTERS & AUTHENTIC CHINESE LINGUISTIC CONTENT ── */
 const CHAPTERS = [
   { id: 0, code: '序', label: 'Mở đầu', zhCaption: '汉语入门' },
-  { id: 1, code: '一', label: 'Thanh điệu & Pinyin', zhCaption: '第一课 · 声调' },
+  { id: 1, code: '一', label: 'Pinyin và 4 Thanh điệu', zhCaption: '第一课 · 声调' },
   { id: 2, code: '二', label: 'Luyện viết chữ Hán', zhCaption: '第二课 · 书写' },
   { id: 3, code: '三', label: 'Chương trình HSK', zhCaption: '第三课 · 课程' },
   { id: 4, code: '四', label: 'Thẻ lật từ & Giáo trình HSK', zhCaption: '第四课 · 教材' },
@@ -40,11 +40,13 @@ const SPECIMEN_TONES = [
   {
     hanzi: '妈',
     pinyin: 'mā',
-    title: 'Thanh 1 · mā',
-    phonetic: '阴平 · Cao độ 55 (Ngang cao)',
-    sino: 'Hán-Việt: Mẫu (Mẹ)',
-    compound: '妈妈 (māma) · Mẹ',
-    lore: 'Giữ cao độ ổn định và đều hơi từ đầu đến cuối âm tiết. Nền tảng để người Việt phân biệt rõ ràng các thanh điệu ngay từ buổi học đầu tiên.',
+    toneLabel: 'Thanh 1',
+    phonetic: 'Cao độ 5–5 · Giọng ngang và đều',
+    sino: 'Chữ 妈 · Nghĩa: Mẹ (Hán-Việt: Ma)',
+    compoundHanzi: '妈妈',
+    compoundPinyin: 'māma',
+    compoundVi: 'Mẹ',
+    lore: 'Giữ âm cao, phẳng và đều hơi từ đầu đến cuối âm tiết.',
     accent: '#157A57',
     wash: 'radial-gradient(ellipse 75% 55% at 72% 14%, rgba(21, 122, 87, 0.14) 0%, rgba(245, 242, 236, 0) 70%)',
     toneIdx: 0,
@@ -52,11 +54,13 @@ const SPECIMEN_TONES = [
   {
     hanzi: '麻',
     pinyin: 'má',
-    title: 'Thanh 2 · má',
-    phonetic: '阳平 · Cao độ 35 (Đi lên)',
-    sino: 'Hán-Việt: Ma (Cây gai · Tê)',
-    compound: '麻烦 (máfán) · Phiền phức',
-    lore: 'Lên giọng dứt khoát từ quãng giữa lên cao, gần với dấu sắc tiếng Việt nhưng thoáng và đều hơi hơn, không ngắt đột ngột ở cuối âm.',
+    toneLabel: 'Thanh 2',
+    phonetic: 'Cao độ 3–5 · Giọng đi lên',
+    sino: 'Chữ 麻 · Nghĩa: Cây gai, tê (Hán-Việt: Ma)',
+    compoundHanzi: '麻烦',
+    compoundPinyin: 'máfán',
+    compoundVi: 'Phiền phức',
+    lore: 'Đẩy giọng từ quãng giữa lên cao rõ ràng, gần giống dấu sắc tiếng Việt.',
     accent: '#C41E3A',
     wash: 'radial-gradient(ellipse 75% 55% at 72% 14%, rgba(196, 30, 58, 0.13) 0%, rgba(245, 242, 236, 0) 70%)',
     toneIdx: 1,
@@ -64,11 +68,13 @@ const SPECIMEN_TONES = [
   {
     hanzi: '马',
     pinyin: 'mǎ',
-    title: 'Thanh 3 · mǎ',
-    phonetic: '上声 · Cao độ 214 (Trầm rồi lên)',
-    sino: 'Hán-Việt: Mã (Con ngựa)',
-    compound: '马上 (mǎshàng) · Ngay lập tức',
-    lore: 'Hạ trầm xuống đáy giọng rồi uốn nhẹ lên ở cuối. Khi đi liền hai thanh 3, âm đầu tự biến điệu sang thanh 2 giúp câu nói tự nhiên hơn.',
+    toneLabel: 'Thanh 3',
+    phonetic: 'Cao độ 2–1–4 · Giọng trầm xuống rồi lên',
+    sino: 'Chữ 马 · Nghĩa: Con ngựa (Hán-Việt: Mã)',
+    compoundHanzi: '马上',
+    compoundPinyin: 'mǎshàng',
+    compoundVi: 'Ngay lập tức',
+    lore: 'Hạ giọng trầm xuống rồi ngân nhẹ lên; khi hai thanh 3 đi liền, chữ đầu đọc thành thanh 2.',
     accent: '#B5841A',
     wash: 'radial-gradient(ellipse 75% 55% at 72% 14%, rgba(181, 132, 26, 0.15) 0%, rgba(245, 242, 236, 0) 70%)',
     toneIdx: 2,
@@ -76,25 +82,15 @@ const SPECIMEN_TONES = [
   {
     hanzi: '骂',
     pinyin: 'mà',
-    title: 'Thanh 4 · mà',
-    phonetic: '去声 · Cao độ 51 (Xuống mạnh)',
-    sino: 'Hán-Việt: Mạ (Trách mắng)',
-    compound: '谢谢 (xièxie) · Cảm ơn',
-    lore: 'Rơi nhanh, gọn và dứt khoát từ quãng cao xuống thấp trong một nhịp ngắn, mang lại độ chắc và rõ ràng cho âm tiết tiếng Phổ thông.',
+    toneLabel: 'Thanh 4',
+    phonetic: 'Cao độ 5–1 · Giọng xuống nhanh, dứt khoát',
+    sino: 'Chữ 骂 · Nghĩa: Trách mắng (Hán-Việt: Mạ)',
+    compoundHanzi: '责骂',
+    compoundPinyin: 'zémà',
+    compoundVi: 'Trách mắng',
+    lore: 'Hạ giọng nhanh và dứt khoát từ cao xuống thấp trong một nhịp ngắn.',
     accent: '#7F1D1D',
     wash: 'radial-gradient(ellipse 75% 55% at 72% 14%, rgba(127, 29, 29, 0.13) 0%, rgba(245, 242, 236, 0) 70%)',
-    toneIdx: 3,
-  },
-  {
-    hanzi: '汉',
-    pinyin: 'hàn',
-    title: 'Hán tự · hàn',
-    phonetic: '汉语 · Hệ thống 63 âm Pinyin',
-    sino: 'Hán-Việt: Hán (Chữ Hán)',
-    compound: '汉语 (Hànyǔ) · Tiếng Hán',
-    lore: 'Hệ thống đủ 23 thanh mẫu, 24 vận mẫu và 16 âm tiết đọc thẳng — kết nối trực tiếp mặt chữ tượng hình, cách phát âm và âm Hán-Việt quen thuộc.',
-    accent: '#1C1917',
-    wash: 'radial-gradient(ellipse 75% 55% at 72% 14%, rgba(28, 25, 23, 0.1) 0%, rgba(245, 242, 236, 0) 70%)',
     toneIdx: 3,
   },
 ];
@@ -104,33 +100,37 @@ const CALLIGRAPHY_SPECIMENS = [
     char: '永',
     pinyin: 'yǒng',
     sino: 'Vĩnh',
+    meaning: 'Vĩnh cửu',
     strokes: 5,
-    title: 'Chữ 永 · 8 nét căn bản',
-    desc: 'Một chữ duy nhất hội tụ đầy đủ quy tắc viết chữ Hán: chấm, ngang, sổ, móc, hất, phẩy dài, phẩy ngắn và mác — nền tảng trước khi luyện viết mọi bộ thủ.',
+    title: 'Chữ 永 · 5 nét cơ bản',
+    desc: 'Hội tụ đủ các nét chấm, ngang, sổ móc, phẩy và mác trong một chữ — bài tập kinh điển để luyện đều tay và cân đối khung chữ.',
   },
   {
     char: '学',
     pinyin: 'xué',
     sino: 'Học',
+    meaning: 'Học tập',
     strokes: 8,
-    title: 'Chữ 学 · Chiết tự dễ nhớ',
-    desc: 'Viết theo thứ tự từ trên xuống dưới, ba nét chấm mở đầu rồi đến bộ Mịch (冖) và bộ Tử (子) — giúp người học ghi nhớ cấu trúc chữ thay vì học thuộc lòng.',
+    title: 'Chữ 学 · Trên trước dưới sau',
+    desc: 'Viết lần lượt từ trên xuống dưới: ba nét chấm mở đầu, tiếp theo là bộ Mịch (冖) ở giữa và bộ Tử (子) bên dưới.',
   },
   {
     char: '好',
     pinyin: 'hǎo',
     sino: 'Hảo',
+    meaning: 'Tốt đẹp',
     strokes: 6,
-    title: 'Chữ 好 · Kết cấu trái – phải',
-    desc: 'Ghép từ bộ Nữ (女) bên trái và bộ Tử (子) bên phải. Khung ô vuông luyện chữ giúp canh chính xác tỷ lệ hai vế để nét viết cân đối và đẹp mắt.',
+    title: 'Chữ 好 · Trái trước phải sau',
+    desc: 'Ghép từ bộ Nữ (女) bên trái và bộ Tử (子) bên phải. Khung ô vuông giúp căn chuẩn tỷ lệ hai vế để chữ gọn và hài hòa.',
   },
   {
     char: '中',
     pinyin: 'zhōng',
     sino: 'Trung',
+    meaning: 'Ở giữa',
     strokes: 4,
     title: 'Chữ 中 · Trục đối xứng giữa',
-    desc: 'Viết khung 口 trước rồi kéo nét sổ thẳng chia đôi tâm ô vuông sau cùng — quy tắc kinh điển "vào trước đóng sau, sổ giữa sau cùng".',
+    desc: 'Viết khung bộ Khẩu (口) trước rồi kéo nét sổ thẳng đi qua chính giữa tâm ô vuông sau cùng.',
   },
 ];
 
@@ -1114,7 +1114,7 @@ export const LandingPage: React.FC = () => {
                     01 · NGỮ ÂM PHỔ THÔNG
                   </span>
                   <h2 className="font-display font-extrabold text-[19px] leading-snug sm:text-4xl text-[#1C1917] tracking-tight mt-0.5 sm:mt-1">
-                    4 Thanh điệu & Pinyin
+                    Pinyin và 4 Thanh điệu
                   </h2>
                 </div>
 
@@ -1145,7 +1145,7 @@ export const LandingPage: React.FC = () => {
               </div>
 
               <div className="wuwa-intr-box space-y-2 sm:space-y-4">
-                <p className="font-hanzi-serif text-[11px] sm:text-sm tracking-[0.12em] sm:tracking-[0.16em] text-[#78716C]">
+                <p className="font-sans text-[11.5px] sm:text-[13px] font-semibold text-[#57534E]">
                   {activeSpecimen.phonetic}
                 </p>
 
@@ -1158,7 +1158,8 @@ export const LandingPage: React.FC = () => {
                   />
                   <div>
                     <h3 className="font-display font-extrabold text-[19px] sm:text-[34px] text-[#1C1917] leading-none">
-                      {activeSpecimen.title}
+                      {activeSpecimen.toneLabel} ·{' '}
+                      <span className="font-pinyin">{activeSpecimen.pinyin}</span>
                     </h3>
                     <p className="text-[11px] sm:text-xs font-medium text-[#57534E] mt-1 sm:mt-1.5">
                       {activeSpecimen.sino}
@@ -1166,11 +1167,15 @@ export const LandingPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="inline-flex items-center gap-1.5 sm:gap-2.5 px-2.5 py-1 sm:px-3.5 sm:py-2 bg-white/85 border border-[#1C1917]/15 text-[11px] sm:text-xs">
-                  <span className="font-mono text-[9.5px] sm:text-[10.5px] uppercase tracking-wider text-[#78716C]">
-                    Từ ghép:
+                <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 py-1 sm:px-3.5 sm:py-2 bg-white/85 border border-[#1C1917]/15 text-[11px] sm:text-xs">
+                  <span className="font-sans text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-[#78716C]">
+                    Ví dụ:
                   </span>
-                  <span className="font-semibold text-[#1C1917]">{activeSpecimen.compound}</span>
+                  <span className="font-semibold text-[#1C1917]">
+                    <span className="font-hanzi-serif">{activeSpecimen.compoundHanzi}</span>{' '}
+                    <span className="font-pinyin">({activeSpecimen.compoundPinyin})</span> ·{' '}
+                    {activeSpecimen.compoundVi}
+                  </span>
                 </div>
 
                 <p className="text-[12px] leading-[1.55] sm:text-sm sm:leading-relaxed text-[#44403C] max-w-md">
@@ -1179,8 +1184,8 @@ export const LandingPage: React.FC = () => {
               </div>
 
               <div className="wuwa-avatar-nav space-y-1.5 sm:space-y-2.5">
-                <p className="text-[9.5px] sm:text-[10.5px] font-mono uppercase tracking-[0.16em] sm:tracking-[0.18em] text-[#78716C]">
-                  Chạm vào chữ để nghe phát âm
+                <p className="text-[9.5px] sm:text-[10.5px] font-sans font-semibold uppercase tracking-[0.14em] text-[#78716C]">
+                  Chọn thanh điệu để nghe phát âm
                 </p>
                 <div className="flex items-center gap-2 sm:gap-2.5">
                   {SPECIMEN_TONES.map((spec, idx) => {
@@ -1205,7 +1210,7 @@ export const LandingPage: React.FC = () => {
                           {spec.hanzi}
                         </span>
                         <span
-                          className="text-[8px] sm:text-[9px] font-mono font-semibold mt-0.5"
+                          className="text-[8.5px] sm:text-[10px] font-pinyin font-bold mt-0.5"
                           style={{ color: selected ? '#F2D16B' : '#78716C' }}
                         >
                           {spec.pinyin}
@@ -1354,14 +1359,16 @@ export const LandingPage: React.FC = () => {
                 <EditorialPaperFrame className="p-3.5 sm:p-6 max-w-md shadow-[0_20px_48px_-24px_rgba(28,25,23,0.18)]">
                 <div className="flex items-start justify-between gap-2.5 sm:gap-4 pb-2.5 sm:pb-4 border-b border-[#1C1917]/10">
                   <div>
-                    <span className="text-[9.5px] sm:text-[10.5px] font-mono font-semibold text-[#C41E3A]">
-                      {activeCalligraphy.strokes} NÉT CHUẨN · HÁN-VIỆT: {activeCalligraphy.sino.toUpperCase()}
+                    <span className="text-[9.5px] sm:text-[10.5px] font-sans font-bold uppercase tracking-wider text-[#C41E3A]">
+                      {activeCalligraphy.strokes} NÉT · HÁN-VIỆT: {activeCalligraphy.sino.toUpperCase()}
                     </span>
                     <h3 className="font-display text-[16px] sm:text-2xl font-bold text-[#1C1917] mt-0.5 sm:mt-1 leading-snug">
                       {activeCalligraphy.title}
                     </h3>
-                    <p className="text-[11px] sm:text-xs font-mono text-[#57534E] mt-0.5">
-                      {activeCalligraphy.char} ({activeCalligraphy.pinyin})
+                    <p className="text-[11px] sm:text-xs font-medium text-[#57534E] mt-0.5">
+                      <span className="font-hanzi-serif font-bold">{activeCalligraphy.char}</span>{' '}
+                      <span className="font-pinyin font-semibold">({activeCalligraphy.pinyin})</span> · Nghĩa:{' '}
+                      {activeCalligraphy.meaning}
                     </p>
                   </div>
                   <PronunciationPlayButton
@@ -1377,7 +1384,7 @@ export const LandingPage: React.FC = () => {
                 </p>
 
                 <div className="pt-2 sm:pt-3 border-t border-[#1C1917]/10">
-                  <p className="text-[9.5px] sm:text-[10.5px] font-mono uppercase tracking-[0.16em] text-[#78716C] mb-1.5 sm:mb-2">
+                  <p className="text-[9.5px] sm:text-[10.5px] font-sans font-semibold uppercase tracking-[0.14em] text-[#78716C] mb-1.5 sm:mb-2">
                     Chọn chữ mẫu
                   </p>
                   <div className="grid grid-cols-4 gap-2">
@@ -1402,7 +1409,7 @@ export const LandingPage: React.FC = () => {
                             {item.char}
                           </span>
                           <span
-                            className="text-[9px] sm:text-[10px] font-mono mt-1 block"
+                            className="text-[9.5px] sm:text-[10.5px] font-pinyin font-semibold mt-1 block"
                             style={{ color: selected ? '#FDE68A' : '#78716C' }}
                           >
                             {item.pinyin}

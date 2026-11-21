@@ -367,22 +367,35 @@ html.dark .liquid-toast {
 
 /* Crisp dark surfaces & readable typography across all workspace pages */
 html.dark .workspace-mesh-bg .bg-white,
-html.dark .workspace-mesh-bg [class*='bg-white/'] {
+html.dark .workspace-mesh-bg [class*='bg-white/'],
+html.dark .workspace-mesh-bg [class*='bg-[#FCFBF8]'],
+html.dark .workspace-mesh-bg [class*='bg-[#FAF3E6]'] {
   background-color: rgba(22, 29, 40, 0.88);
+}
+
+html.dark .workspace-mesh-bg [class*='hover:bg-white']:hover {
+  background-color: rgba(34, 44, 60, 0.94);
 }
 
 html.dark .workspace-mesh-bg .bg-gray-50,
 html.dark .workspace-mesh-bg .bg-slate-50,
 html.dark .workspace-mesh-bg .bg-gray-100,
-html.dark .workspace-mesh-bg .bg-slate-100 {
-  background-color: rgba(30, 39, 53, 0.85);
+html.dark .workspace-mesh-bg .bg-slate-100,
+html.dark .workspace-mesh-bg [class*='bg-[#EFEAE2]'] {
+  background-color: rgba(30, 39, 53, 0.88);
+}
+
+html.dark .workspace-mesh-bg [class*='bg-[#F5F2EC]'] {
+  background-color: #0b0f14;
 }
 
 html.dark .workspace-mesh-bg .text-slate-900,
 html.dark .workspace-mesh-bg .text-gray-900,
 html.dark .workspace-mesh-bg .text-gray-950,
 html.dark .workspace-mesh-bg .text-slate-800,
-html.dark .workspace-mesh-bg .text-gray-800 {
+html.dark .workspace-mesh-bg .text-gray-800,
+html.dark .workspace-mesh-bg .text-\[\#1C1917\],
+html.dark .workspace-mesh-bg [class*='hover:text-[#1C1917]']:hover {
   color: #f8fafc;
 }
 
@@ -392,13 +405,45 @@ html.dark .workspace-mesh-bg .text-gray-700 {
 }
 
 html.dark .workspace-mesh-bg .text-slate-600,
-html.dark .workspace-mesh-bg .text-gray-600 {
+html.dark .workspace-mesh-bg .text-gray-600,
+html.dark .workspace-mesh-bg .text-\[\#57534E\] {
   color: #cbd5e1;
 }
 
 html.dark .workspace-mesh-bg .text-slate-500,
-html.dark .workspace-mesh-bg .text-gray-500 {
+html.dark .workspace-mesh-bg .text-gray-500,
+html.dark .workspace-mesh-bg .text-\[\#78716C\],
+html.dark .workspace-mesh-bg .text-\[\#A8A29E\] {
   color: #94a3b8;
+}
+
+/* Preserve legible vibrant accents on dark cards (exact class match — never overrides inactive hover classes) */
+html.dark .workspace-mesh-bg .text-\[\#A51730\],
+html.dark .workspace-mesh-bg .text-\[\#C41E3A\],
+html.dark .workspace-mesh-bg [class*='hover:text-[#C41E3A]']:hover {
+  color: #fb7185;
+}
+
+html.dark .workspace-mesh-bg .text-\[\#92400E\],
+html.dark .workspace-mesh-bg .text-\[\#8A6112\],
+html.dark .workspace-mesh-bg .text-\[\#926A0E\] {
+  color: #fcd34d;
+}
+
+html.dark .workspace-mesh-bg .text-\[\#157A57\] {
+  color: #34d399;
+}
+
+html.dark .workspace-mesh-bg .text-\[\#B4460E\] {
+  color: #fdba74;
+}
+
+html.dark .workspace-mesh-bg .text-\[\#184375\] {
+  color: #93c5fd;
+}
+
+html.dark .workspace-mesh-bg .text-\[\#5A1063\] {
+  color: #e879f9;
 }
 
 html.dark .workspace-mesh-bg .border-gray-100,
@@ -406,7 +451,14 @@ html.dark .workspace-mesh-bg .border-gray-200,
 html.dark .workspace-mesh-bg .border-slate-100,
 html.dark .workspace-mesh-bg .border-slate-200,
 html.dark .workspace-mesh-bg .border-rose-100,
-html.dark .workspace-mesh-bg [class*='border-white'] {
+html.dark .workspace-mesh-bg [class*='border-white'],
+html.dark .workspace-mesh-bg [class*='border-[#1C1917]'],
+html.dark .workspace-mesh-bg [class*='border-[#C29940]'],
+html.dark .workspace-mesh-bg [class*='border-[#D97706]'],
+html.dark .workspace-mesh-bg [class*='border-[#157A57]'],
+html.dark .workspace-mesh-bg [class*='border-[#D95B18]'],
+html.dark .workspace-mesh-bg [class*='border-[#184375]'],
+html.dark .workspace-mesh-bg [class*='border-[#5A1063]'] {
   border-color: rgba(255, 255, 255, 0.10);
 }
 
@@ -415,7 +467,9 @@ html.dark .workspace-mesh-bg [class*='from-sky-100'],
 html.dark .workspace-mesh-bg [class*='from-amber-100'],
 html.dark .workspace-mesh-bg [class*='from-rose-100'],
 html.dark .workspace-mesh-bg [class*='from-violet-100'],
-html.dark .workspace-mesh-bg [class*='from-fuchsia-100'] {
+html.dark .workspace-mesh-bg [class*='from-fuchsia-100'],
+html.dark .workspace-mesh-bg [class*='from-[#FCFBF8]'],
+html.dark .workspace-mesh-bg [class*='from-[#FCF8F0]'] {
   background-image: linear-gradient(135deg, rgba(26, 34, 47, 0.95) 0%, rgba(19, 25, 36, 0.96) 100%);
   border-color: rgba(255, 255, 255, 0.10);
 }
@@ -441,20 +495,32 @@ html.dark .tianzige-grid {
     linear-gradient(-45deg, transparent calc(50% - 0.5px), rgba(196, 30, 58, 0.18) calc(50% - 0.5px), rgba(196, 30, 58, 0.18) calc(50% + 0.5px), transparent calc(50% + 0.5px));
 }
 
-html:not(.dark) .auth-input:-webkit-autofill,
-html:not(.dark) .auth-input:-webkit-autofill:hover,
-html:not(.dark) .auth-input:-webkit-autofill:focus,
-html:not(.dark) .auth-input:-webkit-autofill:active {
-  -webkit-text-fill-color: #fff !important;
-  caret-color: #fff !important;
-  -webkit-box-shadow:
-    var(--tw-ring-offset-shadow, 0 0 #0000),
-    var(--tw-ring-shadow, 0 0 #0000),
-    0 0 0 1000px #3b2b40 inset !important;
-  box-shadow:
-    var(--tw-ring-offset-shadow, 0 0 #0000),
-    var(--tw-ring-shadow, 0 0 #0000),
-    0 0 0 1000px #3b2b40 inset !important;
+/* Gentle breathing smooth caret + clean light autofill for Auth inputs */
+@keyframes smooth-caret-breathe {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.18;
+  }
+}
+
+.animate-smooth-caret {
+  animation: smooth-caret-breathe 1.05s ease-in-out infinite;
+}
+
+@keyframes onAutoFillStart {
+  from { opacity: 0.99; }
+  to { opacity: 1; }
+}
+
+.auth-smooth-input:-webkit-autofill {
+  animation-name: onAutoFillStart;
+  animation-duration: 0.01s;
+  -webkit-text-fill-color: #181415 !important;
+  caret-color: #c41e3a !important;
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+  box-shadow: 0 0 0 1000px #ffffff inset !important;
   transition: background-color 9999s ease-out 0s;
 }
 

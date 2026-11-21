@@ -378,7 +378,7 @@ export const CourseListPage: React.FC = () => {
               width: sliderStyle.width,
               height: sliderStyle.height,
             }}
-            className={`pointer-events-none absolute top-0 left-0 rounded-[18px] bg-gradient-to-br ${meta.pillGradient} border border-white/25 shadow-md transition-[transform,width,height,background] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]`}
+            className={`pointer-events-none absolute top-0 left-0 rounded-[18px] bg-gradient-to-br ${meta.pillGradient} dark:bg-none dark:bg-slate-800 border border-white/25 dark:border-slate-700 shadow-md transition-[transform,width,height,background] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]`}
           />
         )}
 

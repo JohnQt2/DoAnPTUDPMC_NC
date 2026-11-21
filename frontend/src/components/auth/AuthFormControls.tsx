@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface AnimatedOtpInputProps {
   value: string[];
@@ -216,5 +216,320 @@ export const AnimatedOtpInput: React.FC<AnimatedOtpInputProps> = ({
           );
         })}
     </motion.div>
+  );
+};
+
+interface CharToken {
+  id: number;
+  ch: string;
+}
+
+interface SmoothAuthInputProps {
+  id: string;
+  type?: 'text' | 'email' | 'password';
+  value: string;
+  onChange: (nextValue: string) => void;
+  placeholder?: string;
+  required?: boolean;
+  minLength?: number;
+  autoComplete?: string;
+  leftIcon?: React.ReactNode;
+  rightSlot?: React.ReactNode;
+  disabled?: boolean;
+}
+
+/**
+ * Silky Tactile Auth Input (Apple / Telegram / Linear-inspired):
+ * - Stable prefix/suffix diff so ONLY newly typed chars softly blur-fade in (140ms)
+ *   and ONLY deleted chars softly dissolve out (115ms) with zero jitter on existing text
+ * - Smooth spring-like gliding crimson caret (`85ms` ease-out) with gentle breathing idle pulse
+ * - Light airy placeholder that gently glides away on first keystroke
+ * - 100% native Vietnamese IME (Telex/VNI), text selection, autofill & horizontal scroll safe
+ */
+export const SmoothAuthInput: React.FC<SmoothAuthInputProps> = ({
+  id,
+  type = 'text',
+  value,
+  onChange,
+  placeholder = '',
+  required = false,
+  minLength,
+  autoComplete,
+  leftIcon,
+  rightSlot,
+  disabled = false,
+}) => {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const measureRef = useRef<HTMLSpanElement | null>(null);
+  const viewportRef = useRef<HTMLDivElement | null>(null);
+  const nextTokenIdRef = useRef<number>(1);
+  const typingTimerRef = useRef<number | null>(null);
+
+  const [tokens, setTokens] = useState<CharToken[]>(() =>
+    Array.from(value).map((ch) => ({ id: nextTokenIdRef.current++, ch }))
+  );
+  const [isFocused, setIsFocused] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const [isComposing, setIsComposing] = useState(false);
+  const [hasSelection, setHasSelection] = useState(false);
+  const [isAutofilled, setIsAutofilled] = useState(false);
+  const [caretPos, setCaretPos] = useState(value.length);
+  const [caretX, setCaretX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+
+  const isMaskedPassword = type === 'password';
+
+  // Diff value into stable CharToken[] so only inserted/deleted characters animate
+  useEffect(() => {
+    setTokens((prev) => {
+      const nextChars = Array.from(value);
+      let prefix = 0;
+      while (
+        prefix < prev.length &&
+        prefix < nextChars.length &&
+        prev[prefix].ch === nextChars[prefix]
+      ) {
+        prefix++;
+      }
+
+      let suffix = 0;
+      while (
+        suffix < prev.length - prefix &&
+        suffix < nextChars.length - prefix &&
+        prev[prev.length - 1 - suffix].ch === nextChars[nextChars.length - 1 - suffix]
+      ) {
+        suffix++;
+      }
+
+      if (prefix + suffix === prev.length && prefix + suffix === nextChars.length) {
+        return prev;
+      }
+
+      const middle: CharToken[] = nextChars
+        .slice(prefix, nextChars.length - suffix)
+        .map((ch) => ({ id: nextTokenIdRef.current++, ch }));
+
+      return [
+        ...prev.slice(0, prefix),
+        ...middle,
+        ...prev.slice(prev.length - suffix),
+      ];
+    });
+  }, [value]);
+
+  const syncCaretAndScroll = useCallback(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    const start = el.selectionStart ?? el.value.length;
+    const end = el.selectionEnd ?? start;
+    setCaretPos(start);
+    setHasSelection(start !== end);
+    setScrollLeft(el.scrollLeft || 0);
+  }, []);
+
+  // Measure exact caret X pixel position in proportional font or fixed-width password dots
+  useLayoutEffect(() => {
+    if (isMaskedPassword) {
+      setCaretX(caretPos * 9);
+      return;
+    }
+    if (measureRef.current) {
+      setCaretX(measureRef.current.getBoundingClientRect().width);
+    }
+  }, [value, caretPos, isMaskedPassword]);
+
+  // Keep scrollLeft synced on next frame after programmatic or keyboard text edits
+  useEffect(() => {
+    const idRaf = window.requestAnimationFrame(syncCaretAndScroll);
+    return () => window.cancelAnimationFrame(idRaf);
+  }, [value, syncCaretAndScroll]);
+
+  useEffect(() => {
+    return () => {
+      if (typingTimerRef.current) window.clearTimeout(typingTimerRef.current);
+    };
+  }, []);
+
+  const pulseTypingState = () => {
+    setIsTyping(true);
+    if (typingTimerRef.current) window.clearTimeout(typingTimerRef.current);
+    typingTimerRef.current = window.setTimeout(() => setIsTyping(false), 380);
+  };
+
+  const showNativeText = isComposing || hasSelection || isAutofilled;
+  const rightPaddingCls = rightSlot ? 'pr-10' : 'pr-4';
+  const overlayRightCls = rightSlot ? 'right-10' : 'right-4';
+  const caretPrefixText = value.slice(0, caretPos);
+
+  return (
+    <div
+      className={`relative w-full rounded-xl border bg-white transition-all duration-200 ${
+        isFocused
+          ? 'border-[#C41E3A] ring-2 ring-[#C41E3A]/15 shadow-[0_6px_18px_-12px_rgba(196,30,58,0.38)]'
+          : 'border-[#EAE3DE] hover:border-[#D9CFC8]'
+      } ${disabled ? 'opacity-60 bg-[#FAF8F6]' : ''}`}
+    >
+      {/* Left Icon with subtle focus tint */}
+      {leftIcon && (
+        <span
+          aria-hidden="true"
+          className={`pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors duration-200 z-20 ${
+            isFocused ? 'text-[#C41E3A]' : 'text-[#AFA5A3]'
+          }`}
+        >
+          {leftIcon}
+        </span>
+      )}
+
+      {/* Hidden exact-width caret measurement probe (kerning disabled to match input 1:1) */}
+      {!isMaskedPassword && (
+        <span
+          ref={measureRef}
+          aria-hidden="true"
+          style={{ fontKerning: 'none', fontVariantLigatures: 'none' }}
+          className="pointer-events-none invisible fixed -top-96 left-0 whitespace-pre text-sm font-sans leading-5"
+        >
+          {caretPrefixText}
+        </span>
+      )}
+
+      {/* Soft Airy Placeholder (noticeably lighter & softly glides away when typing) */}
+      <AnimatePresence initial={false}>
+        {value.length === 0 && !isComposing && !isAutofilled && (
+          <motion.span
+            key="smooth-placeholder"
+            aria-hidden="true"
+            initial={{ opacity: 0, x: 4 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 6 }}
+            transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
+            className={`pointer-events-none absolute inset-y-0 left-10 ${overlayRightCls} flex items-center text-sm font-sans text-[#C2B8B4] truncate select-none z-0`}
+          >
+            {placeholder}
+          </motion.span>
+        )}
+      </AnimatePresence>
+
+      {/* Silky Per-Character Enter/Delete Overlay & Smooth Gliding Crimson Caret */}
+      {!showNativeText && (
+        <div
+          ref={viewportRef}
+          aria-hidden="true"
+          className={`pointer-events-none absolute inset-y-0 left-10 ${overlayRightCls} flex items-center overflow-hidden z-0`}
+        >
+          <div
+            style={{
+              transform: `translate3d(${-(isMaskedPassword ? Math.max(0, caretX - Math.max(120, (viewportRef.current?.clientWidth || 220) - 8)) : scrollLeft)}px, 0, 0)`,
+              fontKerning: 'none',
+              fontVariantLigatures: 'none',
+            }}
+            className="relative flex items-center whitespace-pre text-sm font-sans leading-5 text-[#181415]"
+          >
+            <AnimatePresence initial={false} mode="popLayout">
+              {tokens.map((tok) =>
+                isMaskedPassword ? (
+                  <motion.span
+                    key={tok.id}
+                    initial={{ opacity: 0, scale: 0.35 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.35 }}
+                    transition={{ duration: 0.14, ease: [0.22, 1, 0.36, 1] }}
+                    className="inline-flex items-center justify-center w-[9px] h-5 shrink-0"
+                  >
+                    <span className="w-[5.5px] h-[5.5px] rounded-full bg-[#181415]" />
+                  </motion.span>
+                ) : (
+                  <motion.span
+                    key={tok.id}
+                    initial={{ opacity: 0, y: 2.5, scale: 0.94, filter: 'blur(1.5px)' }}
+                    animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+                    exit={{
+                      opacity: 0,
+                      y: -2,
+                      scale: 0.88,
+                      filter: 'blur(1.5px)',
+                      transition: { duration: 0.11, ease: 'easeOut' },
+                    }}
+                    transition={{ duration: 0.15, ease: [0.22, 1, 0.36, 1] }}
+                    className="inline-block whitespace-pre"
+                  >
+                    {tok.ch}
+                  </motion.span>
+                )
+              )}
+            </AnimatePresence>
+
+            {/* Smooth Gliding Crimson Caret (VS Code / macOS Smooth Caret physics) */}
+            {isFocused && !disabled && (
+              <span
+                style={{
+                  transform: `translate3d(${caretX}px, -50%, 0)`,
+                  transition: 'transform 85ms cubic-bezier(0.22, 1, 0.36, 1)',
+                }}
+                className={`pointer-events-none absolute left-0 top-1/2 w-[1.75px] h-[18px] rounded-full bg-[#C41E3A] ${
+                  isTyping ? 'opacity-100' : 'animate-smooth-caret'
+                }`}
+              />
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Real Native Input (Full keyboard, IME, paste, autofill, accessibility & selection) */}
+      <input
+        ref={inputRef}
+        id={id}
+        type={type}
+        required={required}
+        minLength={minLength}
+        autoComplete={autoComplete}
+        disabled={disabled}
+        value={value}
+        style={{ fontKerning: 'none', fontVariantLigatures: 'none' }}
+        onChange={(e) => {
+          setIsAutofilled(false);
+          onChange(e.target.value);
+          pulseTypingState();
+          syncCaretAndScroll();
+        }}
+        onFocus={() => {
+          setIsFocused(true);
+          syncCaretAndScroll();
+        }}
+        onBlur={() => {
+          setIsFocused(false);
+          setHasSelection(false);
+          setIsTyping(false);
+        }}
+        onSelect={syncCaretAndScroll}
+        onKeyUp={syncCaretAndScroll}
+        onClick={syncCaretAndScroll}
+        onScroll={syncCaretAndScroll}
+        onCompositionStart={() => setIsComposing(true)}
+        onCompositionEnd={(e) => {
+          setIsComposing(false);
+          onChange(e.currentTarget.value);
+          pulseTypingState();
+          syncCaretAndScroll();
+        }}
+        onAnimationStart={(e) => {
+          if (e.animationName === 'onAutoFillStart') {
+            setIsAutofilled(true);
+          }
+        }}
+        className={`auth-smooth-input relative z-10 w-full pl-10 ${rightPaddingCls} py-2.5 rounded-xl bg-transparent text-sm font-sans leading-5 focus:outline-none ${
+          showNativeText
+            ? 'text-[#181415] caret-[#C41E3A]'
+            : 'text-transparent caret-transparent selection:bg-[#C41E3A]/18 selection:text-[#181415]'
+        }`}
+      />
+
+      {/* Optional Right Slot (Password Visibility Eye Toggle) */}
+      {rightSlot && (
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 z-20 flex items-center">
+          {rightSlot}
+        </div>
+      )}
+    </div>
   );
 };

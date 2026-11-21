@@ -191,7 +191,7 @@ const SidebarNavContent: React.FC<NavContentProps> = ({
             opacity: hoverVisible ? 1 : 0,
           }}
           transition={{ duration: 0.18, ease: 'easeOut' }}
-          className="pointer-events-none absolute left-3 right-3 top-0 m-0 rounded-[20px] bg-white/75 backdrop-blur-md border border-[#1C1917]/8 shadow-[0_6px_18px_-6px_rgba(28,25,23,0.12),inset_0_1.5px_2px_rgba(255,255,255,0.98)] will-change-transform"
+          className="pointer-events-none absolute left-3 right-3 top-0 m-0 rounded-[20px] bg-white/75 dark:bg-white/10 backdrop-blur-md border border-[#1C1917]/8 dark:border-white/15 shadow-[0_6px_18px_-6px_rgba(28,25,23,0.12),inset_0_1.5px_2px_rgba(255,255,255,0.98)] dark:shadow-none will-change-transform"
         />
 
         {/* Active Liquid Glass Bubble (stretches smoothly like a water droplet while gliding) */}
@@ -209,7 +209,7 @@ const SidebarNavContent: React.FC<NavContentProps> = ({
             opacity: activeVisible ? 1 : 0,
           }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
-          className="pointer-events-none absolute left-3 right-3 top-0 m-0 rounded-[22px] overflow-hidden bg-[#C41E3A]/11 backdrop-blur-md border border-[#C41E3A]/25 shadow-[0_10px_24px_-8px_rgba(196,30,58,0.18),inset_0_1.5px_2px_rgba(255,255,255,0.88)] will-change-transform"
+          className="pointer-events-none absolute left-3 right-3 top-0 m-0 rounded-[22px] overflow-hidden bg-[#C41E3A]/11 dark:bg-[#C41E3A]/20 backdrop-blur-md border border-[#C41E3A]/25 dark:border-[#C41E3A]/40 shadow-[0_10px_24px_-8px_rgba(196,30,58,0.18),inset_0_1.5px_2px_rgba(255,255,255,0.88)] dark:shadow-none will-change-transform"
         >
           {/* Curved Specular Sheen */}
           <span className="absolute inset-x-4 top-[3px] h-[4px] rounded-full bg-gradient-to-r from-white/10 via-white/75 to-white/10 blur-[0.5px]" />
@@ -398,7 +398,7 @@ export const Sidebar: React.FC<{
             onClick={onToggleCollapse}
             title={collapsed ? 'Mở rộng thanh công cụ' : 'Thu gọn thanh công cụ'}
             aria-label={collapsed ? 'Mở rộng thanh công cụ' : 'Thu gọn thanh công cụ'}
-            className="absolute -right-3.5 top-7 z-50 w-7 h-7 rounded-full bg-[#FCFBF8] border border-[#1C1917]/15 text-[#57534E] hover:text-[#C41E3A] hover:border-[#C41E3A]/40 shadow-md flex items-center justify-center transition-all hover:scale-105 cursor-pointer"
+            className="absolute -right-3.5 top-7 z-50 w-7 h-7 rounded-full bg-[#FCFBF8] dark:bg-[#161d28] border border-[#1C1917]/15 dark:border-white/15 text-[#57534E] dark:text-slate-300 hover:text-[#C41E3A] dark:hover:text-rose-400 hover:border-[#C41E3A]/40 shadow-md flex items-center justify-center transition-all hover:scale-105 cursor-pointer"
           >
             {collapsed ? (
               <ChevronRight className="w-4 h-4" />
@@ -460,13 +460,13 @@ export const Sidebar: React.FC<{
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', stiffness: 380, damping: 36 }}
-              className="relative w-72 max-w-[82vw] bg-[#FCFBF8]/95 backdrop-blur-2xl h-full shadow-2xl border-r border-[#1C1917]/10 flex flex-col z-10"
+              className="relative w-72 max-w-[82vw] bg-[#FCFBF8]/95 dark:bg-[#111722]/96 backdrop-blur-2xl h-full shadow-2xl border-r border-[#1C1917]/10 dark:border-white/10 flex flex-col z-10"
             >
               <button
                 type="button"
                 onClick={() => setMobileOpen(false)}
                 aria-label="Đóng menu"
-                className="absolute top-4 right-4 p-2 rounded-xl text-[#57534E] hover:bg-[#1C1917]/6 cursor-pointer z-20"
+                className="absolute top-4 right-4 p-2 rounded-xl text-[#57534E] dark:text-slate-300 hover:bg-[#1C1917]/6 dark:hover:bg-white/10 cursor-pointer z-20"
               >
                 <X className="w-5 h-5" />
               </button>

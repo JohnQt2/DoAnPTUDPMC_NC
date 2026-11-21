@@ -193,7 +193,7 @@ const AppContent: React.FC = () => {
   if (hasCompletedOnboarding === false) {
     return (
       <MeshBackground variant="light" showHanzi={false} className="flex flex-col text-[#1C1917]">
-        <header className="sticky top-0 z-40 bg-[#FCFBF8]/88 backdrop-blur-xl border-b border-[#1C1917]/10 h-16 px-4 sm:px-6 flex items-center justify-center shadow-sm shadow-[#1C1917]/[0.03]">
+        <header className="sticky top-0 z-40 bg-[#FCFBF8]/88 dark:bg-[#0f151f]/90 backdrop-blur-xl border-b border-[#1C1917]/10 dark:border-white/10 h-16 px-4 sm:px-6 flex items-center justify-center shadow-sm shadow-[#1C1917]/[0.03]">
           <HanziLogo variant="light" size="md" showSubtitle={false} />
         </header>
         <main className="flex-1 pb-12">

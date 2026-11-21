@@ -4,11 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { api } from '../../lib/api';
 import { HanziLogoMark } from '../../components/HanziLogo';
 import { SunbeamDustOverlay } from '../../components/landing/ArchitecturalOrnaments';
-import {
-  AnimatedAuthInput,
-  PasswordStrengthBar,
-  AnimatedOtpInput,
-} from '../../components/auth/AuthFormControls';
+import { AnimatedOtpInput } from '../../components/auth/AuthFormControls';
 import {
   Mail,
   Lock,
@@ -19,6 +15,8 @@ import {
   AlertTriangle,
   CheckCircle2,
   KeyRound,
+  Eye,
+  EyeOff,
   Check,
   Clock,
 } from 'lucide-react';
@@ -586,8 +584,14 @@ export const LoginPage: React.FC = () => {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const inputCls =
+    'w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#EAE3DE] bg-white text-sm text-[#181415] placeholder-[#8C7F82] focus:outline-none focus:border-[#C41E3A] focus:ring-2 focus:ring-[#C41E3A]/15 transition-all';
+
+  const passwordInputCls =
+    'w-full pl-10 pr-10 py-2.5 rounded-xl border border-[#EAE3DE] bg-white text-sm text-[#181415] placeholder-[#8C7F82] focus:outline-none focus:border-[#C41E3A] focus:ring-2 focus:ring-[#C41E3A]/15 transition-all';
+
   const submitBtnCls =
-    'w-full h-11 px-5 rounded-xl bg-[#C41E3A] hover:bg-[#A51730] text-white font-semibold text-xs sm:text-sm inline-flex items-center justify-center gap-2 shadow-[0_10px_22px_-8px_rgba(196,30,58,0.52)] hover:shadow-[0_12px_26px_-8px_rgba(196,30,58,0.62)] transition-all cursor-pointer disabled:opacity-55 disabled:pointer-events-none';
+    'w-full h-10 px-5 rounded-xl bg-[#C41E3A] hover:bg-[#A51730] text-white font-semibold text-xs sm:text-sm inline-flex items-center justify-center gap-2 shadow-[0_8px_20px_-6px_rgba(196,30,58,0.5)] transition-colors cursor-pointer disabled:opacity-50 disabled:pointer-events-none';
 
   const GoogleIcon = (
     <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
@@ -928,61 +932,98 @@ export const LoginPage: React.FC = () => {
             {step === 'form' && authTab === 'register' && (
               <motion.form
                 key="register-form"
-                initial={{ opacity: 0, x: -8 }}
+                initial={{ opacity: 0, x: -6 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 8 }}
-                transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+                exit={{ opacity: 0, x: 6 }}
+                transition={{ duration: 0.16 }}
                 onSubmit={handleSendOtp}
-                className="space-y-3.5"
+                className="space-y-4"
               >
-                <AnimatedAuthInput
-                  id="register-display-name"
-                  label="Họ và tên"
-                  type="text"
-                  required
-                  placeholder="Nguyễn Văn A"
-                  autoComplete="name"
-                  value={displayName}
-                  onChange={setDisplayName}
-                  icon={<UserIcon className="w-4 h-4" />}
-                  isValid={displayName.trim().length >= 2}
-                />
-
-                <AnimatedAuthInput
-                  id="register-email"
-                  label="Email (Gmail)"
-                  type="email"
-                  required
-                  placeholder="ten_cua_ban@gmail.com"
-                  autoComplete="email"
-                  value={email}
-                  onChange={setEmail}
-                  icon={<Mail className="w-4 h-4" />}
-                  isValid={validateGmailFormat(email)}
-                />
-
                 <div>
-                  <AnimatedAuthInput
-                    id="register-password"
-                    label="Mật khẩu"
-                    type="password"
-                    required
-                    minLength={6}
-                    placeholder="Tối thiểu 6 ký tự"
-                    autoComplete="new-password"
-                    value={password}
-                    onChange={setPassword}
-                    icon={<Lock className="w-4 h-4" />}
-                    isValid={password.length >= 6}
-                    showPasswordToggle
-                    passwordVisible={showPassword}
-                    onTogglePassword={() => setShowPassword((v) => !v)}
-                  />
-                  <PasswordStrengthBar password={password} />
+                  <label
+                    htmlFor="register-display-name"
+                    className="block text-xs font-semibold text-[#181415] mb-1.5"
+                  >
+                    Họ và tên
+                  </label>
+                  <div className="relative">
+                    <UserIcon
+                      className="w-4 h-4 absolute left-3.5 top-3 text-[#8C7F82]"
+                      aria-hidden="true"
+                    />
+                    <input
+                      id="register-display-name"
+                      type="text"
+                      required
+                      placeholder="Nguyễn Văn A"
+                      autoComplete="name"
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      className={inputCls}
+                    />
+                  </div>
                 </div>
 
-                <motion.button
-                  whileTap={{ scale: 0.985 }}
+                <div>
+                  <label
+                    htmlFor="register-email"
+                    className="block text-xs font-semibold text-[#181415] mb-1.5"
+                  >
+                    Email
+                  </label>
+                  <div className="relative">
+                    <Mail
+                      className="w-4 h-4 absolute left-3.5 top-3 text-[#8C7F82]"
+                      aria-hidden="true"
+                    />
+                    <input
+                      id="register-email"
+                      type="email"
+                      required
+                      placeholder="ten_cua_ban@gmail.com"
+                      autoComplete="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className={inputCls}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="register-password"
+                    className="block text-xs font-semibold text-[#181415] mb-1.5"
+                  >
+                    Mật khẩu
+                  </label>
+                  <div className="relative">
+                    <Lock
+                      className="w-4 h-4 absolute left-3.5 top-3 text-[#8C7F82]"
+                      aria-hidden="true"
+                    />
+                    <input
+                      id="register-password"
+                      type={showPassword ? 'text' : 'password'}
+                      required
+                      minLength={6}
+                      placeholder="Tối thiểu 6 ký tự"
+                      autoComplete="new-password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className={passwordInputCls}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                      className="absolute right-3.5 top-3 text-[#8C7F82] hover:text-[#181415] cursor-pointer"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <button
                   type="submit"
                   disabled={isSubmitting || isGoogleLoading || actionCooldown > 0}
                   className={submitBtnCls}
@@ -995,9 +1036,9 @@ export const LoginPage: React.FC = () => {
                         : 'Tiếp tục'}
                   </span>
                   <ArrowRight className="w-4 h-4" aria-hidden="true" />
-                </motion.button>
+                </button>
 
-                <div className="relative flex items-center justify-center my-0.5">
+                <div className="relative flex items-center justify-center my-1">
                   <div className="border-t border-[#EAE3DE] w-full" />
                   <span className="px-3 text-[11px] text-[#8C7F82] font-medium uppercase">hoặc</span>
                   <div className="border-t border-[#EAE3DE] w-full" />
@@ -1019,65 +1060,83 @@ export const LoginPage: React.FC = () => {
             {step === 'form' && authTab === 'login' && (
               <motion.form
                 key="login-form"
-                initial={{ opacity: 0, x: 8 }}
+                initial={{ opacity: 0, x: 6 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -8 }}
-                transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+                exit={{ opacity: 0, x: -6 }}
+                transition={{ duration: 0.16 }}
                 onSubmit={loginSubMode === 'password' ? handlePasswordLogin : handleSendOtp}
-                className="space-y-3.5"
+                className="space-y-4"
               >
-                <AnimatedAuthInput
-                  id="login-email"
-                  label="Email"
-                  type="email"
-                  required
-                  placeholder="ten_cua_ban@gmail.com"
-                  autoComplete="email"
-                  value={email}
-                  onChange={setEmail}
-                  icon={<Mail className="w-4 h-4" />}
-                  isValid={validateEmailFormat(email)}
-                />
+                <div>
+                  <label
+                    htmlFor="login-email"
+                    className="block text-xs font-semibold text-[#181415] mb-1.5"
+                  >
+                    Email
+                  </label>
+                  <div className="relative">
+                    <Mail
+                      className="w-4 h-4 absolute left-3.5 top-3 text-[#8C7F82]"
+                      aria-hidden="true"
+                    />
+                    <input
+                      id="login-email"
+                      type="email"
+                      required
+                      placeholder="ten_cua_ban@gmail.com"
+                      autoComplete="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className={inputCls}
+                    />
+                  </div>
+                </div>
 
-                <AnimatePresence initial={false}>
-                  {loginSubMode === 'password' && (
-                    <motion.div
-                      key="login-password-block"
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                      className="overflow-hidden"
+                {loginSubMode === 'password' && (
+                  <div>
+                    <label
+                      htmlFor="login-password"
+                      className="block text-xs font-semibold text-[#181415] mb-1.5"
                     >
-                      <AnimatedAuthInput
+                      Mật khẩu
+                    </label>
+                    <div className="relative">
+                      <Lock
+                        className="w-4 h-4 absolute left-3.5 top-3 text-[#8C7F82]"
+                        aria-hidden="true"
+                      />
+                      <input
                         id="login-password"
-                        label="Mật khẩu"
-                        type="password"
+                        type={showPassword ? 'text' : 'password'}
                         required
                         placeholder="Nhập mật khẩu của bạn"
                         autoComplete="current-password"
                         value={password}
-                        onChange={setPassword}
-                        icon={<Lock className="w-4 h-4" />}
-                        showPasswordToggle
-                        passwordVisible={showPassword}
-                        onTogglePassword={() => setShowPassword((v) => !v)}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className={passwordInputCls}
                       />
-                      <div className="mt-2 flex justify-end">
-                        <button
-                          type="button"
-                          onClick={openForgotPasswordFlow}
-                          className="text-xs font-semibold text-[#5F5658] hover:text-[#C41E3A] transition-colors cursor-pointer"
-                        >
-                          Quên mật khẩu?
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((v) => !v)}
+                        aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                        className="absolute right-3.5 top-3 text-[#8C7F82] hover:text-[#181415] cursor-pointer"
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                    <div className="mt-2 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={openForgotPasswordFlow}
+                        className="text-xs font-semibold text-[#5F5658] hover:text-[#C41E3A] transition-colors cursor-pointer"
+                      >
+                        Quên mật khẩu?
+                      </button>
+                    </div>
+                  </div>
+                )}
 
-                <motion.button
-                  whileTap={{ scale: 0.985 }}
+                <button
                   type="submit"
                   disabled={isSubmitting || isGoogleLoading || actionCooldown > 0}
                   className={submitBtnCls}
@@ -1092,7 +1151,7 @@ export const LoginPage: React.FC = () => {
                           : 'Gửi mã xác nhận'}
                   </span>
                   <ArrowRight className="w-4 h-4" aria-hidden="true" />
-                </motion.button>
+                </button>
 
                 <button
                   type="button"
@@ -1110,7 +1169,7 @@ export const LoginPage: React.FC = () => {
                   </span>
                 </button>
 
-                <div className="relative flex items-center justify-center my-0.5">
+                <div className="relative flex items-center justify-center my-1">
                   <div className="border-t border-[#EAE3DE] w-full" />
                   <span className="px-3 text-[11px] text-[#8C7F82] font-medium uppercase">hoặc</span>
                   <div className="border-t border-[#EAE3DE] w-full" />
@@ -1210,21 +1269,32 @@ export const LoginPage: React.FC = () => {
                 onSubmit={handleForgotSendOtp}
                 className="space-y-4"
               >
-                <AnimatedAuthInput
-                  id="forgot-email"
-                  label="Email tài khoản"
-                  type="email"
-                  required
-                  placeholder="ten_cua_ban@gmail.com"
-                  autoComplete="email"
-                  value={email}
-                  onChange={setEmail}
-                  icon={<Mail className="w-4 h-4" />}
-                  isValid={validateEmailFormat(email)}
-                />
+                <div>
+                  <label
+                    htmlFor="forgot-email"
+                    className="block text-xs font-semibold text-[#181415] mb-1.5"
+                  >
+                    Email tài khoản
+                  </label>
+                  <div className="relative">
+                    <Mail
+                      className="w-4 h-4 absolute left-3.5 top-3 text-[#8C7F82]"
+                      aria-hidden="true"
+                    />
+                    <input
+                      id="forgot-email"
+                      type="email"
+                      required
+                      placeholder="ten_cua_ban@gmail.com"
+                      autoComplete="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className={inputCls}
+                    />
+                  </div>
+                </div>
 
-                <motion.button
-                  whileTap={{ scale: 0.985 }}
+                <button
                   type="submit"
                   disabled={isSubmitting || actionCooldown > 0}
                   className={submitBtnCls}
@@ -1237,7 +1307,7 @@ export const LoginPage: React.FC = () => {
                         : 'Gửi mã OTP về Gmail'}
                   </span>
                   <ArrowRight className="w-4 h-4" aria-hidden="true" />
-                </motion.button>
+                </button>
 
                 <button
                   type="button"
@@ -1343,42 +1413,63 @@ export const LoginPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <AnimatedAuthInput
-                    id="reset-new-password"
-                    label="Mật khẩu mới"
-                    type="password"
-                    required
-                    minLength={6}
-                    placeholder="Tối thiểu 6 ký tự"
-                    autoComplete="new-password"
-                    value={newPassword}
-                    onChange={setNewPassword}
-                    icon={<Lock className="w-4 h-4" />}
-                    isValid={newPassword.length >= 6}
-                    showPasswordToggle
-                    passwordVisible={showNewPassword}
-                    onTogglePassword={() => setShowNewPassword((v) => !v)}
-                  />
-                  <PasswordStrengthBar password={newPassword} />
+                  <label
+                    htmlFor="reset-new-password"
+                    className="block text-xs font-semibold text-[#181415] mb-1.5"
+                  >
+                    Mật khẩu mới
+                  </label>
+                  <div className="relative">
+                    <Lock
+                      className="w-4 h-4 absolute left-3.5 top-3 text-[#8C7F82]"
+                      aria-hidden="true"
+                    />
+                    <input
+                      id="reset-new-password"
+                      type={showNewPassword ? 'text' : 'password'}
+                      required
+                      minLength={6}
+                      placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)"
+                      autoComplete="new-password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className={passwordInputCls}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPassword((v) => !v)}
+                      aria-label={showNewPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                      className="absolute right-3.5 top-3 text-[#8C7F82] hover:text-[#181415] cursor-pointer"
+                    >
+                      {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
                 </div>
 
                 <div>
-                  <AnimatedAuthInput
-                    id="reset-confirm-password"
-                    label="Xác nhận mật khẩu mới"
-                    type="password"
-                    required
-                    minLength={6}
-                    placeholder="Nhập lại mật khẩu mới"
-                    autoComplete="new-password"
-                    value={confirmPassword}
-                    onChange={setConfirmPassword}
-                    icon={<Lock className="w-4 h-4" />}
-                    isValid={confirmPassword.length >= 6 && confirmPassword === newPassword}
-                    showPasswordToggle
-                    passwordVisible={showNewPassword}
-                    onTogglePassword={() => setShowNewPassword((v) => !v)}
-                  />
+                  <label
+                    htmlFor="reset-confirm-password"
+                    className="block text-xs font-semibold text-[#181415] mb-1.5"
+                  >
+                    Xác nhận mật khẩu mới
+                  </label>
+                  <div className="relative">
+                    <Lock
+                      className="w-4 h-4 absolute left-3.5 top-3 text-[#8C7F82]"
+                      aria-hidden="true"
+                    />
+                    <input
+                      id="reset-confirm-password"
+                      type={showNewPassword ? 'text' : 'password'}
+                      required
+                      minLength={6}
+                      placeholder="Nhập lại mật khẩu mới"
+                      autoComplete="new-password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className={inputCls}
+                    />
+                  </div>
                   {confirmPassword.length > 0 && confirmPassword !== newPassword && (
                     <p className="text-[11px] text-[#C41E3A] font-medium mt-1 px-1">
                       Mật khẩu xác nhận chưa khớp.
@@ -1386,8 +1477,7 @@ export const LoginPage: React.FC = () => {
                   )}
                 </div>
 
-                <motion.button
-                  whileTap={{ scale: 0.985 }}
+                <button
                   type="submit"
                   disabled={isSubmitting || actionCooldown > 0}
                   className={submitBtnCls}
@@ -1400,7 +1490,7 @@ export const LoginPage: React.FC = () => {
                         : 'Cập nhật mật khẩu mới'}
                   </span>
                   <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
-                </motion.button>
+                </button>
 
                 <button
                   type="button"

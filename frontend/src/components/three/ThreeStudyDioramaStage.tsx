@@ -846,7 +846,8 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
     let pointerTravel = 0;
     let isVisible = true;
     let rafId = 0;
-    const clock = new THREE.Clock();
+    const startTime = performance.now();
+    let prevTime = startTime;
 
     const updateRaycasterFromEvent = (e: PointerEvent) => {
       const rect = container.getBoundingClientRect();
@@ -1040,13 +1041,15 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
 
     const animate = () => {
       rafId = requestAnimationFrame(animate);
+      const now = performance.now();
       if (!isActiveRef.current || !isVisible || document.hidden) {
-        clock.getDelta();
+        prevTime = now;
         return;
       }
 
-      const dt = Math.min(clock.getDelta(), 0.05);
-      const t = clock.elapsedTime;
+      const dt = Math.min((now - prevTime) * 0.001, 0.05);
+      prevTime = now;
+      const t = (now - startTime) * 0.001;
       const m = reducedMotion ? 0 : 1;
       const st = stateRef.current;
 

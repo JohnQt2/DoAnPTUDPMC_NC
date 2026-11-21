@@ -634,9 +634,7 @@ export const LandingPage: React.FC = () => {
   return (
     <div
       onPointerMove={handleStagePointerMove}
-      className={`relative w-screen h-[100dvh] overflow-hidden bg-[#F5F2EC] text-[#1C1917] select-none transition-all duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
-        isExitingToAuth ? 'opacity-0 scale-[1.055]' : 'opacity-100 scale-100'
-      }`}
+      className="fixed inset-0 w-full h-[100dvh] overflow-hidden bg-[#F5F2EC] text-[#1C1917] select-none"
       onTouchStart={(e) => {
         const target = e.target as HTMLElement | null;
         // Never hijack touch gestures when user is rotating a 3D WebGL canvas
@@ -781,9 +779,14 @@ export const LandingPage: React.FC = () => {
       ═══════════════════════════════════════════════════════════════════ */}
       <div
         style={{
-          transform: showFooter ? 'translate3d(0, -136px, 0)' : 'translate3d(0, 0, 0)',
+          transform: showFooter
+            ? 'translate3d(0, -136px, 0)'
+            : isExitingToAuth
+              ? 'translate3d(0, 0, 0) scale(1.045)'
+              : 'translate3d(0, 0, 0) scale(1)',
+          opacity: isExitingToAuth ? 0 : 1,
         }}
-        className="relative w-full h-full transition-transform duration-[420ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform"
+        className="relative w-full h-full transition-all duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform"
       >
         {/* ────────────────────────────────────────────────────────────────
             SLIDE 0: CALM DAYLIGHT EDITORIAL HERO (HoYoverse 2.5D Desk Parallax × Sunbeams)

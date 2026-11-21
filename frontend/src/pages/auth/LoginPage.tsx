@@ -597,15 +597,12 @@ export const LoginPage: React.FC = () => {
   }, []);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 1.03 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
+    <div
       onPointerMove={(e) => {
         mouseTargetRef.current.x = (e.clientX / Math.max(1, window.innerWidth) - 0.5) * 2;
         mouseTargetRef.current.y = (e.clientY / Math.max(1, window.innerHeight) - 0.5) * 2;
       }}
-      className="relative flex-1 flex items-center justify-center py-10 sm:py-12 px-4 sm:px-6 lg:px-8 overflow-hidden bg-[#FAF8F6]"
+      className="relative flex-1 flex items-center justify-center py-4 sm:py-6 px-4 sm:px-6 lg:px-8 overflow-hidden bg-[#FAF8F6]"
     >
       {/* Layer 1: 2.5D Mouse-Tracking Chinese Study Desk .webp Backdrop */}
       <div
@@ -630,8 +627,13 @@ export const LoginPage: React.FC = () => {
         className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#FAF8F6]/70 via-[#FAF8F6]/75 to-[#FAF8F6]/90"
       />
 
-      <div className="relative z-10 w-full max-w-[436px] space-y-5">
-        <div className="p-6 sm:p-8 space-y-6 rounded-2xl bg-white/95 backdrop-blur-md border border-[#EAE3DE] border-t-[3px] border-t-[#C41E3A] shadow-[0_22px_50px_-20px_rgba(24,20,21,0.18)]">
+      <motion.div
+        initial={{ opacity: 0, y: 10, scale: 0.985 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+        className="relative z-10 w-full max-w-[436px] space-y-3.5 sm:space-y-4"
+      >
+        <div className="p-5 sm:p-7 space-y-4 sm:space-y-5 rounded-2xl bg-white/95 backdrop-blur-md border border-[#EAE3DE] border-t-[3px] border-t-[#C41E3A] shadow-[0_22px_50px_-20px_rgba(24,20,21,0.18)]">
           {/* Header with Bespoke Hanzi4U Crimson Seal */}
           <div className="text-center space-y-2">
             <div className="inline-flex items-center justify-center mb-1">
@@ -1289,7 +1291,7 @@ export const LoginPage: React.FC = () => {
         <p className="text-center text-xs text-[#5F5658]">
           Bằng cách tiếp tục, bạn đồng ý với điều khoản sử dụng của Hanzi4U.
         </p>
-      </div>
-    </motion.div>
+      </motion.div>
+    </div>
   );
 };

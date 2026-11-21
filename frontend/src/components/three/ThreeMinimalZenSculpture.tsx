@@ -332,7 +332,8 @@ export const ThreeMinimalZenSculpture: React.FC<ThreeMinimalZenSculptureProps> =
     let prevY = 0;
     let isVisible = true;
     let rafId = 0;
-    const clock = new THREE.Clock();
+    const startTime = performance.now();
+    let prevTime = startTime;
 
     const onPointerDown = (e: PointerEvent) => {
       isDragging = true;
@@ -404,13 +405,15 @@ export const ThreeMinimalZenSculpture: React.FC<ThreeMinimalZenSculptureProps> =
 
     const animate = () => {
       rafId = requestAnimationFrame(animate);
+      const now = performance.now();
       if (!isActiveRef.current || !isVisible || document.hidden) {
-        clock.getDelta();
+        prevTime = now;
         return;
       }
 
-      const dt = Math.min(clock.getDelta(), 0.05);
-      const t = clock.elapsedTime;
+      const dt = Math.min((now - prevTime) * 0.001, 0.05);
+      prevTime = now;
+      const t = (now - startTime) * 0.001;
       const m = reducedMotion ? 0 : 1;
 
       impulseRef.current *= Math.pow(0.06, dt);

@@ -65,9 +65,9 @@ const AppContent: React.FC = () => {
 
     if (basePath === '#/login') {
       return (
-        <div className="min-h-screen flex flex-col bg-[#FAF8F6]">
+        <div className="h-[100dvh] w-full overflow-hidden flex flex-col bg-[#FAF8F6]">
           <Navbar currentPath={currentHash} theme="light" />
-          <main className="flex-1 flex flex-col">
+          <main className="flex-1 flex flex-col min-h-0 overflow-y-auto overflow-x-hidden">
             <LoginPage />
           </main>
         </div>

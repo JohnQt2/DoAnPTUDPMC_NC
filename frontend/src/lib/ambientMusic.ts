@@ -56,7 +56,11 @@ class AmbientMusicController {
 
   public initAutoStart(): void {
     if (typeof window === 'undefined') return;
-    if (this.isEnabled && !this.isRunning) {
+    // Only create/start AudioContext immediately if browser already records a valid user gesture
+    // (avoids Chrome DevTools "The AudioContext was not allowed to start" autoplay warning!)
+    const userActivation = (navigator as unknown as { userActivation?: { hasBeenActive?: boolean } })
+      .userActivation;
+    if (this.isEnabled && !this.isRunning && userActivation?.hasBeenActive) {
       this.tryStartAudio();
     }
     if (!this.unlockBound) {
@@ -67,15 +71,15 @@ class AmbientMusicController {
         }
         if (this.ctx && this.ctx.state === 'running') {
           window.removeEventListener('pointerdown', unlock);
-          window.removeEventListener('wheel', unlock);
           window.removeEventListener('keydown', unlock);
           window.removeEventListener('touchstart', unlock);
+          window.removeEventListener('click', unlock);
         }
       };
       window.addEventListener('pointerdown', unlock, { passive: true });
-      window.addEventListener('wheel', unlock, { passive: true });
       window.addEventListener('keydown', unlock, { passive: true });
       window.addEventListener('touchstart', unlock, { passive: true });
+      window.addEventListener('click', unlock, { passive: true });
     }
   }
 

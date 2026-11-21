@@ -313,7 +313,7 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
           {linkedTest && (
             <a
               href={`#/test/${linkedTest.test_id}`}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold shadow-sm transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
             >
               <FileQuestion className="w-3.5 h-3.5" />
               <span>Bài test củng cố (≥80%)</span>
@@ -563,7 +563,7 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
               type="button"
               onClick={() => setCurrentBlockIdx((prev) => Math.max(0, prev - 1))}
               disabled={currentBlockIdx === 0}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-700 font-bold text-xs transition-all disabled:opacity-70 cursor-pointer"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-700 font-bold text-xs transition-all disabled:opacity-40 cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Phần trước</span>
@@ -869,7 +869,7 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
                 onClick={handleToggleAutoPlayDialogue}
                 className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-sm ${
                   isAutoPlayingDialogue
-                    ? 'bg-amber-500 hover:bg-amber-600 text-slate-950'
+                    ? 'bg-amber-500 hover:bg-amber-600 text-white'
                     : 'bg-primary-600 hover:bg-primary-700 text-white'
                 }`}
               >

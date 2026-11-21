@@ -355,7 +355,7 @@ export const CourseDetailPage: React.FC<{ courseId: number }> = ({ courseId }) =
                 onClick={() => setActiveTab(tab.id)}
                 className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs sm:text-sm font-bold transition-colors cursor-pointer ${
                   active
-                    ? 'bg-gradient-to-r from-primary-700 via-rose-700 to-amber-700 text-white shadow-sm'
+                    ? 'bg-gradient-to-r from-primary-600 via-rose-500 to-amber-500 text-white shadow-sm'
                     : 'bg-white/60 hover:bg-white text-gray-700 border border-white/85'
                 }`}
               >

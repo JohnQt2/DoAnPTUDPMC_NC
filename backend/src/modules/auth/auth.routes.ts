@@ -32,36 +32,10 @@ router.post(
   authController.loginPassword
 );
 
-// Forgot Password via Gmail OTP
-router.post(
-  '/password/forgot',
-  rateLimit({
-    windowSeconds: 60,
-    maxRequests: 3,
-    keyPrefix: 'pwd-forgot',
-    message: 'Vui lòng chờ 1 phút trước khi yêu cầu mã đặt lại mật khẩu tiếp theo.',
-  }),
-  authController.forgotPasswordSendOtp
-);
-
-router.post(
-  '/password/reset',
-  rateLimit({ windowSeconds: 60, maxRequests: 8, keyPrefix: 'pwd-reset' }),
-  authController.resetPasswordWithOtp
-);
-
 router.get('/google/config', authController.googleConfig);
 router.get('/google/callback', authController.googleCallback);
-router.post(
-  '/google',
-  rateLimit({ windowSeconds: 60, maxRequests: 15, keyPrefix: 'auth-google' }),
-  authController.googleAuth
-);
-router.post(
-  '/refresh',
-  rateLimit({ windowSeconds: 60, maxRequests: 30, keyPrefix: 'auth-refresh' }),
-  authController.refresh
-);
+router.post('/google', authController.googleAuth);
+router.post('/refresh', authController.refresh);
 
 // Protected Session Management Endpoints
 router.post('/logout', authenticate, authController.logout);

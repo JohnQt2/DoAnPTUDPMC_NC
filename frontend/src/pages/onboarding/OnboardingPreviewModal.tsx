@@ -139,12 +139,12 @@ export const OnboardingPreviewModal: React.FC<OnboardingPreviewModalProps> = ({
                       key={ls.lessonId}
                       className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 text-xs ${
                         isRecommendedFirst
-                          ? 'bg-primary-50/60 border-primary-200 text-gray-900 font-semibold dark:bg-primary-950/50 dark:border-primary-700 dark:text-slate-100'
+                          ? 'bg-primary-50/60 border-primary-200 text-gray-900 font-semibold'
                           : 'bg-white border-gray-100 text-gray-700'
                       }`}
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <BookOpen className="w-3.5 h-3.5 shrink-0 text-primary-600 dark:text-primary-300" />
+                        <BookOpen className="w-3.5 h-3.5 shrink-0 text-primary-600" />
                         <span className="truncate">{ls.title}</span>
                       </div>
                       <span className="text-[11px] text-gray-400 shrink-0">
@@ -174,7 +174,7 @@ export const OnboardingPreviewModal: React.FC<OnboardingPreviewModalProps> = ({
           type="button"
           disabled={isConfirming}
           onClick={onConfirmRoadmap}
-          className="w-full sm:w-auto px-6 py-3 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-bold text-sm shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-70"
+          className="w-full sm:w-auto px-6 py-3 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-bold text-sm shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
         >
           <CheckCircle2 className="w-4 h-4" />
           <span>

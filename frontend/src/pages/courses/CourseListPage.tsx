@@ -5,17 +5,21 @@ import { getCached, setCached } from '../../lib/cache';
 import {
   GlassCard,
   ShimmerButton,
+  SpotlightCard,
   NumberTicker,
 } from '../../components/ui';
-import { PathMap, TodayFloatingButton, PathNode } from '../../components/PathMap';
 import {
+  BookOpen,
   ArrowRight,
   Route,
   SlidersHorizontal,
   Play,
+  CheckCircle2,
+  Lock,
   Sparkles,
   Flame,
   Trophy,
+  Clock,
   Layers,
   Award,
   BookMarked,
@@ -348,7 +352,7 @@ export const CourseListPage: React.FC = () => {
         <div>
           <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-slate-900 flex items-center gap-2.5 tracking-tight">
             <span
-              className={`w-11 h-11 rounded-2xl bg-gradient-to-tr ${meta.unitBadge} text-slate-950 flex items-center justify-center shadow-md`}
+              className={`w-11 h-11 rounded-2xl bg-gradient-to-tr ${meta.unitBadge} text-white flex items-center justify-center shadow-md`}
             >
               <Route className="w-5 h-5" />
             </span>
@@ -378,7 +382,7 @@ export const CourseListPage: React.FC = () => {
               width: sliderStyle.width,
               height: sliderStyle.height,
             }}
-            className={`pointer-events-none absolute top-0 left-0 rounded-[18px] bg-gradient-to-br ${meta.pillGradient} dark:bg-none dark:bg-slate-800 border border-white/95 dark:border-slate-700 shadow-sm transition-[transform,width,height,background] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]`}
+            className={`pointer-events-none absolute top-0 left-0 rounded-[18px] bg-gradient-to-br ${meta.pillGradient} border border-white/95 shadow-sm transition-[transform,width,height,background] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]`}
           />
         )}
 
@@ -394,7 +398,7 @@ export const CourseListPage: React.FC = () => {
               type="button"
               onClick={() => startTransition(() => setSelectedLevel(lvl))}
               className={`relative z-10 rounded-[18px] px-3 py-2.5 text-left transition-colors duration-200 cursor-pointer ${
-                isSelected ? 'text-slate-900 dark:text-slate-100' : 'text-slate-600 hover:text-slate-900'
+                isSelected ? 'text-slate-900' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               <div className="flex items-center justify-between">
@@ -516,52 +520,164 @@ export const CourseListPage: React.FC = () => {
           initial={{ opacity: 0.4, y: 5 }}
           animate={{ opacity: isFetchingLevel ? 0.65 : 1, y: 0 }}
           transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-          className="space-y-10 pb-20"
+          className="space-y-6"
         >
-          <div className="max-w-2xl mx-auto space-y-12">
-            {chapters.map((chapter, chIdx) => {
-              const fallbackGlyphs = ['基', '学', '语', '词', '句', '文'];
-              const nodes: PathNode[] = chapter.lessons.map((lesson, lIdx) => {
-                const hanziMatch = lesson.title.match(/[\u4e00-\u9fff]/);
-                const glyph = hanziMatch ? hanziMatch[0] : fallbackGlyphs[(chIdx + lIdx) % fallbackGlyphs.length];
-                const isCurrent =
-                  nextActiveLesson?.lessonId === lesson.lessonId && !lesson.isCompleted;
-                const status: PathNode['status'] = lesson.isCompleted
-                  ? 'done'
-                  : isCurrent
-                    ? 'current'
-                    : lesson.isUnlocked
-                      ? 'done'
-                      : 'locked';
+          {chapters.map((chapter, chIdx) => {
+            const unitDone = chapter.lessons.filter((l) => l.isCompleted).length;
+            const unitTotal = chapter.lessons.length;
 
-                return {
-                  id: lesson.lessonId,
-                  label: lesson.title,
-                  glyph,
-                  status,
-                  href: lesson.isUnlocked ? `#/lessons/${lesson.lessonId}` : undefined,
-                };
-              });
+            return (
+              <SpotlightCard
+                key={chapter.chapterId}
+                spotlightColor={meta.spotlight}
+                className="p-6 sm:p-7"
+              >
+                {/* Unit Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-white/75">
+                  <div className="flex items-center gap-3.5">
+                    <div
+                      className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${meta.unitBadge} text-white flex flex-col items-center justify-center shadow-sm shrink-0`}
+                    >
+                      <span className="text-[10px] font-bold uppercase opacity-90 leading-none">
+                        Unit
+                      </span>
+                      <span className="text-lg font-black leading-tight">{chIdx + 1}</span>
+                    </div>
+                    <div>
+                      <span
+                        className={`inline-block px-2.5 py-0.5 rounded-full border text-[11px] font-extrabold ${meta.badge}`}
+                      >
+                        Chặng {chIdx + 1} • {unitDone}/{unitTotal} bài hoàn thành
+                      </span>
+                      <h3 className="text-lg sm:text-xl font-display font-extrabold text-slate-900 mt-1">
+                        {chapter.title}
+                      </h3>
+                    </div>
+                  </div>
 
-              return (
-                <PathMap
-                  key={chapter.chapterId}
-                  title={`Chặng ${chIdx + 1}/${chapters.length} • ${chapter.title}`}
-                  nodes={nodes}
-                  onHeaderAction={() => {
-                    window.location.hash = activeCourse
-                      ? `#/courses/${activeCourse.courseId}`
-                      : '#/vocab';
-                  }}
-                />
-              );
-            })}
-          </div>
+                  <a
+                    href={activeCourse ? `#/courses/${activeCourse.courseId}?tab=vocab` : '#/vocab'}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/65 hover:bg-white border border-white/85 text-xs font-bold text-slate-700 hover:text-rose-600 transition-colors self-start sm:self-auto"
+                  >
+                    <BookOpen className="w-3.5 h-3.5 text-rose-500" />
+                    <span>Từ vựng cấp độ này</span>
+                  </a>
+                </div>
 
-          <TodayFloatingButton
-            fallbackLessonId={nextActiveLesson?.lessonId}
-            label="Bài hôm nay"
-          />
+                {/* Centered Timeline Rail */}
+                <div className="mt-4">
+                  {chapter.lessons.map((lesson, lIdx) => {
+                    const isCurrent =
+                      nextActiveLesson?.lessonId === lesson.lessonId && !lesson.isCompleted;
+                    const isFirst = lIdx === 0;
+                    const isLast = lIdx === chapter.lessons.length - 1;
+
+                    return (
+                      <div key={lesson.lessonId} className="flex items-stretch gap-3.5 sm:gap-4">
+                        <div className="w-10 shrink-0 flex flex-col items-center">
+                          <div
+                            aria-hidden="true"
+                            className={`w-[2px] flex-1 ${isFirst ? 'bg-transparent' : meta.lineColor}`}
+                          />
+                          <div
+                            className={`relative z-10 w-9 h-9 rounded-full flex items-center justify-center shrink-0 font-display font-extrabold text-xs transition-shadow ${
+                              lesson.isCompleted
+                                ? 'bg-gradient-to-tr from-emerald-400 to-teal-400 text-white shadow-sm'
+                                : isCurrent
+                                  ? `bg-gradient-to-tr ${meta.unitBadge} text-white shadow-md ${meta.nodeHalo}`
+                                  : lesson.isUnlocked
+                                    ? `${meta.nodeIdle} shadow-sm`
+                                    : 'bg-white/60 border border-slate-200/90 text-slate-400'
+                            }`}
+                          >
+                            {lesson.isCompleted ? (
+                              <CheckCircle2 className="w-4 h-4" />
+                            ) : !lesson.isUnlocked ? (
+                              <Lock className="w-3.5 h-3.5" />
+                            ) : (
+                              lIdx + 1
+                            )}
+                          </div>
+                          <div
+                            aria-hidden="true"
+                            className={`w-[2px] flex-1 ${isLast ? 'bg-transparent' : meta.lineColor}`}
+                          />
+                        </div>
+
+                        <div className="flex-1 py-1.5 min-w-0">
+                          <a
+                            href={lesson.isUnlocked ? `#/lessons/${lesson.lessonId}` : undefined}
+                            onClick={(e) => {
+                              if (!lesson.isUnlocked) e.preventDefault();
+                            }}
+                            className={`rounded-2xl p-4 border transition-colors duration-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                              isCurrent
+                                ? meta.currentCard
+                                : lesson.isUnlocked
+                                  ? 'bg-white/60 border-white/85 hover:bg-white/90 hover:border-white'
+                                  : 'bg-white/35 border-white/65 opacity-70 cursor-not-allowed'
+                            }`}
+                          >
+                            <div className="space-y-1 min-w-0">
+                              <div className="flex flex-wrap items-center gap-2">
+                                {isCurrent && (
+                                  <span
+                                    className={`px-2 py-0.5 rounded-md bg-gradient-to-r ${meta.unitBadge} text-white text-[10px] font-black uppercase`}
+                                  >
+                                    Đang học
+                                  </span>
+                                )}
+                                {lesson.isCompleted && (
+                                  <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 text-[10px] font-extrabold uppercase">
+                                    Hoàn thành {lesson.highestScore ? `• ${lesson.highestScore}%` : ''}
+                                  </span>
+                                )}
+                                <h4 className="text-sm sm:text-base font-display font-bold text-slate-900">
+                                  {lesson.title}
+                                </h4>
+                              </div>
+                              <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 font-medium">
+                                <span className="inline-flex items-center gap-1">
+                                  <Clock className="w-3.5 h-3.5 text-slate-400" />
+                                  {lesson.estimatedDurationMins} phút
+                                </span>
+                                <span className="inline-flex items-center gap-1">
+                                  <BookOpen className="w-3.5 h-3.5 text-amber-400" />
+                                  {lesson.vocabulariesCount || 4} từ trọng tâm
+                                </span>
+                                <span className="inline-flex items-center gap-1">
+                                  <Sparkles className="w-3.5 h-3.5 text-violet-400" />
+                                  {lesson.blocksCount || 2} phần nội dung
+                                </span>
+                              </div>
+                            </div>
+
+                            {lesson.isUnlocked ? (
+                              <span
+                                className={`inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl font-bold text-xs shrink-0 transition-colors ${
+                                  isCurrent
+                                    ? `bg-gradient-to-r ${meta.unitBadge} text-white shadow-sm`
+                                    : meta.actionIdle
+                                }`}
+                              >
+                                <Play className="w-3.5 h-3.5 fill-current" />
+                                <span>{lesson.isCompleted ? 'Ôn lại' : 'Vào học'}</span>
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-xs font-bold text-slate-400 shrink-0">
+                                <Lock className="w-3.5 h-3.5" />
+                                Hoàn thành bài trước
+                              </span>
+                            )}
+                          </a>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </SpotlightCard>
+            );
+          })}
 
           {/* Level Exam Checkpoint Card */}
           <GlassCard className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-white/85">

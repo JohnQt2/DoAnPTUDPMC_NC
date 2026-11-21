@@ -54,7 +54,7 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
     <div
       aria-label={displayName}
       className={cn(
-        'rounded-full bg-gradient-to-tr from-primary-700 via-rose-700 to-amber-700 text-white flex items-center justify-center font-display font-extrabold uppercase shrink-0 shadow-sm border-2 border-white/80',
+        'rounded-full bg-gradient-to-tr from-primary-600 via-rose-500 to-amber-500 text-white flex items-center justify-center font-display font-extrabold uppercase shrink-0 shadow-sm border-2 border-white/80',
         SIZE_MAP[size],
         className
       )}

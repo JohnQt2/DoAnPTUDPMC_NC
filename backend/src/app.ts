@@ -19,21 +19,6 @@ import { authenticate } from './shared/middleware/auth.middleware';
 
 export const app = express();
 
-// Security Hardening: Hide Express signature, trust Nginx proxy hop, attach standard security headers
-app.disable('x-powered-by');
-app.set('trust proxy', 1);
-
-app.use((req, res, next) => {
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
-  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-  res.setHeader('Permissions-Policy', 'camera=(), geolocation=()');
-  if (env.NODE_ENV === 'production') {
-    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-  }
-  next();
-});
-
 // Standard Middlewares
 app.use(
   cors({

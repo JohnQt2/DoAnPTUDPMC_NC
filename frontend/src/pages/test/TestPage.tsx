@@ -368,7 +368,7 @@ export const TestPage: React.FC<{ testId: number }> = ({ testId }) => {
           type="button"
           onClick={() => setCurrentIdx((i) => Math.max(0, i - 1))}
           disabled={currentIdx === 0}
-          className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl glass-light hover:bg-white text-gray-700 font-bold text-xs transition-all disabled:opacity-70 cursor-pointer"
+          className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl glass-light hover:bg-white text-gray-700 font-bold text-xs transition-all disabled:opacity-40 cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
           Câu trước

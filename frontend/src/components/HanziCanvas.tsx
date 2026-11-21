@@ -347,7 +347,7 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({
                 onClick={() => setSubCharIdx(idx)}
                 className={`w-9 h-9 rounded-xl font-hanzi-serif text-lg font-bold transition-colors cursor-pointer border ${
                   active
-                    ? 'bg-gradient-to-tr from-rose-400 to-amber-300 text-slate-950 border-transparent shadow-sm'
+                    ? 'bg-gradient-to-tr from-rose-400 to-amber-300 text-white border-transparent shadow-sm'
                     : 'bg-white/70 hover:bg-white text-slate-700 border-white/90'
                 }`}
               >
@@ -365,7 +365,7 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({
           onClick={() => setActiveTab('svg')}
           className={`px-4 py-1.5 rounded-full transition-colors cursor-pointer ${
             activeTab === 'svg'
-              ? 'bg-gradient-to-r from-rose-400 via-pink-400 to-amber-300 text-slate-950 shadow-sm'
+              ? 'bg-gradient-to-r from-rose-400 via-pink-400 to-amber-300 text-white shadow-sm'
               : 'text-slate-600 hover:text-slate-900'
           }`}
         >
@@ -376,7 +376,7 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({
           onClick={() => setActiveTab('canvas')}
           className={`px-4 py-1.5 rounded-full transition-colors flex items-center gap-1.5 cursor-pointer ${
             activeTab === 'canvas'
-              ? 'bg-gradient-to-r from-rose-400 via-pink-400 to-amber-300 text-slate-950 shadow-sm'
+              ? 'bg-gradient-to-r from-rose-400 via-pink-400 to-amber-300 text-white shadow-sm'
               : 'text-slate-600 hover:text-slate-900'
           }`}
         >
@@ -526,7 +526,7 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({
                 title={`Xem nét thứ ${idx + 1}`}
                 className={`w-6 h-6 rounded-lg text-[11px] font-mono font-bold transition-colors cursor-pointer ${
                   isCur
-                    ? 'bg-rose-700 text-white shadow-sm'
+                    ? 'bg-rose-500 text-white shadow-sm'
                     : isPast
                       ? 'bg-slate-700 text-white'
                       : 'bg-white/75 text-slate-600 hover:bg-rose-50 hover:text-rose-600 border border-white'
@@ -570,7 +570,7 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({
               type="button"
               onClick={handlePlayAnimation}
               disabled={isPlaying || (isLoadingStrokes && totalAnimatableStrokes === 0)}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-rose-500 to-amber-400 text-slate-950 font-bold text-xs shadow-sm transition-opacity hover:opacity-95 disabled:opacity-70 cursor-pointer"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-rose-500 to-amber-400 text-white font-bold text-xs shadow-sm transition-opacity hover:opacity-95 disabled:opacity-50 cursor-pointer"
             >
               <Play className="w-3.5 h-3.5 fill-current" />
               {isPlaying
@@ -600,7 +600,7 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({
               <button
                 type="button"
                 onClick={onNextCharacter}
-                className="flex items-center gap-1.5 px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold text-xs shadow-sm hover:opacity-95 transition-opacity cursor-pointer"
+                className="flex items-center gap-1.5 px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold text-xs shadow-sm hover:opacity-95 transition-opacity cursor-pointer"
               >
                 <span>Sang chữ tiếp theo</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -613,7 +613,7 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({
               type="button"
               onClick={clearCanvas}
               disabled={drawnStrokes === 0}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/75 hover:bg-white border border-white/90 text-slate-600 font-bold text-xs transition-colors disabled:opacity-70 cursor-pointer"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/75 hover:bg-white border border-white/90 text-slate-600 font-bold text-xs transition-colors disabled:opacity-40 cursor-pointer"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               Xóa nét vẽ
@@ -624,8 +624,8 @@ export const HanziCanvas: React.FC<HanziCanvasProps> = ({
                 onClick={handleConfirmComplete}
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-xl font-bold text-xs transition-colors cursor-pointer ${
                   drawnStrokes > 0
-                    ? 'bg-emerald-500 hover:bg-emerald-600 text-slate-950 shadow-sm'
-                    : 'bg-white/60 border border-white/85 text-slate-600 dark:text-slate-300'
+                    ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm'
+                    : 'bg-white/60 border border-white/85 text-slate-400'
                 }`}
               >
                 <CheckCircle2 className="w-3.5 h-3.5" />

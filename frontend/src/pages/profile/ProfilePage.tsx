@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { useTheme } from '../../context/ThemeContext';
 import { api } from '../../lib/api';
 import { celebrateSuccess } from '../../lib/celebration';
 import { appConfirm, appNotice } from '../../lib/dialog';
@@ -20,8 +19,6 @@ import {
   Search,
   LogOut,
   Camera,
-  Sun,
-  Moon,
 } from 'lucide-react';
 
 const ROLE_LABEL: Record<string, string> = {
@@ -32,7 +29,6 @@ const ROLE_LABEL: Record<string, string> = {
 
 export const ProfilePage: React.FC = () => {
   const { user, updateUser, logout } = useAuth();
-  const { theme, setTheme } = useTheme();
   const isAdminRole = user?.role === 'ADMIN' || user?.role === 'CONTENT_EDITOR';
 
   const [displayName, setDisplayName] = useState('');
@@ -269,76 +265,21 @@ export const ProfilePage: React.FC = () => {
               : 'Quản lý thông tin tài khoản, lộ trình HSK và lịch nhắc học mỗi ngày.'}
           </p>
         </div>
-        <span className="px-3.5 py-1.5 glass-light text-primary-700 dark:text-rose-300 rounded-full text-xs font-bold">
+        <span className="px-3.5 py-1.5 glass-light text-primary-700 rounded-full text-xs font-bold">
           {ROLE_LABEL[user?.role || 'STUDENT'] || user?.role}
         </span>
       </div>
-
-      {/* Theme Appearance Card (Light / Dark) */}
-      <GlassCard className="p-6 sm:p-8 space-y-4 rounded-[28px]">
-        <div className="flex items-center justify-between border-b border-white/75 pb-4">
-          <div className="flex items-center gap-3">
-            {theme === 'dark' ? (
-              <Moon className="w-5 h-5 text-indigo-400" />
-            ) : (
-              <Sun className="w-5 h-5 text-amber-500" />
-            )}
-            <div>
-              <h2 className="text-lg font-display font-bold text-gray-900">Giao diện hiển thị</h2>
-              <p className="text-xs text-gray-500">Áp dụng chế độ Sáng hoặc Tối cho toàn bộ hệ thống</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3.5">
-          <button
-            type="button"
-            onClick={() => setTheme('light')}
-            className={`p-4 rounded-2xl border text-left flex items-center gap-3.5 transition-all cursor-pointer ${
-              theme === 'light'
-                ? 'bg-rose-50/80 border-rose-400 ring-2 ring-rose-400/25 shadow-sm'
-                : 'bg-white/50 border-white/80 hover:bg-white/80'
-            }`}
-          >
-            <span className="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
-              <Sun className="w-5 h-5" />
-            </span>
-            <div>
-              <p className="text-sm font-bold text-gray-900">Giao diện sáng</p>
-              <p className="text-xs text-gray-500">Tươi sáng, rõ nét ban ngày</p>
-            </div>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setTheme('dark')}
-            className={`p-4 rounded-2xl border text-left flex items-center gap-3.5 transition-all cursor-pointer ${
-              theme === 'dark'
-                ? 'bg-slate-800/90 border-rose-400 ring-2 ring-rose-400/25 shadow-sm'
-                : 'bg-white/50 border-white/80 hover:bg-white/80'
-            }`}
-          >
-            <span className="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0">
-              <Moon className="w-5 h-5" />
-            </span>
-            <div>
-              <p className="text-sm font-bold text-gray-900">Giao diện tối</p>
-              <p className="text-xs text-gray-500">Dịu mắt khi học ban đêm</p>
-            </div>
-          </button>
-        </div>
-      </GlassCard>
 
       <form onSubmit={handleSaveProfile} className="space-y-6">
         {/* Section 1: Basic Profile & Single-Button Avatar */}
         <GlassCard className="p-6 sm:p-8 space-y-6 rounded-[28px]">
           <div className="flex items-center justify-between border-b border-white/75 pb-4">
             <div className="flex items-center gap-3">
-              <User className="w-5 h-5 text-primary-600 dark:text-primary-300" />
+              <User className="w-5 h-5 text-primary-600" />
               <h2 className="text-lg font-display font-bold text-gray-900">Thông tin tài khoản</h2>
             </div>
             {!isAdminRole && (
-              <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/12 dark:bg-emerald-950/40 border border-emerald-200/70 dark:border-emerald-900/70 px-3 py-1 rounded-full">
+              <span className="text-xs font-bold text-emerald-700 bg-emerald-500/12 border border-emerald-200/70 px-3 py-1 rounded-full">
                 Đã hoàn thành: {completedLessonsCount} bài học
               </span>
             )}
@@ -408,7 +349,7 @@ export const ProfilePage: React.FC = () => {
           <GlassCard className="p-6 sm:p-8 space-y-6 rounded-[28px]">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/75 pb-4">
               <div className="flex items-center gap-3">
-                <Compass className="w-5 h-5 text-amber-600 dark:text-amber-300" />
+                <Compass className="w-5 h-5 text-amber-600" />
                 <div>
                   <h2 className="text-lg font-display font-bold text-gray-900">Lộ trình học HSK</h2>
                   <p className="text-xs text-gray-500">
@@ -418,7 +359,7 @@ export const ProfilePage: React.FC = () => {
               </div>
               <a
                 href="#/onboarding"
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/65 hover:bg-white border border-white/85 text-primary-700 dark:text-rose-300 font-bold text-xs transition-colors cursor-pointer self-start sm:self-auto"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/65 hover:bg-white border border-white/85 text-primary-700 font-bold text-xs transition-colors cursor-pointer self-start sm:self-auto"
               >
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Xem lộ trình chi tiết</span>
@@ -491,7 +432,7 @@ export const ProfilePage: React.FC = () => {
         {!isAdminRole && (
           <GlassCard className="p-6 sm:p-8 space-y-5 rounded-[28px]">
             <div className="flex items-center gap-3 border-b border-white/75 pb-4">
-              <Bell className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              <Bell className="w-5 h-5 text-emerald-600" />
               <div>
                 <h2 className="text-lg font-display font-bold text-gray-900">
                   Nhắc lịch học hằng ngày
@@ -505,7 +446,7 @@ export const ProfilePage: React.FC = () => {
             <div className="space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-white/50 border border-white/80">
                 <div className="flex items-center gap-3">
-                  <Clock className="w-5 h-5 text-primary-600 dark:text-primary-300 shrink-0" />
+                  <Clock className="w-5 h-5 text-primary-600 shrink-0" />
                   <div>
                     <span className="text-sm font-bold text-gray-900">Giờ nhắc học</span>
                     <p className="text-xs text-gray-500">Gửi lời nhắc ôn bài vào khung giờ này</p>
@@ -578,7 +519,7 @@ export const ProfilePage: React.FC = () => {
             <button
               type="button"
               onClick={handleRevokeOtherSessions}
-              className="text-xs text-rose-600 dark:text-rose-300 hover:text-rose-700 dark:hover:text-rose-200 font-bold underline cursor-pointer"
+              className="text-xs text-rose-600 hover:text-rose-700 font-bold underline cursor-pointer"
             >
               Đăng xuất tất cả thiết bị khác
             </button>
@@ -643,7 +584,7 @@ export const ProfilePage: React.FC = () => {
         <GlassCard className="p-6 sm:p-8 space-y-5 rounded-[28px]">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/75 pb-4">
             <div className="flex items-center gap-3">
-              <Shield className="w-5 h-5 text-primary-600 dark:text-primary-300" />
+              <Shield className="w-5 h-5 text-primary-600" />
               <div>
                 <h2 className="text-lg font-display font-bold text-gray-900">
                   Quản lý quyền tài khoản
@@ -692,7 +633,7 @@ export const ProfilePage: React.FC = () => {
                   </div>
                   <span className="text-[11px] text-gray-500">
                     ID #{u.user_id} • Trạng thái:{' '}
-                    <strong className={u.status === 'ACTIVE' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}>
+                    <strong className={u.status === 'ACTIVE' ? 'text-emerald-600' : 'text-rose-600'}>
                       {u.status === 'ACTIVE' ? 'Hoạt động' : u.status === 'LOCKED' ? 'Tạm khóa' : 'Đã khóa'}
                     </strong>
                   </span>
@@ -703,7 +644,7 @@ export const ProfilePage: React.FC = () => {
                     value={u.role}
                     disabled={u.user_id === user.userId}
                     onChange={(e) => handleAdminUpdateUser(u.user_id, { role: e.target.value })}
-                    className="px-3 py-1.5 rounded-xl bg-white/65 border border-white/85 text-xs font-semibold disabled:opacity-70"
+                    className="px-3 py-1.5 rounded-xl bg-white/65 border border-white/85 text-xs font-semibold disabled:opacity-50"
                   >
                     <option value="STUDENT">Học viên</option>
                     <option value="CONTENT_EDITOR">Biên tập nội dung</option>
@@ -714,7 +655,7 @@ export const ProfilePage: React.FC = () => {
                     value={u.status}
                     disabled={u.user_id === user.userId}
                     onChange={(e) => handleAdminUpdateUser(u.user_id, { status: e.target.value })}
-                    className="px-3 py-1.5 rounded-xl bg-white/65 border border-white/85 text-xs font-semibold disabled:opacity-70"
+                    className="px-3 py-1.5 rounded-xl bg-white/65 border border-white/85 text-xs font-semibold disabled:opacity-50"
                   >
                     <option value="ACTIVE">Hoạt động</option>
                     <option value="LOCKED">Tạm khóa</option>

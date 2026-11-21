@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../../lib/api';
 import { invalidateCache } from '../../lib/cache';
@@ -12,6 +12,8 @@ import {
 } from '../../components/ui';
 import {
   Shield,
+  BookOpen,
+  FileQuestion,
   Plus,
   CheckCircle2,
   XCircle,
@@ -36,15 +38,6 @@ interface OptionItem {
   id: string;
   text: string;
 }
-
-type UserStatFilter = 'ALL' | 'ACTIVE' | 'STAFF' | 'LOCKED';
-
-const userFilterLabels: Record<UserStatFilter, string> = {
-  ALL: 'Tất cả người dùng',
-  ACTIVE: 'Người dùng đang hoạt động',
-  STAFF: 'Quản trị viên và biên tập viên',
-  LOCKED: 'Tài khoản bị khóa hoặc bị cấm',
-};
 
 const HSK_LEVELS = ['HSK1', 'HSK2', 'HSK3', 'HSK4', 'HSK5', 'HSK6'];
 const SKILL_CATEGORIES = ['READING', 'LISTENING', 'GRAMMAR', 'VOCABULARY', 'PINYIN', 'TONE', 'WRITING'];
@@ -104,27 +97,8 @@ export const AdminCMSPage: React.FC<{ initialTab?: 'courses' | 'questions' | 'rb
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [adminSearch, setAdminSearch] = useState('');
   const [adminRoleFilter, setAdminRoleFilter] = useState('');
-  const [userStatFilter, setUserStatFilter] = useState<UserStatFilter>('ALL');
   const [isLoading, setIsLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
-
-  const filteredUsers = useMemo(
-    () =>
-      adminUsers.filter((user) => {
-        switch (userStatFilter) {
-          case 'ACTIVE':
-            return user.status === 'ACTIVE';
-          case 'STAFF':
-            return user.role === 'ADMIN' || user.role === 'CONTENT_EDITOR';
-          case 'LOCKED':
-            return user.status === 'LOCKED' || user.status === 'BANNED';
-          case 'ALL':
-          default:
-            return true;
-        }
-      }),
-    [adminUsers, userStatFilter]
-  );
 
   // Course Create / Edit Modal
   const [showCourseModal, setShowCourseModal] = useState(false);
@@ -214,26 +188,12 @@ export const AdminCMSPage: React.FC<{ initialTab?: 'courses' | 'questions' | 'rb
             params: {
               search: adminSearch || undefined,
               role: adminRoleFilter || undefined,
-              limit: 50,
-              page: 1,
+              limit: 40,
             },
           }),
           api.get<any[]>('/users/admin/audit-logs', { params: { limit: 20 } }),
         ]);
-        const allUsers = [...(usersData?.users || [])];
-        const totalPages = usersData?.pagination?.totalPages || 1;
-        for (let page = 2; page <= totalPages; page += 1) {
-          const pageData = await api.get<any>('/users/admin/all', {
-            params: {
-              search: adminSearch || undefined,
-              role: adminRoleFilter || undefined,
-              limit: 50,
-              page,
-            },
-          });
-          allUsers.push(...(pageData?.users || []));
-        }
-        setAdminUsers(allUsers);
+        setAdminUsers(usersData?.users || []);
         if (usersData?.summary) setUserSummary(usersData.summary);
         setAuditLogs(logsData || []);
       }
@@ -668,13 +628,13 @@ export const AdminCMSPage: React.FC<{ initialTab?: 'courses' | 'questions' | 'rb
                 setSelectedLessonId(null);
                 setLessonDetail(null);
               }}
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-rose-600 dark:hover:text-rose-300 mb-1 cursor-pointer"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-rose-600 mb-1 cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Quay lại danh sách khóa học</span>
             </button>
             <h1 className="text-xl sm:text-2xl font-display font-extrabold text-slate-900 flex items-center gap-2">
-              <Sliders className="w-6 h-6 text-indigo-500 dark:text-indigo-300" />
+              <Sliders className="w-6 h-6 text-indigo-500" />
               <span>Chỉnh sửa bài giảng: {selectedCourseForEdit.title}</span>
             </h1>
             <p className="text-xs text-slate-600">
@@ -707,7 +667,7 @@ export const AdminCMSPage: React.FC<{ initialTab?: 'courses' | 'questions' | 'rb
           {/* LEFT: Chapters & Lessons Tree */}
           <GlassCard className="lg:col-span-5 p-5 space-y-4">
             <h2 className="text-sm font-black text-gray-900 uppercase tracking-wider flex items-center gap-2">
-              <Layers className="w-4 h-4 text-primary-600 dark:text-primary-300" />
+              <Layers className="w-4 h-4 text-primary-600" />
               Cấu trúc Chương & Bài học ({chapters.length} chương)
             </h2>
 
@@ -730,7 +690,7 @@ export const AdminCMSPage: React.FC<{ initialTab?: 'courses' | 'questions' | 'rb
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <span className="text-[10px] font-black uppercase text-primary-600 dark:text-primary-300">
+                        <span className="text-[10px] font-black uppercase text-primary-600">
                           Chương {ch.orderIndex}
                         </span>
                         <h3 className="text-sm font-extrabold text-gray-900">{ch.title}</h3>
@@ -787,33 +747,21 @@ export const AdminCMSPage: React.FC<{ initialTab?: 'courses' | 'questions' | 'rb
                             onClick={() => loadLessonForIntervention(l.lessonId)}
                             className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-2 ${
                               isSel
-                                ? 'bg-rose-50 border-rose-400 dark:bg-rose-950/35 dark:border-rose-500 shadow-sm'
-                                : 'bg-white border-slate-200 hover:border-primary-200 dark:bg-slate-900/40 dark:border-slate-700 dark:hover:border-primary-500'
+                                ? 'bg-gradient-to-r from-primary-50 to-amber-50 border-primary-400 shadow-sm'
+                                : 'bg-white border-gray-100 hover:border-primary-200'
                             }`}
                           >
                             <div className="min-w-0">
-                              <p
-                                className={`text-xs font-extrabold truncate ${
-                                  isSel
-                                    ? 'text-slate-900 dark:text-white'
-                                    : 'text-slate-800 dark:text-slate-100'
-                                }`}
-                              >
+                              <p className="text-xs font-extrabold text-gray-900 truncate">
                                 {l.orderIndex}. {l.title}
                               </p>
-                              <p
-                                className={`text-[10px] mt-0.5 ${
-                                  isSel
-                                    ? 'text-slate-600 dark:text-slate-300'
-                                    : 'text-slate-500 dark:text-slate-400'
-                                }`}
-                              >
+                              <p className="text-[10px] text-gray-500 mt-0.5">
                                 {l.estimatedDurationMins} phút • {l.blocksCount} khối nội dung •{' '}
                                 <span
                                   className={
                                     (l.publishStatus || l.status) === 'DRAFT'
-                                      ? 'text-amber-700 dark:text-amber-400 font-bold'
-                                      : 'text-emerald-700 dark:text-emerald-400 font-bold'
+                                      ? 'text-amber-600 font-bold'
+                                      : 'text-emerald-600 font-bold'
                                   }
                                 >
                                   {(l.publishStatus || l.status) === 'DRAFT' ? 'Bản nháp' : 'Đã xuất bản'}
@@ -840,7 +788,7 @@ export const AdminCMSPage: React.FC<{ initialTab?: 'courses' | 'questions' | 'rb
                                   })
                                 }
                                 title="Sửa bài học"
-                                className="p-1.5 rounded-lg text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/50 cursor-pointer"
+                                className="p-1.5 rounded-lg text-amber-600 hover:bg-amber-50 cursor-pointer"
                               >
                                 <Pencil className="w-3.5 h-3.5" />
                               </button>
@@ -848,7 +796,7 @@ export const AdminCMSPage: React.FC<{ initialTab?: 'courses' | 'questions' | 'rb
                                 type="button"
                                 onClick={() => handleDeleteLesson(l.lessonId)}
                                 title="Xóa bài học"
-                                className="p-1.5 rounded-lg text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 cursor-pointer"
+                                className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 cursor-pointer"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
@@ -883,7 +831,7 @@ export const AdminCMSPage: React.FC<{ initialTab?: 'courses' | 'questions' | 'rb
               <>
                 <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-gray-200/70">
                   <div>
-                    <span className="text-[11px] font-black uppercase text-primary-600 dark:text-primary-300">
+                    <span className="text-[11px] font-black uppercase text-primary-600">
                       Đang can thiệp bài học #{lessonDetail?.lessonId}
                     </span>
                     <h2 className="text-lg font-black text-gray-900">{lessonDetail?.title}</h2>
@@ -893,7 +841,7 @@ export const AdminCMSPage: React.FC<{ initialTab?: 'courses' | 'questions' | 'rb
                       href={`#/lessons/${selectedLessonId}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-gray-200 text-xs font-bold text-gray-700 hover:text-primary-600 dark:hover:text-primary-300"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-gray-200 text-xs font-bold text-gray-700 hover:text-primary-600"
                     >
                       <Eye className="w-3.5 h-3.5" />
                       <span>Xem trước</span>
@@ -1309,6 +1257,40 @@ export const AdminCMSPage: React.FC<{ initialTab?: 'courses' | 'questions' | 'rb
         </motion.div>
       )}
 
+      {/* Vibrant Sliding Navigation Tabs */}
+      <div className="inline-flex flex-wrap items-center gap-1.5 p-1.5 rounded-2xl glass-light">
+        {[
+          { id: 'courses' as const, label: 'Khóa học & Bài giảng', icon: BookOpen },
+          { id: 'questions' as const, label: 'Ngân hàng Câu hỏi', icon: FileQuestion },
+          ...(isSuperAdmin
+            ? [{ id: 'rbac' as const, label: 'Người dùng & Phân quyền', icon: Users }]
+            : []),
+        ].map((item) => {
+          const Icon = item.icon;
+          const active = tab === item.id;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setTab(item.id)}
+              className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-colors cursor-pointer ${
+                active ? 'text-white' : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              {active && (
+                <motion.span
+                  layoutId="admin-cms-tab"
+                  transition={{ type: 'spring', stiffness: 400, damping: 32 }}
+                  className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary-600 via-rose-500 to-amber-500 shadow-md"
+                />
+              )}
+              <Icon className="relative z-10 w-4 h-4" />
+              <span className="relative z-10">{item.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
       <AnimatePresence>
         {/* ══ TAB 1: COURSES & LESSON INTERVENTION ══ */}
         {tab === 'courses' && (
@@ -1525,63 +1507,24 @@ export const AdminCMSPage: React.FC<{ initialTab?: 'courses' | 'questions' | 'rb
             {userSummary && (
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                  {
-                    filter: 'ALL' as UserStatFilter,
-                    label: 'Tổng người dùng',
-                    value: userSummary.totalUsers,
-                    icon: Users,
-                    color: 'from-primary-600 to-rose-500',
-                    activeClass: 'border-rose-500 bg-rose-50 ring-2 ring-rose-500/20 dark:bg-rose-950/25 dark:border-rose-500',
-                  },
-                  {
-                    filter: 'ACTIVE' as UserStatFilter,
-                    label: 'Đang hoạt động',
-                    value: userSummary.activeUsers,
-                    icon: UserCheck,
-                    color: 'from-emerald-500 to-teal-500',
-                    activeClass: 'border-emerald-500 bg-emerald-50 ring-2 ring-emerald-500/20 dark:bg-emerald-950/25 dark:border-emerald-500',
-                  },
-                  {
-                    filter: 'STAFF' as UserStatFilter,
-                    label: 'Quản trị / Biên tập',
-                    value: (userSummary.adminCount || 0) + (userSummary.editorCount || 0),
-                    icon: Shield,
-                    color: 'from-amber-500 to-orange-500',
-                    activeClass: 'border-amber-500 bg-amber-50 ring-2 ring-amber-500/20 dark:bg-amber-950/25 dark:border-amber-500',
-                  },
-                  {
-                    filter: 'LOCKED' as UserStatFilter,
-                    label: 'Bị khóa',
-                    value: userSummary.lockedCount,
-                    icon: Lock,
-                    color: 'from-slate-600 to-slate-800',
-                    activeClass: 'border-slate-500 bg-slate-100 ring-2 ring-slate-500/20 dark:bg-slate-800 dark:border-slate-500',
-                  },
+                  { label: 'Tổng người dùng', value: userSummary.totalUsers, icon: Users, color: 'from-primary-600 to-rose-500' },
+                  { label: 'Đang hoạt động', value: userSummary.activeUsers, icon: UserCheck, color: 'from-emerald-500 to-teal-500' },
+                  { label: 'Quản trị / Biên tập', value: (userSummary.adminCount || 0) + (userSummary.editorCount || 0), icon: Shield, color: 'from-amber-500 to-orange-500' },
+                  { label: 'Bị khóa', value: userSummary.lockedCount, icon: Lock, color: 'from-slate-600 to-slate-800' },
                 ].map((kpi) => {
                   const Icon = kpi.icon;
                   return (
-                    <button
-                      key={kpi.label}
-                      type="button"
-                      onClick={() => setUserStatFilter(kpi.filter)}
-                      aria-pressed={userStatFilter === kpi.filter}
-                      className={[
-                        'w-full rounded-2xl border p-5 text-left flex items-center gap-3.5 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500',
-                        userStatFilter === kpi.filter
-                          ? kpi.activeClass
-                          : 'border-slate-200 bg-white hover:border-rose-300 hover:-translate-y-0.5 dark:border-slate-700 dark:bg-slate-900/70',
-                      ].join(' ')}
-                    >
+                    <GlassCard key={kpi.label} className="p-5 flex items-center gap-3.5">
                       <div className={`w-11 h-11 rounded-2xl bg-gradient-to-tr ${kpi.color} text-white flex items-center justify-center shadow-md shrink-0`}>
                         <Icon className="w-5 h-5" />
                       </div>
                       <div>
-                        <p className="text-2xl font-black text-slate-900 dark:text-slate-100">
+                        <p className="text-2xl font-black text-gray-900">
                           <NumberTicker value={kpi.value || 0} />
                         </p>
-                        <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">{kpi.label}</p>
+                        <p className="text-xs font-semibold text-gray-500">{kpi.label}</p>
                       </div>
-                    </button>
+                    </GlassCard>
                   );
                 })}
               </div>
@@ -1619,80 +1562,63 @@ export const AdminCMSPage: React.FC<{ initialTab?: 'courses' | 'questions' | 'rb
               </div>
             </GlassCard>
 
-            <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-              {userFilterLabels[userStatFilter]}
-              {' · '}
-              {filteredUsers.length} tài khoản
-            </p>
-
             <GlassCard className="overflow-x-auto">
-              {filteredUsers.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-center dark:border-slate-700">
-                  <p className="font-semibold text-slate-700 dark:text-slate-200">
-                    Không có tài khoản phù hợp
-                  </p>
-                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                    Hãy chọn nhóm người dùng khác hoặc xóa từ khóa tìm kiếm.
-                  </p>
-                </div>
-              ) : (
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-white/60 border-b border-gray-200/70 text-gray-500 uppercase font-black">
-                    <tr>
-                      <th className="px-5 py-3.5">Người dùng</th>
-                      <th className="px-5 py-3.5">Vai trò</th>
-                      <th className="px-5 py-3.5">Trạng thái</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/60">
-                    {filteredUsers.map((u) => {
-                      const uid = u.userId ?? u.user_id;
-                      return (
-                        <tr key={uid} className="hover:bg-white/50">
-                          <td className="px-5 py-3.5">
-                            <p className="font-extrabold text-gray-900">{u.displayName || u.display_name}</p>
-                            <p className="text-gray-500">{u.email}</p>
-                          </td>
-                          <td className="px-5 py-3.5">
-                            <select
-                              value={u.role}
-                              onChange={(e) => handleAdminUpdateUser(uid, { role: e.target.value })}
-                              className="px-2.5 py-1.5 rounded-xl bg-white/75 border border-white/90 font-bold"
-                            >
-                              <option value="STUDENT">Học viên</option>
-                              <option value="CONTENT_EDITOR">Biên tập nội dung</option>
-                              <option value="ADMIN">Quản trị viên</option>
-                            </select>
-                          </td>
-                          <td className="px-5 py-3.5">
-                            <button
-                              type="button"
-                              onClick={() =>
-                                handleAdminUpdateUser(uid, {
-                                  status: u.status === 'ACTIVE' ? 'LOCKED' : 'ACTIVE',
-                                })
-                              }
-                              className={`px-3 py-1 rounded-xl font-bold cursor-pointer ${
-                                u.status === 'ACTIVE'
-                                  ? 'bg-emerald-50 text-emerald-700 hover:bg-rose-50 hover:text-rose-700'
-                                  : 'bg-rose-50 text-rose-700 hover:bg-emerald-50 hover:text-emerald-700'
-                              }`}
-                            >
-                              {u.status === 'ACTIVE' ? 'Đang hoạt động (Khóa)' : 'Đang khóa (Mở khóa)'}
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              )}
+              <table className="w-full text-left text-xs">
+                <thead className="bg-white/60 border-b border-gray-200/70 text-gray-500 uppercase font-black">
+                  <tr>
+                    <th className="px-5 py-3.5">Người dùng</th>
+                    <th className="px-5 py-3.5">Vai trò</th>
+                    <th className="px-5 py-3.5">Trạng thái</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/60">
+                  {adminUsers.map((u) => {
+                    const uid = u.userId ?? u.user_id;
+                    return (
+                      <tr key={uid} className="hover:bg-white/50">
+                        <td className="px-5 py-3.5">
+                          <p className="font-extrabold text-gray-900">{u.displayName || u.display_name}</p>
+                          <p className="text-gray-500">{u.email}</p>
+                        </td>
+                        <td className="px-5 py-3.5">
+                          <select
+                            value={u.role}
+                            onChange={(e) => handleAdminUpdateUser(uid, { role: e.target.value })}
+                            className="px-2.5 py-1.5 rounded-xl bg-white/75 border border-white/90 font-bold"
+                          >
+                            <option value="STUDENT">Học viên</option>
+                            <option value="CONTENT_EDITOR">Biên tập nội dung</option>
+                            <option value="ADMIN">Quản trị viên</option>
+                          </select>
+                        </td>
+                        <td className="px-5 py-3.5">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleAdminUpdateUser(uid, {
+                                status: u.status === 'ACTIVE' ? 'LOCKED' : 'ACTIVE',
+                              })
+                            }
+                            className={`px-3 py-1 rounded-xl font-bold cursor-pointer ${
+                              u.status === 'ACTIVE'
+                                ? 'bg-emerald-50 text-emerald-700 hover:bg-rose-50 hover:text-rose-700'
+                                : 'bg-rose-50 text-rose-700 hover:bg-emerald-50 hover:text-emerald-700'
+                            }`}
+                          >
+                            {u.status === 'ACTIVE' ? 'Đang hoạt động (Khóa)' : 'Đang khóa (Mở khóa)'}
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </GlassCard>
 
             {auditLogs.length > 0 && (
               <GlassCard className="p-5 space-y-3">
                 <h3 className="text-sm font-display font-bold text-gray-900 flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-primary-600 dark:text-primary-300" />
+                  <Activity className="w-4 h-4 text-primary-600" />
                   Lịch sử hoạt động quản trị
                 </h3>
                 <div className="space-y-2 max-h-60 overflow-y-auto">

@@ -28,8 +28,6 @@ export const AnimatedOtpInput: React.FC<AnimatedOtpInputProps> = ({
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
   const [pastedPulse, setPastedPulse] = useState(0);
 
-  const filledCount = value.filter(Boolean).length;
-
   const focusSlot = (idx: number) => {
     const clamped = Math.max(0, Math.min(5, idx));
     inputRefs.current[clamped]?.focus();
@@ -138,17 +136,16 @@ export const AnimatedOtpInput: React.FC<AnimatedOtpInputProps> = ({
   };
 
   return (
-    <div className="space-y-3">
-      <motion.div
-        key={`shake-${errorShakeKey}`}
-        animate={
-          errorShakeKey > 0
-            ? { x: [0, -7, 7, -5, 5, -2, 2, 0] }
-            : { x: 0 }
-        }
-        transition={{ duration: 0.38, ease: 'easeInOut' }}
-        className="flex items-center justify-center gap-2 sm:gap-2.5"
-      >
+    <motion.div
+      key={`shake-${errorShakeKey}`}
+      animate={
+        errorShakeKey > 0
+          ? { x: [0, -7, 7, -5, 5, -2, 2, 0] }
+          : { x: 0 }
+      }
+      transition={{ duration: 0.38, ease: 'easeInOut' }}
+      className="flex items-center justify-center gap-2 sm:gap-2.5"
+    >
         {value.map((digit, idx) => {
           const isFocused = activeIdx === idx;
           const isFilled = digit !== '';
@@ -218,22 +215,6 @@ export const AnimatedOtpInput: React.FC<AnimatedOtpInputProps> = ({
             </motion.div>
           );
         })}
-      </motion.div>
-
-      {/* Sleek 6-Step Progress Bar + Paste Hint */}
-      <div className="max-w-[300px] mx-auto space-y-1.5">
-        <div className="h-1 w-full rounded-full bg-[#ECE6E1] overflow-hidden">
-          <motion.div
-            initial={false}
-            animate={{ width: `${(filledCount / 6) * 100}%` }}
-            transition={{ type: 'spring', stiffness: 320, damping: 28 }}
-            className="h-full rounded-full bg-gradient-to-r from-[#C41E3A] via-[#D4A017] to-[#00A86B]"
-          />
-        </div>
-        <p className="text-center text-[11px] text-[#8C7F82]">
-          Hỗ trợ dán mã 6 số (<span className="font-semibold text-[#5F5658]">Ctrl+V</span>) · Kiểm tra cả mục Spam
-        </p>
-      </div>
-    </div>
+    </motion.div>
   );
 };

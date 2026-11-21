@@ -10,29 +10,39 @@ export function rateLimit(options: {
 }) {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const ip =
-        (req.headers['x-forwarded-for'] as string) ||
-        req.socket.remoteAddress ||
-        '127.0.0.1';
-      const identifier = req.body?.email || ip;
-      const key = `ratelimit:${options.keyPrefix}:${identifier}`;
+      const rawIp = req.ip || req.socket.remoteAddress || '127.0.0.1';
+      const normalizedEmail =
+        typeof req.body?.email === 'string' && req.body.email.trim()
+          ? req.body.email.trim().toLowerCase()
+          : null;
 
-      const current = await redisService.incr(key);
+      // Enforce rate limit on BOTH client IP and target email (when present) to stop distributed / rotating-email abuse
+      const keys = normalizedEmail
+        ? [`ratelimit:${options.keyPrefix}:ip:${rawIp}`, `ratelimit:${options.keyPrefix}:email:${normalizedEmail}`]
+        : [`ratelimit:${options.keyPrefix}:ip:${rawIp}`];
 
-      if (current === 1) {
-        await redisService.expire(key, options.windowSeconds);
+      let maxCurrent = 0;
+      let maxTtl = options.windowSeconds;
+
+      for (const key of keys) {
+        const current = await redisService.incr(key);
+        if (current === 1) {
+          await redisService.expire(key, options.windowSeconds);
+        }
+        const ttl = await redisService.ttl(key);
+        if (current > maxCurrent) maxCurrent = current;
+        if (ttl > maxTtl) maxTtl = ttl;
       }
 
-      const ttl = await redisService.ttl(key);
       res.setHeader('X-RateLimit-Limit', options.maxRequests);
-      res.setHeader('X-RateLimit-Remaining', Math.max(0, options.maxRequests - current));
-      res.setHeader('X-RateLimit-Reset', ttl);
+      res.setHeader('X-RateLimit-Remaining', Math.max(0, options.maxRequests - maxCurrent));
+      res.setHeader('X-RateLimit-Reset', maxTtl);
 
-      if (current > options.maxRequests) {
+      if (maxCurrent > options.maxRequests) {
         return next(
           AppError.tooManyRequests(
             options.message ||
-              `Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau ${ttl} giây.`,
+              `Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau ${maxTtl} giây.`,
             'RATE_LIMIT_EXCEEDED'
           )
         );

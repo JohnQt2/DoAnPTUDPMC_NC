@@ -203,6 +203,7 @@ const SKIP_REFRESH_ENDPOINTS = [
   '/auth/login',
   '/auth/register',
   '/auth/otp/',
+  '/auth/password/',
   '/auth/google',
 ];
 

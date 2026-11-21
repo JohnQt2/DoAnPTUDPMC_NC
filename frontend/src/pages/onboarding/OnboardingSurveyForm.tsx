@@ -52,7 +52,7 @@ const FixedRadioCheck: React.FC<{ selected: boolean }> = ({ selected }) => (
     aria-hidden="true"
     className={`w-[22px] h-[22px] rounded-full flex items-center justify-center shrink-0 mt-0.5 transition-colors duration-200 ${
       selected
-        ? 'bg-gradient-to-tr from-primary-600 via-rose-500 to-amber-500 text-white shadow-sm'
+        ? 'bg-gradient-to-tr from-primary-700 via-rose-700 to-amber-700 text-white shadow-sm'
         : 'border-2 border-gray-300/80 bg-white/60'
     }`}
   >
@@ -61,12 +61,18 @@ const FixedRadioCheck: React.FC<{ selected: boolean }> = ({ selected }) => (
 );
 
 const OPTION_CARD_BASE =
-  'w-full text-left p-4 sm:p-5 rounded-[22px] border-2 transition-[background,border-color,box-shadow] duration-200 cursor-pointer flex items-start justify-between gap-3.5';
+  'w-full text-left p-4 sm:p-5 rounded-[22px] border-2 transition-[background,border-color,box-shadow] duration-200 cursor-pointer flex items-start justify-between gap-3.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 dark:focus-visible:ring-rose-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-950';
 
 const optionCardStyle = (selected: boolean) =>
   selected
-    ? 'bg-gradient-to-br from-rose-50/85 via-white/90 to-amber-50/75 border-primary-500 shadow-[0_8px_24px_-6px_rgba(225,29,72,0.18),inset_0_1.5px_1px_rgba(255,255,255,0.95)]'
+    ? 'bg-rose-50 border-rose-500 ring-2 ring-rose-500/20 dark:bg-rose-950/30 dark:border-rose-400 dark:ring-rose-400/20 shadow-[0_8px_24px_-6px_rgba(225,29,72,0.18),inset_0_1.5px_1px_rgba(255,255,255,0.95)]'
     : 'bg-white/62 hover:bg-white/85 border-white/85 hover:border-rose-200/80 shadow-[0_4px_14px_-4px_rgba(15,23,42,0.04),inset_0_1px_1px_rgba(255,255,255,0.92)]';
+
+const optionTitleStyle = (selected: boolean) =>
+  selected ? 'text-slate-900 dark:text-white' : 'text-slate-800 dark:text-slate-100';
+
+const optionDescriptionStyle = (selected: boolean) =>
+  selected ? 'text-slate-600 dark:text-slate-300' : 'text-slate-500 dark:text-slate-400';
 
 export const OnboardingSurveyForm: React.FC<OnboardingSurveyFormProps> = ({
   surveyStep,
@@ -154,14 +160,14 @@ export const OnboardingSurveyForm: React.FC<OnboardingSurveyFormProps> = ({
                       >
                         {item.badge}
                       </span>
-                      <span className="text-[11px] text-gray-400 font-semibold font-mono">
+                      <span className="text-[11px] text-slate-600 dark:text-slate-300 font-semibold font-mono">
                         {item.vocabCount}
                       </span>
                     </div>
-                    <h3 className="text-[15px] font-display font-bold text-gray-900 leading-snug">
+                    <h3 className={`text-[15px] font-display font-bold leading-snug ${optionTitleStyle(isSelected)}`}>
                       {item.title}
                     </h3>
-                    <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">
+                    <p className={`text-xs leading-relaxed line-clamp-2 ${optionDescriptionStyle(isSelected)}`}>
                       {item.subtitle}
                     </p>
                   </div>
@@ -195,14 +201,14 @@ export const OnboardingSurveyForm: React.FC<OnboardingSurveyFormProps> = ({
                       >
                         {goal.badge}
                       </span>
-                      <span className="text-[11px] text-gray-400 font-semibold font-mono">
+                      <span className="text-[11px] text-slate-600 dark:text-slate-300 font-semibold font-mono">
                         ~{goal.recommendedWeeks} tuần
                       </span>
                     </div>
-                    <h3 className="text-[15px] font-display font-bold text-gray-900 leading-snug">
+                    <h3 className={`text-[15px] font-display font-bold leading-snug ${optionTitleStyle(isSelected)}`}>
                       {goal.title}
                     </h3>
-                    <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">
+                    <p className={`text-xs leading-relaxed line-clamp-2 ${optionDescriptionStyle(isSelected)}`}>
                       {goal.description}
                     </p>
                   </div>
@@ -230,10 +236,10 @@ export const OnboardingSurveyForm: React.FC<OnboardingSurveyFormProps> = ({
                       <Calendar className="w-5 h-5" />
                     </div>
                     <div className="min-w-0">
-                      <h3 className="text-sm font-display font-bold text-gray-900">
+                      <h3 className={`text-sm font-display font-bold ${optionTitleStyle(isSelected)}`}>
                         {option.label}
                       </h3>
-                      <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{option.subtitle}</p>
+                      <p className={`text-xs mt-0.5 line-clamp-1 ${optionDescriptionStyle(isSelected)}`}>{option.subtitle}</p>
                     </div>
                   </div>
                   <FixedRadioCheck selected={isSelected} />
@@ -263,10 +269,10 @@ export const OnboardingSurveyForm: React.FC<OnboardingSurveyFormProps> = ({
                       <FixedRadioCheck selected={isSelected} />
                     </div>
                     <div>
-                      <h3 className="text-sm font-display font-extrabold text-gray-900">
+                      <h3 className={`text-sm font-display font-extrabold ${optionTitleStyle(isSelected)}`}>
                         {item.title}
                       </h3>
-                      <p className="text-[11px] text-gray-500 mt-0.5">{item.pace}</p>
+                      <p className={`text-[11px] mt-0.5 ${optionDescriptionStyle(isSelected)}`}>{item.pace}</p>
                     </div>
                   </button>
                 );

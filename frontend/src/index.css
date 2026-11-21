@@ -217,13 +217,13 @@ input[type='submit'],
   background-attachment: fixed;
 }
 
-/* ── Chinese TianZiGe Grid Pattern ── */
+/* ── Chinese TianZiGe Grid Pattern (Imperial Crimson #C41E3A) ── */
 .tianzige-grid {
   background-image:
-    linear-gradient(to right, rgba(244, 114, 182, 0.18) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(244, 114, 182, 0.18) 1px, transparent 1px),
-    linear-gradient(45deg, transparent calc(50% - 0.5px), rgba(244, 114, 182, 0.12) calc(50% - 0.5px), rgba(244, 114, 182, 0.12) calc(50% + 0.5px), transparent calc(50% + 0.5px)),
-    linear-gradient(-45deg, transparent calc(50% - 0.5px), rgba(244, 114, 182, 0.12) calc(50% - 0.5px), rgba(244, 114, 182, 0.12) calc(50% + 0.5px), transparent calc(50% + 0.5px));
+    linear-gradient(to right, rgba(196, 30, 58, 0.18) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(196, 30, 58, 0.18) 1px, transparent 1px),
+    linear-gradient(45deg, transparent calc(50% - 0.5px), rgba(196, 30, 58, 0.12) calc(50% - 0.5px), rgba(196, 30, 58, 0.12) calc(50% + 0.5px), transparent calc(50% + 0.5px)),
+    linear-gradient(-45deg, transparent calc(50% - 0.5px), rgba(196, 30, 58, 0.12) calc(50% - 0.5px), rgba(196, 30, 58, 0.12) calc(50% + 0.5px), transparent calc(50% + 0.5px));
   background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%;
   background-position: center;
 }
@@ -304,4 +304,140 @@ input[type='submit'],
   .animate-shimmer-sweep {
     animation: none !important;
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SYSTEM-WIDE DARK MODE (html.dark)
+   ═══════════════════════════════════════════════════════════════════════════ */
+html.dark body {
+  background-color: #0b0f14;
+  color: #f1f5f9;
+}
+
+html.dark .workspace-mesh-bg {
+  background-color: #0b0f14;
+  background-image:
+    radial-gradient(ellipse 52% 45% at 8% 8%, rgba(196, 30, 58, 0.18) 0%, transparent 60%),
+    radial-gradient(ellipse 48% 44% at 92% 12%, rgba(139, 92, 246, 0.14) 0%, transparent 58%),
+    radial-gradient(ellipse 50% 46% at 86% 90%, rgba(16, 185, 129, 0.11) 0%, transparent 60%);
+  color: #f1f5f9;
+}
+
+html.dark .liquid-sidebar {
+  background: linear-gradient(165deg, rgba(18, 24, 33, 0.90) 0%, rgba(13, 18, 26, 0.94) 100%);
+  border-color: rgba(255, 255, 255, 0.09);
+  box-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.65);
+}
+
+html.dark .glass-light,
+html.dark .glass-card-grid {
+  background: linear-gradient(145deg, rgba(22, 29, 40, 0.86) 0%, rgba(17, 23, 32, 0.90) 100%);
+  border-color: rgba(255, 255, 255, 0.09);
+  box-shadow: 0 14px 32px -12px rgba(0, 0, 0, 0.55);
+}
+
+html.dark .glass-card-grid:hover,
+html.dark .glass-light-hover:hover {
+  background: linear-gradient(145deg, rgba(28, 37, 50, 0.92) 0%, rgba(21, 28, 39, 0.94) 100%);
+  border-color: rgba(251, 113, 133, 0.28);
+}
+
+html.dark .liquid-modal,
+html.dark .liquid-toast {
+  background: linear-gradient(145deg, rgba(21, 28, 39, 0.96) 0%, rgba(15, 20, 29, 0.98) 100%);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 26px 64px -12px rgba(0, 0, 0, 0.72);
+}
+
+/* Crisp dark surfaces & readable typography across all workspace pages */
+html.dark .workspace-mesh-bg .bg-white,
+html.dark .workspace-mesh-bg [class*='bg-white/'] {
+  background-color: rgba(22, 29, 40, 0.88);
+}
+
+html.dark .workspace-mesh-bg .bg-gray-50,
+html.dark .workspace-mesh-bg .bg-slate-50,
+html.dark .workspace-mesh-bg .bg-gray-100,
+html.dark .workspace-mesh-bg .bg-slate-100 {
+  background-color: rgba(30, 39, 53, 0.85);
+}
+
+html.dark .workspace-mesh-bg .text-slate-900,
+html.dark .workspace-mesh-bg .text-gray-900,
+html.dark .workspace-mesh-bg .text-gray-950,
+html.dark .workspace-mesh-bg .text-slate-800,
+html.dark .workspace-mesh-bg .text-gray-800 {
+  color: #f8fafc;
+}
+
+html.dark .workspace-mesh-bg .text-slate-700,
+html.dark .workspace-mesh-bg .text-gray-700 {
+  color: #e2e8f0;
+}
+
+html.dark .workspace-mesh-bg .text-slate-600,
+html.dark .workspace-mesh-bg .text-gray-600 {
+  color: #cbd5e1;
+}
+
+html.dark .workspace-mesh-bg .text-slate-500,
+html.dark .workspace-mesh-bg .text-gray-500 {
+  color: #94a3b8;
+}
+
+html.dark .workspace-mesh-bg .border-gray-100,
+html.dark .workspace-mesh-bg .border-gray-200,
+html.dark .workspace-mesh-bg .border-slate-100,
+html.dark .workspace-mesh-bg .border-slate-200,
+html.dark .workspace-mesh-bg .border-rose-100,
+html.dark .workspace-mesh-bg [class*='border-white'] {
+  border-color: rgba(255, 255, 255, 0.10);
+}
+
+html.dark .workspace-mesh-bg [class*='from-emerald-100'],
+html.dark .workspace-mesh-bg [class*='from-sky-100'],
+html.dark .workspace-mesh-bg [class*='from-amber-100'],
+html.dark .workspace-mesh-bg [class*='from-rose-100'],
+html.dark .workspace-mesh-bg [class*='from-violet-100'],
+html.dark .workspace-mesh-bg [class*='from-fuchsia-100'] {
+  background-image: linear-gradient(135deg, rgba(26, 34, 47, 0.95) 0%, rgba(19, 25, 36, 0.96) 100%);
+  border-color: rgba(255, 255, 255, 0.10);
+}
+
+html.dark .workspace-mesh-bg input:not([type='checkbox']):not([type='radio']),
+html.dark .workspace-mesh-bg select,
+html.dark .workspace-mesh-bg textarea {
+  background-color: #121822;
+  color: #f8fafc;
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+html.dark .workspace-mesh-bg input::placeholder,
+html.dark .workspace-mesh-bg textarea::placeholder {
+  color: #64748b;
+}
+
+html.dark .tianzige-grid {
+  background-image:
+    linear-gradient(to right, rgba(196, 30, 58, 0.28) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(196, 30, 58, 0.28) 1px, transparent 1px),
+    linear-gradient(45deg, transparent calc(50% - 0.5px), rgba(196, 30, 58, 0.18) calc(50% - 0.5px), rgba(196, 30, 58, 0.18) calc(50% + 0.5px), transparent calc(50% + 0.5px)),
+    linear-gradient(-45deg, transparent calc(50% - 0.5px), rgba(196, 30, 58, 0.18) calc(50% - 0.5px), rgba(196, 30, 58, 0.18) calc(50% + 0.5px), transparent calc(50% + 0.5px));
+}
+
+html:not(.dark) .auth-input:-webkit-autofill,
+html:not(.dark) .auth-input:-webkit-autofill:hover,
+html:not(.dark) .auth-input:-webkit-autofill:focus,
+html:not(.dark) .auth-input:-webkit-autofill:active {
+  -webkit-text-fill-color: #fff !important;
+  caret-color: #fff !important;
+  -webkit-box-shadow:
+    var(--tw-ring-offset-shadow, 0 0 #0000),
+    var(--tw-ring-shadow, 0 0 #0000),
+    0 0 0 1000px #3b2b40 inset !important;
+  box-shadow:
+    var(--tw-ring-offset-shadow, 0 0 #0000),
+    var(--tw-ring-shadow, 0 0 #0000),
+    0 0 0 1000px #3b2b40 inset !important;
+  transition: background-color 9999s ease-out 0s;
 }

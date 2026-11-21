@@ -384,6 +384,8 @@ export const ThreeMinimalZenSculpture: React.FC<ThreeMinimalZenSculptureProps> =
       const w = container.clientWidth || 480;
       const h = container.clientHeight || 480;
       camera.aspect = w / h;
+      const aspectScale = camera.aspect < 0.95 ? Math.min(1.45, 0.95 / Math.max(0.55, camera.aspect)) : 1;
+      camera.position.z = 7.2 * aspectScale;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
     });
@@ -492,7 +494,7 @@ export const ThreeMinimalZenSculpture: React.FC<ThreeMinimalZenSculptureProps> =
       ref={mountRef}
       role="img"
       aria-label={`Mô hình 3D chữ Hán ${activeHanzi}`}
-      className={`relative w-full h-full select-none touch-pan-y ${className}`}
+      className={`relative w-full h-full select-none touch-none ${className}`}
     />
   );
 };

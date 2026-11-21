@@ -127,7 +127,7 @@ function buildDaylightEnv(renderer: THREE.WebGLRenderer, isLight: boolean): THRE
   return rt.texture;
 }
 
-/** Crisp 512x512 Matte Xuan-Paper TianZiGe Slab Texture */
+/** Crisp 512x512 Matte Xuan-Paper TianZiGe Slab Front Texture */
 function createTianZiGeTexture(char: string, pinyin: string, strokes: number): THREE.CanvasTexture {
   const size = 512;
   const canvas = document.createElement('canvas');
@@ -135,31 +135,38 @@ function createTianZiGeTexture(char: string, pinyin: string, strokes: number): T
   canvas.height = size;
   const ctx = canvas.getContext('2d')!;
 
-  ctx.fillStyle = '#FCF9F4';
+  // Warm walnut outer border inlaid around Xuan paper face
+  ctx.fillStyle = '#3B2C25';
   ctx.fillRect(0, 0, size, size);
 
+  ctx.fillStyle = '#C29940';
+  ctx.fillRect(12, 12, size - 24, size - 24);
+
+  ctx.fillStyle = '#FCF9F4';
+  ctx.fillRect(16, 16, size - 32, size - 32);
+
   // Fine vermilion outer square
-  ctx.strokeStyle = 'rgba(196, 30, 58, 0.45)';
+  ctx.strokeStyle = 'rgba(196, 30, 58, 0.5)';
   ctx.lineWidth = 3;
-  ctx.strokeRect(42, 42, size - 84, size - 84);
+  ctx.strokeRect(46, 46, size - 92, size - 92);
 
   // Subtle dashed TianZiGe cross + diagonal guides
-  ctx.strokeStyle = 'rgba(196, 30, 58, 0.2)';
+  ctx.strokeStyle = 'rgba(196, 30, 58, 0.22)';
   ctx.lineWidth = 1.8;
   ctx.setLineDash([8, 8]);
   ctx.beginPath();
-  ctx.moveTo(size / 2, 42);
-  ctx.lineTo(size / 2, size - 42);
-  ctx.moveTo(42, size / 2);
-  ctx.lineTo(size - 42, size / 2);
+  ctx.moveTo(size / 2, 46);
+  ctx.lineTo(size / 2, size - 46);
+  ctx.moveTo(46, size / 2);
+  ctx.lineTo(size - 46, size / 2);
   ctx.stroke();
 
   ctx.strokeStyle = 'rgba(28, 25, 23, 0.08)';
   ctx.beginPath();
-  ctx.moveTo(42, 42);
-  ctx.lineTo(size - 42, size - 42);
-  ctx.moveTo(size - 42, 42);
-  ctx.lineTo(42, size - 42);
+  ctx.moveTo(46, 46);
+  ctx.lineTo(size - 46, size - 46);
+  ctx.moveTo(size - 46, 46);
+  ctx.lineTo(46, size - 46);
   ctx.stroke();
   ctx.setLineDash([]);
 
@@ -167,24 +174,92 @@ function createTianZiGeTexture(char: string, pinyin: string, strokes: number): T
   ctx.fillStyle = '#C41E3A';
   ctx.font = '600 18px "JetBrains Mono", monospace';
   ctx.textAlign = 'left';
-  ctx.fillText(pinyin, 58, 76);
+  ctx.fillText(pinyin, 62, 80);
   ctx.textAlign = 'right';
   ctx.fillStyle = '#6B625C';
-  ctx.fillText(`${strokes} nét`, size - 58, 76);
+  ctx.fillText(`${strokes} nét`, size - 62, 80);
 
   // Calligraphic Hanzi in sumi ink
   ctx.fillStyle = '#1C1917';
-  ctx.font = '700 260px "Noto Serif SC", "Songti SC", serif';
+  ctx.font = '700 252px "Noto Serif SC", "Songti SC", serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(char, size / 2, size / 2 + 12);
 
   // Small red scholar seal stamp in corner
   ctx.fillStyle = '#C41E3A';
-  ctx.fillRect(size - 90, size - 90, 34, 34);
+  ctx.fillRect(size - 94, size - 94, 34, 34);
   ctx.fillStyle = '#FFFFFF';
   ctx.font = '700 18px "Noto Serif SC", serif';
-  ctx.fillText('笔', size - 73, size - 72);
+  ctx.fillText('笔', size - 77, size - 76);
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  tex.needsUpdate = true;
+  return tex;
+}
+
+/**
+ * Crisp 512x512 Engraved Walnut & Vermilion Seal Reverse Texture for TianZiGe Slab
+ * (Eliminates overlapping box Z-fighting and gives the back of the 3D slab an authentic engraved finish).
+ */
+function createTianZiGeBackTexture(
+  char: string,
+  pinyin: string,
+  strokes: number
+): THREE.CanvasTexture {
+  const size = 512;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d')!;
+
+  // Deep espresso walnut lacquer back
+  ctx.fillStyle = '#261C18';
+  ctx.fillRect(0, 0, size, size);
+
+  // Inlaid brushed brass double frame
+  ctx.strokeStyle = 'rgba(212, 168, 75, 0.58)';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(26, 26, size - 52, size - 52);
+
+  ctx.strokeStyle = 'rgba(212, 168, 75, 0.25)';
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(38, 38, size - 76, size - 76);
+
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  // Top scholarly inscription
+  ctx.fillStyle = '#E6BE4C';
+  ctx.font = '600 17px "JetBrains Mono", monospace';
+  ctx.fillText('ĐIỀN TỰ CÁCH · QUY TẮC BÚT THUẬN', size / 2, 82);
+
+  // Central Traditional Vermilion Seal Square (印章)
+  const sealSize = 216;
+  const sealX = (size - sealSize) / 2;
+  const sealY = 128;
+  ctx.fillStyle = '#B81D36';
+  ctx.fillRect(sealX, sealY, sealSize, sealSize);
+
+  ctx.strokeStyle = 'rgba(252, 249, 245, 0.75)';
+  ctx.lineWidth = 3.5;
+  ctx.strokeRect(sealX + 10, sealY + 10, sealSize - 20, sealSize - 20);
+
+  // Engraved White Seal Character
+  ctx.fillStyle = '#FCF9F4';
+  ctx.font = '700 144px "Noto Serif SC", "Songti SC", serif';
+  ctx.fillText(char, size / 2, sealY + sealSize / 2 + 6);
+
+  // Pinyin & stroke metadata below seal
+  ctx.fillStyle = '#F5EFE6';
+  ctx.font = '700 24px "JetBrains Mono", monospace';
+  ctx.fillText(`${pinyin} · ${strokes} nét chuẩn`, size / 2, 392);
+
+  ctx.fillStyle = 'rgba(230, 190, 76, 0.78)';
+  ctx.font = '500 18px "Noto Serif SC", serif';
+  ctx.fillText('先横后竖 · 先撇后捺 · 从上到下', size / 2, 438);
 
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
@@ -408,14 +483,27 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
   };
 
   const tabletMatRef = useRef<THREE.MeshStandardMaterial | null>(null);
+  const tabletBackMatRef = useRef<THREE.MeshStandardMaterial | null>(null);
 
   useEffect(() => {
     const mat = tabletMatRef.current;
-    if (!mat) return;
-    const prev = mat.map;
-    mat.map = createTianZiGeTexture(activeStrokeChar, activeStrokePinyin, activeStrokeCount);
-    mat.needsUpdate = true;
-    prev?.dispose();
+    if (mat) {
+      const prev = mat.map;
+      mat.map = createTianZiGeTexture(activeStrokeChar, activeStrokePinyin, activeStrokeCount);
+      mat.needsUpdate = true;
+      prev?.dispose();
+    }
+    const backMat = tabletBackMatRef.current;
+    if (backMat) {
+      const prevBack = backMat.map;
+      backMat.map = createTianZiGeBackTexture(
+        activeStrokeChar,
+        activeStrokePinyin,
+        activeStrokeCount
+      );
+      backMat.needsUpdate = true;
+      prevBack?.dispose();
+    }
   }, [activeStrokeChar, activeStrokePinyin, activeStrokeCount]);
 
   useEffect(() => {
@@ -470,30 +558,13 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
     const walnutMat = new THREE.MeshStandardMaterial({
       color: 0x3b2c25,
       metalness: 0.12,
-      roughness: 0.52,
-    });
-    const brassMat = new THREE.MeshStandardMaterial({
-      color: 0xc29940,
-      metalness: 0.75,
-      roughness: 0.28,
+      roughness: 0.48,
     });
     const porcelainEdgeMat = new THREE.MeshStandardMaterial({
       color: 0xe6dfd6,
       metalness: 0.05,
       roughness: 0.45,
     });
-
-    // Subtle hairline circular calibration ring beneath exhibits
-    const baseRingGeo = new THREE.TorusGeometry(2.85, 0.012, 12, 112);
-    const baseRingMat = new THREE.MeshBasicMaterial({
-      color: isLight ? 0x1c1917 : 0xd4a017,
-      transparent: true,
-      opacity: isLight ? 0.11 : 0.22,
-    });
-    const baseRing = new THREE.Mesh(baseRingGeo, baseRingMat);
-    baseRing.rotation.x = Math.PI / 2;
-    baseRing.position.y = -2.05;
-    rootRig.add(baseRing);
 
     // ══════════════════════════════════════════════════════════════════════════
     // SCENE 0: 4 TONES SCULPTURAL ACOUSTIC CURVES (mā · má · mǎ · mà)
@@ -573,6 +644,7 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
 
     // ══════════════════════════════════════════════════════════════════════════
     // SCENE 1: REFINED TIANZIGE MATTE PORCELAIN & WALNUT CALLIGRAPHY SLAB
+    // Single solid slab with dedicated front & back textures (0% Z-fighting!)
     // ══════════════════════════════════════════════════════════════════════════
     const strokeGroup = new THREE.Group();
     rootRig.add(strokeGroup);
@@ -581,35 +653,36 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
     const tabletTex = hasStrokeScene
       ? createTianZiGeTexture(activeStrokeChar, activeStrokePinyin, activeStrokeCount)
       : null;
+    const tabletBackTex = hasStrokeScene
+      ? createTianZiGeBackTexture(activeStrokeChar, activeStrokePinyin, activeStrokeCount)
+      : null;
+
     const tabletFaceMat = new THREE.MeshStandardMaterial({
       map: tabletTex,
-      roughness: 0.42,
+      roughness: 0.4,
       metalness: 0.04,
     });
+    const tabletBackMat = new THREE.MeshStandardMaterial({
+      map: tabletBackTex,
+      roughness: 0.38,
+      metalness: 0.08,
+    });
+
     if (hasStrokeScene) {
       tabletMatRef.current = tabletFaceMat;
+      tabletBackMatRef.current = tabletBackMat;
     }
 
-    const tabletGeo = new THREE.BoxGeometry(2.95, 2.95, 0.18);
+    const tabletGeo = new THREE.BoxGeometry(3.04, 3.04, 0.2);
     const tabletMesh = new THREE.Mesh(tabletGeo, [
-      porcelainEdgeMat,
-      porcelainEdgeMat,
-      porcelainEdgeMat,
-      porcelainEdgeMat,
-      tabletFaceMat,
       walnutMat,
+      walnutMat,
+      walnutMat,
+      walnutMat,
+      tabletFaceMat,
+      tabletBackMat,
     ]);
     strokeGroup.add(tabletMesh);
-
-    const bezelGeo = new THREE.BoxGeometry(3.12, 3.12, 0.14);
-    const bezelMesh = new THREE.Mesh(bezelGeo, walnutMat);
-    bezelMesh.position.z = -0.04;
-    strokeGroup.add(bezelMesh);
-
-    const trimGeo = new THREE.BoxGeometry(3.16, 3.16, 0.04);
-    const trimMesh = new THREE.Mesh(trimGeo, brassMat);
-    trimMesh.position.z = -0.09;
-    strokeGroup.add(trimMesh);
 
     // ══════════════════════════════════════════════════════════════════════════
     // SCENE 2: FRAMELESS 3D DOUBLE-SIDED FLASHCARDS (CLICK DIRECTLY TO FLIP)
@@ -652,11 +725,13 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
         backMat,
         baseX,
         currentFlipY: 0,
+        userRotX: 0,
+        userRotY: 0,
       };
     });
 
     // ══════════════════════════════════════════════════════════════════════════
-    // SCENE 3: 6 REAL 3D HSK 1 → 6 TEXTBOOKS (REAL .WEBP COVERS + SPINE + PAGES)
+    // SCENE 3: 6 INDIVIDUAL 3D HSK 1 → 6 TEXTBOOKS (ROTATE ONLY SELECTED BOOK)
     // ══════════════════════════════════════════════════════════════════════════
     const hskGroup = new THREE.Group();
     rootRig.add(hskGroup);
@@ -680,6 +755,8 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
       baseX: number;
       baseZ: number;
       baseRotY: number;
+      userRotX: number;
+      userRotY: number;
     }> = [];
 
     (hasHskScene ? HSK_BOOK_SPECS : []).forEach((spec, i) => {
@@ -737,6 +814,8 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
         baseX,
         baseZ,
         baseRotY,
+        userRotX: 0,
+        userRotY: 0,
       });
     });
 
@@ -748,12 +827,14 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
     });
 
     // ══════════════════════════════════════════════════════════════════════════
-    // RAYCASTER FOR DIRECT 3D CARD FLIP & 3D HSK BOOK SELECTION
+    // RAYCASTER & PER-OBJECT ROTATION (INDIVIDUAL BOOK / CARD ROTATION)
     // ══════════════════════════════════════════════════════════════════════════
     const raycaster = new THREE.Raycaster();
     const pointerNdc = new THREE.Vector2();
     let hoveredCardIdx: number | null = null;
     let hoveredBookIdx: number | null = null;
+    let grabbedCardIdx: number | null = null;
+    let grabbedBookIdx: number | null = null;
 
     let dragRotX = 0.05;
     let dragRotY = -0.1;
@@ -790,6 +871,35 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
       prevX = e.clientX;
       prevY = e.clientY;
       pointerTravel = 0;
+      grabbedCardIdx = null;
+      grabbedBookIdx = null;
+
+      const sc = stateRef.current.activeScene;
+      if (sc === 2 || sc === 3) {
+        const targets = getInteractiveTargets();
+        if (targets.length > 0 && updateRaycasterFromEvent(e)) {
+          const hits = raycaster.intersectObjects(targets, false);
+          if (hits.length > 0) {
+            const ud = hits[0].object.userData;
+            if (ud.kind === 'card') {
+              grabbedCardIdx = ud.cardIdx;
+            } else if (ud.kind === 'book') {
+              grabbedBookIdx = ud.bookIdx;
+              // Clicking/grabbing a book immediately focuses that book so only it rotates
+              if (callbacksRef.current.onBookClick) {
+                callbacksRef.current.onBookClick(ud.level);
+              }
+            }
+          }
+        }
+        // Fallback: if dragging anywhere in Scene 3, only rotate the currently active book
+        if (sc === 3 && grabbedBookIdx === null) {
+          grabbedBookIdx = Math.min(5, Math.max(0, stateRef.current.activeHskLevel - 1));
+        }
+        if (sc === 2 && grabbedCardIdx === null) {
+          grabbedCardIdx = stateRef.current.activeCardIdx;
+        }
+      }
     };
 
     const onMove = (e: PointerEvent) => {
@@ -799,8 +909,30 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
         pointerTravel = Math.hypot(e.clientX - downX, e.clientY - downY);
         if (pointerTravel > 5) {
           container.style.cursor = 'grabbing';
-          dragRotY += dx * 0.008;
-          dragRotX = THREE.MathUtils.clamp(dragRotX + dy * 0.006, -0.62, 0.62);
+          const sc = stateRef.current.activeScene;
+          if (sc === 3 && grabbedBookIdx !== null && hskBookEntries[grabbedBookIdx]) {
+            // Rotate ONLY the grabbed/selected individual 3D HSK textbook!
+            const targetBook = hskBookEntries[grabbedBookIdx];
+            targetBook.userRotY += dx * 0.012;
+            targetBook.userRotX = THREE.MathUtils.clamp(
+              targetBook.userRotX + dy * 0.008,
+              -0.65,
+              0.65
+            );
+          } else if (sc === 2 && grabbedCardIdx !== null && cardEntries[grabbedCardIdx]) {
+            // Rotate ONLY the grabbed/selected individual 3D flashcard!
+            const targetCard = cardEntries[grabbedCardIdx];
+            targetCard.userRotY += dx * 0.011;
+            targetCard.userRotX = THREE.MathUtils.clamp(
+              targetCard.userRotX + dy * 0.008,
+              -0.55,
+              0.55
+            );
+          } else {
+            // Scene 0 (Tones) & Scene 1 (Single TianZiGe Slab) rotate rootRig
+            dragRotY += dx * 0.009;
+            dragRotX = THREE.MathUtils.clamp(dragRotX + dy * 0.006, -0.65, 0.65);
+          }
         }
         prevX = e.clientX;
         prevY = e.clientY;
@@ -838,6 +970,8 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
     const onUp = (e: PointerEvent) => {
       if (!isDragging) return;
       isDragging = false;
+      grabbedCardIdx = null;
+      grabbedBookIdx = null;
 
       // If pointer movement was small (< 8px), treat as direct 3D object click!
       if (pointerTravel < 8) {
@@ -847,6 +981,10 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
           if (hits.length > 0) {
             const ud = hits[0].object.userData;
             if (ud.kind === 'card' && callbacksRef.current.onCardClick) {
+              if (cardEntries[ud.cardIdx]) {
+                cardEntries[ud.cardIdx].userRotY = 0;
+                cardEntries[ud.cardIdx].userRotX = 0;
+              }
               callbacksRef.current.onCardClick(ud.cardId, ud.cardIdx);
               container.style.cursor = 'pointer';
               return;
@@ -895,9 +1033,9 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
 
     const sceneCameraTargets: Array<{ y: number; z: number; rotX: number; rotY: number }> = [
       { y: 0.2, z: 7.4, rotX: 0.12, rotY: -0.2 },
-      { y: 0.08, z: 6.7, rotX: -0.08, rotY: 0.2 },
-      { y: 0.06, z: 7.45, rotX: 0.03, rotY: 0.0 },
-      { y: 0.14, z: 7.85, rotX: 0.07, rotY: 0.04 },
+      { y: 0.08, z: 6.7, rotX: -0.06, rotY: 0.18 },
+      { y: 0.06, z: 7.45, rotX: 0.0, rotY: 0.0 },
+      { y: 0.12, z: 7.85, rotX: 0.0, rotY: 0.0 },
     ];
 
     const animate = () => {
@@ -926,15 +1064,27 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
       });
 
       const camTarget = sceneCameraTargets[st.activeScene];
+      // Automatically pull camera back on portrait mobile screens so all 3 cards / 6 books fit horizontally
+      const wideSceneFactor = st.activeScene === 2 || st.activeScene === 3 ? 1.32 : 1.05;
+      const aspectScale =
+        camera.aspect < wideSceneFactor
+          ? Math.min(1.88, wideSceneFactor / Math.max(0.54, camera.aspect))
+          : 1;
+      const targetCamZ = camTarget.z * aspectScale;
+
       camera.position.y += (camTarget.y - camera.position.y) * Math.min(1, dt * 4);
-      camera.position.z += (camTarget.z - camera.position.z) * Math.min(1, dt * 4);
+      camera.position.z += (targetCamZ - camera.position.z) * Math.min(1, dt * 5);
       camera.lookAt(0, 0, 0);
 
-      if (!isDragging) {
+      // In Scene 2 (Cards) and Scene 3 (HSK Books), keep rootRig level so items stay independent!
+      if (st.activeScene === 2 || st.activeScene === 3) {
+        dragRotY += (0 - dragRotY) * Math.min(1, dt * 6);
+        dragRotX += (0 - dragRotX) * Math.min(1, dt * 6);
+      } else if (!isDragging) {
         const breatheY = camTarget.rotY + Math.sin(t * 0.45) * 0.07 * m;
         const breatheX = camTarget.rotX + Math.cos(t * 0.35) * 0.025 * m;
-        dragRotY += (breatheY - dragRotY) * Math.min(1, dt * 2.2);
-        dragRotX += (breatheX - dragRotX) * Math.min(1, dt * 2.2);
+        dragRotY += (breatheY - dragRotY) * Math.min(1, dt * 1.8);
+        dragRotX += (breatheX - dragRotX) * Math.min(1, dt * 1.8);
       }
 
       rootRig.rotation.y += (dragRotY - rootRig.rotation.y) * Math.min(1, dt * 8);
@@ -961,8 +1111,6 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
 
       if (strokeGroup.visible) {
         tabletMesh.position.y = Math.sin(t * 1.0 * m) * 0.05;
-        bezelMesh.position.y = tabletMesh.position.y;
-        trimMesh.position.y = tabletMesh.position.y;
       }
 
       if (cardsGroup.visible) {
@@ -970,13 +1118,19 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
           const flipped = !!st.flippedCards[entry.id];
           const isFocus = idx === st.activeCardIdx;
           const isHovered = idx === hoveredCardIdx;
-          const targetRotY = (flipped ? Math.PI : 0) + (idx - 1) * -0.12;
+          if (!isFocus && grabbedCardIdx !== idx) {
+            entry.userRotX += (0 - entry.userRotX) * Math.min(1, dt * 6);
+            entry.userRotY += (0 - entry.userRotY) * Math.min(1, dt * 6);
+          }
+
+          const targetRotY = (flipped ? Math.PI : 0) + (idx - 1) * -0.1 + entry.userRotY;
           entry.currentFlipY += (targetRotY - entry.currentFlipY) * Math.min(1, dt * 13);
           entry.mesh.rotation.y = entry.currentFlipY;
+          entry.mesh.rotation.x += (entry.userRotX - entry.mesh.rotation.x) * Math.min(1, dt * 11);
 
-          const targetZ = (isFocus ? 0.55 : -0.1) + (isHovered ? 0.24 : 0);
+          const targetZ = (isFocus ? 0.55 : -0.1) + (isHovered ? 0.22 : 0);
           const targetY =
-            Math.sin(t * 1.15 * m + idx * 1.2) * 0.055 + (isHovered ? 0.14 : 0);
+            Math.sin(t * 1.15 * m + idx * 1.2) * 0.05 + (isHovered ? 0.12 : 0);
           const targetScale = (isFocus ? 1.07 : 0.96) + (isHovered ? 0.04 : 0);
 
           entry.mesh.position.z += (targetZ - entry.mesh.position.z) * Math.min(1, dt * 11);
@@ -993,22 +1147,29 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
           const selected = idx === activeIdx;
           const hovered = idx === hoveredBookIdx;
 
-          const targetZ =
-            book.baseZ + (selected ? 0.85 : 0) + (hovered && !selected ? 0.26 : 0);
-          const targetY =
-            (selected ? 0.18 : 0) +
-            (hovered ? 0.11 : 0) +
-            Math.sin(t * 1.05 * m + idx * 0.9) * 0.035;
-          const targetRotY = selected ? 0.08 : hovered ? book.baseRotY * 0.5 : book.baseRotY;
-          const targetRotX = selected ? -0.05 : 0;
-          const targetScale = selected ? 1.15 : hovered ? 1.05 : 0.96;
+          // Non-selected books smoothly return to their neat shelf rotation
+          if (!selected) {
+            book.userRotX += (0 - book.userRotX) * Math.min(1, dt * 7);
+            book.userRotY += (0 - book.userRotY) * Math.min(1, dt * 7);
+          }
 
-          book.mesh.position.z += (targetZ - book.mesh.position.z) * Math.min(1, dt * 9);
-          book.mesh.position.y += (targetY - book.mesh.position.y) * Math.min(1, dt * 9);
-          book.mesh.rotation.y += (targetRotY - book.mesh.rotation.y) * Math.min(1, dt * 9);
-          book.mesh.rotation.x += (targetRotX - book.mesh.rotation.x) * Math.min(1, dt * 9);
+          const targetZ =
+            book.baseZ + (selected ? 0.92 : 0) + (hovered && !selected ? 0.24 : 0);
+          const targetY =
+            (selected ? 0.16 : 0) +
+            (hovered ? 0.09 : 0) +
+            Math.sin(t * 1.05 * m + idx * 0.9) * 0.03;
+          const targetRotY =
+            (selected ? 0.06 : hovered ? book.baseRotY * 0.5 : book.baseRotY) + book.userRotY;
+          const targetRotX = (selected ? -0.03 : 0) + book.userRotX;
+          const targetScale = selected ? 1.16 : hovered ? 1.04 : 0.95;
+
+          book.mesh.position.z += (targetZ - book.mesh.position.z) * Math.min(1, dt * 10);
+          book.mesh.position.y += (targetY - book.mesh.position.y) * Math.min(1, dt * 10);
+          book.mesh.rotation.y += (targetRotY - book.mesh.rotation.y) * Math.min(1, dt * 11);
+          book.mesh.rotation.x += (targetRotX - book.mesh.rotation.x) * Math.min(1, dt * 11);
           book.mesh.scale.setScalar(
-            book.mesh.scale.x + (targetScale - book.mesh.scale.x) * Math.min(1, dt * 9)
+            book.mesh.scale.x + (targetScale - book.mesh.scale.x) * Math.min(1, dt * 10)
           );
         });
       }
@@ -1027,9 +1188,8 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
       ro.disconnect();
       io.disconnect();
       tabletMatRef.current = null;
+      tabletBackMatRef.current = null;
 
-      baseRingGeo.dispose();
-      baseRingMat.dispose();
       railGeo.dispose();
       railMat.dispose();
       toneMeshes.forEach((tm) => {
@@ -1039,10 +1199,10 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
       orbGeo.dispose();
       orbMat.dispose();
       tabletGeo.dispose();
-      bezelGeo.dispose();
-      trimGeo.dispose();
       tabletFaceMat.map?.dispose();
       tabletFaceMat.dispose();
+      tabletBackMat.map?.dispose();
+      tabletBackMat.dispose();
       cardGeo.dispose();
       cardEntries.forEach((c) => {
         c.frontMat.map?.dispose();
@@ -1061,7 +1221,6 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
         b.backMat.dispose();
       });
       walnutMat.dispose();
-      brassMat.dispose();
       porcelainEdgeMat.dispose();
       envTex.dispose();
       renderer.dispose();
@@ -1088,7 +1247,7 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
       ref={mountRef}
       role="img"
       aria-label="Mô hình học tiếng Trung 3D Hanzi4U"
-      className={`relative w-full h-full select-none touch-pan-y ${className}`}
+      className={`relative w-full h-full select-none touch-none ${className}`}
     />
   );
 };

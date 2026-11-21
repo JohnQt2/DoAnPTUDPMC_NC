@@ -8,6 +8,7 @@ import {
   useTransform,
 } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import { HanziLogoMark } from './HanziLogo';
 import { UserAvatar } from './ui';
 import {
   Home,
@@ -153,19 +154,14 @@ const SidebarNavContent: React.FC<NavContentProps> = ({
           title="Hanzi4U"
           className="flex items-center gap-3 group"
         >
-          <span
-            aria-hidden="true"
-            className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-400 via-pink-400 to-amber-300 text-slate-950 flex items-center justify-center font-hanzi-serif font-black text-xl shadow-md shadow-rose-300/35 shrink-0"
-          >
-            汉
-          </span>
+          <HanziLogoMark variant="light" className="w-10 h-10 shrink-0 shadow-md shadow-[#C41E3A]/25 rounded-[14px]" />
           {!collapsed && (
             <div className="flex flex-col min-w-0">
               <span className="font-display font-extrabold text-2xl tracking-tight text-slate-800 leading-none truncate">
-                Hanzi<span className="text-rose-500">4U</span>
+                Hanzi<span className="text-[#C41E3A]">4U</span>
               </span>
               {isAdmin && (
-                <span className="text-[11px] font-bold text-rose-500 uppercase tracking-wider mt-1 truncate">
+                <span className="text-[11px] font-bold text-[#C41E3A] uppercase tracking-wider mt-1 truncate">
                   {isSuperAdmin ? 'Trang quản trị' : 'Biên tập nội dung'}
                 </span>
               )}
@@ -213,12 +209,10 @@ const SidebarNavContent: React.FC<NavContentProps> = ({
             opacity: activeVisible ? 1 : 0,
           }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
-          className="pointer-events-none absolute left-3 right-3 top-0 m-0 rounded-[22px] overflow-hidden bg-gradient-to-br from-rose-200/72 via-pink-100/62 to-amber-100/72 backdrop-blur-md border border-white/95 shadow-[0_10px_24px_-8px_rgba(244,114,182,0.28),0_2px_8px_-2px_rgba(255,255,255,0.65),inset_0_2px_3px_rgba(255,255,255,0.98),inset_0_-2px_6px_rgba(244,114,182,0.16)] will-change-transform"
+          className="pointer-events-none absolute left-3 right-3 top-0 m-0 rounded-[22px] overflow-hidden bg-[#C41E3A]/12 backdrop-blur-md border border-[#C41E3A]/25 shadow-[0_10px_24px_-8px_rgba(196,30,58,0.22),inset_0_1.5px_2px_rgba(255,255,255,0.85)] will-change-transform"
         >
-          {/* Curved Soap-Bubble Specular Sheen */}
-          <span className="absolute inset-x-4 top-[3px] h-[5px] rounded-full bg-gradient-to-r from-white/20 via-white/90 to-white/20 blur-[0.5px]" />
-          {/* Soft Iridescent Bottom Rim Glow */}
-          <span className="absolute inset-x-8 bottom-[2px] h-[3px] rounded-full bg-gradient-to-r from-rose-300/0 via-amber-200/55 to-rose-300/0 blur-[1px]" />
+          {/* Curved Specular Sheen */}
+          <span className="absolute inset-x-4 top-[3px] h-[4px] rounded-full bg-gradient-to-r from-white/10 via-white/75 to-white/10 blur-[0.5px]" />
         </motion.div>
 
         {menuItems.map((item) => {

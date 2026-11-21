@@ -94,7 +94,7 @@ export const PathMap: React.FC<{
                 className={`relative w-[72px] h-[72px] rounded-[18px] flex items-center justify-center font-chinese font-black text-3xl transition-transform ${
                   isLocked
                     ? 'bg-slate-100 text-slate-600 border border-slate-200'
-                    : 'bg-rose-500 text-white shadow-[0_6px_0_#be123c] hover:-translate-y-0.5'
+                    : 'bg-[#C41E3A] text-white shadow-[0_6px_0_#8A1228] hover:-translate-y-0.5'
                 }`}
               >
                 <span className="absolute inset-[5px] rounded-[13px] border border-white/40" />

@@ -6,7 +6,6 @@ import {
   GlassCard,
   SpotlightCard,
   ShimmerButton,
-  NumberTicker,
 } from '../../components/ui';
 import {
   FileText,
@@ -14,9 +13,10 @@ import {
   Award,
   Play,
   CheckCircle2,
-  Trophy,
-  BookOpenCheck,
-  Sparkles,
+  AlarmClock,
+  Target,
+  ArrowRight,
+  ArrowLeft,
   History,
 } from 'lucide-react';
 
@@ -57,7 +57,7 @@ export const ExamListPage: React.FC = () => {
   const cachedTests = getCached<TestSummary[]>('exams:list');
   const cachedSubs = getCached<any[]>('exams:submissions');
 
-  const [section, setSection] = useState<'MOCK_EXAM' | 'WORKBOOK'>('MOCK_EXAM');
+  const [section, setSection] = useState<'MOCK_EXAM' | 'WORKBOOK' | null>(null);
   const [selectedLevel, setSelectedLevel] = useState<string>('HSK1');
   const [tests, setTests] = useState<TestSummary[]>(cachedTests || []);
   const [submissions, setSubmissions] = useState<any[]>(cachedSubs || []);
@@ -83,116 +83,133 @@ export const ExamListPage: React.FC = () => {
     load();
   }, []);
 
-  const sectionTests = tests.filter((t) => t.testType === section);
+  const sectionTests = section ? tests.filter((t) => t.testType === section) : [];
   const filteredTests = sectionTests.filter(
     (t) => t.level.toUpperCase() === selectedLevel.toUpperCase()
   );
 
-  const mockCount = tests.filter((t) => t.testType === 'MOCK_EXAM').length;
-  const workbookCount = tests.filter((t) => t.testType === 'WORKBOOK').length;
+  // Mode Selection View (matching uploaded design: Đề thi HSK + 2 large cards Mô phỏng thi thật & Luyện tập)
+  if (!section) {
+    return (
+      <div className="max-w-5xl mx-auto py-10 px-4 sm:px-6 space-y-8">
+        <div className="space-y-2">
+          <h1 className="text-3xl sm:text-4xl font-display font-black text-slate-900 dark:text-white tracking-tight">
+            Đề thi HSK
+          </h1>
+          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
+            Chọn chế độ làm bài trước khi vào kho đề. Bạn có thể đổi chế độ bất cứ lúc nào.
+          </p>
+        </div>
 
-  return (
-    <div className="max-w-5xl mx-auto py-8 px-4 sm:px-6 space-y-7">
-      {/* Pastel Liquid Glass Exam Hero (Replaces heavy dark crimson banner!) */}
-      <div className="relative overflow-hidden rounded-[28px] p-6 sm:p-8 bg-gradient-to-br from-rose-100/92 via-violet-100/82 to-sky-100/92 border border-white/90 backdrop-blur-2xl shadow-[0_14px_38px_-14px_rgba(148,163,184,0.25),inset_0_1.5px_1px_rgba(255,255,255,0.96)]">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
-          <div className="space-y-2 max-w-2xl">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/75 border border-white text-xs font-extrabold uppercase tracking-wider text-rose-600 dark:text-rose-300">
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              Trung tâm Đề thi & Sách bài tập HSK 1–6
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* Card 1: Mô phỏng thi thật */}
+          <button
+            type="button"
+            onClick={() => setSection('MOCK_EXAM')}
+            className="group relative overflow-hidden rounded-[26px] p-7 sm:p-8 text-left bg-white dark:bg-[#141a22] border border-slate-200/90 dark:border-white/10 hover:border-[#C41E3A]/60 shadow-sm hover:shadow-xl transition-all duration-200 cursor-pointer flex flex-col justify-between min-h-[270px]"
+          >
+            {/* Top-right decorative corner arc */}
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute -top-8 -right-8 w-36 h-36 rounded-bl-[72px] bg-[#C41E3A]/[0.08] dark:bg-[#C41E3A]/[0.16] transition-transform duration-300 group-hover:scale-105"
+            />
+            {/* Bottom-right watermark glyph 考 */}
+            <span
+              aria-hidden="true"
+              className="pointer-events-none select-none absolute right-5 bottom-2 font-hanzi-serif font-black text-[96px] leading-none text-[#C41E3A]/[0.08] dark:text-[#C41E3A]/[0.15]"
+            >
+              考
             </span>
-            <h1 className="text-2xl sm:text-4xl font-display font-extrabold text-slate-900 tracking-tight">
-              Phòng Thi Mô Phỏng & Sách Bài Tập HSK
-            </h1>
-            <p className="text-sm text-slate-600 leading-relaxed">
-              Gồm <strong className="text-slate-800">5 đề thi mẫu cho mỗi cấp độ HSK 1–6</strong> và{' '}
-              <strong className="text-slate-800">bộ bài tập bám sát Sách bài tập Giáo trình chuẩn HSK</strong>.
-            </p>
-          </div>
 
-          <div className="grid grid-cols-2 gap-3 shrink-0">
-            <div className="px-4 py-3 rounded-2xl bg-white/70 border border-white/95 text-center shadow-sm">
-              <p className="text-2xl font-display font-black text-rose-600 dark:text-rose-300">
-                <NumberTicker value={mockCount} />
-              </p>
-              <p className="text-[11px] font-bold text-slate-600">Đề thi mô phỏng</p>
+            <div className="relative z-10 space-y-5">
+              <div className="w-12 h-12 rounded-2xl bg-[#C41E3A] text-white flex items-center justify-center shadow-[0_4px_0_#8A1228]">
+                <AlarmClock className="w-6 h-6" />
+              </div>
+
+              <div className="space-y-2.5">
+                <h2 className="text-xl sm:text-2xl font-display font-extrabold text-slate-900 dark:text-white">
+                  Mô phỏng thi thật
+                </h2>
+                <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed max-w-md">
+                  Đây là bản mô phỏng sát nhất với phòng thi thật: cùng giao diện tiếng Trung, cùng cách tính giờ, cùng quy tắc không được quay lại phần trước — để bạn thi thử với đúng áp lực như thi thật.
+                </p>
+              </div>
             </div>
-            <div className="px-4 py-3 rounded-2xl bg-white/70 border border-white/95 text-center shadow-sm">
-              <p className="text-2xl font-display font-black text-indigo-600 dark:text-indigo-300">
-                <NumberTicker value={workbookCount} />
-              </p>
-              <p className="text-[11px] font-bold text-slate-600">Bộ Sách bài tập</p>
+
+            <div className="relative z-10 pt-6 inline-flex items-center gap-2 text-sm font-extrabold text-[#C41E3A] group-hover:gap-3 transition-all">
+              <span>Vào kho đề</span>
+              <ArrowRight className="w-4 h-4" />
             </div>
-          </div>
+          </button>
+
+          {/* Card 2: Luyện tập */}
+          <button
+            type="button"
+            onClick={() => setSection('WORKBOOK')}
+            className="group relative overflow-hidden rounded-[26px] p-7 sm:p-8 text-left bg-white dark:bg-[#141a22] border border-slate-200/90 dark:border-white/10 hover:border-[#C41E3A]/60 shadow-sm hover:shadow-xl transition-all duration-200 cursor-pointer flex flex-col justify-between min-h-[270px]"
+          >
+            {/* Top-right decorative corner arc */}
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute -top-8 -right-8 w-36 h-36 rounded-bl-[72px] bg-[#C41E3A]/[0.08] dark:bg-[#C41E3A]/[0.16] transition-transform duration-300 group-hover:scale-105"
+            />
+            {/* Bottom-right watermark glyph 练 */}
+            <span
+              aria-hidden="true"
+              className="pointer-events-none select-none absolute right-5 bottom-2 font-hanzi-serif font-black text-[96px] leading-none text-[#C41E3A]/[0.08] dark:text-[#C41E3A]/[0.15]"
+            >
+              练
+            </span>
+
+            <div className="relative z-10 space-y-5">
+              <div className="w-12 h-12 rounded-2xl bg-[#C41E3A] text-white flex items-center justify-center shadow-[0_4px_0_#8A1228]">
+                <Target className="w-6 h-6" />
+              </div>
+
+              <div className="space-y-2.5">
+                <h2 className="text-xl sm:text-2xl font-display font-extrabold text-slate-900 dark:text-white">
+                  Luyện tập
+                </h2>
+                <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed max-w-md">
+                  Học từng bước với hướng dẫn đi kèm. Luyện riêng theo phần hoặc dạng bài bạn muốn, xem ngay đáp án và lời thoại sau khi làm xong.
+                </p>
+              </div>
+            </div>
+
+            <div className="relative z-10 pt-6 inline-flex items-center gap-2 text-sm font-extrabold text-[#C41E3A] group-hover:gap-3 transition-all">
+              <span>Vào kho đề</span>
+              <ArrowRight className="w-4 h-4" />
+            </div>
+          </button>
         </div>
       </div>
+    );
+  }
 
-      {/* 2-Part Pastel Switcher: Phòng thi mô phỏng vs Luyện tập Sách bài tập */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-        <button
-          type="button"
-          onClick={() => setSection('MOCK_EXAM')}
-          className={`relative p-5 rounded-[26px] text-left border-2 transition-[background,border-color,box-shadow] duration-200 cursor-pointer overflow-hidden ${
-            section === 'MOCK_EXAM'
-              ? 'bg-gradient-to-br from-rose-100/95 via-pink-50/95 to-amber-100/90 border-rose-300/90 text-slate-900 shadow-lg shadow-rose-200/40'
-              : 'glass-light hover:bg-white/85 border-white/80 text-slate-700'
-          }`}
-        >
-          <div className="flex items-center gap-3.5">
-            <div
-              className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-colors ${
-                section === 'MOCK_EXAM'
-                  ? 'bg-gradient-to-tr from-rose-400 to-amber-300 text-slate-950 shadow-sm'
-                  : 'bg-rose-50 text-rose-500'
-              }`}
-            >
-              <Trophy className="w-6 h-6" />
-            </div>
-            <div>
-              <span className="text-[10px] font-black uppercase tracking-wider text-rose-600 dark:text-rose-300">
-                Phần 1 • Đề thi mẫu HSK
-              </span>
-              <h2 className="text-lg font-display font-extrabold text-slate-900">
-                Phòng thi mô phỏng
-              </h2>
-              <p className="text-xs text-slate-600 mt-0.5">
-                5 đề thi mẫu chuẩn cho mỗi cấp HSK 1–6 (tổng {mockCount} đề)
-              </p>
-            </div>
-          </div>
-        </button>
+  return (
+    <div className="max-w-5xl mx-auto py-8 px-4 sm:px-6 space-y-6">
+      {/* Compact Header with Back / Mode Switch */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setSection(null)}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl glass-light text-xs font-bold text-slate-700 hover:text-[#C41E3A] cursor-pointer"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Đổi chế độ</span>
+          </button>
+          <h1 className="text-xl sm:text-2xl font-display font-extrabold text-slate-900">
+            {section === 'MOCK_EXAM' ? 'Mô phỏng thi thật' : 'Luyện tập'}
+          </h1>
+        </div>
 
         <button
           type="button"
-          onClick={() => setSection('WORKBOOK')}
-          className={`relative p-5 rounded-[26px] text-left border-2 transition-[background,border-color,box-shadow] duration-200 cursor-pointer overflow-hidden ${
-            section === 'WORKBOOK'
-              ? 'bg-gradient-to-br from-indigo-100/95 via-violet-50/95 to-sky-100/90 border-indigo-300/90 text-slate-900 shadow-lg shadow-indigo-200/40'
-              : 'glass-light hover:bg-white/85 border-white/80 text-slate-700'
-          }`}
+          onClick={() => setSection(section === 'MOCK_EXAM' ? 'WORKBOOK' : 'MOCK_EXAM')}
+          className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-bold text-[#C41E3A] hover:bg-primary-50 cursor-pointer"
         >
-          <div className="flex items-center gap-3.5">
-            <div
-              className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-colors ${
-                section === 'WORKBOOK'
-                  ? 'bg-gradient-to-tr from-indigo-400 to-sky-400 text-slate-950 shadow-sm'
-                  : 'bg-indigo-50 text-indigo-500'
-              }`}
-            >
-              <BookOpenCheck className="w-6 h-6" />
-            </div>
-            <div>
-              <span className="text-[10px] font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-300">
-                Phần 2 • Giáo trình chuẩn HSK
-              </span>
-              <h2 className="text-lg font-display font-extrabold text-slate-900">
-                Luyện tập Sách bài tập
-              </h2>
-              <p className="text-xs text-slate-600 mt-0.5">
-                Bài tập chuyên đề bám sát Sách bài tập HSK 1–6
-              </p>
-            </div>
-          </div>
+          Chuyển sang {section === 'MOCK_EXAM' ? 'Luyện tập' : 'Mô phỏng thi thật'}
         </button>
       </div>
 

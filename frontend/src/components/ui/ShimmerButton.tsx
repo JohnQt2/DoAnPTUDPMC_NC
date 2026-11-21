@@ -22,7 +22,7 @@ export const ShimmerButton: React.FC<ShimmerButtonProps> = ({
     size === 'md' && 'px-5 py-3 text-sm min-h-[46px]',
     size === 'lg' && 'px-7 py-4 text-base min-h-[52px]',
     variant === 'primary' &&
-      'bg-gradient-to-r from-rose-500 via-pink-500 to-amber-400 hover:brightness-105 text-slate-950 shadow-md shadow-rose-400/25 hover:shadow-lg hover:shadow-rose-400/30',
+      'bg-[#C41E3A] hover:bg-[#A51730] text-white shadow-md shadow-[#C41E3A]/25 hover:shadow-lg hover:shadow-[#C41E3A]/35',
     variant === 'glass-dark' &&
       'bg-white/10 hover:bg-white/16 text-white border border-white/25 backdrop-blur-md shadow-lg shadow-black/20',
     variant === 'glass-light' &&

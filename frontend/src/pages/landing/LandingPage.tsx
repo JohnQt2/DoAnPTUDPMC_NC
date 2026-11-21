@@ -10,10 +10,12 @@ import {
   Move,
   Volume2,
   BookOpen,
+  PenTool,
 } from 'lucide-react';
 import { ThreeMinimalZenSculpture } from '../../components/three/ThreeMinimalZenSculpture';
 import { ThreeStudyDioramaStage } from '../../components/three/ThreeStudyDioramaStage';
 import { HanziLogo, HanziLogoMark } from '../../components/HanziLogo';
+import { InteractiveTianZiGeBoard } from '../../components/landing/InteractiveTianZiGeBoard';
 import {
   ArchitecturalBlueprintGrid,
   EditorialPaperFrame,
@@ -335,6 +337,7 @@ export const LandingPage: React.FC = () => {
 
   // Slide 2 (Calligraphy & TianZiGe)
   const [calligraphyIdx, setCalligraphyIdx] = useState<number>(0);
+  const [calligraphyPracticeMode, setCalligraphyPracticeMode] = useState<boolean>(false);
 
   // Slide 3 (Curriculum Gallery)
   const [curriculumIdx, setCurriculumIdx] = useState<number>(0);
@@ -346,11 +349,13 @@ export const LandingPage: React.FC = () => {
   const [flippedCards, setFlippedCards] = useState<Record<string, boolean>>({});
   const [activeHskLevel, setActiveHskLevel] = useState<number>(1);
 
-  // 1:1 WuWa-Grade Wheel / Trackpad & Mobile Touch Swipe State
+  // 1:1 WuWa-Grade Wheel / Trackpad & Mobile Touch Swipe State (Strict 1-slide-per-gesture lock)
+  const lastStepAtRef = useRef<number>(0);
   const wheelStateRef = useRef({
     lockUntil: 0,
     lastEventTime: 0,
     lastAbsDelta: 0,
+    lastDir: 0,
   });
   const swipeLayerRef = useRef<HTMLDivElement>(null);
   const touchGestureRef = useRef<{
@@ -452,11 +457,17 @@ export const LandingPage: React.FC = () => {
 
   const goToSlide = useCallback((idx: number) => {
     const clamped = Math.max(0, Math.min(CHAPTERS.length - 1, idx));
+    lastStepAtRef.current = performance.now();
     setShowFooter(false);
     setActiveSlide(clamped);
   }, []);
 
   const stepChapter = useCallback((dir: 1 | -1) => {
+    const now = performance.now();
+    // Hard 820ms transition lock: guarantees a single wheel/swipe gesture never skips a chapter (e.g. 1 -> 3)
+    if (now - lastStepAtRef.current < 820) return;
+    lastStepAtRef.current = now;
+
     if (dir === 1) {
       setActiveSlide((prev) => {
         if (prev < CHAPTERS.length - 1) {
@@ -596,25 +607,31 @@ export const LandingPage: React.FC = () => {
       if (absDelta < 6) return;
 
       const now = performance.now();
+      const dir: 1 | -1 = e.deltaY > 0 ? 1 : -1;
       const ws = wheelStateRef.current;
       const gap = now - ws.lastEventTime;
-      const isNewGesture = gap > 135 || absDelta > ws.lastAbsDelta * 1.38 + 14;
+      const prevAbsDelta = ws.lastAbsDelta;
 
       ws.lastEventTime = now;
       ws.lastAbsDelta = absDelta;
 
+      // Never allow mid-transition wheel events to queue or skip a slide during the 800ms vertical transition
       if (now < ws.lockUntil) {
-        // Allow intentional rapid discrete wheel notch after 540ms if user explicitly accelerated
-        if (!(isNewGesture && now >= ws.lockUntil - 220)) {
-          return;
-        }
-      } else if (!isNewGesture && gap < 65) {
-        // Ignore decaying trackpad inertia tail after lock expires
         return;
       }
 
-      ws.lockUntil = now + 760;
-      stepChapter(e.deltaY > 0 ? 1 : -1);
+      // Filter out decaying trackpad / mouse-wheel momentum tails after lock expires
+      const isFreshStream = gap > 165 || dir !== ws.lastDir;
+      const isSharpReAcceleration = absDelta > prevAbsDelta * 1.75 + 18;
+      if (!isFreshStream && !isSharpReAcceleration) {
+        // Extend lock slightly while inertia tail is still coasting down
+        ws.lockUntil = now + 140;
+        return;
+      }
+
+      ws.lastDir = dir;
+      ws.lockUntil = now + 840;
+      stepChapter(dir);
     };
 
     const onKeyDown = (e: KeyboardEvent) => {
@@ -1104,8 +1121,8 @@ export const LandingPage: React.FC = () => {
                 {/* Mobile 2-Mode Switcher (Visible on phones < 640px) */}
                 <div className="flex sm:hidden items-center gap-1.5 pt-0.5 shrink-0">
                   {[
-                    { id: 'medallion' as const, label: 'Thẻ sứ' },
-                    { id: 'curves' as const, label: 'Đường thanh' },
+                    { id: 'medallion' as const, label: 'Chữ 3D' },
+                    { id: 'curves' as const, label: 'Sóng thanh' },
                   ].map((m) => {
                     const active = slide1Mode === m.id;
                     return (
@@ -1247,13 +1264,15 @@ export const LandingPage: React.FC = () => {
 
               <span className="pointer-events-none relative z-20 mt-1 sm:mt-0 sm:absolute sm:bottom-2 sm:left-1/2 sm:-translate-x-1/2 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/85 backdrop-blur-sm border border-[#1C1917]/10 text-[10px] sm:text-[10.5px] font-mono text-[#57534E]">
                 <Move className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#C41E3A]" />
-                Kéo xoay để xem mặt sau
+                {slide1Mode === 'medallion'
+                  ? 'Kéo xoay 360° chữ Hán 3D & cầu pha lê'
+                  : 'Kéo xoay sân khấu sóng âm thanh điệu 3D'}
               </span>
 
               <div className="hidden sm:flex flex-col gap-1.5 absolute right-0 top-1/2 -translate-y-1/2 z-20">
                 {[
-                  { id: 'medallion' as const, label: 'Thẻ sứ 3D', glyph: '字' },
-                  { id: 'curves' as const, label: 'Đường thanh', glyph: '声' },
+                  { id: 'medallion' as const, label: 'Chữ 3D & Cầu', glyph: '字' },
+                  { id: 'curves' as const, label: 'Sóng thanh 3D', glyph: '声' },
                 ].map((m) => {
                   const active = slide1Mode === m.id;
                   return (
@@ -1399,29 +1418,51 @@ export const LandingPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="wuwa-stage-box lg:col-span-5 relative h-[200px] sm:h-[380px] lg:h-[470px] flex flex-col items-center justify-center">
-              <div className="w-full max-w-[400px] h-full">
-                {isWarm(2) && (
-                <ThreeStudyDioramaStage
-                  activeScene={1}
-                  activeToneIdx={0}
-                  activeStrokeChar={activeCalligraphy.char}
-                  activeStrokePinyin={activeCalligraphy.pinyin}
-                  activeStrokeCount={activeCalligraphy.strokes}
-                  flippedCards={{}}
-                  activeCardIdx={0}
-                  activeHskLevel={1}
-                  isActive={activeSlide === 2}
-                  enabledScenes={[1]}
-                  theme="light"
-                  className="w-full h-full"
+            <div className="wuwa-stage-box lg:col-span-5 relative min-h-[275px] sm:min-h-[390px] lg:h-[470px] flex flex-col items-center justify-center">
+              {calligraphyPracticeMode ? (
+                <InteractiveTianZiGeBoard
+                  char={activeCalligraphy.char}
+                  pinyin={activeCalligraphy.pinyin}
+                  strokes={activeCalligraphy.strokes}
+                  onExitTo3D={() => setCalligraphyPracticeMode(false)}
                 />
-                )}
-              </div>
-              <span className="pointer-events-none inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-white/80 backdrop-blur-sm text-[10.5px] font-mono text-[#57534E]">
-                <Move className="w-3.5 h-3.5 text-[#C41E3A]" />
-                Kéo xoay để xem mặt sau
-              </span>
+              ) : (
+                <>
+                  <div className="w-full max-w-[400px] h-[215px] sm:h-[345px] lg:h-[420px]">
+                    {isWarm(2) && (
+                    <ThreeStudyDioramaStage
+                      activeScene={1}
+                      activeToneIdx={0}
+                      activeStrokeChar={activeCalligraphy.char}
+                      activeStrokePinyin={activeCalligraphy.pinyin}
+                      activeStrokeCount={activeCalligraphy.strokes}
+                      flippedCards={{}}
+                      activeCardIdx={0}
+                      activeHskLevel={1}
+                      isActive={activeSlide === 2 && !calligraphyPracticeMode}
+                      enabledScenes={[1]}
+                      onTabletClick={() => setCalligraphyPracticeMode(true)}
+                      theme="light"
+                      className="w-full h-full"
+                    />
+                    )}
+                  </div>
+                  <div className="flex flex-wrap items-center justify-center gap-1.5 mt-1">
+                    <button
+                      type="button"
+                      onClick={() => setCalligraphyPracticeMode(true)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#C41E3A] hover:bg-[#A51730] text-white text-[10.5px] sm:text-[11px] font-mono font-semibold shadow-xs transition-colors cursor-pointer"
+                    >
+                      <PenTool className="w-3 h-3" />
+                      <span>Bấm vào ô chữ để tập viết ({activeCalligraphy.strokes} nét)</span>
+                    </button>
+                    <span className="pointer-events-none inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/85 backdrop-blur-sm border border-[#1C1917]/10 text-[10px] font-mono text-[#57534E]">
+                      <Move className="w-3 h-3 text-[#C41E3A]" />
+                      <span>Kéo xoay 3D</span>
+                    </span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </section>

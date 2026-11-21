@@ -13,9 +13,10 @@ router.patch('/me', authenticate, userController.updateProfile);
 router.put('/me', authenticate, userController.updateProfile);
 router.put('/profile', authenticate, userController.updateProfile);
 
-// Progress Endpoints
+// Progress & Weekly Leaderboard Endpoints
 router.get('/me/progress', authenticate, userController.getUserProgressOverview);
 router.get('/progress', authenticate, userController.getUserProgressOverview);
+router.get('/leaderboard/weekly', authenticate, userController.getWeeklyLeaderboard);
 
 // Survey & Roadmap Endpoints
 router.post('/onboarding', authenticate, userController.submitOnboarding);

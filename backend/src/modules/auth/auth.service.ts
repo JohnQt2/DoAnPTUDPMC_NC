@@ -1447,11 +1447,23 @@ export class AuthService {
     }
   }
 
+  private normalizeClientIp(ip?: string | null): string | null {
+    if (!ip) return null;
+    const trimmed = ip.trim();
+    if (!trimmed) return null;
+    if (trimmed === '::1' || trimmed === '::ffff:127.0.0.1') return '127.0.0.1';
+    if (trimmed.startsWith('::ffff:')) return trimmed.slice(7);
+    return trimmed;
+  }
+
   /**
    * Danh sách phiên đăng nhập theo thiết bị của người dùng
+   * - Tự động khử trùng lặp family_id (giữ phiên mới nhất mỗi thiết bị)
+   * - Đảm bảo không bao giờ vượt quá MAX_CONCURRENT_SESSIONS (thu hồi phiên dư thừa cũ nhất, luôn giữ phiên hiện tại)
    */
   async listUserSessions(userId: number, currentSessionId?: number): Promise<any[]> {
-    const sessions = await prisma.userSessions.findMany({
+    const maxSessions = env.MAX_CONCURRENT_SESSIONS;
+    const rawSessions = await prisma.userSessions.findMany({
       where: {
         user_id: userId,
         is_revoked: false,
@@ -1468,8 +1480,57 @@ export class AuthService {
       },
     });
 
-    return sessions.map((s) => ({
+    // Deduplicate by family_id (prefer currentSessionId if present in that family, else newest)
+    const familyMap = new Map<string, (typeof rawSessions)[number]>();
+    const staleDuplicateIds: number[] = [];
+
+    for (const s of rawSessions) {
+      const existing = familyMap.get(s.family_id);
+      if (!existing) {
+        familyMap.set(s.family_id, s);
+      } else if (currentSessionId && s.session_id === currentSessionId) {
+        staleDuplicateIds.push(existing.session_id);
+        familyMap.set(s.family_id, s);
+      } else {
+        staleDuplicateIds.push(s.session_id);
+      }
+    }
+
+    let uniqueDevices = Array.from(familyMap.values());
+    // Ensure current device always ranks first when pruning legacy overflow
+    if (currentSessionId) {
+      uniqueDevices.sort((a, b) => {
+        if (a.session_id === currentSessionId) return -1;
+        if (b.session_id === currentSessionId) return 1;
+        return b.created_at.getTime() - a.created_at.getTime();
+      });
+    }
+
+    const overflowFamilies: string[] = [];
+    if (uniqueDevices.length > maxSessions) {
+      const evicted = uniqueDevices.slice(maxSessions);
+      evicted.forEach((s) => overflowFamilies.push(s.family_id));
+      uniqueDevices = uniqueDevices.slice(0, maxSessions);
+    }
+
+    // Clean up any stale duplicates or legacy >maxSessions rows in DB immediately
+    if (staleDuplicateIds.length > 0) {
+      await prisma.userSessions.updateMany({
+        where: { user_id: userId, session_id: { in: staleDuplicateIds }, is_revoked: false },
+        data: { is_revoked: true },
+      });
+    }
+    if (overflowFamilies.length > 0) {
+      await prisma.userSessions.updateMany({
+        where: { user_id: userId, family_id: { in: overflowFamilies }, is_revoked: false },
+        data: { is_revoked: true },
+      });
+    }
+
+    return uniqueDevices.map((s) => ({
       ...s,
+      ip_address: this.normalizeClientIp(s.ip_address) || '127.0.0.1',
+      maxSessions,
       isCurrent: s.session_id === currentSessionId,
     }));
   }
@@ -1603,6 +1664,32 @@ export class AuthService {
   ): Promise<{ accessToken: string; refreshToken: string; sessionId: number }> {
     // 30 days Sliding Expiration for refresh token (refreshes full window on each rotation)
     const expiresAt = new Date(Date.now() + getRefreshTokenTtlMs());
+    const normalizedIp = this.normalizeClientIp(clientInfo.ip);
+    const normalizedUa = clientInfo.userAgent?.trim() || null;
+
+    // On a fresh login (not token refresh), consolidate any previous idle sessions from the
+    // exact same browser/device + IP so re-logging in on the same browser never duplicates rows
+    if (options?.enforceDeviceLimit !== false && normalizedUa) {
+      await prisma.userSessions.updateMany({
+        where: {
+          user_id: userId,
+          is_revoked: false,
+          user_agent: normalizedUa,
+          ...(normalizedIp
+            ? {
+                ip_address: {
+                  in:
+                    normalizedIp === '127.0.0.1'
+                      ? ['127.0.0.1', '::1', '::ffff:127.0.0.1']
+                      : [normalizedIp, `::ffff:${normalizedIp}`],
+                },
+              }
+            : {}),
+          family_id: { not: familyId },
+        },
+        data: { is_revoked: true },
+      });
+    }
 
     // Initial placeholder hash to get auto-generated session_id
     const placeholderHash = randomUUID();
@@ -1612,8 +1699,8 @@ export class AuthService {
         user_id: userId,
         refresh_token_hash: placeholderHash,
         family_id: familyId,
-        ip_address: clientInfo.ip || null,
-        user_agent: clientInfo.userAgent || null,
+        ip_address: normalizedIp,
+        user_agent: normalizedUa,
         is_revoked: false,
         expires_at: expiresAt,
       },

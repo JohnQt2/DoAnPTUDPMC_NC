@@ -318,6 +318,10 @@ async function runAuthProfileOnboardingTests() {
     assert.strictEqual(getRoadmapBody.success, true);
     assert.strictEqual(getRoadmapBody.data.targetGoal, 'HSK2');
     assert.strictEqual(getRoadmapBody.data.dailyCommitmentMins, 30);
+    assert.strictEqual(getRoadmapBody.data.reminder_time, '20:30');
+    assert.strictEqual(getRoadmapBody.data.roadmap.target_goal, 'HSK2');
+    assert.strictEqual(getRoadmapBody.data.roadmap.daily_commitment_mins, 30);
+    assert.strictEqual(getRoadmapBody.data.expected_duration, '3 tháng');
     assert(getRoadmapBody.data.currentLesson !== undefined, 'Phải có currentLesson');
     assert(Array.isArray(getRoadmapBody.data.weeklyMilestones), 'Phải có danh sách weeklyMilestones');
     console.log('    ✔ Lộ trình cá nhân trả về đầy đủ khóa học, mục tiêu, bài học hiện tại và các cột mốc tuần.');
@@ -342,6 +346,8 @@ async function runAuthProfileOnboardingTests() {
     assert.strictEqual(profileData.goal, 'HSK2');
     assert.strictEqual(profileData.daily_study_minutes, 30);
     assert.strictEqual(profileData.expected_duration, '3 tháng');
+    assert.strictEqual(profileData.reminder_time, '20:30');
+    assert.strictEqual(profileData.daily_reminder_time, '20:30');
     assert(profileData.activeRoadmap, 'Hồ sơ phải kèm thông tin lộ trình hiện tại');
     console.log('    ✔ Trả về đầy đủ thông tin tài khoản, thông tin khảo sát từ user_profiles và lộ trình.');
 

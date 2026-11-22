@@ -29,7 +29,7 @@ export const TodayPage: React.FC = () => {
           api.get<any>('/users/roadmap').catch(() => null),
           api.get<any>('/users/me/progress').catch(() => null),
         ]);
-        setRoadmap(rm?.roadmap || null);
+        setRoadmap(rm?.roadmap || rm || null);
         setProgress(prog || null);
         if (rm?.recommendedFirstLessonId) {
           setNextLessonId(rm.recommendedFirstLessonId);

@@ -38,7 +38,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const localKey = `hanzi4u_onboarded_${userId}`;
     try {
       const roadmapRes = await api.get<any>('/users/roadmap').catch(() => null);
-      if (roadmapRes && roadmapRes.roadmap) {
+      if (roadmapRes && (roadmapRes.roadmap || roadmapRes.roadmapId || roadmapRes.courseId || roadmapRes.course_id)) {
         localStorage.setItem(localKey, '1');
         setHasCompletedOnboarding(true);
       } else if (localStorage.getItem(localKey) === '1') {

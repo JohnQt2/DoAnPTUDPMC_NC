@@ -223,7 +223,7 @@ export const OnboardingSurveyForm: React.FC<OnboardingSurveyFormProps> = ({
         {surveyStep === 3 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             {TARGET_TIMELINE_OPTIONS.map((option) => {
-              const isSelected = targetWeeks === option.weeks;
+              const isSelected = Number(targetWeeks) === Number(option.weeks);
               return (
                 <button
                   key={option.weeks}
@@ -254,7 +254,7 @@ export const OnboardingSurveyForm: React.FC<OnboardingSurveyFormProps> = ({
           <div className="space-y-4">
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5">
               {DAILY_COMMITMENT_OPTIONS.map((item) => {
-                const isSelected = dailyCommitmentMins === item.mins;
+                const isSelected = Number(dailyCommitmentMins) === Number(item.mins);
                 return (
                   <button
                     key={item.mins}

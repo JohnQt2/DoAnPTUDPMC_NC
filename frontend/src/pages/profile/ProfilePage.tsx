@@ -6,6 +6,12 @@ import { celebrateSuccess } from '../../lib/celebration';
 import { appConfirm, appNotice } from '../../lib/dialog';
 import { GlassCard, UserAvatar, ShimmerButton } from '../../components/ui';
 import {
+  normalizeLevel,
+  normalizeGoal,
+  normalizeDailyMins,
+  normalizeReminderTime,
+} from '../onboarding/OnboardingRoadmapPage';
+import {
   User,
   Bell,
   Compass,
@@ -200,17 +206,61 @@ export const ProfilePage: React.FC = () => {
   const loadProfile = async () => {
     try {
       const data = await api.get<any>('/users/me');
-      const loadedDisplayName = data.displayName || '';
-      const loadedReminderTime = data.notificationSettings?.reminderTime || '20:00';
-      const loadedNotifyEmail = data.notificationSettings?.notifyEmail ?? true;
-      const loadedNotifyWebpush = data.notificationSettings?.notifyWebpush ?? false;
-      const loadedStartingLevel = data.activeRoadmap?.startingLevel || 'ZERO';
-      const loadedTargetGoal = data.activeRoadmap?.targetGoal || 'HSK1';
-      const loadedDailyCommitment = data.activeRoadmap?.dailyCommitmentMins || 15;
+      const loadedDisplayName = data.displayName || data.display_name || '';
+      const loadedAvatarUrl = data.avatarUrl || data.avatar_url || '';
+      const loadedCompletedLessons = data.completedLessonsCount || data.completed_lessons_count || 0;
+
+      const activeRm = data.activeRoadmap || data.active_roadmap;
+      const userProf = data.profile;
+
+      const savedLevel =
+        activeRm?.startingLevel ||
+        activeRm?.starting_level ||
+        data.starting_level ||
+        data.startingLevel ||
+        data.current_level ||
+        userProf?.current_level;
+      const loadedStartingLevel = normalizeLevel(savedLevel);
+
+      const savedGoal =
+        activeRm?.targetGoal ||
+        activeRm?.target_goal ||
+        data.target_goal ||
+        data.targetGoal ||
+        data.goal ||
+        userProf?.goal;
+      const loadedTargetGoal = normalizeGoal(savedGoal);
+
+      const savedCommitment =
+        activeRm?.dailyCommitmentMins ||
+        activeRm?.daily_commitment_mins ||
+        data.daily_commitment_mins ||
+        data.dailyCommitmentMins ||
+        data.daily_study_minutes ||
+        userProf?.daily_study_minutes;
+      const loadedDailyCommitment = normalizeDailyMins(savedCommitment);
+
+      const savedReminder =
+        data.reminder_time ||
+        data.reminderTime ||
+        data.daily_reminder_time ||
+        data.notificationSettings?.reminderTime ||
+        data.notificationSettings?.reminder_time ||
+        activeRm?.reminder_time;
+      const loadedReminderTime = normalizeReminderTime(savedReminder);
+
+      const loadedNotifyEmail =
+        data.notificationSettings?.notifyEmail ??
+        data.notificationSettings?.notify_email ??
+        true;
+      const loadedNotifyWebpush =
+        data.notificationSettings?.notifyWebpush ??
+        data.notificationSettings?.notify_webpush ??
+        false;
 
       setDisplayName(loadedDisplayName);
-      setAvatarUrl(data.avatarUrl || '');
-      setCompletedLessonsCount(data.completedLessonsCount || 0);
+      setAvatarUrl(loadedAvatarUrl);
+      setCompletedLessonsCount(loadedCompletedLessons);
       setReminderTime(loadedReminderTime);
       setNotifyEmail(loadedNotifyEmail);
       setNotifyWebpush(loadedNotifyWebpush);
@@ -303,6 +353,8 @@ export const ProfilePage: React.FC = () => {
           daily_commitment_mins: dailyCommitment,
           reminder_time: reminderTime,
         });
+
+        await loadProfile();
       }
 
       setSavedSnapshot({
@@ -324,14 +376,14 @@ export const ProfilePage: React.FC = () => {
 
   const hasUnsavedChanges = Boolean(
     savedSnapshot &&
-      (displayName !== savedSnapshot.displayName ||
-        (!isAdminRole &&
-          (reminderTime !== savedSnapshot.reminderTime ||
-            notifyEmail !== savedSnapshot.notifyEmail ||
-            notifyWebpush !== savedSnapshot.notifyWebpush ||
-            startingLevel !== savedSnapshot.startingLevel ||
-            targetGoal !== savedSnapshot.targetGoal ||
-            dailyCommitment !== savedSnapshot.dailyCommitment)))
+    (displayName !== savedSnapshot.displayName ||
+      (!isAdminRole &&
+        (reminderTime !== savedSnapshot.reminderTime ||
+          notifyEmail !== savedSnapshot.notifyEmail ||
+          notifyWebpush !== savedSnapshot.notifyWebpush ||
+          startingLevel !== savedSnapshot.startingLevel ||
+          targetGoal !== savedSnapshot.targetGoal ||
+          dailyCommitment !== savedSnapshot.dailyCommitment)))
   );
 
   const handleResetChanges = () => {
@@ -424,11 +476,10 @@ export const ProfilePage: React.FC = () => {
           <button
             type="button"
             onClick={() => setTheme('light')}
-            className={`p-4 rounded-2xl border text-left flex items-center gap-3.5 transition-all cursor-pointer ${
-              theme === 'light'
-                ? 'bg-rose-50/80 border-rose-400 ring-2 ring-rose-400/25 shadow-sm'
-                : 'bg-white/50 border-white/80 hover:bg-white/80'
-            }`}
+            className={`p-4 rounded-2xl border text-left flex items-center gap-3.5 transition-all cursor-pointer ${theme === 'light'
+              ? 'bg-rose-50/80 border-rose-400 ring-2 ring-rose-400/25 shadow-sm'
+              : 'bg-white/50 border-white/80 hover:bg-white/80'
+              }`}
           >
             <span className="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
               <Sun className="w-5 h-5" />
@@ -442,11 +493,10 @@ export const ProfilePage: React.FC = () => {
           <button
             type="button"
             onClick={() => setTheme('dark')}
-            className={`p-4 rounded-2xl border text-left flex items-center gap-3.5 transition-all cursor-pointer ${
-              theme === 'dark'
-                ? 'bg-slate-800/90 border-rose-400 ring-2 ring-rose-400/25 shadow-sm'
-                : 'bg-white/50 border-white/80 hover:bg-white/80'
-            }`}
+            className={`p-4 rounded-2xl border text-left flex items-center gap-3.5 transition-all cursor-pointer ${theme === 'dark'
+              ? 'bg-slate-800/90 border-rose-400 ring-2 ring-rose-400/25 shadow-sm'
+              : 'bg-white/50 border-white/80 hover:bg-white/80'
+              }`}
           >
             <span className="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0">
               <Moon className="w-5 h-5" />
@@ -680,11 +730,10 @@ export const ProfilePage: React.FC = () => {
 
         {/* Balanced Form Save Bar (Sticky when unsaved changes exist, right-aligned CTA) */}
         <div
-          className={`rounded-2xl px-5 py-3.5 border backdrop-blur-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all ${
-            hasUnsavedChanges
-              ? 'sticky bottom-4 z-30 bg-[#FCFBF8]/95 dark:bg-[#141c2b]/95 border-[#C41E3A]/35 dark:border-rose-400/40 shadow-[0_14px_34px_-14px_rgba(196,30,58,0.28)]'
-              : 'glass-light border-white/80'
-          }`}
+          className={`rounded-2xl px-5 py-3.5 border backdrop-blur-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all ${hasUnsavedChanges
+            ? 'sticky bottom-4 z-30 bg-[#FCFBF8]/95 dark:bg-[#141c2b]/95 border-[#C41E3A]/35 dark:border-rose-400/40 shadow-[0_14px_34px_-14px_rgba(196,30,58,0.28)]'
+            : 'glass-light border-white/80'
+            }`}
         >
           <div className="flex items-center gap-2.5 text-xs font-semibold">
             {hasUnsavedChanges ? (
@@ -739,11 +788,10 @@ export const ProfilePage: React.FC = () => {
                   Thiết bị đang đăng nhập
                 </h2>
                 <span
-                  className={`px-2 py-0.5 rounded-full border text-[11px] font-bold tabular-nums ${
-                    sessions.length >= maxSessions
-                      ? 'bg-amber-50/90 border-amber-200 text-amber-800 dark:bg-amber-950/40 dark:border-amber-700/60 dark:text-amber-300'
-                      : 'bg-white/80 border-white text-slate-600'
-                  }`}
+                  className={`px-2 py-0.5 rounded-full border text-[11px] font-bold tabular-nums ${sessions.length >= maxSessions
+                    ? 'bg-amber-50/90 border-amber-200 text-amber-800 dark:bg-amber-950/40 dark:border-amber-700/60 dark:text-amber-300'
+                    : 'bg-white/80 border-white text-slate-600'
+                    }`}
                 >
                   {sessions.length}/{maxSessions}
                 </span>
@@ -796,19 +844,17 @@ export const ProfilePage: React.FC = () => {
               return (
                 <div
                   key={sess.session_id}
-                  className={`p-3 sm:p-3.5 rounded-2xl border flex items-center justify-between gap-2.5 transition-colors ${
-                    sess.isCurrent
-                      ? 'bg-white/75 border-emerald-200/75 shadow-[0_6px_18px_-14px_rgba(16,185,129,0.45)]'
-                      : 'bg-white/50 hover:bg-white/70 border-white/85'
-                  }`}
+                  className={`p-3 sm:p-3.5 rounded-2xl border flex items-center justify-between gap-2.5 transition-colors ${sess.isCurrent
+                    ? 'bg-white/75 border-emerald-200/75 shadow-[0_6px_18px_-14px_rgba(16,185,129,0.45)]'
+                    : 'bg-white/50 hover:bg-white/70 border-white/85'
+                    }`}
                 >
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     <div
-                      className={`w-9 h-9 rounded-xl border flex items-center justify-center shrink-0 ${
-                        sess.isCurrent
-                          ? 'bg-emerald-50/90 border-emerald-200/80 text-emerald-700'
-                          : 'bg-white/80 border-white/90 text-gray-600'
-                      }`}
+                      className={`w-9 h-9 rounded-xl border flex items-center justify-center shrink-0 ${sess.isCurrent
+                        ? 'bg-emerald-50/90 border-emerald-200/80 text-emerald-700'
+                        : 'bg-white/80 border-white/90 text-gray-600'
+                        }`}
                     >
                       {isMobile ? <Smartphone className="w-4 h-4" /> : <Laptop className="w-4 h-4" />}
                     </div>

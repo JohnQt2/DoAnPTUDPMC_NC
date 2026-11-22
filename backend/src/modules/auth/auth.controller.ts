@@ -1,6 +1,16 @@
 import { Request, Response, NextFunction } from 'express';
 import { authService } from './auth.service';
-import { RegisterDto, SendOtpDto, VerifyOtpDto, LoginPasswordDto, GoogleAuthDto, RefreshTokenDto } from './auth.dto';
+import {
+  RegisterDto,
+  SendOtpDto,
+  VerifyOtpDto,
+  LoginPasswordDto,
+  GoogleAuthDto,
+  RefreshTokenDto,
+  ForgotPasswordSendOtpDto,
+  ForgotPasswordVerifyOtpDto,
+  ResetPasswordWithOtpDto,
+} from './auth.dto';
 import { env } from '../../config/env';
 import { getAccessTokenTtlSeconds, getRefreshTokenTtlMs } from '../../shared/utils/crypto';
 
@@ -81,11 +91,71 @@ export class AuthController {
 
   getMailbox = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      if (env.NODE_ENV === 'production') {
+        res.status(404).json({ success: false, error: { message: 'Endpoint không khả dụng.' } });
+        return;
+      }
       const email = req.query.email as string;
       const mail = await authService.getMailboxMessage(email);
       res.status(200).json({
         success: true,
         data: mail,
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  forgotPasswordSendOtp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { email } = ForgotPasswordSendOtpDto.parse(req.body);
+      const result = await authService.sendPasswordResetOtp(email);
+      res.status(200).json({
+        success: true,
+        data: {
+          message: result.message,
+          expiresIn: result.expiresIn,
+          senderEmail: result.senderEmail,
+        },
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  forgotPasswordVerifyOtp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { email, otp } = ForgotPasswordVerifyOtpDto.parse(req.body);
+      const result = await authService.verifyPasswordResetOtp(email, otp);
+      res.status(200).json({
+        success: true,
+        data: {
+          message: result.message,
+          resetToken: result.resetToken,
+          expiresIn: result.expiresIn,
+        },
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  resetPasswordWithOtp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { email, otp, resetToken, newPassword } = ResetPasswordWithOtpDto.parse(req.body);
+      const clientInfo = this.getClientInfo(req);
+      const result = await authService.resetPasswordWithOtp(
+        email,
+        { otp, resetToken },
+        newPassword,
+        clientInfo
+      );
+      this.clearRefreshTokenCookie(res);
+      res.status(200).json({
+        success: true,
+        data: {
+          message: result.message,
+        },
       });
     } catch (err) {
       next(err);

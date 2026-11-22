@@ -72,7 +72,7 @@ const TLS_CERT_ERROR_CODES = new Set([
 const SMTP_TIMEOUT_MS = 12000;
 
 export class MailerService {
-  private readonly SYSTEM_SENDER_NAME = 'ChinaEasy';
+  private readonly SYSTEM_SENDER_NAME = 'Hanzi4U';
   private readonly SYSTEM_SENDER_EMAIL = 'hieuhoanghuu436@gmail.com';
 
   /**
@@ -95,30 +95,48 @@ export class MailerService {
    * Gửi email xác thực OTP từ tài khoản hệ thống vào hòm thư Gmail thật của người dùng.
    * Tự động thử cổng 465 (SSL) rồi 587 (STARTTLS) nếu mạng chặn một trong hai cổng.
    */
-  async sendOtpEmail(toEmail: string, otp: string, ttlSeconds: number = 300): Promise<MailSendResult> {
+  async sendOtpEmail(
+    toEmail: string,
+    otp: string,
+    ttlSeconds: number = 300,
+    purpose: 'auth' | 'reset_password' = 'auth'
+  ): Promise<MailSendResult> {
     const config = this.getSmtpConfig();
 
     const minutes = Math.floor(ttlSeconds / 60);
     const messageId = `<otp-${randomUUID()}@gmail.com>`;
-    const subjectText = `[ChinaEasy] Mã xác thực OTP của bạn là ${otp}`;
+    const isReset = purpose === 'reset_password';
+    const subjectText = isReset
+      ? `[Hanzi4U] Mã OTP đặt lại mật khẩu của bạn là ${otp}`
+      : `[Hanzi4U] Mã xác thực OTP của bạn là ${otp}`;
     const encodedSubject = `=?UTF-8?B?${Buffer.from(subjectText, 'utf-8').toString('base64')}?=`;
+
+    const heading = isReset
+      ? '🔐 Hanzi4U - Đặt Lại Mật Khẩu'
+      : '🀄 Hanzi4U - Xác Thực Tài Khoản';
+    const intro = isReset
+      ? 'Chúng tôi nhận được yêu cầu <strong>đặt lại mật khẩu</strong> cho tài khoản học tiếng Trung <strong>Hanzi4U</strong> của bạn. Vui lòng nhập mã OTP 6 chữ số bên dưới để tạo mật khẩu mới:'
+      : 'Mã xác thực OTP (6 chữ số) để kích hoạt / đăng nhập tài khoản học tiếng Trung <strong>Hanzi4U</strong> của bạn là:';
+    const extraNote = isReset
+      ? '<br/>• Nếu bạn không yêu cầu đặt lại mật khẩu, hãy bỏ qua email này — tài khoản của bạn vẫn hoàn toàn an toàn.'
+      : '';
 
     const htmlBody = `<!DOCTYPE html>
 <html>
 <head><meta charset="UTF-8" /></head>
-<body style="margin:0;padding:20px;background-color:#f9fafb;font-family:Arial,sans-serif;">
-  <div style="max-width:520px;margin:0 auto;padding:28px;border:1px solid #e5e7eb;border-radius:16px;background-color:#ffffff;">
-    <h2 style="color:#dc2626;margin:0 0 12px 0;font-size:20px;">🀄 ChinaEasy - Xác Thực Tài Khoản</h2>
+<body style="margin:0;padding:20px;background-color:#fdf2f8;font-family:Arial,sans-serif;">
+  <div style="max-width:520px;margin:0 auto;padding:28px;border:1px solid #fce7f3;border-radius:16px;background-color:#ffffff;">
+    <h2 style="color:#e11d48;margin:0 0 12px 0;font-size:20px;">${heading}</h2>
     <p style="color:#374151;font-size:14px;line-height:1.6;margin:0 0 16px 0;">
       Xin chào <strong>${toEmail}</strong>,<br/>
-      Mã xác thực OTP (6 chữ số) để kích hoạt / đăng nhập tài khoản học tiếng Trung <strong>ChinaEasy</strong> của bạn là:
+      ${intro}
     </p>
-    <div style="text-align:center;margin:20px 0;padding:18px;background-color:#fef2f2;border-radius:12px;border:1px dashed #f87171;">
-      <span style="font-size:32px;font-weight:800;letter-spacing:8px;color:#b91c1c;">${otp}</span>
+    <div style="text-align:center;margin:20px 0;padding:18px;background-color:#fff1f2;border-radius:12px;border:1px dashed #fb7185;">
+      <span style="font-size:32px;font-weight:800;letter-spacing:8px;color:#be123c;">${otp}</span>
     </div>
     <p style="color:#4b5563;font-size:13px;line-height:1.6;margin:0;">
       • Mã xác thực này có hiệu lực trong vòng <strong>${minutes} phút (${ttlSeconds} giây)</strong>.<br/>
-      • Tuyệt đối không chia sẻ mã này cho bất kỳ ai. Nhập sai quá 5 lần sẽ tạm khóa tài khoản 15 phút.
+      • Tuyệt đối không chia sẻ mã này cho bất kỳ ai. Nhập sai quá 5 lần sẽ tạm khóa xác thực trong 15 phút.${extraNote}
     </p>
   </div>
 </body>

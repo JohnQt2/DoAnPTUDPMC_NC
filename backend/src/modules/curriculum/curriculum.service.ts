@@ -438,7 +438,7 @@ export class CurriculumService {
       where: { lesson_id: lessonId },
       include: {
         chapter: {
-          include: { course: { select: { course_id: true, title: true, code: true } } },
+          include: { course: { select: { course_id: true, title: true, code: true, level: true } } },
         },
         blocks: {
           orderBy: { order_index: 'asc' },

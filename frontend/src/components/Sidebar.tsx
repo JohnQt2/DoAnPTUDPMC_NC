@@ -8,6 +8,7 @@ import {
   useTransform,
 } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import { HanziLogoMark } from './HanziLogo';
 import { UserAvatar } from './ui';
 import {
   Home,
@@ -23,6 +24,8 @@ import {
   Users,
   Menu,
   X,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 
 export const STUDENT_SIDEBAR_ITEMS = [
@@ -43,6 +46,7 @@ interface NavContentProps {
   isSuperAdmin: boolean;
   user: any;
   logout: () => void;
+  collapsed?: boolean;
   onSelect?: () => void;
 }
 
@@ -60,6 +64,7 @@ const SidebarNavContent: React.FC<NavContentProps> = ({
   isSuperAdmin,
   user,
   logout,
+  collapsed = false,
   onSelect,
 }) => {
   const itemRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
@@ -142,28 +147,26 @@ const SidebarNavContent: React.FC<NavContentProps> = ({
   return (
     <div className="flex flex-col h-full">
       {/* Brand Logo */}
-      <div className="px-5 py-6">
+      <div className={collapsed ? 'px-3 py-6 flex justify-center' : 'px-5 py-6'}>
         <a
           href={isAdmin ? '#/admin/courses' : '#/today'}
           onClick={onSelect}
+          title="Hanzi4U"
           className="flex items-center gap-3 group"
         >
-          <span
-            aria-hidden="true"
-            className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-400 via-pink-400 to-amber-300 text-white flex items-center justify-center font-hanzi-serif font-black text-xl shadow-md shadow-rose-300/35"
-          >
-            汉
-          </span>
-          <div className="flex flex-col">
-            <span className="font-display font-extrabold text-2xl tracking-tight text-slate-800 leading-none">
-              Hanzi<span className="text-rose-500">4U</span>
-            </span>
-            {isAdmin && (
-              <span className="text-[11px] font-bold text-rose-500 uppercase tracking-wider mt-1">
-                {isSuperAdmin ? 'Trang quản trị' : 'Biên tập nội dung'}
+          <HanziLogoMark variant="light" className="w-10 h-10 shrink-0 shadow-md shadow-[#C41E3A]/20 rounded-[14px]" />
+          {!collapsed && (
+            <div className="flex flex-col min-w-0">
+              <span className="font-display font-extrabold text-2xl tracking-tight text-[#1C1917] leading-none truncate">
+                Hanzi<span className="text-[#C41E3A]">4U</span>
               </span>
-            )}
-          </div>
+              {isAdmin && (
+                <span className="text-[11px] font-bold text-[#C41E3A] uppercase tracking-wider mt-1 truncate">
+                  {isSuperAdmin ? 'Trang quản trị' : 'Biên tập nội dung'}
+                </span>
+              )}
+            </div>
+          )}
         </a>
       </div>
 
@@ -188,7 +191,7 @@ const SidebarNavContent: React.FC<NavContentProps> = ({
             opacity: hoverVisible ? 1 : 0,
           }}
           transition={{ duration: 0.18, ease: 'easeOut' }}
-          className="pointer-events-none absolute left-3 right-3 top-0 m-0 rounded-[20px] bg-white/68 backdrop-blur-md border border-white/95 shadow-[0_6px_18px_-6px_rgba(148,163,184,0.22),inset_0_1.5px_2px_rgba(255,255,255,0.98)] will-change-transform"
+          className="pointer-events-none absolute left-3 right-3 top-0 m-0 rounded-[20px] bg-white/75 dark:bg-white/10 backdrop-blur-md border border-[#1C1917]/8 dark:border-white/15 shadow-[0_6px_18px_-6px_rgba(28,25,23,0.12),inset_0_1.5px_2px_rgba(255,255,255,0.98)] dark:shadow-none will-change-transform"
         />
 
         {/* Active Liquid Glass Bubble (stretches smoothly like a water droplet while gliding) */}
@@ -206,12 +209,10 @@ const SidebarNavContent: React.FC<NavContentProps> = ({
             opacity: activeVisible ? 1 : 0,
           }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
-          className="pointer-events-none absolute left-3 right-3 top-0 m-0 rounded-[22px] overflow-hidden bg-gradient-to-br from-rose-200/72 via-pink-100/62 to-amber-100/72 backdrop-blur-md border border-white/95 shadow-[0_10px_24px_-8px_rgba(244,114,182,0.28),0_2px_8px_-2px_rgba(255,255,255,0.65),inset_0_2px_3px_rgba(255,255,255,0.98),inset_0_-2px_6px_rgba(244,114,182,0.16)] will-change-transform"
+          className="pointer-events-none absolute left-3 right-3 top-0 m-0 rounded-[22px] overflow-hidden bg-[#C41E3A]/11 dark:bg-[#C41E3A]/20 backdrop-blur-md border border-[#C41E3A]/25 dark:border-[#C41E3A]/40 shadow-[0_10px_24px_-8px_rgba(196,30,58,0.18),inset_0_1.5px_2px_rgba(255,255,255,0.88)] dark:shadow-none will-change-transform"
         >
-          {/* Curved Soap-Bubble Specular Sheen */}
-          <span className="absolute inset-x-4 top-[3px] h-[5px] rounded-full bg-gradient-to-r from-white/20 via-white/90 to-white/20 blur-[0.5px]" />
-          {/* Soft Iridescent Bottom Rim Glow */}
-          <span className="absolute inset-x-8 bottom-[2px] h-[3px] rounded-full bg-gradient-to-r from-rose-300/0 via-amber-200/55 to-rose-300/0 blur-[1px]" />
+          {/* Curved Specular Sheen */}
+          <span className="absolute inset-x-4 top-[3px] h-[4px] rounded-full bg-gradient-to-r from-white/10 via-white/75 to-white/10 blur-[0.5px]" />
         </motion.div>
 
         {menuItems.map((item) => {
@@ -226,29 +227,33 @@ const SidebarNavContent: React.FC<NavContentProps> = ({
               }}
               href={item.hash}
               onClick={onSelect}
+              title={collapsed ? item.label : undefined}
+              aria-label={item.label}
               onMouseEnter={() => setHoveredHash(item.hash)}
-              className={`group/nav relative z-10 flex items-center justify-between px-4 h-11 rounded-[22px] text-[14.5px] leading-none transition-colors duration-200 ${
+              className={`group/nav relative z-10 flex items-center ${
+                collapsed ? 'justify-center px-0' : 'justify-between px-4'
+              } h-11 rounded-[22px] text-[14.5px] leading-none transition-colors duration-200 ${
                 active
-                  ? 'text-rose-700 font-bold'
-                  : 'text-slate-600 font-semibold hover:text-slate-900'
+                  ? 'text-[#A51730] font-bold'
+                  : 'text-[#57534E] font-semibold hover:text-[#1C1917]'
               }`}
             >
-              <span className="flex items-center gap-3.5 min-w-0">
+              <span className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3.5 min-w-0'}`}>
                 <Icon
                   aria-hidden="true"
                   className={`w-[19px] h-[19px] shrink-0 transition-colors duration-200 ${
-                    active ? 'text-rose-500' : 'text-slate-400 group-hover/nav:text-rose-400'
+                    active ? 'text-[#C41E3A]' : 'text-[#78716C] group-hover/nav:text-[#C41E3A]'
                   }`}
                   strokeWidth={active ? 2.25 : 1.9}
                 />
-                <span className="leading-none truncate">{item.label}</span>
+                {!collapsed && <span className="leading-none truncate">{item.label}</span>}
               </span>
-              {active && (
+              {!collapsed && active && (
                 <motion.span
                   initial={{ scale: 0, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ type: 'spring', stiffness: 420, damping: 26 }}
-                  className="w-1.5 h-1.5 rounded-full bg-gradient-to-tr from-rose-400 to-amber-300 shadow-[0_0_8px_rgba(251,113,133,0.6)] shrink-0"
+                  className="w-1.5 h-1.5 rounded-full bg-gradient-to-tr from-[#C41E3A] to-[#D4A017] shadow-[0_0_8px_rgba(196,30,58,0.45)] shrink-0"
                 />
               )}
             </a>
@@ -258,50 +263,79 @@ const SidebarNavContent: React.FC<NavContentProps> = ({
 
       {/* Bottom User Profile & Logout */}
       {user && (
-        <div className="p-3 border-t border-white/70">
-          <div className="flex items-center justify-between gap-2 px-2.5 py-2 rounded-2xl bg-white/55 hover:bg-white/85 border border-white/85 shadow-sm transition-colors duration-200">
-            <a
-              href="#/profile"
-              onClick={onSelect}
-              className="flex items-center gap-2.5 min-w-0 flex-1"
-            >
-              <UserAvatar avatarUrl={user.avatarUrl} displayName={user.displayName} size="md" />
-              <div className="min-w-0">
-                <p className="text-sm font-bold text-slate-800 truncate">{user.displayName}</p>
-                <p
-                  className={`text-[11px] truncate ${
-                    isAdmin ? 'text-rose-600 font-semibold' : 'text-slate-500'
-                  }`}
-                >
-                  {isAdmin
-                    ? isSuperAdmin
-                      ? 'Quản trị viên'
-                      : 'Biên tập nội dung'
-                    : 'Hồ sơ cá nhân'}
-                </p>
-              </div>
-            </a>
+        <div className="p-3 border-t border-[#1C1917]/8">
+          {collapsed ? (
+            <div className="flex flex-col items-center gap-2">
+              <a
+                href="#/profile"
+                onClick={onSelect}
+                title={user.displayName}
+                className="rounded-full hover:ring-2 hover:ring-[#C41E3A]/40 transition-all"
+              >
+                <UserAvatar avatarUrl={user.avatarUrl} displayName={user.displayName} size="md" />
+              </a>
+              <button
+                type="button"
+                onClick={() => {
+                  onSelect?.();
+                  logout();
+                }}
+                title="Đăng xuất"
+                aria-label="Đăng xuất"
+                className="p-2 text-[#78716C] hover:text-[#C41E3A] hover:bg-[#C41E3A]/8 rounded-xl transition-colors cursor-pointer"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between gap-2 px-2.5 py-2 rounded-2xl bg-[#FCFBF8]/80 hover:bg-white border border-[#1C1917]/8 shadow-sm transition-colors duration-200">
+              <a
+                href="#/profile"
+                onClick={onSelect}
+                className="flex items-center gap-2.5 min-w-0 flex-1"
+              >
+                <UserAvatar avatarUrl={user.avatarUrl} displayName={user.displayName} size="md" />
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-[#1C1917] truncate">{user.displayName}</p>
+                  <p
+                    className={`text-[11px] truncate ${
+                      isAdmin ? 'text-[#C41E3A] font-semibold' : 'text-[#78716C]'
+                    }`}
+                  >
+                    {isAdmin
+                      ? isSuperAdmin
+                        ? 'Quản trị viên'
+                        : 'Biên tập nội dung'
+                      : 'Hồ sơ cá nhân'}
+                  </p>
+                </div>
+              </a>
 
-            <button
-              type="button"
-              onClick={() => {
-                onSelect?.();
-                logout();
-              }}
-              title="Đăng xuất"
-              aria-label="Đăng xuất"
-              className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50/80 rounded-xl transition-colors cursor-pointer shrink-0"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={() => {
+                  onSelect?.();
+                  logout();
+                }}
+                title="Đăng xuất"
+                aria-label="Đăng xuất"
+                className="p-2 text-[#78716C] hover:text-[#C41E3A] hover:bg-[#C41E3A]/8 rounded-xl transition-colors cursor-pointer shrink-0"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
   );
 };
 
-export const Sidebar: React.FC<{ currentPath: string }> = ({ currentPath }) => {
+export const Sidebar: React.FC<{
+  currentPath: string;
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
+}> = ({ currentPath, collapsed = false, onToggleCollapse }) => {
   const { user, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -326,7 +360,15 @@ export const Sidebar: React.FC<{ currentPath: string }> = ({ currentPath }) => {
       if (basePath.startsWith('#/admin/users') && isSuperAdmin) return '#/admin/users';
       return '#/admin/courses';
     }
-    if (basePath === '#/today' || basePath === '#/' || basePath === '') return '#/today';
+    if (
+      basePath === '#/today' ||
+      basePath === '#/' ||
+      basePath === '' ||
+      basePath === '#/landing' ||
+      basePath === '#/login'
+    ) {
+      return '#/today';
+    }
     if (
       basePath.startsWith('#/courses') ||
       basePath.startsWith('#/lessons') ||
@@ -352,29 +394,49 @@ export const Sidebar: React.FC<{ currentPath: string }> = ({ currentPath }) => {
 
   return (
     <>
-      {/* Desktop Floating Sculpted Liquid Glass Sidebar */}
-      <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:top-3 lg:bottom-3 lg:left-3 lg:rounded-[28px] liquid-sidebar z-40 overflow-hidden">
-        <SidebarNavContent
-          menuItems={menuItems}
-          activeHash={activeHash}
-          isAdmin={isAdmin}
-          isSuperAdmin={isSuperAdmin}
-          user={user}
-          logout={logout}
-        />
+      {/* Desktop Floating Sculpted Liquid Glass Sidebar (Collapsible like Image 3) */}
+      <aside
+        className={`hidden lg:flex lg:flex-col ${
+          collapsed ? 'lg:w-[78px]' : 'lg:w-64'
+        } lg:fixed lg:top-3 lg:bottom-3 lg:left-3 lg:rounded-[28px] liquid-sidebar z-40 transition-[width] duration-300 ease-out`}
+      >
+        {onToggleCollapse && (
+          <button
+            type="button"
+            onClick={onToggleCollapse}
+            title={collapsed ? 'Mở rộng thanh công cụ' : 'Thu gọn thanh công cụ'}
+            aria-label={collapsed ? 'Mở rộng thanh công cụ' : 'Thu gọn thanh công cụ'}
+            className="absolute -right-3.5 top-7 z-50 w-7 h-7 rounded-full bg-[#FCFBF8] dark:bg-[#161d28] border border-[#1C1917]/15 dark:border-white/15 text-[#57534E] dark:text-slate-300 hover:text-[#C41E3A] dark:hover:text-rose-400 hover:border-[#C41E3A]/40 shadow-md flex items-center justify-center transition-all hover:scale-105 cursor-pointer"
+          >
+            {collapsed ? (
+              <ChevronRight className="w-4 h-4" />
+            ) : (
+              <ChevronLeft className="w-4 h-4" />
+            )}
+          </button>
+        )}
+        <div className="flex flex-col h-full overflow-hidden rounded-[28px]">
+          <SidebarNavContent
+            menuItems={menuItems}
+            activeHash={activeHash}
+            isAdmin={isAdmin}
+            isSuperAdmin={isSuperAdmin}
+            user={user}
+            logout={logout}
+            collapsed={collapsed}
+          />
+        </div>
       </aside>
 
       {/* Mobile Liquid Glass Top Bar */}
       <header className="lg:hidden sticky top-0 z-40 liquid-sidebar px-4 h-14 flex items-center justify-between">
         <a href={isAdmin ? '#/admin/courses' : '#/today'} className="flex items-center gap-2">
-          <span className="w-8 h-8 rounded-xl bg-gradient-to-tr from-rose-400 to-amber-300 text-white flex items-center justify-center font-hanzi-serif font-black text-base shadow-sm">
-            汉
-          </span>
-          <span className="font-display font-extrabold text-lg tracking-tight text-slate-800">
-            Hanzi<span className="text-rose-500">4U</span>
+          <HanziLogoMark variant="light" className="w-8 h-8 shrink-0" />
+          <span className="font-display font-extrabold text-lg tracking-tight text-[#1C1917]">
+            Hanzi<span className="text-[#C41E3A]">4U</span>
           </span>
           {isAdmin && (
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-rose-50 text-rose-600 uppercase">
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#C41E3A]/10 text-[#C41E3A] uppercase">
               {isSuperAdmin ? 'Admin' : 'Biên tập'}
             </span>
           )}
@@ -384,7 +446,7 @@ export const Sidebar: React.FC<{ currentPath: string }> = ({ currentPath }) => {
           type="button"
           onClick={() => setMobileOpen(true)}
           aria-label="Mở menu"
-          className="p-2 rounded-xl text-slate-600 hover:bg-white/80 cursor-pointer"
+          className="p-2 rounded-xl text-[#57534E] hover:text-[#1C1917] hover:bg-white/80 cursor-pointer"
         >
           <Menu className="w-6 h-6" />
         </button>
@@ -398,7 +460,7 @@ export const Sidebar: React.FC<{ currentPath: string }> = ({ currentPath }) => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-slate-900/25 backdrop-blur-sm"
+              className="fixed inset-0 bg-[#1C1917]/25 backdrop-blur-sm"
               onClick={() => setMobileOpen(false)}
             />
             <motion.div
@@ -406,13 +468,13 @@ export const Sidebar: React.FC<{ currentPath: string }> = ({ currentPath }) => {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', stiffness: 380, damping: 36 }}
-              className="relative w-72 max-w-[82vw] bg-white/92 backdrop-blur-2xl h-full shadow-2xl border-r border-white flex flex-col z-10"
+              className="relative w-72 max-w-[82vw] bg-[#FCFBF8]/95 dark:bg-[#111722]/96 backdrop-blur-2xl h-full shadow-2xl border-r border-[#1C1917]/10 dark:border-white/10 flex flex-col z-10"
             >
               <button
                 type="button"
                 onClick={() => setMobileOpen(false)}
                 aria-label="Đóng menu"
-                className="absolute top-4 right-4 p-2 rounded-xl text-slate-500 hover:bg-slate-100 cursor-pointer z-20"
+                className="absolute top-4 right-4 p-2 rounded-xl text-[#57534E] dark:text-slate-300 hover:bg-[#1C1917]/6 dark:hover:bg-white/10 cursor-pointer z-20"
               >
                 <X className="w-5 h-5" />
               </button>

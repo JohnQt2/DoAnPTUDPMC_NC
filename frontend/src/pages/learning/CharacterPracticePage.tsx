@@ -118,8 +118,8 @@ export const CharacterPracticePage: React.FC = () => {
           </p>
         </div>
 
-        <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full glass-light text-xs font-bold text-emerald-700 self-start sm:self-auto shrink-0">
-          <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+        <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full glass-light text-xs font-bold text-emerald-700 dark:text-emerald-300 self-start sm:self-auto shrink-0">
+          <CheckCircle2 className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
           Đã luyện: {completedIds.length} / {characters.length} chữ
         </span>
       </div>
@@ -157,7 +157,7 @@ export const CharacterPracticePage: React.FC = () => {
                     onClick={() => setSelectedChar(c)}
                     className={`w-full p-3 rounded-2xl flex items-center justify-between gap-2 text-left transition-colors cursor-pointer border ${
                       isSelected
-                        ? 'bg-rose-50/85 border-rose-300/80 shadow-sm'
+                        ? 'bg-rose-50/85 border-rose-300/80 shadow-sm dark:bg-rose-950/30 dark:border-rose-400/70'
                         : 'bg-white/45 border-white/75 hover:bg-white/80'
                     }`}
                   >
@@ -171,7 +171,7 @@ export const CharacterPracticePage: React.FC = () => {
                       </span>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="font-mono font-extrabold text-sm text-rose-600">
+                          <span className="font-pinyin font-extrabold text-sm text-[#C41E3A] dark:text-rose-300">
                             {c.pinyin}
                           </span>
                           {c.sinoVietnamese && (

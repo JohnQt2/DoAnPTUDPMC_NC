@@ -32,10 +32,47 @@ router.post(
   authController.loginPassword
 );
 
+// Forgot Password via Gmail OTP (3-step flow: forgot -> verify-otp -> reset)
+router.post(
+  '/password/forgot',
+  rateLimit({
+    windowSeconds: 60,
+    maxRequests: 3,
+    keyPrefix: 'pwd-forgot',
+    message: 'Bạn vừa yêu cầu gửi mã đặt lại mật khẩu quá nhiều lần. Vui lòng chờ một lát.',
+  }),
+  authController.forgotPasswordSendOtp
+);
+
+router.post(
+  '/password/verify-otp',
+  rateLimit({
+    windowSeconds: 60,
+    maxRequests: 10,
+    keyPrefix: 'pwd-verify-otp',
+    message: 'Bạn đã thử xác thực mã OTP quá nhiều lần. Vui lòng chờ một lát.',
+  }),
+  authController.forgotPasswordVerifyOtp
+);
+
+router.post(
+  '/password/reset',
+  rateLimit({ windowSeconds: 60, maxRequests: 8, keyPrefix: 'pwd-reset' }),
+  authController.resetPasswordWithOtp
+);
+
 router.get('/google/config', authController.googleConfig);
 router.get('/google/callback', authController.googleCallback);
-router.post('/google', authController.googleAuth);
-router.post('/refresh', authController.refresh);
+router.post(
+  '/google',
+  rateLimit({ windowSeconds: 60, maxRequests: 15, keyPrefix: 'auth-google' }),
+  authController.googleAuth
+);
+router.post(
+  '/refresh',
+  rateLimit({ windowSeconds: 60, maxRequests: 30, keyPrefix: 'auth-refresh' }),
+  authController.refresh
+);
 
 // Protected Session Management Endpoints
 router.post('/logout', authenticate, authController.logout);

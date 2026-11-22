@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GlassCard, BorderBeam, ShimmerButton, NumberTicker } from '../../components/ui';
+import { PathMap, PathNode } from '../../components/PathMap';
 import { celebrateSuccess } from '../../lib/celebration';
 import {
   Volume2,
@@ -13,6 +14,7 @@ import {
   MessagesSquare,
   Flame,
   Gauge,
+  ArrowLeft,
 } from 'lucide-react';
 
 interface SpeakingSentence {
@@ -47,7 +49,7 @@ const HANPEAK_SPEAKING_BANK: SpeakingSentence[] = [
 ];
 
 export const SpeakingPracticePage: React.FC = () => {
-  const [mode, setMode] = useState<'shadowing' | 'roleplay'>('shadowing');
+  const [mode, setMode] = useState<'path' | 'shadowing' | 'roleplay'>('path');
   const [levelFilter, setLevelFilter] = useState<string>('ALL');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [speechRate, setSpeechRate] = useState<number>(0.85);
@@ -55,7 +57,14 @@ export const SpeakingPracticePage: React.FC = () => {
   const [spokenText, setSpokenText] = useState<string | null>(null);
   const [scorePercent, setScorePercent] = useState<number | null>(null);
   const [feedback, setFeedback] = useState<'idle' | 'good' | 'try_again' | 'unsupported'>('idle');
-  const [completedIds, setCompletedIds] = useState<number[]>([]);
+  const [completedIds, setCompletedIds] = useState<number[]>(() => {
+    try {
+      const saved = localStorage.getItem('hanzi4u_speaking_done_ids');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
 
   const filteredList =
     levelFilter === 'ALL'
@@ -141,6 +150,54 @@ export const SpeakingPracticePage: React.FC = () => {
     setFeedback('idle');
   };
 
+  const openSentenceOnStudio = (sentenceId: number) => {
+    setLevelFilter('ALL');
+    const idx = HANPEAK_SPEAKING_BANK.findIndex((s) => s.id === sentenceId);
+    setCurrentIndex(idx >= 0 ? idx : 0);
+    setSpokenText(null);
+    setScorePercent(null);
+    setFeedback('idle');
+    setMode('shadowing');
+  };
+
+  const speakingPath = useMemo(() => {
+    const groups = [
+      { title: 'Nền tảng 1/3 • Giao tiếp HSK 1', items: HANPEAK_SPEAKING_BANK.filter((s) => s.level === 'HSK1') },
+      { title: 'Nền tảng 2/3 • Giao tiếp HSK 2', items: HANPEAK_SPEAKING_BANK.filter((s) => s.level === 'HSK2') },
+      {
+        title: 'Nền tảng 3/3 • Giao tiếp HSK 3–4',
+        items: HANPEAK_SPEAKING_BANK.filter((s) => s.level === 'HSK3' || s.level === 'HSK4'),
+      },
+    ];
+
+    let foundCurrent = false;
+    let firstCurrentId = HANPEAK_SPEAKING_BANK[0]?.id ?? 1;
+
+    const sections = groups.map((g) => {
+      const nodes: PathNode[] = g.items.map((s) => {
+        const isDone = completedIds.includes(s.id);
+        let status: PathNode['status'] = 'locked';
+        if (isDone) {
+          status = 'done';
+        } else if (!foundCurrent) {
+          status = 'current';
+          foundCurrent = true;
+          firstCurrentId = s.id;
+        }
+        return {
+          id: s.id,
+          label: `${s.topic}: ${s.hanzi}`,
+          glyph: s.hanzi.charAt(0) || '说',
+          status,
+          onClick: () => openSentenceOnStudio(s.id),
+        };
+      });
+      return { title: g.title, nodes };
+    });
+
+    return { sections, todaySentenceId: firstCurrentId };
+  }, [completedIds]);
+
   const cleanSpokenForHighlight = (spokenText || '').replace(/[，。？！?.,\s]/g, '');
 
   return (
@@ -148,13 +205,13 @@ export const SpeakingPracticePage: React.FC = () => {
       {/* Header + Mode Switcher */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-gray-900 flex items-center gap-2.5 tracking-tight">
-            <span className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-500 via-primary-600 to-violet-600 text-white flex items-center justify-center shadow-lg">
+          <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-[#1C1917] flex items-center gap-2.5 tracking-tight">
+            <span className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#C41E3A] to-[#A51730] text-white flex items-center justify-center shadow-md shadow-[#C41E3A]/20">
               <MessagesSquare className="w-5 h-5" />
             </span>
             <span>Luyện nói giao tiếp</span>
           </h1>
-          <p className="text-sm text-gray-600 mt-1">
+          <p className="text-sm text-[#57534E] mt-1">
             Luyện đọc theo mẫu và đối đáp theo tình huống thực tế từ HSK 1 đến HSK 4.
           </p>
         </div>
@@ -162,8 +219,9 @@ export const SpeakingPracticePage: React.FC = () => {
         <div className="flex items-center gap-3">
           <div className="inline-flex p-1 rounded-2xl glass-light">
             {[
+              { id: 'path' as const, label: 'Lộ trình nói' },
               { id: 'shadowing' as const, label: 'Đọc theo mẫu' },
-              { id: 'roleplay' as const, label: 'Hội thoại tình huống' },
+              { id: 'roleplay' as const, label: 'Hội thoại' },
             ].map((m) => {
               const active = mode === m.id;
               return (
@@ -172,13 +230,13 @@ export const SpeakingPracticePage: React.FC = () => {
                   type="button"
                   onClick={() => setMode(m.id)}
                   className={`relative px-4 py-2 rounded-xl text-xs font-extrabold transition-colors cursor-pointer ${
-                    active ? 'text-white' : 'text-gray-600 hover:text-gray-900'
+                    active ? 'text-white' : 'text-[#57534E] hover:text-[#1C1917]'
                   }`}
                 >
                   {active && (
                     <motion.span
                       layoutId="speaking-mode-pill"
-                      className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary-600 to-violet-600 shadow-sm"
+                      className="absolute inset-0 rounded-xl bg-[#C41E3A] shadow-sm shadow-[#C41E3A]/25"
                     />
                   )}
                   <span className="relative z-10">{m.label}</span>
@@ -189,7 +247,31 @@ export const SpeakingPracticePage: React.FC = () => {
         </div>
       </div>
 
-      {/* Level Filter + Progress */}
+      {mode === 'path' ? (
+        <div className="max-w-2xl mx-auto space-y-12 pb-20">
+          {speakingPath.sections.map((sec) => (
+            <PathMap
+              key={sec.title}
+              title={sec.title}
+              nodes={sec.nodes}
+              onHeaderAction={() => setMode('shadowing')}
+            />
+          ))}
+        </div>
+      ) : (
+        <>
+          <div className="flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => setMode('path')}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl glass-light text-xs font-bold text-slate-700 hover:text-rose-600 cursor-pointer"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Về lộ trình luyện nói</span>
+            </button>
+          </div>
+
+          {/* Level Filter + Progress */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-1.5">
           {(['ALL', 'HSK1', 'HSK2', 'HSK3', 'HSK4'] as const).map((lvl) => (
@@ -217,23 +299,23 @@ export const SpeakingPracticePage: React.FC = () => {
         </span>
       </div>
 
-      {/* Main Hanpeak Interactive Studio Card */}
+      {/* Main Interactive Studio Card */}
       <GlassCard className="p-6 sm:p-8 relative overflow-hidden space-y-6">
-        <BorderBeam duration={8} colorFrom="#f43f5e" colorTo="#8b5cf6" />
+        <BorderBeam duration={8} colorFrom="#C41E3A" colorTo="#D4A017" />
 
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="px-3 py-1 rounded-full bg-gradient-to-r from-primary-600 to-rose-500 text-white text-xs font-black">
+            <span className="px-3 py-1 rounded-full bg-[#C41E3A] text-white text-xs font-black">
               {item.level.replace('HSK', 'HSK ')}
             </span>
-            <span className="px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold">
+            <span className="px-3 py-1 rounded-full bg-[#FAF3E6] border border-[#C29940]/35 text-[#8A6112] text-xs font-bold">
               {item.topic}
             </span>
           </div>
 
           {/* Speed Control */}
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/80 border border-gray-200 text-xs font-bold text-gray-600">
-            <Gauge className="w-3.5 h-3.5 text-primary-500" />
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/85 border border-[#1C1917]/12 text-xs font-bold text-[#57534E]">
+            <Gauge className="w-3.5 h-3.5 text-[#C41E3A]" />
             {[
               { label: '0.6x', rate: 0.6 },
               { label: '0.85x', rate: 0.85 },
@@ -244,7 +326,7 @@ export const SpeakingPracticePage: React.FC = () => {
                 type="button"
                 onClick={() => setSpeechRate(sp.rate)}
                 className={`px-2 py-0.5 rounded-lg cursor-pointer transition-colors ${
-                  speechRate === sp.rate ? 'bg-primary-600 text-white' : 'hover:bg-gray-100'
+                  speechRate === sp.rate ? 'bg-[#C41E3A] text-white' : 'hover:bg-[#1C1917]/6'
                 }`}
               >
                 {sp.label}
@@ -255,20 +337,20 @@ export const SpeakingPracticePage: React.FC = () => {
 
         {/* Roleplay AI Bubble */}
         {mode === 'roleplay' && item.aiPromptCn && (
-          <div className="p-4 rounded-2xl bg-gradient-to-r from-violet-50 via-fuchsia-50/60 to-white border border-violet-200/80 flex items-start justify-between gap-4">
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-[#FCF8F0] via-[#FAF3E6]/75 to-white border border-[#C29940]/30 flex items-start justify-between gap-4">
             <div className="space-y-1">
-              <span className="inline-flex items-center gap-1 text-[11px] font-black uppercase text-violet-700">
-                <Sparkles className="w-3.5 h-3.5" />
+              <span className="inline-flex items-center gap-1 text-[11px] font-black uppercase text-[#926A0E]">
+                <Sparkles className="w-3.5 h-3.5 text-[#D4A017]" />
                 Câu hỏi tình huống:
               </span>
-              <p className="font-chinese text-xl font-black text-gray-900">{item.aiPromptCn}</p>
-              <p className="text-xs font-bold text-violet-600">{item.aiPromptPy}</p>
-              <p className="text-xs text-gray-500">{item.aiPromptVi}</p>
+              <p className="font-hanzi-serif text-xl font-black text-[#1C1917]">{item.aiPromptCn}</p>
+              <p className="text-xs font-pinyin font-bold text-[#C41E3A]">{item.aiPromptPy}</p>
+              <p className="text-xs text-[#57534E]">{item.aiPromptVi}</p>
             </div>
             <button
               type="button"
               onClick={() => speakText(item.aiPromptCn!, speechRate)}
-              className="w-11 h-11 rounded-2xl bg-violet-600 hover:bg-violet-500 text-white flex items-center justify-center shadow-md shrink-0 cursor-pointer"
+              className="w-11 h-11 rounded-2xl bg-[#C41E3A] hover:bg-[#A51730] text-white flex items-center justify-center shadow-md shrink-0 cursor-pointer"
               aria-label="Nghe câu hỏi của AI"
             >
               <Volume2 className="w-5 h-5" />
@@ -442,6 +524,8 @@ export const SpeakingPracticePage: React.FC = () => {
           );
         })}
       </div>
+        </>
+      )}
     </div>
   );
 };

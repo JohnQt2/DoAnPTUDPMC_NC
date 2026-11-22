@@ -203,6 +203,7 @@ const SKIP_REFRESH_ENDPOINTS = [
   '/auth/login',
   '/auth/register',
   '/auth/otp/',
+  '/auth/password/',
   '/auth/google',
 ];
 
@@ -242,20 +243,52 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
     reqHeaders['Authorization'] = `Bearer ${inMemoryAccessToken}`;
   }
 
+  const controller = new AbortController();
+  const timeoutId =
+    typeof window !== 'undefined' ? window.setTimeout(() => controller.abort(), 20_000) : null;
+
   const config: RequestInit = {
     ...customConfig,
     headers: reqHeaders,
     credentials: 'include', // Send HttpOnly refresh cookie automatically
+    signal: customConfig.signal || controller.signal,
   };
 
-  let response = await fetch(url, config);
+  let response: Response;
+  try {
+    response = await fetch(url, config);
+  } catch (err: any) {
+    if (timeoutId !== null) window.clearTimeout(timeoutId);
+    const isAbort = err?.name === 'AbortError';
+    const isOffline = typeof navigator !== 'undefined' && navigator.onLine === false;
+    const friendlyMsg = isOffline
+      ? 'Thiết bị đang mất kết nối Internet. Vui lòng kiểm tra Wi-Fi hoặc 4G rồi thử lại.'
+      : isAbort
+        ? 'Máy chủ phản hồi quá lâu (hết thời gian chờ). Vui lòng thử lại sau ít giây.'
+        : 'Không thể kết nối tới máy chủ Hanzi4U. Có thể máy chủ đang khởi động lại hoặc bạn vừa bấm quá nhanh — vui lòng chờ vài giây rồi thử lại.';
+    const netError = new Error(friendlyMsg);
+    (netError as any).status = 0;
+    (netError as any).data = {
+      error: {
+        code: isOffline ? 'OFFLINE' : isAbort ? 'REQUEST_TIMEOUT' : 'NETWORK_ERROR',
+        message: friendlyMsg,
+      },
+    };
+    throw netError;
+  } finally {
+    if (timeoutId !== null) window.clearTimeout(timeoutId);
+  }
 
   // If 401 Unauthorized, perform single-flight Silent Token Refresh and transparently retry
   if (response.status === 401 && !shouldSkipAutoRefresh(endpoint)) {
     const newToken = await silentRefreshAccessToken({ notifyOnFail: true, force: true });
     if (newToken) {
       reqHeaders['Authorization'] = `Bearer ${newToken}`;
-      response = await fetch(url, { ...config, headers: reqHeaders });
+      try {
+        response = await fetch(url, { ...config, headers: reqHeaders, signal: customConfig.signal });
+      } catch {
+        throw new Error('Kết nối tới máy chủ bị gián đoạn. Vui lòng thử lại sau ít giây.');
+      }
     } else {
       throw new Error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
     }
@@ -264,10 +297,34 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
-    const errorMsg = data?.error?.message || data?.message || `Lỗi yêu cầu (${response.status})`;
+    const retryHeader =
+      response.headers.get('Retry-After') || response.headers.get('X-RateLimit-Reset');
+    const retrySeconds = retryHeader ? parseInt(retryHeader, 10) : NaN;
+    const validRetry = Number.isFinite(retrySeconds) && retrySeconds > 0 ? retrySeconds : undefined;
+
+    let fallbackMsg = `Yêu cầu không thành công (mã ${response.status}). Vui lòng thử lại.`;
+    if (response.status === 429) {
+      fallbackMsg = validRetry
+        ? `Bạn vừa thao tác quá nhiều lần liên tiếp. Vui lòng chờ ${validRetry} giây trước khi thử lại.`
+        : 'Bạn vừa gửi yêu cầu quá nhiều lần liên tiếp. Vui lòng chờ 1 phút trước khi thử lại.';
+    } else if (response.status === 502 || response.status === 503 || response.status === 504) {
+      fallbackMsg = 'Máy chủ Hanzi4U tạm thời quá tải hoặc đang bảo trì. Vui lòng thử lại sau vài giây.';
+    } else if (response.status >= 500) {
+      fallbackMsg = 'Hệ thống đang gặp sự cố tạm thời. Vui lòng thử lại sau ít phút.';
+    }
+
+    const errorMsg = data?.error?.message || data?.message || fallbackMsg;
     const error = new Error(errorMsg);
     (error as any).status = response.status;
-    (error as any).data = data;
+    (error as any).retryAfterSeconds =
+      data?.error?.details?.remainingSeconds ?? validRetry;
+    (error as any).data = data || {
+      error: {
+        code: response.status === 429 ? 'RATE_LIMIT_EXCEEDED' : `HTTP_${response.status}`,
+        message: errorMsg,
+        details: validRetry ? { remainingSeconds: validRetry } : undefined,
+      },
+    };
     throw error;
   }
 

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../../lib/api';
 import { celebrateSuccess } from '../../lib/celebration';
 import { PitchVisualizer } from '../../components/PitchVisualizer';
+import { PathMap, PathNode } from '../../components/PathMap';
 import { GlassCard, SpotlightCard, BorderBeam, ShimmerButton, NumberTicker } from '../../components/ui';
 import {
   PINYIN_INITIALS_DATA,
@@ -22,6 +23,8 @@ import {
   Flame,
   Waves,
   Grid,
+  Route,
+  X,
 } from 'lucide-react';
 
 const TONE_SANDHI_RULES = [
@@ -29,7 +32,7 @@ const TONE_SANDHI_RULES = [
     title: 'Biến điệu Thanh 3 + Thanh 3',
     formula: 'Thanh 3 + Thanh 3 → Thanh 2 + Thanh 3',
     badge: 'Cực kỳ phổ biến',
-    gradient: 'from-rose-400 to-amber-400',
+    gradient: 'from-[#C41E3A] to-[#D4A017]',
     examples: [
       { hanzi: '你好', raw: 'nǐ + hǎo', spoken: 'ní hǎo', vi: 'Xin chào' },
       { hanzi: '很好', raw: 'hěn + hǎo', spoken: 'hén hǎo', vi: 'Rất tốt' },
@@ -40,7 +43,7 @@ const TONE_SANDHI_RULES = [
     title: 'Biến điệu chữ 不 (bù)',
     formula: '不 + Thanh 4 → bú + Thanh 4',
     badge: 'Hay nhầm khi nói',
-    gradient: 'from-violet-400 to-fuchsia-400',
+    gradient: 'from-[#9E162E] to-[#C41E3A]',
     examples: [
       { hanzi: '不是', raw: 'bù + shì', spoken: 'bú shì', vi: 'Không phải' },
       { hanzi: '不去', raw: 'bù + qù', spoken: 'bú qù', vi: 'Không đi' },
@@ -51,7 +54,7 @@ const TONE_SANDHI_RULES = [
     title: 'Biến điệu chữ 一 (yī)',
     formula: '一 + Thanh 4 → yí | 一 + Thanh 1/2/3 → yì',
     badge: 'Chuẩn phổ thông',
-    gradient: 'from-emerald-400 to-cyan-400',
+    gradient: 'from-[#157A57] to-[#1F7A68]',
     examples: [
       { hanzi: '一个', raw: 'yī + gè', spoken: 'yí gè', vi: 'Một cái' },
       { hanzi: '一天', raw: 'yī + tiān', spoken: 'yì tiān', vi: 'Một ngày' },
@@ -71,11 +74,24 @@ function groupBy<T extends { group: string }>(items: T[]): Array<[string, T[]]> 
 }
 
 export const PinyinPage: React.FC = () => {
-  const [tab, setTab] = useState<'ALPHABET' | 'TONE' | 'MINIMAL_PAIRS'>('ALPHABET');
+  const [tab, setTab] = useState<'PATH' | 'ALPHABET' | 'TONE' | 'MINIMAL_PAIRS'>('PATH');
   const [alphabetSub, setAlphabetSub] = useState<'ALL' | 'INITIAL' | 'FINAL' | 'WHOLE'>('ALL');
   const [dbGuides, setDbGuides] = useState<Record<string, string>>({});
   const [minimalPairs, setMinimalPairs] = useState<any[]>(FALLBACK_MINIMAL_PAIRS);
   const [activeChar, setActiveChar] = useState<PinyinCharItem>(PINYIN_INITIALS_DATA[0]);
+  const [doneNodeIds, setDoneNodeIds] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('hanzi4u_pinyin_done_nodes');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [activePracticeGroup, setActivePracticeGroup] = useState<{
+    id: string;
+    title: string;
+    items: PinyinCharItem[];
+  } | null>(null);
 
   // Minimal Pairs Quiz state
   const [currentPairIdx, setCurrentPairIdx] = useState(0);
@@ -173,8 +189,113 @@ export const PinyinPage: React.FC = () => {
     }
   };
 
+  const markNodeDone = (id: string) => {
+    setDoneNodeIds((prev) => {
+      if (prev.includes(id)) return prev;
+      const next = [...prev, id];
+      try {
+        localStorage.setItem('hanzi4u_pinyin_done_nodes', JSON.stringify(next));
+      } catch {
+        // ignore storage errors
+      }
+      return next;
+    });
+    celebrateSuccess('Hoàn thành bài phát âm!');
+    setActivePracticeGroup(null);
+  };
+
+  const pathSections = useMemo(() => {
+    const rawSections = [
+      {
+        title: 'Nền tảng 1/3 • Thanh mẫu (Âm đầu)',
+        items: initialGroups.map(([groupName, chars], idx) => ({
+          id: `init-${idx}`,
+          label: groupName,
+          glyph: chars[0]?.speakHanzi || '基',
+          onOpen: () => {
+            setActiveChar(chars[0]);
+            setActivePracticeGroup({ id: `init-${idx}`, title: groupName, items: chars });
+          },
+        })),
+      },
+      {
+        title: 'Nền tảng 2/3 • Vận mẫu (Nguyên âm)',
+        items: finalGroups.map(([groupName, chars], idx) => ({
+          id: `final-${idx}`,
+          label: groupName,
+          glyph: chars[0]?.speakHanzi || '基',
+          onOpen: () => {
+            setActiveChar(chars[0]);
+            setActivePracticeGroup({ id: `final-${idx}`, title: groupName, items: chars });
+          },
+        })),
+      },
+      {
+        title: 'Nền tảng 3/3 • Âm tiết & Thanh điệu',
+        items: [
+          {
+            id: 'whole-0',
+            label: '16 Âm tiết đọc thẳng',
+            glyph: '知',
+            onOpen: () => {
+              setActiveChar(PINYIN_WHOLE_SYLLABLES_DATA[0]);
+              setActivePracticeGroup({
+                id: 'whole-0',
+                title: '16 Âm tiết đọc thẳng',
+                items: PINYIN_WHOLE_SYLLABLES_DATA,
+              });
+            },
+          },
+          {
+            id: 'tone-0',
+            label: '4 Thanh điệu & Biến điệu',
+            glyph: '妈',
+            onOpen: () => setTab('TONE'),
+          },
+          {
+            id: 'pair-0',
+            label: 'Phân biệt cặp âm dễ nhầm',
+            glyph: '音',
+            onOpen: () => setTab('MINIMAL_PAIRS'),
+          },
+        ],
+      },
+    ];
+
+    let foundCurrent = false;
+    let firstCurrentAction: (() => void) | undefined;
+
+    const built = rawSections.map((sec) => {
+      const nodes: PathNode[] = sec.items.map((entry) => {
+        const isDone = doneNodeIds.includes(entry.id);
+        let status: PathNode['status'] = 'locked';
+        if (isDone) {
+          status = 'done';
+        } else if (!foundCurrent) {
+          status = 'current';
+          foundCurrent = true;
+          firstCurrentAction = entry.onOpen;
+        }
+        return {
+          id: entry.id,
+          label: entry.label,
+          glyph: entry.glyph,
+          status,
+          onClick: entry.onOpen,
+        };
+      });
+      return { title: sec.title, nodes };
+    });
+
+    return {
+      sections: built,
+      todayAction: firstCurrentAction || rawSections[0].items[0].onOpen,
+    };
+  }, [initialGroups, finalGroups, doneNodeIds]);
+
   const tabs = [
-    { key: 'ALPHABET' as const, label: 'Bảng chữ cái Pinyin (63 âm)', icon: Grid },
+    { key: 'PATH' as const, label: 'Lộ trình Pinyin', icon: Route },
+    { key: 'ALPHABET' as const, label: 'Bảng chữ cái (63 âm)', icon: Grid },
     { key: 'TONE' as const, label: '4 Thanh điệu & Biến điệu', icon: Waves },
     { key: 'MINIMAL_PAIRS' as const, label: 'Luyện nghe phân biệt', icon: Headphones },
   ];
@@ -188,30 +309,30 @@ export const PinyinPage: React.FC = () => {
         onClick={() => handleSelectChar(item)}
         className={`p-3 rounded-2xl border text-center transition-colors duration-150 cursor-pointer group ${
           isSelected
-            ? 'bg-gradient-to-br from-rose-400 via-pink-400 to-amber-300 text-white border-transparent shadow-md'
-            : 'glass-card-grid text-slate-800'
+            ? 'bg-gradient-to-br from-[#C41E3A] to-[#A51730] text-white border-transparent shadow-md shadow-[#C41E3A]/25'
+            : 'glass-card-grid text-[#1C1917]'
         }`}
       >
         <div className="flex items-center justify-between gap-1">
           <span
             className={`text-[10px] font-hanzi-serif font-bold ${
-              isSelected ? 'text-white/85' : 'text-slate-400'
+              isSelected ? 'text-[#FDE68A]' : 'text-[#A8A29E]'
             }`}
           >
             {item.speakHanzi}
           </span>
           <Volume2
             className={`w-3.5 h-3.5 ${
-              isSelected ? 'text-white' : 'text-slate-300 group-hover:text-rose-500'
+              isSelected ? 'text-white' : 'text-[#A8A29E] group-hover:text-[#C41E3A]'
             }`}
           />
         </div>
-        <span className="text-2xl font-display font-extrabold block tracking-tight mt-0.5">
+        <span className="text-2xl font-pinyin font-extrabold block tracking-tight mt-0.5">
           {item.syllable}
         </span>
         <span
           className={`text-[10px] font-semibold block mt-1 truncate ${
-            isSelected ? 'text-white/90' : 'text-slate-500'
+            isSelected ? 'text-white/85' : 'text-[#57534E]'
           }`}
         >
           {item.vnHint}
@@ -222,19 +343,19 @@ export const PinyinPage: React.FC = () => {
 
   return (
     <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6 space-y-7">
-      {/* Pastel Hero Header */}
-      <div className="relative overflow-hidden rounded-[28px] p-6 sm:p-8 bg-gradient-to-br from-violet-100/92 via-rose-50/90 to-sky-100/90 border border-white/95 backdrop-blur-2xl shadow-[0_14px_38px_-14px_rgba(148,163,184,0.25),inset_0_1.5px_1px_rgba(255,255,255,0.96)]">
+      {/* Warm Porcelain & Crimson Frosted Hero Header */}
+      <div className="relative overflow-hidden rounded-[28px] p-6 sm:p-8 bg-gradient-to-br from-[#FCFBF8]/95 via-[#FBF4E7]/90 to-[#F9ECEE]/88 border border-[#C41E3A]/15 backdrop-blur-2xl shadow-[0_14px_38px_-14px_rgba(28,25,23,0.12),inset_0_1.5px_1px_rgba(255,255,255,0.96)]">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div className="space-y-2 max-w-2xl">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/75 border border-white text-xs font-extrabold uppercase tracking-wider text-violet-700">
-              <Mic className="w-3.5 h-3.5" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/85 border border-[#C41E3A]/15 text-xs font-extrabold uppercase tracking-wider text-[#C41E3A]">
+              <Mic className="w-3.5 h-3.5 text-[#D4A017]" />
               Bảng chữ cái Pinyin tiếng Trung chuẩn
             </span>
-            <h1 className="text-2xl sm:text-4xl font-display font-extrabold text-slate-900 tracking-tight">
-              Bảng Chữ Cái Pinyin & 4 Thanh Điệu
+            <h1 className="text-2xl sm:text-4xl font-display font-extrabold text-[#1C1917] tracking-tight">
+              Pinyin và 4 Thanh điệu
             </h1>
-            <p className="text-sm text-slate-600 leading-relaxed">
-              Đầy đủ <strong>23 thanh mẫu</strong>, <strong>24 vận mẫu</strong>, <strong>16 âm tiết đọc thẳng</strong>, 4 thanh điệu và luyện nghe phân biệt cặp âm dễ nhầm.
+            <p className="text-sm text-[#57534E] leading-relaxed">
+              Đầy đủ <strong className="text-[#1C1917]">23 thanh mẫu</strong>, <strong className="text-[#1C1917]">24 vận mẫu</strong>, <strong className="text-[#1C1917]">16 âm tiết đọc thẳng</strong>, 4 thanh điệu và luyện nghe phân biệt cặp âm dễ nhầm.
             </p>
           </div>
           <ShimmerButton href="#/speak-practice" className="shrink-0">
@@ -256,14 +377,14 @@ export const PinyinPage: React.FC = () => {
               type="button"
               onClick={() => setTab(t.key)}
               className={`relative inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-colors cursor-pointer ${
-                active ? 'text-white' : 'text-slate-600 hover:text-slate-900'
+                active ? 'text-white' : 'text-[#57534E] hover:text-[#1C1917]'
               }`}
             >
               {active && (
                 <motion.span
                   layoutId="pinyin-main-tab"
                   transition={{ type: 'spring', stiffness: 400, damping: 32 }}
-                  className="absolute inset-0 rounded-xl bg-gradient-to-r from-rose-400 via-pink-400 to-amber-300 shadow-sm"
+                  className="absolute inset-0 rounded-xl bg-[#C41E3A] shadow-sm shadow-[#C41E3A]/25"
                 />
               )}
               <Icon className="relative z-10 w-4 h-4" />
@@ -274,6 +395,27 @@ export const PinyinPage: React.FC = () => {
       </div>
 
       <AnimatePresence mode="wait">
+        {/* TAB 0: WINDING PINYIN PATH (Images 1 & 2) */}
+        {tab === 'PATH' && (
+          <motion.div
+            key="tab-path"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            className="max-w-2xl mx-auto space-y-12 pb-20"
+          >
+            {pathSections.sections.map((sec) => (
+              <PathMap
+                key={sec.title}
+                title={sec.title}
+                nodes={sec.nodes}
+                onHeaderAction={() => setTab('ALPHABET')}
+              />
+            ))}
+          </motion.div>
+        )}
+
         {/* TAB 1: FULL CHINESE PINYIN ALPHABET CHART */}
         {tab === 'ALPHABET' && (
           <motion.div
@@ -285,18 +427,18 @@ export const PinyinPage: React.FC = () => {
             className="space-y-6"
           >
             {/* Active Letter Guide & 4-Tone Interactive Bar */}
-            <GlassCard className="p-5 sm:p-6 rounded-[26px] flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-white/90">
+            <GlassCard className="p-5 sm:p-6 rounded-[26px] flex flex-col lg:flex-row lg:items-center justify-between gap-4">
               <div className="flex items-start sm:items-center gap-4">
                 <button
                   type="button"
                   onClick={() => playSound(activeChar.speakHanzi, 0.75)}
-                  className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-rose-400 via-pink-400 to-amber-300 text-white flex flex-col items-center justify-center shadow-md shrink-0 cursor-pointer"
+                  className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#C41E3A] to-[#A51730] text-white flex flex-col items-center justify-center shadow-md shadow-[#C41E3A]/25 shrink-0 cursor-pointer"
                   title="Nghe phát âm mẫu"
                 >
-                  <span className="text-2xl font-display font-black leading-none">
+                  <span className="text-2xl font-pinyin font-black leading-none">
                     {activeChar.syllable}
                   </span>
-                  <span className="text-[11px] font-hanzi-serif opacity-90 mt-1">
+                  <span className="text-[11px] font-hanzi-serif text-[#FDE68A] mt-1">
                     {activeChar.speakHanzi}
                   </span>
                 </button>
@@ -435,7 +577,7 @@ export const PinyinPage: React.FC = () => {
                       Nhóm âm tiết đọc liền nguyên âm, không cần ghép đánh vần tách rời
                     </p>
                   </div>
-                  <span className="px-2.5 py-1 rounded-full bg-violet-100/80 text-violet-800 text-xs font-bold shrink-0">
+                  <span className="px-2.5 py-1 rounded-full bg-[#C41E3A]/10 text-[#C41E3A] text-xs font-bold shrink-0">
                     16 âm
                   </span>
                 </div>
@@ -481,7 +623,7 @@ export const PinyinPage: React.FC = () => {
                   <SpotlightCard key={rule.title} className="p-5 space-y-4">
                     <div className="space-y-1.5">
                       <span
-                        className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black text-white bg-gradient-to-r ${rule.gradient}`}
+                        className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold text-white bg-gradient-to-r ${rule.gradient}`}
                       >
                         {rule.badge}
                       </span>
@@ -550,7 +692,7 @@ export const PinyinPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={playSecretAudio}
-                  className="w-24 h-24 rounded-full bg-gradient-to-tr from-rose-400 via-pink-400 to-amber-300 text-white flex items-center justify-center mx-auto shadow-xl shadow-rose-300/40 hover:brightness-105 transition-all cursor-pointer"
+                  className="w-24 h-24 rounded-full bg-gradient-to-tr from-[#C41E3A] to-[#A51730] text-white flex items-center justify-center mx-auto shadow-xl shadow-[#C41E3A]/28 hover:brightness-105 transition-all cursor-pointer"
                   aria-label="Nghe âm mẫu"
                 >
                   <Volume2 className="w-10 h-10" />
@@ -615,6 +757,105 @@ export const PinyinPage: React.FC = () => {
               )}
             </GlassCard>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Practice Modal when clicking a Path node */}
+      <AnimatePresence>
+        {activePracticeGroup && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setActivePracticeGroup(null)}
+              className="fixed inset-0 bg-slate-900/35 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96, y: 12 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 12 }}
+              className="relative z-10 w-full max-w-2xl max-h-[88vh] overflow-y-auto rounded-[28px] bg-white border border-rose-100 shadow-2xl p-6 space-y-5"
+            >
+              <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-4">
+                <div>
+                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-rose-500">
+                    Luyện phát âm theo nhóm
+                  </span>
+                  <h3 className="text-xl font-extrabold text-slate-900">
+                    {activePracticeGroup.title}
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActivePracticeGroup(null)}
+                  aria-label="Đóng"
+                  className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Active syllable guide */}
+              <div className="p-4 rounded-2xl bg-rose-50/70 border border-rose-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => playSound(activeChar.speakHanzi, 0.75)}
+                    className="w-14 h-14 rounded-2xl bg-rose-500 text-slate-950 flex flex-col items-center justify-center shrink-0 cursor-pointer shadow-sm"
+                  >
+                    <span className="text-xl font-extrabold leading-none">{activeChar.syllable}</span>
+                    <span className="text-[10px] font-chinese opacity-90 mt-0.5">{activeChar.speakHanzi}</span>
+                  </button>
+                  <div className="space-y-0.5">
+                    <p className="text-xs font-bold text-rose-700">
+                      Đọc gần giống: <span className="text-slate-900">{activeChar.vnHint}</span>
+                    </p>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      {dbGuides[activeChar.syllable] || activeChar.guide}
+                    </p>
+                  </div>
+                </div>
+                {activeChar.tones && activeChar.toneHanzi && (
+                  <div className="flex flex-wrap gap-1.5 shrink-0">
+                    {activeChar.tones.map((tLabel, i) => (
+                      <button
+                        key={tLabel}
+                        type="button"
+                        onClick={() => playSound(activeChar.toneHanzi![i], 0.72)}
+                        className="px-2.5 py-1.5 rounded-xl bg-white border border-rose-100 text-xs font-mono font-bold text-slate-800 hover:bg-rose-100/60 cursor-pointer"
+                      >
+                        {tLabel}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Grid of syllables in this group */}
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5">
+                {activePracticeGroup.items.map((item) => renderCharCard(item))}
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setActivePracticeGroup(null)}
+                  className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer"
+                >
+                  Đóng
+                </button>
+                <button
+                  type="button"
+                  onClick={() => markNodeDone(activePracticeGroup.id)}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-700 text-slate-950 hover:text-white text-xs font-bold shadow-sm cursor-pointer"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Hoàn thành bài này</span>
+                </button>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>

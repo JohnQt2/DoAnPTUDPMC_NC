@@ -8,6 +8,7 @@ import {
   CheckCircle2,
   ArrowRight,
   ArrowLeft,
+  ChevronRight,
   Sparkles,
   FileQuestion,
   Headphones,
@@ -63,6 +64,7 @@ interface LessonDetailData {
       course_id: number;
       title: string;
       code: string;
+      level?: string;
     };
   };
   blocks: LessonBlockItem[];
@@ -261,51 +263,96 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
     }, delay);
   };
 
+  const courseId = lesson.chapter.course?.course_id || 1;
+  const rawCourseLevel =
+    lesson.chapter.course?.level || lesson.chapter.course?.code || 'HSK1';
+  const courseLevelKey =
+    rawCourseLevel.toUpperCase().replace(/\s+/g, '').match(/HSK\d/)?.[0] || 'HSK1';
+  const courseLevelLabel = courseLevelKey.replace('HSK', 'HSK ');
+  const chapterHref = `#/courses/${courseId}?chapter=${lesson.chapter.chapterId}`;
+  const chapterMatch = lesson.chapter.title.match(/^(Chương\s+\d+|Unit\s+\d+)/i);
+  const chapterShortLabel = chapterMatch ? chapterMatch[1] : lesson.chapter.title;
+
   return (
     <div className="max-w-5xl mx-auto py-6 sm:py-8 px-4 sm:px-6 lg:px-8 space-y-6">
       {/* Top Clickable Multi-Level Breadcrumb & Status Navigation */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2">
-        <nav
-          aria-label="Điều hướng bài học"
-          className="inline-flex flex-wrap items-center gap-1.5 px-3.5 py-2 rounded-full glass-light text-xs font-semibold text-gray-600 self-start"
-        >
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-1">
+        <div className="flex items-center gap-2 min-w-0">
           <a
-            href="#/courses"
-            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full hover:bg-white/80 hover:text-primary-600 transition-colors cursor-pointer"
+            href={chapterHref}
+            title={`Quay lại ${lesson.chapter.title}`}
+            aria-label={`Quay lại ${lesson.chapter.title}`}
+            className="w-9 h-9 rounded-full glass-light flex items-center justify-center text-gray-600 hover:text-primary-600 hover:bg-white transition-colors shrink-0 cursor-pointer"
           >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Lộ trình</span>
+            <ArrowLeft className="w-4 h-4" />
           </a>
-          <span className="text-gray-400">/</span>
-          <a
-            href={`#/courses?level=${(lesson.chapter.course?.code || 'HSK1').toUpperCase()}`}
-            className="px-2 py-0.5 rounded-full hover:bg-white/80 hover:text-primary-600 text-gray-800 font-bold transition-colors cursor-pointer"
+
+          <nav
+            aria-label="Điều hướng bài học"
+            className="min-w-0 px-3.5 py-2 rounded-full glass-light text-xs font-medium text-gray-600"
           >
-            {(lesson.chapter.course?.code || 'HSK1').replace('HSK', 'HSK ')}
-          </a>
-          <span className="text-gray-400">/</span>
-          <a
-            href={`#/courses/${lesson.chapter.course?.course_id || 1}`}
-            className="px-2 py-0.5 rounded-full hover:bg-white/80 hover:text-primary-600 transition-colors truncate max-w-[200px] cursor-pointer"
-          >
-            {lesson.chapter.title}
-          </a>
-        </nav>
+            <ol className="flex flex-wrap items-center gap-1 min-w-0">
+              <li className="inline-flex items-center shrink-0">
+                <a
+                  href="#/courses"
+                  className="px-1.5 py-0.5 rounded-md hover:bg-white/80 hover:text-primary-600 transition-colors cursor-pointer"
+                >
+                  Lộ trình
+                </a>
+              </li>
+              <li aria-hidden="true" className="text-gray-400 shrink-0">
+                <ChevronRight className="w-3.5 h-3.5" />
+              </li>
+              <li className="inline-flex items-center shrink-0">
+                <a
+                  href={`#/courses?level=${courseLevelKey}`}
+                  className="px-1.5 py-0.5 rounded-md hover:bg-white/80 hover:text-primary-600 font-semibold text-gray-700 transition-colors cursor-pointer"
+                >
+                  {courseLevelLabel}
+                </a>
+              </li>
+              <li aria-hidden="true" className="text-gray-400 shrink-0">
+                <ChevronRight className="w-3.5 h-3.5" />
+              </li>
+              <li className="inline-flex items-center min-w-0">
+                <a
+                  href={chapterHref}
+                  title={lesson.chapter.title}
+                  className="px-1.5 py-0.5 rounded-md hover:bg-white/80 hover:text-primary-600 transition-colors truncate max-w-[140px] sm:max-w-[180px] cursor-pointer"
+                >
+                  {chapterShortLabel}
+                </a>
+              </li>
+              <li aria-hidden="true" className="text-gray-400 shrink-0">
+                <ChevronRight className="w-3.5 h-3.5" />
+              </li>
+              <li className="inline-flex items-center min-w-0">
+                <span
+                  aria-current="page"
+                  title={lesson.title}
+                  className="px-1.5 py-0.5 font-bold text-gray-900 truncate max-w-[170px] sm:max-w-[260px]"
+                >
+                  {lesson.title}
+                </span>
+              </li>
+            </ol>
+          </nav>
+        </div>
 
         {/* Status Indicators */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
           {isCompleted ? (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold">
               <CheckCircle2 className="w-3.5 h-3.5" />
               <span>Đã hoàn thành {highestScore > 0 ? `(Điểm: ${highestScore}%)` : ''}</span>
             </span>
           ) : isInProgress ? (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold">
               <Flame className="w-3.5 h-3.5 text-amber-600" />
               <span>Đang học</span>
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-bold">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 text-gray-700 text-xs font-bold">
               <span>Sẵn sàng học</span>
             </span>
           )}
@@ -313,7 +360,7 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
           {linkedTest && (
             <a
               href={`#/test/${linkedTest.test_id}`}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#D4A017] hover:bg-[#B8860B] text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
             >
               <FileQuestion className="w-3.5 h-3.5" />
               <span>Bài test củng cố (≥80%)</span>
@@ -350,7 +397,7 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
             onClick={() => setActiveTab('content')}
             className={`px-4 py-2 rounded-full text-xs sm:text-sm font-bold transition-colors shrink-0 cursor-pointer flex items-center gap-1.5 border ${
               activeTab === 'content'
-                ? 'bg-gradient-to-r from-primary-600 via-rose-500 to-amber-500 text-white border-transparent shadow-md'
+                ? 'bg-[#C41E3A] text-white border-transparent shadow-md shadow-[#C41E3A]/20'
                 : 'bg-white/60 border-white/85 text-gray-700 hover:bg-white'
             }`}
           >
@@ -363,7 +410,7 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
             onClick={() => setActiveTab('vocab')}
             className={`px-4 py-2 rounded-full text-xs sm:text-sm font-bold transition-colors shrink-0 cursor-pointer flex items-center gap-1.5 border ${
               activeTab === 'vocab'
-                ? 'bg-gradient-to-r from-primary-600 via-rose-500 to-amber-500 text-white border-transparent shadow-md'
+                ? 'bg-[#C41E3A] text-white border-transparent shadow-md shadow-[#C41E3A]/20'
                 : 'bg-white/60 border-white/85 text-gray-700 hover:bg-white'
             }`}
           >
@@ -376,7 +423,7 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
             onClick={() => setActiveTab('grammar')}
             className={`px-4 py-2 rounded-full text-xs sm:text-sm font-bold transition-colors shrink-0 cursor-pointer flex items-center gap-1.5 border ${
               activeTab === 'grammar'
-                ? 'bg-gradient-to-r from-primary-600 via-rose-500 to-amber-500 text-white border-transparent shadow-md'
+                ? 'bg-[#C41E3A] text-white border-transparent shadow-md shadow-[#C41E3A]/20'
                 : 'bg-white/60 border-white/85 text-gray-700 hover:bg-white'
             }`}
           >
@@ -389,7 +436,7 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
             onClick={() => setActiveTab('dialogue')}
             className={`px-4 py-2 rounded-full text-xs sm:text-sm font-bold transition-colors shrink-0 cursor-pointer flex items-center gap-1.5 border ${
               activeTab === 'dialogue'
-                ? 'bg-gradient-to-r from-primary-600 via-rose-500 to-amber-500 text-white border-transparent shadow-md'
+                ? 'bg-[#C41E3A] text-white border-transparent shadow-md shadow-[#C41E3A]/20'
                 : 'bg-white/60 border-white/85 text-gray-700 hover:bg-white'
             }`}
           >
@@ -402,7 +449,7 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
             onClick={() => setActiveTab('hanzi')}
             className={`px-4 py-2 rounded-full text-xs sm:text-sm font-bold transition-colors shrink-0 cursor-pointer flex items-center gap-1.5 border ${
               activeTab === 'hanzi'
-                ? 'bg-gradient-to-r from-primary-600 via-rose-500 to-amber-500 text-white border-transparent shadow-md'
+                ? 'bg-[#C41E3A] text-white border-transparent shadow-md shadow-[#C41E3A]/20'
                 : 'bg-white/60 border-white/85 text-gray-700 hover:bg-white'
             }`}
           >
@@ -563,7 +610,7 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
               type="button"
               onClick={() => setCurrentBlockIdx((prev) => Math.max(0, prev - 1))}
               disabled={currentBlockIdx === 0}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-700 font-bold text-xs transition-all disabled:opacity-40 cursor-pointer"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-700 font-bold text-xs transition-all disabled:opacity-70 cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Phần trước</span>
@@ -869,7 +916,7 @@ export const LessonPage: React.FC<{ lessonId: number }> = ({ lessonId }) => {
                 onClick={handleToggleAutoPlayDialogue}
                 className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-sm ${
                   isAutoPlayingDialogue
-                    ? 'bg-amber-500 hover:bg-amber-600 text-white'
+                    ? 'bg-amber-500 hover:bg-amber-600 text-slate-950'
                     : 'bg-primary-600 hover:bg-primary-700 text-white'
                 }`}
               >

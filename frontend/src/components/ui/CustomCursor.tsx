@@ -3,33 +3,23 @@ import React, { useEffect, useRef } from 'react';
 function getSubtlePageTint(hash: string): string {
   const path = (hash || '#/').split('?')[0];
 
-  // Landing & Login (Dark surfaces) — delicate warm pearl highlight
+  // Landing & Login — delicate sunlit parchment highlight
   if (path === '#/' || path === '' || path === '#/landing' || path === '#/login') {
-    return 'radial-gradient(circle, rgba(255, 255, 255, 0.14) 0%, rgba(251, 191, 36, 0.04) 48%, transparent 72%)';
+    return 'radial-gradient(circle, rgba(255, 252, 245, 0.24) 0%, rgba(212, 160, 23, 0.05) 48%, transparent 72%)';
   }
 
   // Vocab / SRS / Writing — whisper-soft jade pearl
   if (path.startsWith('#/vocab') || path.startsWith('#/srs') || path.startsWith('#/characters')) {
-    return 'radial-gradient(circle, rgba(255, 255, 255, 0.34) 0%, rgba(16, 185, 129, 0.06) 46%, transparent 72%)';
+    return 'radial-gradient(circle, rgba(255, 252, 245, 0.34) 0%, rgba(21, 122, 87, 0.055) 46%, transparent 72%)';
   }
 
-  // Speaking / Pinyin — whisper-soft lavender pearl
+  // Speaking / Pinyin — whisper-soft champagne gold pearl
   if (path.startsWith('#/speak') || path.startsWith('#/pinyin')) {
-    return 'radial-gradient(circle, rgba(255, 255, 255, 0.34) 0%, rgba(139, 92, 246, 0.06) 46%, transparent 72%)';
+    return 'radial-gradient(circle, rgba(255, 252, 245, 0.34) 0%, rgba(212, 160, 23, 0.065) 46%, transparent 72%)';
   }
 
-  // Exams / Tests / Admin / Profile — whisper-soft cool ice pearl
-  if (
-    path.startsWith('#/exams') ||
-    path.startsWith('#/test') ||
-    path.startsWith('#/admin') ||
-    path.startsWith('#/profile')
-  ) {
-    return 'radial-gradient(circle, rgba(255, 255, 255, 0.34) 0%, rgba(56, 189, 248, 0.06) 46%, transparent 72%)';
-  }
-
-  // Default (Today, Courses, Lessons) — whisper-soft warm rose pearl
-  return 'radial-gradient(circle, rgba(255, 255, 255, 0.34) 0%, rgba(244, 63, 94, 0.05) 46%, transparent 72%)';
+  // Default (Today, Courses, Lessons, Exams, Profile) — whisper-soft imperial crimson pearl
+  return 'radial-gradient(circle, rgba(255, 252, 245, 0.34) 0%, rgba(196, 30, 58, 0.05) 46%, transparent 72%)';
 }
 
 const INTERACTIVE_SELECTOR =

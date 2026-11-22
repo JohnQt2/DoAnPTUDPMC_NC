@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
+import { saveInProgressLessonId } from './lib/resumeLesson';
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
+import { HanziLogo } from './components/HanziLogo';
+import { HanziLoadingScreen } from './components/landing/ArchitecturalOrnaments';
 import {
   MeshBackground,
   PageTransition,
@@ -35,10 +39,43 @@ import { Lock, ShieldAlert, ArrowRight, Home } from 'lucide-react';
 const AppContent: React.FC = () => {
   const { user, isLoading, hasCompletedOnboarding } = useAuth();
   const [currentHash, setCurrentHash] = useState(window.location.hash || '#/');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('hanzi4u_sidebar_collapsed') === '1';
+    } catch {
+      return false;
+    }
+  });
+
+  const toggleSidebarCollapsed = () => {
+    setSidebarCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('hanzi4u_sidebar_collapsed', next ? '1' : '0');
+      } catch {
+        // ignore storage errors
+      }
+      return next;
+    });
+  };
 
   useEffect(() => {
+    const syncHash = (hash: string) => {
+      const clean = hash.split('?')[0] || '#/';
+      if (clean.startsWith('#/lessons/')) {
+        const lid = parseInt(clean.replace('#/lessons/', ''), 10);
+        if (Number.isFinite(lid) && lid > 0) {
+          saveInProgressLessonId(lid);
+        }
+      }
+    };
+
+    syncHash(window.location.hash || '#/');
+
     const handleHashChange = () => {
-      setCurrentHash(window.location.hash || '#/');
+      const next = window.location.hash || '#/';
+      setCurrentHash(next);
+      syncHash(next);
       window.scrollTo(0, 0);
     };
 
@@ -47,65 +84,56 @@ const AppContent: React.FC = () => {
   }, []);
 
   const isStudent = user?.role === 'STUDENT';
+  const basePath = currentHash.split('?')[0] || '#/';
+
+  // Normalize root / login / landing routes to #/today for authenticated students
+  useEffect(() => {
+    if (!user || !isStudent || hasCompletedOnboarding !== true) return;
+    if (
+      basePath === '#/' ||
+      basePath === '' ||
+      basePath === '#/landing' ||
+      basePath === '#/login'
+    ) {
+      window.history.replaceState(null, '', '#/today');
+      setCurrentHash('#/today');
+    }
+  }, [user, isStudent, hasCompletedOnboarding, basePath]);
 
   if (isLoading || (isStudent && hasCompletedOnboarding === null)) {
-    return (
-      <MeshBackground variant="light" showHanzi={false} className="flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3.5">
-          <span
-            aria-hidden="true"
-            className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-primary-600 via-primary-500 to-secondary-500 text-white flex items-center justify-center font-chinese font-black text-2xl shadow-xl shadow-primary-500/25 motion-safe:animate-pulse"
-          >
-            汉
-          </span>
-          <span className="text-sm font-bold text-gray-600">Đang tải Hanzi4U...</span>
-        </div>
-      </MeshBackground>
-    );
+    return <HanziLoadingScreen visible={true} progress={82} />;
   }
-
-  const basePath = currentHash.split('?')[0] || '#/';
 
   // ──────────────────────────────────────────────────────────────────────────
   // 1. GUEST / UNAUTHENTICATED ROUTES (DARK GLASSMORPHISM)
   // ──────────────────────────────────────────────────────────────────────────
   if (!user) {
     if (basePath === '#/' || basePath === '' || basePath === '#/landing') {
-      return (
-        <MeshBackground variant="dark" className="min-h-screen flex flex-col">
-          <Navbar currentPath={currentHash} theme="dark" />
-          <main className="flex-1">
-            <LandingPage />
-          </main>
-          <footer className="border-t border-white/[0.08] bg-black/20 backdrop-blur-md py-6 text-center text-xs text-white/40">
-            © 2026 Hanzi4U (hanzi4u.id.vn) — Nền tảng học tiếng Trung HSK cho người Việt
-          </footer>
-        </MeshBackground>
-      );
+      return <LandingPage />;
     }
 
     if (basePath === '#/login') {
       return (
-        <MeshBackground variant="dark" className="min-h-screen flex flex-col">
-          <Navbar currentPath={currentHash} theme="dark" />
-          <main className="flex-1 flex flex-col">
+        <div className="h-[100dvh] w-full overflow-hidden flex flex-col bg-[#FAF8F6]">
+          <Navbar currentPath={currentHash} theme="light" />
+          <main className="flex-1 flex flex-col min-h-0 overflow-y-auto overflow-x-hidden no-scrollbar">
             <LoginPage />
           </main>
-        </MeshBackground>
+        </div>
       );
     }
 
     const redirectUrl = `#/login?redirect=${encodeURIComponent(currentHash)}`;
     return (
-      <MeshBackground variant="dark" className="min-h-screen flex flex-col">
-        <Navbar currentPath={currentHash} theme="dark" />
+      <MeshBackground variant="light" showHanzi={false} className="min-h-screen flex flex-col text-[#1C1917]">
+        <Navbar currentPath={currentHash} theme="light" />
         <div className="flex-1 flex items-center justify-center px-4 py-16">
-          <GlassCard variant="dark" className="max-w-md w-full p-8 text-center space-y-5">
-            <div className="w-14 h-14 rounded-2xl bg-primary-500/20 border border-primary-400/30 text-primary-300 mx-auto flex items-center justify-center">
+          <GlassCard variant="light" className="max-w-md w-full p-8 text-center space-y-5">
+            <div className="w-14 h-14 rounded-2xl bg-[#C41E3A]/10 border border-[#C41E3A]/20 text-[#C41E3A] mx-auto flex items-center justify-center">
               <Lock className="w-7 h-7" />
             </div>
-            <h2 className="text-xl font-black text-white">Vui lòng đăng nhập</h2>
-            <p className="text-sm text-white/60 leading-relaxed">
+            <h2 className="text-xl font-black text-[#1C1917]">Vui lòng đăng nhập</h2>
+            <p className="text-sm text-[#57534E] leading-relaxed">
               Đăng nhập tài khoản Hanzi4U để tiếp tục học và lưu tiến độ cá nhân hóa của bạn.
             </p>
             <div className="space-y-2.5 pt-2">
@@ -115,9 +143,9 @@ const AppContent: React.FC = () => {
               </ShimmerButton>
               <a
                 href="#/"
-                className="w-full flex items-center justify-center gap-2 py-3 px-5 rounded-2xl border border-white/15 hover:bg-white/10 text-white/75 font-semibold text-xs transition-colors"
+                className="w-full flex items-center justify-center gap-2 py-3 px-5 rounded-2xl border border-[#1C1917]/15 bg-white/80 hover:bg-white text-[#57534E] hover:text-[#1C1917] font-semibold text-xs transition-colors"
               >
-                <Home className="w-4 h-4 text-white/50" />
+                <Home className="w-4 h-4 text-[#C41E3A]" />
                 <span>Về trang chủ</span>
               </a>
             </div>
@@ -142,9 +170,18 @@ const AppContent: React.FC = () => {
         : 'courses';
 
     return (
-      <MeshBackground variant="light" showHanzi={false} className="text-gray-900 font-sans">
-        <Sidebar currentPath={currentHash} />
-        <div className="lg:pl-[17.25rem] min-h-screen flex flex-col">
+      <MeshBackground variant="light" showHanzi={false} className="text-[#1C1917] font-sans">
+        <Sidebar
+          currentPath={currentHash}
+          collapsed={sidebarCollapsed}
+          onToggleCollapse={toggleSidebarCollapsed}
+        />
+        <div
+          style={{ ['--sidebar-offset' as any]: sidebarCollapsed ? '6.25rem' : '17.25rem' }}
+          className={`${
+            sidebarCollapsed ? 'lg:pl-[6.25rem]' : 'lg:pl-[17.25rem]'
+          } min-h-screen flex flex-col transition-[padding] duration-300 ease-out`}
+        >
           <main className="flex-1 pb-16">
             <PageTransition
               routeKey={isAdminProfile ? 'admin-profile' : isAdminLessonPreview ? basePath : adminTab}
@@ -168,16 +205,9 @@ const AppContent: React.FC = () => {
   // ──────────────────────────────────────────────────────────────────────────
   if (hasCompletedOnboarding === false) {
     return (
-      <MeshBackground variant="light" showHanzi={false} className="flex flex-col">
-        <header className="sticky top-0 z-40 bg-white/70 backdrop-blur-xl border-b border-white/80 h-16 px-4 sm:px-6 flex items-center justify-center shadow-sm shadow-gray-900/[0.02]">
-          <div className="flex items-center gap-2.5">
-            <span className="w-9 h-9 rounded-xl bg-gradient-to-tr from-primary-600 via-primary-500 to-secondary-500 text-white flex items-center justify-center font-chinese font-black text-lg shadow-sm">
-              汉
-            </span>
-            <span className="font-extrabold text-xl tracking-tight text-gray-900">
-              Hanzi<span className="text-primary-600">4U</span>
-            </span>
-          </div>
+      <MeshBackground variant="light" showHanzi={false} className="flex flex-col text-[#1C1917]">
+        <header className="sticky top-0 z-40 bg-[#FCFBF8]/88 dark:bg-[#0f151f]/90 backdrop-blur-xl border-b border-[#1C1917]/10 dark:border-white/10 h-16 px-4 sm:px-6 flex items-center justify-center shadow-sm shadow-[#1C1917]/[0.03]">
+          <HanziLogo variant="light" size="md" showSubtitle={false} />
         </header>
         <main className="flex-1 pb-12">
           <PageTransition routeKey="onboarding-initial">
@@ -289,9 +319,18 @@ const AppContent: React.FC = () => {
 
   return (
     <MeshBackground variant="light" showHanzi={false} className="text-gray-900 font-sans">
-      <Sidebar currentPath={currentHash} />
-      <div className="lg:pl-[17.25rem] min-h-screen flex flex-col">
-        <main className="flex-1 pb-16">
+      <Sidebar
+        currentPath={currentHash}
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={toggleSidebarCollapsed}
+      />
+      <div
+        style={{ ['--sidebar-offset' as any]: sidebarCollapsed ? '6.25rem' : '17.25rem' }}
+        className={`${
+          sidebarCollapsed ? 'lg:pl-[6.25rem]' : 'lg:pl-[17.25rem]'
+        } min-h-screen flex flex-col transition-[padding] duration-300 ease-out`}
+      >
+        <main className="flex-1 pb-8">
           <PageTransition routeKey={basePath}>{renderCurrentPage()}</PageTransition>
         </main>
       </div>
@@ -301,12 +340,14 @@ const AppContent: React.FC = () => {
 
 export const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <CustomCursor />
-      <CelebrationOverlay />
-      <DialogOverlay />
-      <AppContent />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <CustomCursor />
+        <CelebrationOverlay />
+        <DialogOverlay />
+        <AppContent />
+      </AuthProvider>
+    </ThemeProvider>
   );
 };
 

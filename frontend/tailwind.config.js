@@ -1,22 +1,27 @@
 /** @type {import('tailwindcss').Config} */
+const IMPERIAL_CRIMSON = {
+  50: '#fdf2f4',
+  100: '#fbe5e9',
+  200: '#f5c7d0',
+  300: '#ec9ba9',
+  400: '#dc5971',
+  500: '#C41E3A',
+  600: '#A51730',
+  700: '#8A1228',
+  800: '#721022',
+  900: '#5E0E1D',
+  950: '#37050E',
+};
+
 export default {
+  darkMode: 'class',
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
       colors: {
-        primary: {
-          50: '#fef2f2',
-          100: '#fee2e2',
-          200: '#fecaca',
-          300: '#f8a0a0',
-          400: '#f06060',
-          500: '#C41E3A',
-          600: '#b01832',
-          700: '#93122a',
-          800: '#7a1026',
-          900: '#681225',
-          950: '#3a0510',
-        },
+        primary: IMPERIAL_CRIMSON,
+        rose: IMPERIAL_CRIMSON,
+        red: IMPERIAL_CRIMSON,
         secondary: {
           50: '#fefce8',
           100: '#fef9c3',
@@ -45,11 +50,12 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['"Be Vietnam Pro"', 'system-ui', '-apple-system', 'sans-serif'],
-        display: ['"Plus Jakarta Sans"', '"Be Vietnam Pro"', 'sans-serif'],
+        sans: ['"Be Vietnam Pro"', '"Noto Sans"', '"Segoe UI"', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['"Plus Jakarta Sans"', '"Be Vietnam Pro"', '"Noto Sans"', '"Segoe UI"', 'sans-serif'],
+        pinyin: ['"Noto Sans"', '"Segoe UI"', 'Arial', 'sans-serif'],
         chinese: ['"Noto Sans SC"', '"Microsoft YaHei"', 'sans-serif'],
         'hanzi-serif': ['"Noto Serif SC"', '"Noto Sans SC"', 'serif'],
-        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+        mono: ['"JetBrains Mono"', '"Noto Sans"', '"Segoe UI"', 'ui-monospace', 'monospace'],
       },
       animation: {
         shake: 'shake 0.5s ease-in-out',

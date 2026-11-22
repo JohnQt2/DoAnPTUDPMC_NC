@@ -21,7 +21,7 @@ export const PageTransition: React.FC<PageTransitionProps> = ({ routeKey, childr
         animate={{ scaleX: 1, opacity: 0 }}
         transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
         style={{ transformOrigin: '0% 50%' }}
-        className="pointer-events-none fixed top-0 left-0 right-0 z-[90] h-[2.5px] bg-gradient-to-r from-rose-300 via-pink-400 to-amber-300"
+        className="pointer-events-none fixed top-0 left-0 right-0 z-[90] h-[2.5px] bg-gradient-to-r from-[#C41E3A] via-[#D4A017] to-[#C41E3A]"
       />
       <motion.div
         key={routeKey}

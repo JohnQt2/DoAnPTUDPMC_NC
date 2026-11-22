@@ -31,13 +31,13 @@ interface VocabEntry {
 }
 
 const LEVEL_COLORS: Record<string, string> = {
-  ALL: 'from-rose-400 via-pink-400 to-amber-300',
-  HSK1: 'from-emerald-400 to-teal-400',
-  HSK2: 'from-sky-400 to-indigo-400',
-  HSK3: 'from-amber-400 to-orange-400',
-  HSK4: 'from-rose-400 to-pink-400',
-  HSK5: 'from-violet-400 to-purple-400',
-  HSK6: 'from-fuchsia-400 to-amber-400',
+  ALL: 'from-[#C41E3A] to-[#A51730]',
+  HSK1: 'from-[#D97706] to-[#B45309]',
+  HSK2: 'from-[#157A57] to-[#116145]',
+  HSK3: 'from-[#D95B18] to-[#B4460E]',
+  HSK4: 'from-[#C41E3A] to-[#9E162E]',
+  HSK5: 'from-[#184375] to-[#12325A]',
+  HSK6: 'from-[#5A1063] to-[#430B4A]',
 };
 
 const PAGE_SIZE = 12;
@@ -113,11 +113,11 @@ const VocabFlashcard = React.memo(
             </div>
 
             <div className="text-center space-y-1">
-              <p className="font-hanzi-serif text-4xl font-bold text-slate-800 tracking-wide">
+              <p className="font-hanzi-serif text-4xl font-bold text-[#1C1917] tracking-wide">
                 {v.word}
               </p>
-              <p className="text-[13.5px] font-mono font-bold text-rose-600">{v.pinyin}</p>
-              <p className="text-sm font-semibold text-slate-700">{v.meaning}</p>
+              <p className="text-[14px] font-pinyin font-bold text-[#C41E3A]">{v.pinyin}</p>
+              <p className="text-sm font-semibold text-[#57534E]">{v.meaning}</p>
             </div>
 
             <p className="text-[10.5px] font-medium text-slate-400 text-center flex items-center justify-center gap-1">
@@ -130,10 +130,10 @@ const VocabFlashcard = React.memo(
           <div className="absolute inset-0 backface-hidden rotate-y-180 rounded-[26px] glass-card-grid p-5 flex flex-col justify-between bg-gradient-to-br from-white/80 via-rose-50/45 to-amber-50/50">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-baseline gap-2 min-w-0">
-                <span className="font-hanzi-serif font-bold text-xl text-slate-800 truncate">
+                <span className="font-hanzi-serif font-bold text-xl text-[#1C1917] truncate">
                   {v.word}
                 </span>
-                <span className="text-xs font-mono font-bold text-rose-600 truncate">
+                <span className="text-xs font-pinyin font-bold text-[#C41E3A] truncate">
                   {v.pinyin}
                 </span>
               </div>
@@ -159,8 +159,8 @@ const VocabFlashcard = React.memo(
                     <Volume2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
-                {firstEx.py && <p className="text-[11px] font-mono text-rose-600">{firstEx.py}</p>}
-                {firstEx.vi && <p className="text-[11px] text-slate-700">{firstEx.vi}</p>}
+                {firstEx.py && <p className="text-[11.5px] font-pinyin text-[#C41E3A]">{firstEx.py}</p>}
+                {firstEx.vi && <p className="text-[11px] text-[#57534E]">{firstEx.vi}</p>}
               </div>
             ) : (
               <p className="text-sm font-semibold text-slate-800 text-center">{v.meaning}</p>
@@ -287,15 +287,15 @@ export const VocabPage: React.FC<{ initialTab?: 'bank' | 'srs' | 'writing' }> = 
   return (
     <div className="max-w-6xl mx-auto pt-7 px-4 sm:px-6 space-y-6">
       {/* Header & Clean Non-Scrolling Liquid Glass Capsule */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 border-b border-white/75">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 border-b border-[#1C1917]/10">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-slate-900 flex items-center gap-2.5">
-            <span className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-400 via-pink-400 to-amber-300 text-slate-950 flex items-center justify-center shadow-md shrink-0">
+          <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-[#1C1917] flex items-center gap-2.5">
+            <span className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#C41E3A] to-[#A51730] text-white flex items-center justify-center shadow-md shadow-[#C41E3A]/20 shrink-0">
               <Library className="w-5 h-5" />
             </span>
             <span>Từ vựng & Chữ Hán HSK 1–6</span>
           </h1>
-          <p className="text-sm text-slate-600 mt-1">
+          <p className="text-sm text-[#57534E] mt-1">
             Tra cứu từ vựng HSK 1–6 theo cấp độ, ôn thẻ nhớ và luyện viết chữ Hán.
           </p>
         </div>
@@ -311,14 +311,14 @@ export const VocabPage: React.FC<{ initialTab?: 'bank' | 'srs' | 'writing' }> = 
                 type="button"
                 onClick={() => startTransition(() => setTab(item.id))}
                 className={`relative flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full text-xs sm:text-[13px] font-bold whitespace-nowrap transition-colors duration-200 cursor-pointer ${
-                  active ? 'text-slate-950' : 'text-slate-600 hover:text-slate-900'
+                  active ? 'text-white' : 'text-[#57534E] hover:text-[#1C1917]'
                 }`}
               >
                 {active && (
                   <motion.span
                     layoutId="vocab-liquid-tab"
                     transition={{ type: 'spring', stiffness: 420, damping: 34 }}
-                    className="absolute inset-0 rounded-full bg-gradient-to-r from-rose-400 via-pink-400 to-amber-300 shadow-sm"
+                    className="absolute inset-0 rounded-full bg-[#C41E3A] shadow-sm shadow-[#C41E3A]/25"
                   />
                 )}
                 <Icon className="relative z-10 w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
@@ -343,8 +343,8 @@ export const VocabPage: React.FC<{ initialTab?: 'bank' | 'srs' | 'writing' }> = 
                     onClick={() => startTransition(() => setLevelFilter(lvl))}
                     className={`px-3.5 py-2 rounded-full text-xs font-bold transition-colors duration-200 cursor-pointer whitespace-nowrap border ${
                       active
-                        ? `bg-gradient-to-r ${LEVEL_COLORS[lvl]} text-slate-950 border-transparent shadow-sm`
-                        : 'bg-white/60 hover:bg-white text-slate-700 border-white/85'
+                        ? `bg-gradient-to-r ${LEVEL_COLORS[lvl]} text-white border-transparent shadow-sm`
+                        : 'bg-white/75 hover:bg-white text-[#57534E] hover:text-[#1C1917] border-[#1C1917]/10'
                     }`}
                   >
                     {lvl === 'ALL' ? 'Tất cả' : lvl.replace('HSK', 'HSK ')}

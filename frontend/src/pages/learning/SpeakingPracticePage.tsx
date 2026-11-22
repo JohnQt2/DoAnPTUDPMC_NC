@@ -205,13 +205,13 @@ export const SpeakingPracticePage: React.FC = () => {
       {/* Header + Mode Switcher */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-gray-900 flex items-center gap-2.5 tracking-tight">
-            <span className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-500 via-primary-600 to-violet-600 text-white flex items-center justify-center shadow-lg">
+          <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-[#1C1917] flex items-center gap-2.5 tracking-tight">
+            <span className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#C41E3A] to-[#A51730] text-white flex items-center justify-center shadow-md shadow-[#C41E3A]/20">
               <MessagesSquare className="w-5 h-5" />
             </span>
             <span>Luyện nói giao tiếp</span>
           </h1>
-          <p className="text-sm text-gray-600 mt-1">
+          <p className="text-sm text-[#57534E] mt-1">
             Luyện đọc theo mẫu và đối đáp theo tình huống thực tế từ HSK 1 đến HSK 4.
           </p>
         </div>
@@ -230,13 +230,13 @@ export const SpeakingPracticePage: React.FC = () => {
                   type="button"
                   onClick={() => setMode(m.id)}
                   className={`relative px-4 py-2 rounded-xl text-xs font-extrabold transition-colors cursor-pointer ${
-                    active ? 'text-white' : 'text-gray-600 hover:text-gray-900'
+                    active ? 'text-white' : 'text-[#57534E] hover:text-[#1C1917]'
                   }`}
                 >
                   {active && (
                     <motion.span
                       layoutId="speaking-mode-pill"
-                      className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary-600 to-violet-600 shadow-sm"
+                      className="absolute inset-0 rounded-xl bg-[#C41E3A] shadow-sm shadow-[#C41E3A]/25"
                     />
                   )}
                   <span className="relative z-10">{m.label}</span>
@@ -299,23 +299,23 @@ export const SpeakingPracticePage: React.FC = () => {
         </span>
       </div>
 
-      {/* Main Hanpeak Interactive Studio Card */}
+      {/* Main Interactive Studio Card */}
       <GlassCard className="p-6 sm:p-8 relative overflow-hidden space-y-6">
-        <BorderBeam duration={8} colorFrom="#f43f5e" colorTo="#8b5cf6" />
+        <BorderBeam duration={8} colorFrom="#C41E3A" colorTo="#D4A017" />
 
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="px-3 py-1 rounded-full bg-gradient-to-r from-primary-600 to-rose-500 text-white text-xs font-black">
+            <span className="px-3 py-1 rounded-full bg-[#C41E3A] text-white text-xs font-black">
               {item.level.replace('HSK', 'HSK ')}
             </span>
-            <span className="px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold">
+            <span className="px-3 py-1 rounded-full bg-[#FAF3E6] border border-[#C29940]/35 text-[#8A6112] text-xs font-bold">
               {item.topic}
             </span>
           </div>
 
           {/* Speed Control */}
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/80 border border-gray-200 text-xs font-bold text-gray-600">
-            <Gauge className="w-3.5 h-3.5 text-primary-500" />
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/85 border border-[#1C1917]/12 text-xs font-bold text-[#57534E]">
+            <Gauge className="w-3.5 h-3.5 text-[#C41E3A]" />
             {[
               { label: '0.6x', rate: 0.6 },
               { label: '0.85x', rate: 0.85 },
@@ -326,7 +326,7 @@ export const SpeakingPracticePage: React.FC = () => {
                 type="button"
                 onClick={() => setSpeechRate(sp.rate)}
                 className={`px-2 py-0.5 rounded-lg cursor-pointer transition-colors ${
-                  speechRate === sp.rate ? 'bg-primary-600 text-white' : 'hover:bg-gray-100'
+                  speechRate === sp.rate ? 'bg-[#C41E3A] text-white' : 'hover:bg-[#1C1917]/6'
                 }`}
               >
                 {sp.label}
@@ -337,20 +337,20 @@ export const SpeakingPracticePage: React.FC = () => {
 
         {/* Roleplay AI Bubble */}
         {mode === 'roleplay' && item.aiPromptCn && (
-          <div className="p-4 rounded-2xl bg-gradient-to-r from-violet-50 via-fuchsia-50/60 to-white border border-violet-200/80 flex items-start justify-between gap-4">
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-[#FCF8F0] via-[#FAF3E6]/75 to-white border border-[#C29940]/30 flex items-start justify-between gap-4">
             <div className="space-y-1">
-              <span className="inline-flex items-center gap-1 text-[11px] font-black uppercase text-violet-700">
-                <Sparkles className="w-3.5 h-3.5" />
+              <span className="inline-flex items-center gap-1 text-[11px] font-black uppercase text-[#926A0E]">
+                <Sparkles className="w-3.5 h-3.5 text-[#D4A017]" />
                 Câu hỏi tình huống:
               </span>
-              <p className="font-chinese text-xl font-black text-gray-900">{item.aiPromptCn}</p>
-              <p className="text-xs font-bold text-violet-600">{item.aiPromptPy}</p>
-              <p className="text-xs text-gray-500">{item.aiPromptVi}</p>
+              <p className="font-hanzi-serif text-xl font-black text-[#1C1917]">{item.aiPromptCn}</p>
+              <p className="text-xs font-pinyin font-bold text-[#C41E3A]">{item.aiPromptPy}</p>
+              <p className="text-xs text-[#57534E]">{item.aiPromptVi}</p>
             </div>
             <button
               type="button"
               onClick={() => speakText(item.aiPromptCn!, speechRate)}
-              className="w-11 h-11 rounded-2xl bg-violet-600 hover:bg-violet-500 text-white flex items-center justify-center shadow-md shrink-0 cursor-pointer"
+              className="w-11 h-11 rounded-2xl bg-[#C41E3A] hover:bg-[#A51730] text-white flex items-center justify-center shadow-md shrink-0 cursor-pointer"
               aria-label="Nghe câu hỏi của AI"
             >
               <Volume2 className="w-5 h-5" />

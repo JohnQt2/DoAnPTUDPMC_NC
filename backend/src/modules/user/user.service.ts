@@ -1432,6 +1432,197 @@ export class UserService {
 
     return user;
   }
+
+  /**
+   * Bảng xếp hạng tuần thực tế từ dữ liệu học tập trong DB (Thứ 2 00:00 → Chủ nhật 23:59)
+   * Quy đổi XP minh bạch:
+   * - Hoàn thành 1 bài học: +50 XP
+   * - Làm bài kiểm tra / đề thi: +0.6 * điểm% (tối đa +60 XP, thưởng thêm +20 XP nếu đạt)
+   * - Luyện viết chữ Hán / Pinyin đạt: +10 XP
+   * - Ôn thẻ nhớ SRS: +5 XP / thẻ
+   */
+  async getWeeklyLeaderboard(currentUserId: number) {
+    const now = new Date();
+    const dayOfWeek = now.getDay(); // 0 = Sun, 1 = Mon, ...
+    const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    const weekStart = new Date(now);
+    weekStart.setDate(now.getDate() + diffToMonday);
+    weekStart.setHours(0, 0, 0, 0);
+
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6);
+    weekEnd.setHours(23, 59, 59, 999);
+
+    const users = await prisma.users.findMany({
+      where: {
+        status: 'ACTIVE',
+        role: 'STUDENT',
+      },
+      select: {
+        user_id: true,
+        display_name: true,
+        avatarResource: { select: { public_url: true } },
+        roadmaps: {
+          where: { is_active: true },
+          take: 1,
+          select: {
+            target_goal: true,
+            starting_level: true,
+            course: { select: { level: true } },
+          },
+        },
+        lessonProgress: {
+          select: {
+            is_completed: true,
+            completed_at: true,
+            last_studied_at: true,
+          },
+        },
+        submissions: {
+          select: {
+            score: true,
+            is_passed: true,
+            submitted_at: true,
+          },
+        },
+        practices: {
+          where: { is_successful: true },
+          select: {
+            practiced_at: true,
+          },
+        },
+        srsItems: {
+          where: { last_reviewed_at: { not: null } },
+          select: {
+            last_reviewed_at: true,
+          },
+        },
+      },
+    });
+
+    const toDateKey = (d: Date): string => {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    };
+
+    const computeStreak = (dates: Date[]): number => {
+      if (dates.length === 0) return 0;
+      const uniqueDays = new Set(dates.map(toDateKey));
+      const cursor = new Date();
+      cursor.setHours(0, 0, 0, 0);
+
+      // Allow streak to continue if user studied today OR yesterday
+      if (!uniqueDays.has(toDateKey(cursor))) {
+        cursor.setDate(cursor.getDate() - 1);
+        if (!uniqueDays.has(toDateKey(cursor))) return 0;
+      }
+
+      let streak = 0;
+      while (uniqueDays.has(toDateKey(cursor))) {
+        streak++;
+        cursor.setDate(cursor.getDate() - 1);
+      }
+      return streak;
+    };
+
+    const formatLevel = (raw?: string | null): string => {
+      if (!raw) return 'HSK 1';
+      const upper = raw.toUpperCase();
+      if (/^HSK\d$/.test(upper)) return upper.replace('HSK', 'HSK ');
+      return 'HSK 1';
+    };
+
+    const ranked = users.map((u) => {
+      const activityDates: Date[] = [];
+
+      let weeklyXp = 0;
+      let totalXp = 0;
+      let weeklyLessons = 0;
+      let totalCompletedLessons = 0;
+
+      for (const lp of u.lessonProgress) {
+        if (lp.last_studied_at) activityDates.push(lp.last_studied_at);
+        if (lp.is_completed) {
+          totalCompletedLessons++;
+          totalXp += 50;
+          const refDate = lp.completed_at || lp.last_studied_at;
+          if (refDate && refDate >= weekStart) {
+            weeklyLessons++;
+            weeklyXp += 50;
+          }
+        }
+      }
+
+      for (const sub of u.submissions) {
+        activityDates.push(sub.submitted_at);
+        const subXp = Math.round((sub.score || 0) * 0.6) + (sub.is_passed ? 20 : 0);
+        totalXp += subXp;
+        if (sub.submitted_at >= weekStart) {
+          weeklyXp += subXp;
+        }
+      }
+
+      for (const pr of u.practices) {
+        activityDates.push(pr.practiced_at);
+        totalXp += 10;
+        if (pr.practiced_at >= weekStart) {
+          weeklyXp += 10;
+        }
+      }
+
+      for (const srs of u.srsItems) {
+        if (srs.last_reviewed_at) {
+          activityDates.push(srs.last_reviewed_at);
+          totalXp += 5;
+          if (srs.last_reviewed_at >= weekStart) {
+            weeklyXp += 5;
+          }
+        }
+      }
+
+      const activeRoadmap = u.roadmaps[0];
+      const level = formatLevel(activeRoadmap?.course?.level || activeRoadmap?.target_goal);
+      const streak = computeStreak(activityDates);
+
+      return {
+        userId: u.user_id,
+        displayName: u.display_name,
+        avatarUrl: u.avatarResource?.public_url || null,
+        level,
+        weeklyXp,
+        totalXp,
+        streak,
+        weeklyLessons,
+        completedLessons: totalCompletedLessons,
+        isCurrentUser: u.user_id === currentUserId,
+      };
+    });
+
+    ranked.sort((a, b) => {
+      if (b.weeklyXp !== a.weeklyXp) return b.weeklyXp - a.weeklyXp;
+      if (b.streak !== a.streak) return b.streak - a.streak;
+      if (b.totalXp !== a.totalXp) return b.totalXp - a.totalXp;
+      return a.userId - b.userId;
+    });
+
+    const withRanks = ranked.map((entry, idx) => ({
+      rank: idx + 1,
+      ...entry,
+    }));
+
+    const currentUser = withRanks.find((e) => e.userId === currentUserId) || null;
+    const leaders = withRanks.slice(0, 20);
+
+    return {
+      weekStart: weekStart.toISOString(),
+      weekEnd: weekEnd.toISOString(),
+      totalParticipants: withRanks.length,
+      leaders,
+      currentUser,
+    };
+  }
 }
 
 export const userService = new UserService();

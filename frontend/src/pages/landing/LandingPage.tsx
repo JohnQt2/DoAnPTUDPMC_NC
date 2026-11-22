@@ -10,10 +10,12 @@ import {
   Move,
   Volume2,
   BookOpen,
+  PenTool,
 } from 'lucide-react';
 import { ThreeMinimalZenSculpture } from '../../components/three/ThreeMinimalZenSculpture';
 import { ThreeStudyDioramaStage } from '../../components/three/ThreeStudyDioramaStage';
 import { HanziLogo, HanziLogoMark } from '../../components/HanziLogo';
+import { InteractiveTianZiGeBoard } from '../../components/landing/InteractiveTianZiGeBoard';
 import {
   ArchitecturalBlueprintGrid,
   EditorialPaperFrame,
@@ -28,7 +30,7 @@ import { ambientBgm } from '../../lib/ambientMusic';
 /* ── CHAPTERS & AUTHENTIC CHINESE LINGUISTIC CONTENT ── */
 const CHAPTERS = [
   { id: 0, code: '序', label: 'Mở đầu', zhCaption: '汉语入门' },
-  { id: 1, code: '一', label: 'Thanh điệu & Pinyin', zhCaption: '第一课 · 声调' },
+  { id: 1, code: '一', label: 'Pinyin và 4 Thanh điệu', zhCaption: '第一课 · 声调' },
   { id: 2, code: '二', label: 'Luyện viết chữ Hán', zhCaption: '第二课 · 书写' },
   { id: 3, code: '三', label: 'Chương trình HSK', zhCaption: '第三课 · 课程' },
   { id: 4, code: '四', label: 'Thẻ lật từ & Giáo trình HSK', zhCaption: '第四课 · 教材' },
@@ -38,11 +40,14 @@ const SPECIMEN_TONES = [
   {
     hanzi: '妈',
     pinyin: 'mā',
-    title: 'Thanh 1 · mā',
-    phonetic: '阴平 · Cao độ 55 (Ngang cao)',
-    sino: 'Hán-Việt: Mẫu (Mẹ)',
-    compound: '妈妈 (māma) · Mẹ',
-    lore: 'Giữ cao độ ổn định và đều hơi từ đầu đến cuối âm tiết. Nền tảng để người Việt phân biệt rõ ràng các thanh điệu ngay từ buổi học đầu tiên.',
+    toneLabel: 'Thanh 1',
+    phonetic: 'Giọng ngang và đều',
+    meaning: 'Mẹ',
+    sinoVi: 'Ma',
+    compoundHanzi: '妈妈',
+    compoundPinyin: 'māma',
+    compoundVi: 'Mẹ',
+    lore: 'Giữ âm cao, phẳng và đều hơi từ đầu đến cuối âm tiết.',
     accent: '#157A57',
     wash: 'radial-gradient(ellipse 75% 55% at 72% 14%, rgba(21, 122, 87, 0.14) 0%, rgba(245, 242, 236, 0) 70%)',
     toneIdx: 0,
@@ -50,11 +55,14 @@ const SPECIMEN_TONES = [
   {
     hanzi: '麻',
     pinyin: 'má',
-    title: 'Thanh 2 · má',
-    phonetic: '阳平 · Cao độ 35 (Đi lên)',
-    sino: 'Hán-Việt: Ma (Cây gai · Tê)',
-    compound: '麻烦 (máfán) · Phiền phức',
-    lore: 'Lên giọng dứt khoát từ quãng giữa lên cao, gần với dấu sắc tiếng Việt nhưng thoáng và đều hơi hơn, không ngắt đột ngột ở cuối âm.',
+    toneLabel: 'Thanh 2',
+    phonetic: 'Giọng đi lên',
+    meaning: 'Cây gai, tê',
+    sinoVi: 'Ma',
+    compoundHanzi: '麻烦',
+    compoundPinyin: 'máfán',
+    compoundVi: 'Phiền phức',
+    lore: 'Đẩy giọng từ quãng giữa lên cao rõ ràng, gần giống dấu sắc tiếng Việt.',
     accent: '#C41E3A',
     wash: 'radial-gradient(ellipse 75% 55% at 72% 14%, rgba(196, 30, 58, 0.13) 0%, rgba(245, 242, 236, 0) 70%)',
     toneIdx: 1,
@@ -62,11 +70,14 @@ const SPECIMEN_TONES = [
   {
     hanzi: '马',
     pinyin: 'mǎ',
-    title: 'Thanh 3 · mǎ',
-    phonetic: '上声 · Cao độ 214 (Trầm rồi lên)',
-    sino: 'Hán-Việt: Mã (Con ngựa)',
-    compound: '马上 (mǎshàng) · Ngay lập tức',
-    lore: 'Hạ trầm xuống đáy giọng rồi uốn nhẹ lên ở cuối. Khi đi liền hai thanh 3, âm đầu tự biến điệu sang thanh 2 giúp câu nói tự nhiên hơn.',
+    toneLabel: 'Thanh 3',
+    phonetic: 'Giọng trầm xuống rồi lên',
+    meaning: 'Con ngựa',
+    sinoVi: 'Mã',
+    compoundHanzi: '马上',
+    compoundPinyin: 'mǎshàng',
+    compoundVi: 'Ngay lập tức',
+    lore: 'Hạ giọng trầm xuống rồi ngân nhẹ lên; khi hai thanh 3 đi liền, chữ đầu đọc thành thanh 2.',
     accent: '#B5841A',
     wash: 'radial-gradient(ellipse 75% 55% at 72% 14%, rgba(181, 132, 26, 0.15) 0%, rgba(245, 242, 236, 0) 70%)',
     toneIdx: 2,
@@ -74,25 +85,16 @@ const SPECIMEN_TONES = [
   {
     hanzi: '骂',
     pinyin: 'mà',
-    title: 'Thanh 4 · mà',
-    phonetic: '去声 · Cao độ 51 (Xuống mạnh)',
-    sino: 'Hán-Việt: Mạ (Trách mắng)',
-    compound: '谢谢 (xièxie) · Cảm ơn',
-    lore: 'Rơi nhanh, gọn và dứt khoát từ quãng cao xuống thấp trong một nhịp ngắn, mang lại độ chắc và rõ ràng cho âm tiết tiếng Phổ thông.',
+    toneLabel: 'Thanh 4',
+    phonetic: 'Giọng xuống nhanh, dứt khoát',
+    meaning: 'Trách mắng',
+    sinoVi: 'Mạ',
+    compoundHanzi: '责骂',
+    compoundPinyin: 'zémà',
+    compoundVi: 'Trách mắng',
+    lore: 'Hạ giọng nhanh và dứt khoát từ cao xuống thấp trong một nhịp ngắn.',
     accent: '#7F1D1D',
     wash: 'radial-gradient(ellipse 75% 55% at 72% 14%, rgba(127, 29, 29, 0.13) 0%, rgba(245, 242, 236, 0) 70%)',
-    toneIdx: 3,
-  },
-  {
-    hanzi: '汉',
-    pinyin: 'hàn',
-    title: 'Hán tự · hàn',
-    phonetic: '汉语 · Hệ thống 63 âm Pinyin',
-    sino: 'Hán-Việt: Hán (Chữ Hán)',
-    compound: '汉语 (Hànyǔ) · Tiếng Hán',
-    lore: 'Hệ thống đủ 23 thanh mẫu, 24 vận mẫu và 16 âm tiết đọc thẳng — kết nối trực tiếp mặt chữ tượng hình, cách phát âm và âm Hán-Việt quen thuộc.',
-    accent: '#1C1917',
-    wash: 'radial-gradient(ellipse 75% 55% at 72% 14%, rgba(28, 25, 23, 0.1) 0%, rgba(245, 242, 236, 0) 70%)',
     toneIdx: 3,
   },
 ];
@@ -102,33 +104,37 @@ const CALLIGRAPHY_SPECIMENS = [
     char: '永',
     pinyin: 'yǒng',
     sino: 'Vĩnh',
+    meaning: 'Vĩnh cửu',
     strokes: 5,
-    title: 'Chữ 永 · 8 nét căn bản',
-    desc: 'Một chữ duy nhất hội tụ đầy đủ quy tắc viết chữ Hán: chấm, ngang, sổ, móc, hất, phẩy dài, phẩy ngắn và mác — nền tảng trước khi luyện viết mọi bộ thủ.',
+    title: 'Chữ 永 · 5 nét cơ bản',
+    desc: 'Hội tụ đủ các nét chấm, ngang, sổ móc, phẩy và mác trong một chữ — bài tập kinh điển để luyện đều tay và cân đối khung chữ.',
   },
   {
     char: '学',
     pinyin: 'xué',
     sino: 'Học',
+    meaning: 'Học tập',
     strokes: 8,
-    title: 'Chữ 学 · Chiết tự dễ nhớ',
-    desc: 'Viết theo thứ tự từ trên xuống dưới, ba nét chấm mở đầu rồi đến bộ Mịch (冖) và bộ Tử (子) — giúp người học ghi nhớ cấu trúc chữ thay vì học thuộc lòng.',
+    title: 'Chữ 学 · Trên trước dưới sau',
+    desc: 'Viết lần lượt từ trên xuống dưới: ba nét chấm mở đầu, tiếp theo là bộ Mịch (冖) ở giữa và bộ Tử (子) bên dưới.',
   },
   {
     char: '好',
     pinyin: 'hǎo',
     sino: 'Hảo',
+    meaning: 'Tốt đẹp',
     strokes: 6,
-    title: 'Chữ 好 · Kết cấu trái – phải',
-    desc: 'Ghép từ bộ Nữ (女) bên trái và bộ Tử (子) bên phải. Khung ô vuông luyện chữ giúp canh chính xác tỷ lệ hai vế để nét viết cân đối và đẹp mắt.',
+    title: 'Chữ 好 · Trái trước phải sau',
+    desc: 'Ghép từ bộ Nữ (女) bên trái và bộ Tử (子) bên phải. Khung ô vuông giúp căn chuẩn tỷ lệ hai vế để chữ gọn và hài hòa.',
   },
   {
     char: '中',
     pinyin: 'zhōng',
     sino: 'Trung',
+    meaning: 'Ở giữa',
     strokes: 4,
     title: 'Chữ 中 · Trục đối xứng giữa',
-    desc: 'Viết khung 口 trước rồi kéo nét sổ thẳng chia đôi tâm ô vuông sau cùng — quy tắc kinh điển "vào trước đóng sau, sổ giữa sau cùng".',
+    desc: 'Viết khung bộ Khẩu (口) trước rồi kéo nét sổ thẳng đi qua chính giữa tâm ô vuông sau cùng.',
   },
 ];
 
@@ -335,6 +341,7 @@ export const LandingPage: React.FC = () => {
 
   // Slide 2 (Calligraphy & TianZiGe)
   const [calligraphyIdx, setCalligraphyIdx] = useState<number>(0);
+  const [calligraphyPracticeMode, setCalligraphyPracticeMode] = useState<boolean>(false);
 
   // Slide 3 (Curriculum Gallery)
   const [curriculumIdx, setCurriculumIdx] = useState<number>(0);
@@ -346,18 +353,51 @@ export const LandingPage: React.FC = () => {
   const [flippedCards, setFlippedCards] = useState<Record<string, boolean>>({});
   const [activeHskLevel, setActiveHskLevel] = useState<number>(1);
 
-  // 1:1 WuWa-Grade Wheel / Trackpad Gesture State
+  // 1:1 WuWa-Grade Wheel / Trackpad & Mobile Touch Swipe State (Strict 1-slide-per-gesture lock)
+  const lastStepAtRef = useRef<number>(0);
   const wheelStateRef = useRef({
     lockUntil: 0,
     lastEventTime: 0,
     lastAbsDelta: 0,
+    lastDir: 0,
   });
-  const touchStartYRef = useRef<number | null>(null);
+  const swipeLayerRef = useRef<HTMLDivElement>(null);
+  const touchGestureRef = useRef<{
+    active: boolean;
+    startY: number;
+    startX: number;
+    lastY: number;
+    lastX: number;
+    startTime: number;
+    section: HTMLElement | null;
+    isScrollable: boolean;
+    startedAtTop: boolean;
+    startedAtBottom: boolean;
+  }>({
+    active: false,
+    startY: 0,
+    startX: 0,
+    lastY: 0,
+    lastX: 0,
+    startTime: 0,
+    section: null,
+    isScrollable: false,
+    startedAtTop: true,
+    startedAtBottom: true,
+  });
 
   const activeSpecimen = SPECIMEN_TONES[specimenIdx];
   const activeCalligraphy = CALLIGRAPHY_SPECIMENS[calligraphyIdx];
   const activeCurriculum = CURRICULUM_SLIDES[curriculumIdx];
   const activeBook = HSK_TEXTBOOKS[Math.min(5, Math.max(0, activeHskLevel - 1))];
+
+  // Lock root html/body scrollbars completely while on full-viewport LandingPage
+  useEffect(() => {
+    document.documentElement.classList.add('landing-lock');
+    return () => {
+      document.documentElement.classList.remove('landing-lock');
+    };
+  }, []);
 
   // Auto-start gentle chill East-Asian ambient music on page entry, and fade out when leaving to Login
   useEffect(() => {
@@ -421,11 +461,17 @@ export const LandingPage: React.FC = () => {
 
   const goToSlide = useCallback((idx: number) => {
     const clamped = Math.max(0, Math.min(CHAPTERS.length - 1, idx));
+    lastStepAtRef.current = performance.now();
     setShowFooter(false);
     setActiveSlide(clamped);
   }, []);
 
   const stepChapter = useCallback((dir: 1 | -1) => {
+    const now = performance.now();
+    // Hard 820ms transition lock: guarantees a single wheel/swipe gesture never skips a chapter (e.g. 1 -> 3)
+    if (now - lastStepAtRef.current < 820) return;
+    lastStepAtRef.current = now;
+
     if (dir === 1) {
       setActiveSlide((prev) => {
         if (prev < CHAPTERS.length - 1) {
@@ -488,10 +534,11 @@ export const LandingPage: React.FC = () => {
     };
   }, [introLoaded]);
 
-  // 120fps Lerped 2.5D Mouse-Tracking Parallax Engine (0 React re-renders on mouse move!)
+  // 120fps Lerped 2.5D Mouse-Tracking Parallax Engine (desktop fine-pointer only so mobile stays cool & 60fps!)
   useEffect(() => {
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reducedMotion) return;
+    const isCoarsePointer = window.matchMedia('(pointer: coarse)').matches;
+    if (reducedMotion || isCoarsePointer || window.innerWidth < 768) return;
 
     let rafId = 0;
     const startTime = performance.now();
@@ -541,39 +588,57 @@ export const LandingPage: React.FC = () => {
     return () => cancelAnimationFrame(rafId);
   }, []);
 
-  // 1:1 WuWa Swiper Mouse-Wheel & Trackpad Inertia Onset Detector
+  // 1:1 WuWa Swiper Mouse-Wheel & Trackpad Inertia Onset Detector (works on Desktop & Mobile Emulator)
   useEffect(() => {
     const onWheel = (e: WheelEvent) => {
-      if (window.innerWidth < 1024) return;
+      // On narrow viewports where an inner slide scrolls vertically, let native scroll run until reaching top/bottom
+      if (window.innerWidth < 1024) {
+        const activeSection = document.querySelector<HTMLElement>(
+          'section[data-active-slide="true"]'
+        );
+        if (activeSection && activeSection.scrollHeight > activeSection.clientHeight + 8) {
+          const atTop = activeSection.scrollTop <= 8;
+          const atBottom =
+            activeSection.scrollTop + activeSection.clientHeight >= activeSection.scrollHeight - 10;
+          if (e.deltaY > 0 && !atBottom) return;
+          if (e.deltaY < 0 && !atTop) return;
+        }
+      }
+
       e.preventDefault();
 
       const absDelta = Math.abs(e.deltaY);
       if (absDelta < 6) return;
 
       const now = performance.now();
+      const dir: 1 | -1 = e.deltaY > 0 ? 1 : -1;
       const ws = wheelStateRef.current;
       const gap = now - ws.lastEventTime;
-      const isNewGesture = gap > 135 || absDelta > ws.lastAbsDelta * 1.38 + 14;
+      const prevAbsDelta = ws.lastAbsDelta;
 
       ws.lastEventTime = now;
       ws.lastAbsDelta = absDelta;
 
+      // Never allow mid-transition wheel events to queue or skip a slide during the 800ms vertical transition
       if (now < ws.lockUntil) {
-        // Allow intentional rapid discrete wheel notch after 260ms if user explicitly accelerated
-        if (!(isNewGesture && now >= ws.lockUntil - 160)) {
-          return;
-        }
-      } else if (!isNewGesture && gap < 55) {
-        // Ignore decaying trackpad inertia tail after lock expires
         return;
       }
 
-      ws.lockUntil = now + 420;
-      stepChapter(e.deltaY > 0 ? 1 : -1);
+      // Filter out decaying trackpad / mouse-wheel momentum tails after lock expires
+      const isFreshStream = gap > 165 || dir !== ws.lastDir;
+      const isSharpReAcceleration = absDelta > prevAbsDelta * 1.75 + 18;
+      if (!isFreshStream && !isSharpReAcceleration) {
+        // Extend lock slightly while inertia tail is still coasting down
+        ws.lockUntil = now + 140;
+        return;
+      }
+
+      ws.lastDir = dir;
+      ws.lockUntil = now + 840;
+      stepChapter(dir);
     };
 
     const onKeyDown = (e: KeyboardEvent) => {
-      if (window.innerWidth < 1024) return;
       if (['ArrowDown', 'PageDown'].includes(e.key)) {
         e.preventDefault();
         stepChapter(1);
@@ -629,38 +694,141 @@ export const LandingPage: React.FC = () => {
     setActiveHskLevel(level);
   }, []);
 
+  const resetSwipeOffset = useCallback((slideIdx: number) => {
+    const el = swipeLayerRef.current;
+    if (!el) return;
+    el.style.transitionDuration = '';
+    el.style.transform = `translate3d(0px, -${slideIdx * 100}%, 0px)`;
+  }, []);
+
+  // Ensure vertical Swiper wrapper snaps cleanly to activeSlide with 800ms WuWa ease
+  useEffect(() => {
+    resetSwipeOffset(activeSlide);
+    const activeSec = document.querySelector<HTMLElement>(
+      `section[data-slide-idx="${activeSlide}"]`
+    );
+    if (activeSec && activeSec.scrollTop > 0) {
+      activeSec.scrollTop = 0;
+    }
+  }, [activeSlide, resetSwipeOffset]);
+
+  const finishTouchSwipe = useCallback(
+    (endY?: number, endX?: number) => {
+      const g = touchGestureRef.current;
+      if (!g.active) return;
+      g.active = false;
+
+      const finalY = endY ?? g.lastY;
+      const finalX = endX ?? g.lastX;
+      const dy = g.startY - finalY;
+      const dx = g.startX - finalX;
+      const elapsed = Math.max(1, performance.now() - g.startTime);
+      const velocity = Math.abs(dy) / elapsed;
+
+      // Require vertical-dominant swipe and either >= 28px drag or crisp quick flick (>= 16px)
+      if (Math.abs(dy) < Math.abs(dx) * 1.05) {
+        resetSwipeOffset(activeSlide);
+        return;
+      }
+      const isValidSwipe = Math.abs(dy) >= 28 || (Math.abs(dy) >= 16 && velocity >= 0.22);
+      if (!isValidSwipe) {
+        resetSwipeOffset(activeSlide);
+        return;
+      }
+
+      if (g.isScrollable && g.section) {
+        const atTopNow = g.section.scrollTop <= 14;
+        const atBottomNow =
+          g.section.scrollTop + g.section.clientHeight >= g.section.scrollHeight - 16;
+        if (dy > 0 && !(g.startedAtBottom || atBottomNow)) {
+          resetSwipeOffset(activeSlide);
+          return;
+        }
+        if (dy < 0 && !(g.startedAtTop || atTopNow)) {
+          resetSwipeOffset(activeSlide);
+          return;
+        }
+      }
+
+      resetSwipeOffset(activeSlide);
+      stepChapter(dy > 0 ? 1 : -1);
+    },
+    [activeSlide, resetSwipeOffset, stepChapter]
+  );
+
   const isHero = activeSlide === 0;
 
   return (
     <div
       onPointerMove={handleStagePointerMove}
-      className="fixed inset-0 w-full h-[100dvh] overflow-hidden bg-[#F5F2EC] text-[#1C1917] select-none"
+      className="fixed inset-0 w-full h-[100dvh] overflow-hidden overscroll-none bg-[#F5F2EC] text-[#1C1917] select-none"
       onTouchStart={(e) => {
         const target = e.target as HTMLElement | null;
-        // Never hijack touch gestures when user is rotating a 3D WebGL canvas
-        if (target?.closest('canvas')) {
-          touchStartYRef.current = null;
+        // Never hijack touch gestures on 3D WebGL canvas or horizontal scrollers (e.g. filmstrip)
+        if (target?.closest('canvas') || target?.closest('.no-chapter-swipe')) {
+          touchGestureRef.current.active = false;
           return;
         }
-        touchStartYRef.current = e.touches[0]?.clientY ?? null;
+        const touch = e.touches[0];
+        if (!touch) return;
+
+        const section =
+          (target?.closest('section') as HTMLElement | null) ||
+          document.querySelector<HTMLElement>('section[data-active-slide="true"]');
+        const isScrollable = Boolean(
+          section && section.scrollHeight > section.clientHeight + 8
+        );
+        const startedAtTop = !isScrollable || (section ? section.scrollTop <= 14 : true);
+        const startedAtBottom =
+          !isScrollable ||
+          (section
+            ? section.scrollTop + section.clientHeight >= section.scrollHeight - 16
+            : true);
+
+        touchGestureRef.current = {
+          active: true,
+          startY: touch.clientY,
+          startX: touch.clientX,
+          lastY: touch.clientY,
+          lastX: touch.clientX,
+          startTime: performance.now(),
+          section,
+          isScrollable,
+          startedAtTop,
+          startedAtBottom,
+        };
+      }}
+      onTouchMove={(e) => {
+        const g = touchGestureRef.current;
+        if (!g.active) return;
+        const touch = e.touches[0];
+        if (!touch) return;
+        g.lastY = touch.clientY;
+        g.lastX = touch.clientX;
+
+        const dy = g.startY - touch.clientY;
+        const dx = g.startX - touch.clientX;
+        if (Math.abs(dy) <= Math.abs(dx)) return;
+
+        // Live 120fps vertical Swiper drag preview across chapter boundaries (or on Hero)
+        const canDragDown = !g.isScrollable || (dy > 0 && g.startedAtBottom);
+        const canDragUp = !g.isScrollable || (dy < 0 && g.startedAtTop);
+        if ((dy > 0 && canDragDown) || (dy < 0 && canDragUp && activeSlide > 0)) {
+          const el = swipeLayerRef.current;
+          if (el) {
+            const clamped = Math.max(-72, Math.min(72, -dy * 0.35));
+            el.style.transitionDuration = '0ms';
+            el.style.transform = `translate3d(0px, calc(-${activeSlide * 100}% + ${clamped.toFixed(1)}px), 0px)`;
+          }
+        }
       }}
       onTouchEnd={(e) => {
-        if (touchStartYRef.current === null) return;
-        const dy = touchStartYRef.current - (e.changedTouches[0]?.clientY ?? touchStartYRef.current);
-        touchStartYRef.current = null;
-        if (Math.abs(dy) < 54) return;
-
-        // If inside a scrollable section on mobile, only switch chapter at scroll boundaries
-        const target = e.target as HTMLElement | null;
-        const scrollSection = target?.closest('section');
-        if (scrollSection && scrollSection.scrollHeight > scrollSection.clientHeight + 8) {
-          const atTop = scrollSection.scrollTop <= 4;
-          const atBottom =
-            scrollSection.scrollTop + scrollSection.clientHeight >= scrollSection.scrollHeight - 6;
-          if (dy > 0 && !atBottom) return;
-          if (dy < 0 && !atTop) return;
-        }
-        stepChapter(dy > 0 ? 1 : -1);
+        const touch = e.changedTouches[0];
+        finishTouchSwipe(touch?.clientY, touch?.clientX);
+      }}
+      onTouchCancel={(e) => {
+        const touch = e.changedTouches[0];
+        finishTouchSwipe(touch?.clientY, touch?.clientX);
       }}
     >
       {/* HoYoverse-Caliber Entrance Loading Curtain (with Imperial Seal & Golden Astrolabe Ring) */}
@@ -670,8 +838,18 @@ export const LandingPage: React.FC = () => {
           QUIET FLOATING EDITORIAL CHROME (RESPONSIVE MOBILE + DESKTOP)
       ═══════════════════════════════════════════════════════════════════ */}
 
-      {/* TOP-LEFT: Clean Hanzi4U Seal Mark → Vertical Lesson Tag on Inner Chapters */}
-      <div className="fixed top-3.5 left-3.5 sm:top-6 sm:left-8 z-40">
+      {/* Mobile-only clean translucent header bar so inner slide content never collides when scrolling */}
+      <div
+        aria-hidden="true"
+        className={`sm:hidden fixed top-0 inset-x-0 h-[52px] z-30 transition-all duration-300 pointer-events-none ${
+          isHero
+            ? 'bg-gradient-to-b from-[#F5F2EC]/80 to-transparent'
+            : 'bg-[#F5F2EC]/92 backdrop-blur-md border-b border-[#1C1917]/10'
+        }`}
+      />
+
+      {/* TOP-LEFT: Consistent Hanzi4U Imperial Crimson Seal Mark across all slides */}
+      <div className="fixed top-2.5 left-3.5 sm:top-6 sm:left-8 z-40">
         {isHero ? (
           <button
             type="button"
@@ -692,21 +870,27 @@ export const LandingPage: React.FC = () => {
             title="Về trang mở đầu"
             className="group flex items-center sm:flex-col gap-2 cursor-pointer focus-visible:outline-none"
           >
-            <span className="w-8 h-8 rounded-[6px] bg-[#C41E3A] text-white font-hanzi-serif text-base font-bold flex items-center justify-center shadow-xs group-hover:bg-[#A51730] transition-colors">
-              汉
+            <span className="sm:hidden">
+              <HanziLogo variant="light" size="sm" showSubtitle={false} />
             </span>
-            <span
-              className="hidden sm:block text-[10.5px] font-hanzi-serif tracking-[0.26em] text-[#57534E]"
-              style={{ writingMode: 'vertical-rl' }}
-            >
-              {CHAPTERS[activeSlide].zhCaption}
+            <span className="hidden sm:flex flex-col items-center gap-2">
+              <HanziLogoMark
+                variant="light"
+                className="w-9 h-9 transition-transform duration-200 group-hover:scale-105"
+              />
+              <span
+                className="text-[10.5px] font-hanzi-serif tracking-[0.26em] text-[#57534E]"
+                style={{ writingMode: 'vertical-rl' }}
+              >
+                {CHAPTERS[activeSlide].zhCaption}
+              </span>
             </span>
           </button>
         )}
       </div>
 
       {/* TOP-RIGHT: Minimal Calm Action Cluster (Chill BGM Toggle + Auth) */}
-      <div className="fixed top-3.5 right-3.5 sm:top-5 sm:right-8 z-40 flex items-center gap-1.5 sm:gap-2.5">
+      <div className="fixed top-2.5 right-3.5 sm:top-5 sm:right-8 z-40 flex items-center gap-2 sm:gap-2.5">
         <button
           type="button"
           onClick={() => {
@@ -726,7 +910,7 @@ export const LandingPage: React.FC = () => {
         <a
           href="#/login"
           onClick={handleNavigateAuth('#/login')}
-          className="h-8 sm:h-9 px-3 sm:px-4 rounded-full bg-white/90 hover:bg-white text-[#1C1917] hover:text-[#C41E3A] border border-[#1C1917]/15 shadow-xs backdrop-blur-sm text-[11px] sm:text-xs font-semibold inline-flex items-center justify-center transition-colors"
+          className="h-8 sm:h-9 px-2.5 sm:px-4 rounded-full bg-white/90 hover:bg-white text-[#1C1917] hover:text-[#C41E3A] border border-[#1C1917]/15 shadow-xs backdrop-blur-sm text-[11px] sm:text-xs font-semibold inline-flex items-center justify-center transition-colors"
         >
           Đăng nhập
         </a>
@@ -734,7 +918,7 @@ export const LandingPage: React.FC = () => {
         <a
           href="#/login?tab=register"
           onClick={handleNavigateAuth('#/login?tab=register')}
-          className="h-8 sm:h-9 px-3.5 sm:px-5 rounded-full bg-[#C41E3A] hover:bg-[#A51730] text-white text-[11px] sm:text-xs font-semibold inline-flex items-center justify-center shadow-xs transition-colors"
+          className="h-8 sm:h-9 px-3 sm:px-5 rounded-full bg-[#C41E3A] hover:bg-[#A51730] text-white text-[11px] sm:text-xs font-semibold inline-flex items-center justify-center shadow-xs transition-colors"
         >
           <span className="sm:hidden">Đăng ký</span>
           <span className="hidden sm:inline">Đăng ký miễn phí</span>
@@ -774,10 +958,12 @@ export const LandingPage: React.FC = () => {
       </nav>
 
       {/* ═══════════════════════════════════════════════════════════════════
-          PERSISTENT 5-CHAPTER FULL-VIEWPORT STAGE (1:1 SWIPER EFFECT-FADE)
-          All 5 chapters remain mounted in DOM & GPU memory for 0ms transitions!
+          1:1 WUTHERING WAVES 3.8 VERTICAL SWIPER (#page-swiper > .wuwa-swiper-wrapper)
+          - Vertical flex column translating -100% * activeSlide over 800ms ease
+          - Active slide toggles .an class for staggered left-slide & bottom-rise child entrances
       ═══════════════════════════════════════════════════════════════════ */}
       <div
+        id="page-swiper"
         style={{
           transform: showFooter
             ? 'translate3d(0, -136px, 0)'
@@ -786,17 +972,24 @@ export const LandingPage: React.FC = () => {
               : 'translate3d(0, 0, 0) scale(1)',
           opacity: isExitingToAuth ? 0 : 1,
         }}
-        className="relative w-full h-full transition-all duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform"
+        className="relative w-full h-full overflow-hidden transition-all duration-[400ms] ease-out will-change-transform"
       >
+        <div
+          ref={swipeLayerRef}
+          style={{
+            transform: `translate3d(0px, -${activeSlide * 100}%, 0px)`,
+          }}
+          className="wuwa-swiper-wrapper"
+        >
         {/* ────────────────────────────────────────────────────────────────
             SLIDE 0: CALM DAYLIGHT EDITORIAL HERO (HoYoverse 2.5D Desk Parallax × Sunbeams)
         ──────────────────────────────────────────────────────────────── */}
         <section
           aria-hidden={activeSlide !== 0}
-          className={`absolute inset-0 w-full h-full overflow-hidden bg-[#F3EFE8] transition-opacity duration-[450ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[opacity] ${
-            activeSlide === 0
-              ? 'opacity-100 pointer-events-auto z-20'
-              : 'opacity-0 pointer-events-none z-10'
+          data-slide-idx={0}
+          data-active-slide={activeSlide === 0 ? 'true' : undefined}
+          className={`wuwa-page-slide overflow-hidden touch-none bg-[#F3EFE8] ${
+            activeSlide === 0 && introLoaded ? 'an' : ''
           }`}
         >
           {/* Layer 1: 120fps 2.5D Perspective Mouse-Tracking Study Desk Photograph */}
@@ -819,62 +1012,71 @@ export const LandingPage: React.FC = () => {
           {/* Layer 2 & 3: Afternoon Window Sunbeam Rays & Floating Golden Sunlit Dust Motes */}
           <SunbeamDustOverlay beamRef={heroBeamRef} dustRef={heroDustRef} />
 
+          {/* Warm readability scrim (stronger on mobile portrait so smaller text stays razor-sharp) */}
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0"
+            className="pointer-events-none absolute inset-0 bg-[#F6F3ED]/68 sm:hidden"
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 hidden sm:block"
             style={{
               background:
                 'linear-gradient(95deg, rgba(246, 243, 237, 0.94) 0%, rgba(246, 243, 237, 0.84) 38%, rgba(246, 243, 237, 0.18) 64%, rgba(246, 243, 237, 0) 100%)',
             }}
           />
 
-          <ArchitecturalBlueprintGrid className="opacity-65" />
+          <ArchitecturalBlueprintGrid className="opacity-50 sm:opacity-65" />
 
-          {/* Layer 4: Foreground Counter-Parallax Editorial Typography */}
+          {/* Layer 4: Foreground Counter-Parallax Editorial Typography (.main-container.component.an) */}
           <div className="relative z-20 h-full max-w-[1380px] mx-auto px-5 sm:px-12 lg:px-20 pt-14 pb-16 flex flex-col justify-center">
-            <div ref={heroContentRef} className="max-w-xl space-y-4 sm:space-y-6 will-change-transform">
-              <div className="inline-flex items-center gap-2.5 sm:gap-3 text-[10px] sm:text-[11px] font-mono font-semibold uppercase tracking-[0.18em] sm:tracking-[0.2em] text-[#C41E3A]">
-                <span className="w-5 sm:w-6 h-[1.5px] bg-[#C41E3A]" />
-                <span>HỌC TIẾNG TRUNG CHUẨN HSK 1 — 6</span>
+            <div ref={heroContentRef} className="max-w-xl space-y-3.5 sm:space-y-6 will-change-transform">
+              <div className="wuwa-hero-title space-y-2.5 sm:space-y-4">
+                <div className="inline-flex items-center gap-2 sm:gap-3 text-[9.5px] sm:text-[11px] font-mono font-semibold uppercase tracking-[0.14em] sm:tracking-[0.2em] text-[#C41E3A]">
+                  <span className="w-4 sm:w-6 h-[1.5px] bg-[#C41E3A]" />
+                  <span>HỌC TIẾNG TRUNG CHUẨN HSK 1 — 6</span>
+                </div>
+
+                <h1 className="font-display font-extrabold text-[24px] leading-[1.2] sm:text-5xl lg:text-[56px] sm:leading-[1.1] text-[#1C1917] tracking-[-0.025em] sm:tracking-[-0.028em]">
+                  Học tiếng Trung bài bản từ{' '}
+                  <span className="text-[#C41E3A]">những nét chữ đầu tiên</span>
+                </h1>
               </div>
 
-              <h1 className="font-display font-extrabold text-[30px] sm:text-5xl lg:text-[56px] text-[#1C1917] leading-[1.14] sm:leading-[1.1] tracking-[-0.028em]">
-                Học tiếng Trung bài bản từ{' '}
-                <span className="text-[#C41E3A]">những nét chữ đầu tiên</span>
-              </h1>
+              <div className="wuwa-hero-cta space-y-3.5 sm:space-y-5">
+                <p className="text-[13px] leading-[1.6] sm:text-[17px] sm:leading-relaxed text-[#44403C] max-w-lg">
+                  Luyện phát âm chuẩn đủ <strong>63 âm Pinyin</strong>, tập viết chữ Hán đúng thứ tự
+                  từng nét, ôn thẻ lật từ và giáo trình chuẩn HSK 1–6 trong không gian yên tĩnh, chỉ
+                  15 phút mỗi ngày.
+                </p>
 
-              <p className="text-sm sm:text-[17px] text-[#44403C] leading-relaxed max-w-lg">
-                Luyện phát âm chuẩn đủ <strong>63 âm Pinyin</strong>, tập viết chữ Hán đúng thứ tự
-                từng nét, ôn thẻ lật từ và giáo trình chuẩn HSK 1–6 trong không gian yên tĩnh, chỉ
-                15 phút mỗi ngày.
-              </p>
+                <div className="pt-1 sm:pt-2 flex flex-wrap items-center gap-2.5 sm:gap-3.5">
+                  <a
+                    href="#/login?tab=register"
+                    onClick={handleNavigateAuth('#/login?tab=register')}
+                    className="h-10 sm:h-12 px-4 sm:px-7 rounded-lg bg-[#C41E3A] hover:bg-[#A51730] text-white font-semibold text-[12px] sm:text-sm inline-flex items-center gap-1.5 sm:gap-2 shadow-[0_10px_24px_-8px_rgba(196,30,58,0.45)] transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    <span>Bắt đầu học miễn phí</span>
+                    <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  </a>
 
-              <div className="pt-1 sm:pt-2 flex flex-wrap items-center gap-2.5 sm:gap-3.5">
-                <a
-                  href="#/login?tab=register"
-                  onClick={handleNavigateAuth('#/login?tab=register')}
-                  className="h-11 sm:h-12 px-5 sm:px-7 rounded-lg bg-[#C41E3A] hover:bg-[#A51730] text-white font-semibold text-xs sm:text-sm inline-flex items-center gap-2 shadow-[0_10px_24px_-8px_rgba(196,30,58,0.45)] transition-all hover:scale-[1.02] active:scale-[0.98]"
-                >
-                  <span>Bắt đầu học miễn phí</span>
-                  <ArrowRight className="w-4 h-4" />
-                </a>
+                  <button
+                    type="button"
+                    onClick={() => goToSlide(1)}
+                    className="h-10 sm:h-12 px-3.5 sm:px-6 rounded-lg bg-white/90 hover:bg-white text-[#1C1917] border border-[#1C1917]/20 hover:border-[#C41E3A]/50 font-semibold text-[12px] sm:text-sm inline-flex items-center gap-1.5 sm:gap-2 transition-colors cursor-pointer"
+                  >
+                    <span>Xem thử bài học</span>
+                    <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#C41E3A]" />
+                  </button>
+                </div>
 
-                <button
-                  type="button"
-                  onClick={() => goToSlide(1)}
-                  className="h-11 sm:h-12 px-4 sm:px-6 rounded-lg bg-white/85 hover:bg-white text-[#1C1917] border border-[#1C1917]/20 hover:border-[#C41E3A]/50 font-semibold text-xs sm:text-sm inline-flex items-center gap-2 transition-colors cursor-pointer"
-                >
-                  <span>Xem thử bài học</span>
-                  <ChevronDown className="w-4 h-4 text-[#C41E3A]" />
-                </button>
-              </div>
-
-              <div className="pt-4 sm:pt-6 border-t border-[#1C1917]/15 flex flex-wrap items-center gap-x-4 sm:gap-x-6 gap-y-1 text-[11px] sm:text-xs font-mono text-[#57534E]">
-                <span>63 Âm Pinyin chuẩn</span>
-                <span className="text-[#C41E3A]">·</span>
-                <span>9.500+ Nét chữ Hán</span>
-                <span className="text-[#C41E3A]">·</span>
-                <span>Giáo trình chuẩn HSK 1–6</span>
+                <div className="pt-3.5 sm:pt-6 border-t border-[#1C1917]/15 flex items-center gap-x-2 sm:gap-x-6 text-[9.5px] sm:text-xs font-mono text-[#57534E] whitespace-nowrap">
+                  <span>63 Âm Pinyin</span>
+                  <span className="text-[#C41E3A]">·</span>
+                  <span>9.500+ Nét chữ Hán</span>
+                  <span className="text-[#C41E3A]">·</span>
+                  <span>Giáo trình HSK 1–6</span>
+                </div>
               </div>
             </div>
           </div>
@@ -882,22 +1084,26 @@ export const LandingPage: React.FC = () => {
           <button
             type="button"
             onClick={() => goToSlide(1)}
-            className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/85 hover:bg-white border border-[#1C1917]/15 text-[11px] font-mono text-[#57534E] hover:text-[#C41E3A] backdrop-blur-sm transition-colors cursor-pointer"
+            className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-30 inline-flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-1.5 rounded-full bg-white/90 hover:bg-white border border-[#1C1917]/15 text-[10px] sm:text-[11px] font-mono text-[#57534E] hover:text-[#C41E3A] backdrop-blur-sm transition-colors cursor-pointer whitespace-nowrap"
           >
-            <span>Cuộn xuống · Bài 01 Thanh điệu</span>
-            <ChevronDown className="w-3.5 h-3.5" />
+            <span className="sm:hidden">Vuốt lên · Bài 01 Thanh điệu</span>
+            <span className="hidden sm:inline">Cuộn xuống · Bài 01 Thanh điệu</span>
+            <span className="relative inline-flex flex-col items-center justify-center w-3.5 h-4 -my-0.5">
+              <ChevronDown className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#C41E3A] animate-wuwa-chevron-1 -mb-2" />
+              <ChevronDown className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#C41E3A] animate-wuwa-chevron-2" />
+            </span>
           </button>
         </section>
 
         {/* ────────────────────────────────────────────────────────────────
-            SLIDE 1: 4 TONES & 63 PINYIN — CALM WATERCOLOR + PORCELAIN 3D
+            SLIDE 1: 4 TONES & 63 PINYIN — CALM WATERCOLOR + PORCELAIN 3D (.role-container.component.an)
         ──────────────────────────────────────────────────────────────── */}
         <section
           aria-hidden={activeSlide !== 1}
-          className={`absolute inset-0 w-full h-full overflow-y-auto lg:overflow-hidden bg-[#F5F2EC] transition-opacity duration-[450ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[opacity] ${
-            activeSlide === 1
-              ? 'opacity-100 pointer-events-auto z-20'
-              : 'opacity-0 pointer-events-none z-10'
+          data-slide-idx={1}
+          data-active-slide={activeSlide === 1 ? 'true' : undefined}
+          className={`wuwa-page-slide overflow-y-auto no-scrollbar lg:overflow-hidden bg-[#F5F2EC] ${
+            activeSlide === 1 ? 'an' : ''
           }`}
         >
           <div
@@ -907,23 +1113,23 @@ export const LandingPage: React.FC = () => {
           />
           <ArchitecturalBlueprintGrid />
 
-          <div className="relative z-10 min-h-full lg:h-full max-w-[1360px] mx-auto px-4 sm:px-14 lg:pl-24 lg:pr-14 pt-14 pb-14 lg:pt-14 lg:pb-16 grid grid-cols-1 lg:grid-cols-12 items-center gap-3 sm:gap-6">
-            <div className="lg:col-span-5 flex flex-col justify-center space-y-6 sm:space-y-9 py-1 lg:py-2">
-              <div className="flex items-start justify-between gap-2">
+          <div className="relative z-10 min-h-full lg:h-full max-w-[1360px] mx-auto px-4 sm:px-14 lg:pl-24 lg:pr-14 pt-[62px] pb-[64px] lg:pt-14 lg:pb-16 grid grid-cols-1 lg:grid-cols-12 items-center gap-3 sm:gap-6">
+            <div className="lg:col-span-5 flex flex-col justify-center space-y-3.5 sm:space-y-9 py-0.5 lg:py-2">
+              <div className="wuwa-title-box flex items-start justify-between gap-2">
                 <div>
-                  <span className="font-mono text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.2em] text-[#C41E3A]">
+                  <span className="font-mono text-[9.5px] sm:text-[11px] font-semibold uppercase tracking-[0.18em] sm:tracking-[0.2em] text-[#C41E3A]">
                     01 · NGỮ ÂM PHỔ THÔNG
                   </span>
-                  <h2 className="font-display font-extrabold text-2xl sm:text-4xl text-[#1C1917] tracking-tight mt-0.5 sm:mt-1">
-                    4 Thanh điệu & Pinyin
+                  <h2 className="font-display font-extrabold text-[19px] leading-snug sm:text-4xl text-[#1C1917] tracking-tight mt-0.5 sm:mt-1">
+                    Pinyin và 4 Thanh điệu
                   </h2>
                 </div>
 
                 {/* Mobile 2-Mode Switcher (Visible on phones < 640px) */}
-                <div className="flex sm:hidden items-center gap-1 pt-1">
+                <div className="flex sm:hidden items-center gap-1.5 pt-0.5 shrink-0">
                   {[
-                    { id: 'medallion' as const, label: 'Thẻ sứ 3D' },
-                    { id: 'curves' as const, label: 'Đường thanh' },
+                    { id: 'medallion' as const, label: 'Chữ Hán' },
+                    { id: 'curves' as const, label: 'Thanh điệu' },
                   ].map((m) => {
                     const active = slide1Mode === m.id;
                     return (
@@ -931,7 +1137,7 @@ export const LandingPage: React.FC = () => {
                         key={m.id}
                         type="button"
                         onClick={() => setSlide1Mode(m.id)}
-                        className="px-2.5 py-1 text-[10px] font-mono font-semibold border cursor-pointer"
+                        className="px-2.5 py-1.5 rounded-md text-[10px] font-mono font-semibold border cursor-pointer transition-colors"
                         style={{
                           backgroundColor: active ? '#1C1917' : '#FFFFFF',
                           borderColor: active ? '#1C1917' : 'rgba(28, 25, 23, 0.16)',
@@ -945,12 +1151,12 @@ export const LandingPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="space-y-3 sm:space-y-4">
-                <p className="font-hanzi-serif text-xs sm:text-sm tracking-[0.16em] text-[#78716C]">
+              <div className="wuwa-intr-box space-y-2 sm:space-y-4">
+                <p className="font-sans text-[11.5px] sm:text-[13px] font-semibold text-[#57534E]">
                   {activeSpecimen.phonetic}
                 </p>
 
-                <div className="flex items-center gap-3 sm:gap-3.5">
+                <div className="flex items-center gap-2.5 sm:gap-3.5">
                   <PronunciationPlayButton
                     onClick={() => speakChinese(activeSpecimen.hanzi, 0.72, 'tone')}
                     active={speakingScope === 'tone'}
@@ -958,30 +1164,52 @@ export const LandingPage: React.FC = () => {
                     label={`Nghe phát âm ${activeSpecimen.pinyin}`}
                   />
                   <div>
-                    <h3 className="font-display font-extrabold text-2xl sm:text-[34px] text-[#1C1917] leading-none">
-                      {activeSpecimen.title}
-                    </h3>
-                    <p className="text-xs font-medium text-[#57534E] mt-1 sm:mt-1.5">
-                      {activeSpecimen.sino}
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+                      <h3 className="font-display font-extrabold text-[19px] sm:text-[32px] text-[#1C1917] leading-none">
+                        {activeSpecimen.toneLabel}
+                      </h3>
+                      <span
+                        className="inline-flex items-center gap-1.5 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md border leading-none"
+                        style={{
+                          backgroundColor: `${activeSpecimen.accent}12`,
+                          borderColor: `${activeSpecimen.accent}35`,
+                          color: activeSpecimen.accent,
+                        }}
+                      >
+                        <span className="font-sans text-[10px] sm:text-[11px] font-semibold opacity-80">
+                          Pinyin
+                        </span>
+                        <span className="font-pinyin text-[13px] sm:text-base font-bold">
+                          {activeSpecimen.pinyin}
+                        </span>
+                      </span>
+                    </div>
+                    <p className="text-[11px] sm:text-xs font-medium text-[#57534E] mt-1 sm:mt-1.5">
+                      Chữ <span className="font-hanzi-serif font-bold text-[#1C1917]">{activeSpecimen.hanzi}</span> ·
+                      Nghĩa: {activeSpecimen.meaning} · Hán-Việt: {activeSpecimen.sinoVi}
                     </p>
                   </div>
                 </div>
 
-                <div className="inline-flex items-center gap-2 sm:gap-2.5 px-3 py-1.5 sm:px-3.5 sm:py-2 bg-white/85 border border-[#1C1917]/15 text-xs">
-                  <span className="font-mono text-[10px] sm:text-[10.5px] uppercase tracking-wider text-[#78716C]">
-                    Từ ghép:
+                <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 py-1 sm:px-3.5 sm:py-2 bg-white/85 border border-[#1C1917]/15 text-[11px] sm:text-xs">
+                  <span className="font-sans text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-[#78716C]">
+                    Ví dụ:
                   </span>
-                  <span className="font-semibold text-[#1C1917]">{activeSpecimen.compound}</span>
+                  <span className="font-semibold text-[#1C1917]">
+                    <span className="font-hanzi-serif">{activeSpecimen.compoundHanzi}</span>{' '}
+                    <span className="font-pinyin">({activeSpecimen.compoundPinyin})</span> ·{' '}
+                    {activeSpecimen.compoundVi}
+                  </span>
                 </div>
 
-                <p className="text-xs sm:text-sm text-[#44403C] leading-relaxed max-w-md">
+                <p className="text-[12px] leading-[1.55] sm:text-sm sm:leading-relaxed text-[#44403C] max-w-md">
                   {activeSpecimen.lore}
                 </p>
               </div>
 
-              <div className="space-y-2 sm:space-y-2.5">
-                <p className="text-[10px] sm:text-[10.5px] font-mono uppercase tracking-[0.18em] text-[#78716C]">
-                  Bấm vào chữ để nghe phát âm
+              <div className="wuwa-avatar-nav space-y-1.5 sm:space-y-2.5">
+                <p className="text-[9.5px] sm:text-[10.5px] font-sans font-semibold uppercase tracking-[0.14em] text-[#78716C]">
+                  Chọn thanh điệu để nghe phát âm
                 </p>
                 <div className="flex items-center gap-2 sm:gap-2.5">
                   {SPECIMEN_TONES.map((spec, idx) => {
@@ -999,14 +1227,14 @@ export const LandingPage: React.FC = () => {
                           backgroundColor: selected ? '#1C1917' : 'rgba(255,255,255,0.9)',
                           borderColor: selected ? spec.accent : 'rgba(28,25,23,0.16)',
                           color: selected ? '#FFFFFF' : '#1C1917',
-                          transform: selected ? 'scale(1.08)' : 'scale(1)',
+                          transform: selected ? 'scale(1.06)' : 'scale(1)',
                         }}
                       >
-                        <span className="font-hanzi-serif text-lg sm:text-xl font-bold leading-none">
+                        <span className="font-hanzi-serif text-base sm:text-xl font-bold leading-none">
                           {spec.hanzi}
                         </span>
                         <span
-                          className="text-[8.5px] sm:text-[9px] font-mono font-semibold mt-0.5"
+                          className="text-[8.5px] sm:text-[10px] font-pinyin font-bold mt-0.5"
                           style={{ color: selected ? '#F2D16B' : '#78716C' }}
                         >
                           {spec.pinyin}
@@ -1018,8 +1246,8 @@ export const LandingPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="lg:col-span-7 relative h-[230px] sm:h-[400px] lg:h-[580px] flex items-center justify-center">
-              <div className="relative z-10 w-full h-full">
+            <div className="wuwa-stage-box lg:col-span-7 relative h-[225px] sm:h-[400px] lg:h-[580px] flex flex-col items-center justify-center">
+              <div className="relative z-10 w-full flex-1 min-h-0">
                 <div
                   className={`absolute inset-0 transition-opacity duration-300 ${
                     slide1Mode === 'medallion'
@@ -1063,15 +1291,15 @@ export const LandingPage: React.FC = () => {
                 </div>
               </div>
 
-              <span className="pointer-events-none absolute bottom-2 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 text-[10.5px] font-mono text-[#78716C]">
-                <Move className="w-3.5 h-3.5 text-[#C41E3A]" />
-                Kéo xoay để xem mặt sau
+              <span className="pointer-events-none relative z-20 mt-1 sm:mt-0 sm:absolute sm:bottom-2 sm:left-1/2 sm:-translate-x-1/2 inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-white/85 backdrop-blur-sm border border-[#1C1917]/10 text-[10px] sm:text-[10.5px] font-mono text-[#57534E]">
+                <Move className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#C41E3A]" />
+                {slide1Mode === 'medallion' ? 'Kéo để xoay chữ' : 'Kéo để xoay góc nhìn'}
               </span>
 
               <div className="hidden sm:flex flex-col gap-1.5 absolute right-0 top-1/2 -translate-y-1/2 z-20">
                 {[
-                  { id: 'medallion' as const, label: 'Thẻ sứ 3D', glyph: '字' },
-                  { id: 'curves' as const, label: 'Đường thanh', glyph: '声' },
+                  { id: 'medallion' as const, label: 'Chữ Hán', glyph: '字' },
+                  { id: 'curves' as const, label: 'Thanh điệu', glyph: '声' },
                 ].map((m) => {
                   const active = slide1Mode === m.id;
                   return (
@@ -1104,14 +1332,14 @@ export const LandingPage: React.FC = () => {
         </section>
 
         {/* ────────────────────────────────────────────────────────────────
-            SLIDE 2: CALLIGRAPHY & STROKE ORDER — REAL XUAN PAPER + 3D SLAB
+            SLIDE 2: CALLIGRAPHY & STROKE ORDER — REAL XUAN PAPER + 3D SLAB (.skin-show.component.an)
         ──────────────────────────────────────────────────────────────── */}
         <section
           aria-hidden={activeSlide !== 2}
-          className={`absolute inset-0 w-full h-full overflow-y-auto lg:overflow-hidden bg-[#F5F2EC] transition-opacity duration-[450ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[opacity] ${
-            activeSlide === 2
-              ? 'opacity-100 pointer-events-auto z-20'
-              : 'opacity-0 pointer-events-none z-10'
+          data-slide-idx={2}
+          data-active-slide={activeSlide === 2 ? 'true' : undefined}
+          className={`wuwa-page-slide overflow-y-auto no-scrollbar lg:overflow-hidden bg-[#F5F2EC] ${
+            activeSlide === 2 ? 'an' : ''
           }`}
         >
           <ArchitecturalBlueprintGrid />
@@ -1135,33 +1363,36 @@ export const LandingPage: React.FC = () => {
                 src="/images/intro-hanzi-notebook.webp"
                 alt=""
                 decoding="async"
-                className="w-full h-full object-cover object-center opacity-90"
+                className="w-full h-full object-cover object-center opacity-35 lg:opacity-90"
               />
             </div>
           </div>
 
-          <div className="relative z-10 min-h-full lg:h-full max-w-[1360px] mx-auto px-4 sm:px-14 lg:pl-24 lg:pr-10 pt-14 pb-14 lg:pt-14 lg:pb-16 grid grid-cols-1 lg:grid-cols-12 items-center gap-3 sm:gap-6">
-            <div className="lg:col-span-5 space-y-5 sm:space-y-7">
-              <div>
-                <span className="font-mono text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.2em] text-[#C41E3A]">
+          <div className="relative z-10 min-h-full lg:h-full max-w-[1360px] mx-auto px-4 sm:px-14 lg:pl-24 lg:pr-10 pt-[62px] pb-[64px] lg:pt-14 lg:pb-16 grid grid-cols-1 lg:grid-cols-12 items-center gap-3 sm:gap-6">
+            <div className="lg:col-span-5 space-y-3 sm:space-y-7">
+              <div className="wuwa-title-box">
+                <span className="font-mono text-[9.5px] sm:text-[11px] font-semibold uppercase tracking-[0.18em] sm:tracking-[0.2em] text-[#C41E3A]">
                   02 · QUY TẮC & THỨ TỰ NÉT
                 </span>
-                <h2 className="font-display font-extrabold text-2xl sm:text-4xl text-[#1C1917] tracking-tight mt-0.5 sm:mt-1">
+                <h2 className="font-display font-extrabold text-[19px] leading-snug sm:text-4xl text-[#1C1917] tracking-tight mt-0.5 sm:mt-1">
                   Luyện viết chữ Hán
                 </h2>
               </div>
 
-              <EditorialPaperFrame className="p-4 sm:p-6 max-w-md shadow-[0_20px_48px_-24px_rgba(28,25,23,0.18)]">
-                <div className="flex items-start justify-between gap-3 sm:gap-4 pb-3 sm:pb-4 border-b border-[#1C1917]/10">
+              <div className="wuwa-intr-box">
+                <EditorialPaperFrame className="p-3.5 sm:p-6 max-w-md shadow-[0_20px_48px_-24px_rgba(28,25,23,0.18)]">
+                <div className="flex items-start justify-between gap-2.5 sm:gap-4 pb-2.5 sm:pb-4 border-b border-[#1C1917]/10">
                   <div>
-                    <span className="text-[10px] sm:text-[10.5px] font-mono font-semibold text-[#C41E3A]">
-                      {activeCalligraphy.strokes} NÉT CHUẨN · HÁN-VIỆT: {activeCalligraphy.sino.toUpperCase()}
+                    <span className="text-[9.5px] sm:text-[10.5px] font-sans font-bold uppercase tracking-wider text-[#C41E3A]">
+                      {activeCalligraphy.strokes} NÉT · HÁN-VIỆT: {activeCalligraphy.sino.toUpperCase()}
                     </span>
-                    <h3 className="font-display text-xl sm:text-2xl font-bold text-[#1C1917] mt-0.5 sm:mt-1">
+                    <h3 className="font-display text-[16px] sm:text-2xl font-bold text-[#1C1917] mt-0.5 sm:mt-1 leading-snug">
                       {activeCalligraphy.title}
                     </h3>
-                    <p className="text-xs font-mono text-[#57534E] mt-0.5">
-                      {activeCalligraphy.char} ({activeCalligraphy.pinyin})
+                    <p className="text-[11px] sm:text-xs font-medium text-[#57534E] mt-0.5">
+                      <span className="font-hanzi-serif font-bold">{activeCalligraphy.char}</span>{' '}
+                      <span className="font-pinyin font-semibold">({activeCalligraphy.pinyin})</span> · Nghĩa:{' '}
+                      {activeCalligraphy.meaning}
                     </p>
                   </div>
                   <PronunciationPlayButton
@@ -1172,15 +1403,15 @@ export const LandingPage: React.FC = () => {
                   />
                 </div>
 
-                <p className="text-xs sm:text-sm text-[#44403C] leading-relaxed py-2.5 sm:py-4">
+                <p className="text-[12px] leading-[1.55] sm:text-sm sm:leading-relaxed text-[#44403C] py-2 sm:py-4">
                   {activeCalligraphy.desc}
                 </p>
 
-                <div className="pt-2.5 sm:pt-3 border-t border-[#1C1917]/10">
-                  <p className="text-[10px] sm:text-[10.5px] font-mono uppercase tracking-[0.16em] text-[#78716C] mb-2">
+                <div className="pt-2 sm:pt-3 border-t border-[#1C1917]/10">
+                  <p className="text-[9.5px] sm:text-[10.5px] font-sans font-semibold uppercase tracking-[0.14em] text-[#78716C] mb-1.5 sm:mb-2">
                     Chọn chữ mẫu
                   </p>
-                  <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
+                  <div className="grid grid-cols-4 gap-2">
                     {CALLIGRAPHY_SPECIMENS.map((item, idx) => {
                       const selected = idx === calligraphyIdx;
                       return (
@@ -1191,18 +1422,18 @@ export const LandingPage: React.FC = () => {
                             setCalligraphyIdx(idx);
                             speakChinese(item.char, 0.75);
                           }}
-                          className="py-2 sm:py-2.5 border text-center cursor-pointer transition-colors"
+                          className="py-1.5 sm:py-2.5 border text-center cursor-pointer transition-colors"
                           style={{
                             backgroundColor: selected ? '#C41E3A' : '#FFFFFF',
                             borderColor: selected ? '#C41E3A' : 'rgba(28,25,23,0.16)',
                             color: selected ? '#FFFFFF' : '#1C1917',
                           }}
                         >
-                          <span className="font-hanzi-serif text-xl sm:text-2xl font-bold block leading-none">
+                          <span className="font-hanzi-serif text-lg sm:text-2xl font-bold block leading-none">
                             {item.char}
                           </span>
                           <span
-                            className="text-[9.5px] sm:text-[10px] font-mono mt-1 block"
+                            className="text-[9.5px] sm:text-[10.5px] font-pinyin font-semibold mt-1 block"
                             style={{ color: selected ? '#FDE68A' : '#78716C' }}
                           >
                             {item.pinyin}
@@ -1212,56 +1443,79 @@ export const LandingPage: React.FC = () => {
                     })}
                   </div>
                 </div>
-              </EditorialPaperFrame>
+                </EditorialPaperFrame>
+              </div>
             </div>
 
-            <div className="lg:col-span-5 relative h-[220px] sm:h-[380px] lg:h-[470px] flex flex-col items-center justify-center">
-              <div className="w-full max-w-[400px] h-full">
-                {isWarm(2) && (
-                <ThreeStudyDioramaStage
-                  activeScene={1}
-                  activeToneIdx={0}
-                  activeStrokeChar={activeCalligraphy.char}
-                  activeStrokePinyin={activeCalligraphy.pinyin}
-                  activeStrokeCount={activeCalligraphy.strokes}
-                  flippedCards={{}}
-                  activeCardIdx={0}
-                  activeHskLevel={1}
-                  isActive={activeSlide === 2}
-                  enabledScenes={[1]}
-                  theme="light"
-                  className="w-full h-full"
+            <div className="wuwa-stage-box lg:col-span-5 relative min-h-[275px] sm:min-h-[390px] lg:h-[470px] flex flex-col items-center justify-center">
+              {calligraphyPracticeMode ? (
+                <InteractiveTianZiGeBoard
+                  char={activeCalligraphy.char}
+                  pinyin={activeCalligraphy.pinyin}
+                  strokes={activeCalligraphy.strokes}
+                  onExitTo3D={() => setCalligraphyPracticeMode(false)}
                 />
-                )}
-              </div>
-              <span className="pointer-events-none inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-white/80 backdrop-blur-sm text-[10.5px] font-mono text-[#57534E]">
-                <Move className="w-3.5 h-3.5 text-[#C41E3A]" />
-                Kéo xoay để xem mặt sau
-              </span>
+              ) : (
+                <>
+                  <div className="w-full max-w-[400px] h-[215px] sm:h-[345px] lg:h-[420px]">
+                    {isWarm(2) && (
+                    <ThreeStudyDioramaStage
+                      activeScene={1}
+                      activeToneIdx={0}
+                      activeStrokeChar={activeCalligraphy.char}
+                      activeStrokePinyin={activeCalligraphy.pinyin}
+                      activeStrokeCount={activeCalligraphy.strokes}
+                      flippedCards={{}}
+                      activeCardIdx={0}
+                      activeHskLevel={1}
+                      isActive={activeSlide === 2 && !calligraphyPracticeMode}
+                      enabledScenes={[1]}
+                      onTabletClick={() => setCalligraphyPracticeMode(true)}
+                      theme="light"
+                      className="w-full h-full"
+                    />
+                    )}
+                  </div>
+                  <div className="flex flex-wrap items-center justify-center gap-1.5 mt-1">
+                    <button
+                      type="button"
+                      onClick={() => setCalligraphyPracticeMode(true)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#C41E3A] hover:bg-[#A51730] text-white text-[10.5px] sm:text-[11px] font-mono font-semibold shadow-xs transition-colors cursor-pointer"
+                    >
+                      <PenTool className="w-3 h-3" />
+                      <span>Bấm ô chữ để tập viết</span>
+                    </button>
+                    <span className="pointer-events-none inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/85 backdrop-blur-sm border border-[#1C1917]/10 text-[10px] font-mono text-[#57534E]">
+                      <Move className="w-3 h-3 text-[#C41E3A]" />
+                      <span>Kéo để xoay</span>
+                    </span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </section>
 
         {/* ────────────────────────────────────────────────────────────────
-            SLIDE 3: EDITORIAL CURRICULUM GALLERY & FILMSTRIP
+            SLIDE 3: EDITORIAL CURRICULUM GALLERY & FILMSTRIP (.activity-container.component.an)
         ──────────────────────────────────────────────────────────────── */}
         <section
           aria-hidden={activeSlide !== 3}
-          className={`absolute inset-0 w-full h-full overflow-hidden bg-[#F5F2EC] transition-opacity duration-[450ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[opacity] ${
-            activeSlide === 3
-              ? 'opacity-100 pointer-events-auto z-20'
-              : 'opacity-0 pointer-events-none z-10'
+          data-slide-idx={3}
+          data-active-slide={activeSlide === 3 ? 'true' : undefined}
+          className={`wuwa-page-slide overflow-y-auto no-scrollbar lg:overflow-hidden bg-[#F5F2EC] ${
+            activeSlide === 3 ? 'an' : ''
           }`}
         >
           <ArchitecturalBlueprintGrid />
 
-          <div className="relative z-10 h-full max-w-[1080px] mx-auto px-6 sm:px-14 pt-12 pb-16 flex flex-col justify-center gap-4">
+          <div className="relative z-10 min-h-full lg:h-full max-w-[1080px] mx-auto px-4 sm:px-14 pt-[62px] pb-[64px] lg:pt-12 lg:pb-16 flex flex-col justify-center gap-3 sm:gap-4">
             <MuseumExhibitionFrame
               chapterLabel="03 · CHƯƠNG TRÌNH HỌC"
               title="Hệ thống bài học HSK chuẩn cho người Việt"
-              className="w-full"
+              className="wuwa-intr-box w-full"
             >
-              <div className="relative h-[370px] sm:h-[420px] lg:h-[450px] w-full bg-[#1C1917]">
+              <div className="relative min-h-[345px] sm:h-[420px] lg:h-[450px] w-full bg-[#1C1917]">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={activeCurriculum.id}
@@ -1269,40 +1523,40 @@ export const LandingPage: React.FC = () => {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.22 }}
-                    className="absolute inset-0 w-full h-full"
+                    className="relative sm:absolute sm:inset-0 w-full min-h-[345px] sm:h-full flex"
                   >
                     <img
                       src={activeCurriculum.image}
                       alt={activeCurriculum.title}
                       decoding="async"
-                      className="w-full h-full object-cover object-center"
+                      className="absolute inset-0 w-full h-full object-cover object-center"
                     />
                     <div
                       aria-hidden="true"
-                      className="absolute inset-0 bg-gradient-to-r from-[#1C1917]/25 via-[#1C1917]/65 to-[#1C1917]/95"
+                      className="absolute inset-0 bg-gradient-to-t from-[#1C1917]/95 via-[#1C1917]/78 to-[#1C1917]/48 sm:bg-gradient-to-r sm:from-[#1C1917]/25 sm:via-[#1C1917]/65 sm:to-[#1C1917]/95"
                     />
 
-                    <div className="absolute inset-0 flex items-center justify-end p-6 sm:p-10">
-                      <div className="max-w-md w-full space-y-4 text-white">
-                        <span className="inline-block px-2.5 py-0.5 bg-[#C41E3A] text-white font-mono text-[10.5px] font-semibold tracking-[0.14em] uppercase">
+                    <div className="relative z-10 w-full flex items-end sm:items-center justify-end p-4 pb-12 sm:p-10">
+                      <div className="max-w-md w-full space-y-2.5 sm:space-y-4 text-white">
+                        <span className="inline-block px-2 py-0.5 bg-[#C41E3A] text-white font-mono text-[9.5px] sm:text-[10.5px] font-semibold tracking-[0.12em] sm:tracking-[0.14em] uppercase">
                           {activeCurriculum.tag}
                         </span>
 
-                        <h3 className="font-display text-2xl sm:text-3xl font-bold leading-tight">
+                        <h3 className="font-display text-[18px] sm:text-3xl font-bold leading-snug sm:leading-tight">
                           {activeCurriculum.title}
                         </h3>
 
-                        <p className="text-xs sm:text-sm text-white/85 leading-relaxed">
+                        <p className="text-[12px] leading-[1.55] sm:text-sm sm:leading-relaxed text-white/88">
                           {activeCurriculum.summary}
                         </p>
 
                         {activeCurriculum.id !== 'quiz' ? (
-                          <div className="pt-2 space-y-3">
-                            <div className="grid grid-cols-3 gap-2">
+                          <div className="pt-1 sm:pt-2 space-y-2.5 sm:space-y-3">
+                            <div className="flex flex-wrap gap-1.5 sm:grid sm:grid-cols-3 sm:gap-2">
                               {activeCurriculum.points.map((pt) => (
                                 <div
                                   key={pt}
-                                  className="px-2.5 py-2 border border-white/20 bg-black/35 backdrop-blur-sm text-[11px] font-medium text-white/95 text-center"
+                                  className="px-2.5 py-1 sm:py-2 border border-white/20 bg-black/40 backdrop-blur-sm text-[10.5px] sm:text-[11px] font-medium text-white/95 sm:text-center"
                                 >
                                   {pt}
                                 </div>
@@ -1310,29 +1564,30 @@ export const LandingPage: React.FC = () => {
                             </div>
                             <a
                               href="#/login?tab=register"
-                              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#FDE68A] hover:text-white transition-colors pt-1"
+                              onClick={handleNavigateAuth('#/login?tab=register')}
+                              className="inline-flex items-center gap-1.5 text-[11.5px] sm:text-xs font-semibold text-[#FDE68A] hover:text-white transition-colors pt-0.5"
                             >
                               <span>Đăng ký mở khóa miễn phí</span>
                               <ArrowRight className="w-3.5 h-3.5" />
                             </a>
                           </div>
                         ) : (
-                          <div className="space-y-3 pt-1">
-                            <div className="flex items-center justify-between border-b border-white/15 pb-2">
-                              <p className="text-sm font-semibold">
-                                Câu <span className="font-hanzi-serif text-lg text-[#FDE68A]">「你好吗？」</span> nghĩa là gì?
+                          <div className="space-y-2.5 sm:space-y-3 pt-1">
+                            <div className="flex items-center justify-between gap-2 border-b border-white/15 pb-1.5 sm:pb-2">
+                              <p className="text-[12.5px] sm:text-sm font-semibold">
+                                Câu <span className="font-hanzi-serif text-base sm:text-lg text-[#FDE68A]">「你好吗？」</span> nghĩa là gì?
                               </p>
                               <button
                                 type="button"
                                 onClick={() => speakChinese('你好吗', 0.78)}
-                                className="inline-flex items-center gap-1 text-xs font-mono text-[#FDE68A] hover:text-white cursor-pointer"
+                                className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-mono text-[#FDE68A] hover:text-white cursor-pointer shrink-0"
                               >
                                 <Volume2 className="w-3.5 h-3.5" />
                                 <span>Nghe</span>
                               </button>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2">
                               {[
                                 { id: 'A', label: 'Bạn tên là gì?' },
                                 { id: 'B', label: 'Bạn có khỏe không?', ok: true },
@@ -1346,7 +1601,7 @@ export const LandingPage: React.FC = () => {
                                     key={opt.id}
                                     type="button"
                                     onClick={() => setQuizChoice(opt.id)}
-                                    className={`px-3 py-2 border text-left text-xs font-medium transition-colors cursor-pointer flex items-center justify-between ${
+                                    className={`px-3 py-2 border text-left text-[11.5px] sm:text-xs font-medium transition-colors cursor-pointer flex items-center justify-between ${
                                       answered
                                         ? opt.ok
                                           ? 'bg-[#157A57] border-[#157A57] text-white'
@@ -1357,7 +1612,7 @@ export const LandingPage: React.FC = () => {
                                     }`}
                                   >
                                     <span>
-                                      <strong className="font-mono mr-1">{opt.id}.</strong>
+                                      <strong className="font-mono mr-1.5">{opt.id}.</strong>
                                       {opt.label}
                                     </span>
                                     {answered && opt.ok && <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />}
@@ -1373,13 +1628,14 @@ export const LandingPage: React.FC = () => {
                   </motion.div>
                 </AnimatePresence>
 
+                {/* Mobile bottom-right arrows (never overlap text) vs Desktop side arrows */}
                 <button
                   type="button"
                   onClick={() =>
                     setCurriculumIdx((p) => (p - 1 + CURRICULUM_SLIDES.length) % CURRICULUM_SLIDES.length)
                   }
                   aria-label="Mục trước"
-                  className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 bg-black/50 hover:bg-[#C41E3A] text-white border border-white/25 flex items-center justify-center transition-colors cursor-pointer"
+                  className="absolute bottom-2.5 right-12 sm:bottom-auto sm:right-auto sm:left-3 sm:top-1/2 sm:-translate-y-1/2 z-20 w-8 h-8 sm:w-9 sm:h-9 bg-black/55 hover:bg-[#C41E3A] text-white border border-white/25 flex items-center justify-center transition-colors cursor-pointer"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -1387,14 +1643,14 @@ export const LandingPage: React.FC = () => {
                   type="button"
                   onClick={() => setCurriculumIdx((p) => (p + 1) % CURRICULUM_SLIDES.length)}
                   aria-label="Mục tiếp theo"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 bg-black/50 hover:bg-[#C41E3A] text-white border border-white/25 flex items-center justify-center transition-colors cursor-pointer"
+                  className="absolute bottom-2.5 right-2.5 sm:bottom-auto sm:right-3 sm:top-1/2 sm:-translate-y-1/2 z-20 w-8 h-8 sm:w-9 sm:h-9 bg-black/55 hover:bg-[#C41E3A] text-white border border-white/25 flex items-center justify-center transition-colors cursor-pointer"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
             </MuseumExhibitionFrame>
 
-            <div className="flex items-center justify-center gap-3 w-full overflow-x-auto no-scrollbar py-1">
+            <div className="wuwa-avatar-nav no-chapter-swipe flex items-center justify-start sm:justify-center gap-2 sm:gap-3 w-full overflow-x-auto no-scrollbar py-1">
               {CURRICULUM_SLIDES.map((slide, idx) => {
                 const active = idx === curriculumIdx;
                 return (
@@ -1402,7 +1658,7 @@ export const LandingPage: React.FC = () => {
                     key={slide.id}
                     type="button"
                     onClick={() => setCurriculumIdx(idx)}
-                    className={`relative w-32 sm:w-36 h-[64px] sm:h-[72px] shrink-0 overflow-hidden border-2 transition-all cursor-pointer ${
+                    className={`relative w-28 sm:w-36 h-[54px] sm:h-[72px] shrink-0 overflow-hidden border-2 transition-all cursor-pointer ${
                       active
                         ? 'border-[#C41E3A] shadow-md'
                         : 'border-[#1C1917]/15 opacity-75 hover:opacity-100 hover:border-[#1C1917]/40'
@@ -1414,7 +1670,7 @@ export const LandingPage: React.FC = () => {
                       className="w-full h-full object-cover"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-transparent" />
-                    <span className="absolute bottom-1.5 inset-x-2 text-[10px] font-mono font-semibold text-white truncate text-left">
+                    <span className="absolute bottom-1 sm:bottom-1.5 inset-x-1.5 sm:inset-x-2 text-[9.5px] sm:text-[10px] font-mono font-semibold text-white truncate text-left">
                       0{idx + 1} · {slide.thumbLabel}
                     </span>
                   </button>
@@ -1430,31 +1686,31 @@ export const LandingPage: React.FC = () => {
         ──────────────────────────────────────────────────────────────── */}
         <section
           aria-hidden={activeSlide !== 4}
-          className={`absolute inset-0 w-full h-full overflow-y-auto lg:overflow-hidden bg-[#F5F2EC] transition-opacity duration-[450ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[opacity] ${
-            activeSlide === 4
-              ? 'opacity-100 pointer-events-auto z-20'
-              : 'opacity-0 pointer-events-none z-10'
+          data-slide-idx={4}
+          data-active-slide={activeSlide === 4 ? 'true' : undefined}
+          className={`wuwa-page-slide overflow-y-auto no-scrollbar lg:overflow-hidden bg-[#F5F2EC] ${
+            activeSlide === 4 ? 'an' : ''
           }`}
         >
           <ArchitecturalBlueprintGrid />
 
-          <div className="relative z-10 min-h-full lg:h-full max-w-[1360px] mx-auto px-4 sm:px-14 lg:pl-24 lg:pr-12 pt-14 pb-14 lg:pt-16 lg:pb-16 flex flex-col justify-between">
+          <div className="relative z-10 min-h-full lg:h-full max-w-[1360px] mx-auto px-4 sm:px-14 lg:pl-24 lg:pr-12 pt-[62px] pb-[64px] lg:pt-16 lg:pb-16 flex flex-col justify-between gap-2.5 sm:gap-0">
             {/* TOP BAR: Clean Frameless Header & Mode Switcher */}
-            <div className="flex flex-wrap items-center justify-between gap-2.5 sm:gap-4">
+            <div className="wuwa-title-box flex flex-wrap items-center justify-between gap-2 sm:gap-4">
               <div>
-                <span className="font-mono text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.2em] text-[#C41E3A]">
+                <span className="font-mono text-[9.5px] sm:text-[11px] font-semibold uppercase tracking-[0.18em] sm:tracking-[0.2em] text-[#C41E3A]">
                   04 · TRẢI NGHIỆM TRỰC QUAN
                 </span>
-                <h2 className="font-display font-extrabold text-xl sm:text-3xl text-[#1C1917] tracking-tight mt-0.5">
+                <h2 className="font-display font-extrabold text-[18px] leading-snug sm:text-3xl text-[#1C1917] tracking-tight mt-0.5">
                   {studioMode === 'cards' ? 'Thẻ lật từ' : 'Giáo trình chuẩn HSK 1 → 6'}
                 </h2>
               </div>
 
-              <div className="flex items-center gap-1.5 sm:gap-2">
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setStudioMode('cards')}
-                  className="px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold border transition-colors cursor-pointer"
+                  className="px-2.5 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold border transition-colors cursor-pointer"
                   style={{
                     backgroundColor: studioMode === 'cards' ? '#1C1917' : 'rgba(255,255,255,0.9)',
                     borderColor: studioMode === 'cards' ? '#1C1917' : 'rgba(28,25,23,0.18)',
@@ -1466,26 +1722,27 @@ export const LandingPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setStudioMode('hsk')}
-                  className="px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold border transition-colors cursor-pointer"
+                  className="px-2.5 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold border transition-colors cursor-pointer"
                   style={{
                     backgroundColor: studioMode === 'hsk' ? '#1C1917' : 'rgba(255,255,255,0.9)',
                     borderColor: studioMode === 'hsk' ? '#1C1917' : 'rgba(28,25,23,0.18)',
                     color: studioMode === 'hsk' ? '#FFFFFF' : '#1C1917',
                   }}
                 >
-                  Sách giáo trình HSK 1 → 6
+                  <span className="sm:hidden">Giáo trình HSK</span>
+                  <span className="hidden sm:inline">Sách giáo trình HSK 1 → 6</span>
                 </button>
               </div>
             </div>
 
             {/* FRAMELESS OPEN-CANVAS 3D STAGE + OPTIONAL BOOK DETAIL DRAWER */}
-            <div className="relative flex-1 min-h-0 w-full grid grid-cols-1 lg:grid-cols-12 items-center gap-3 sm:gap-6 my-1 sm:my-2">
+            <div className="wuwa-stage-box relative flex-1 min-h-0 w-full grid grid-cols-1 lg:grid-cols-12 items-center gap-3 sm:gap-6 my-0.5 sm:my-2">
               {/* Open Frameless 3D Canvas (Full 12 cols in Flashcard mode, 8 cols in HSK Book mode) */}
               <div
                 className={`relative transition-all duration-300 ${
                   studioMode === 'cards'
-                    ? 'h-[310px] sm:h-[460px] lg:h-[520px] lg:col-span-12'
-                    : 'h-[210px] sm:h-[330px] lg:h-[520px] lg:col-span-8'
+                    ? 'h-[360px] sm:h-[460px] lg:h-[520px] lg:col-span-12'
+                    : 'h-[195px] sm:h-[330px] lg:h-[520px] lg:col-span-8'
                 }`}
               >
                 {isWarm(4) && (
@@ -1508,12 +1765,12 @@ export const LandingPage: React.FC = () => {
                 )}
 
                 {/* Subtle Frameless Hint Pill */}
-                <div className="pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 rounded-full bg-white/80 backdrop-blur-sm border border-[#1C1917]/10 text-[10px] sm:text-[11px] font-mono text-[#57534E] whitespace-nowrap max-w-[95vw] overflow-hidden text-ellipsis">
+                <div className="pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 rounded-full bg-white/85 backdrop-blur-sm border border-[#1C1917]/10 text-[9.5px] sm:text-[11px] font-mono text-[#57534E] whitespace-nowrap max-w-[92vw] overflow-hidden text-ellipsis">
                   <Move className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#C41E3A] shrink-0" />
                   <span className="truncate">
                     {studioMode === 'cards'
-                      ? 'Bấm trực tiếp vào từng thẻ để lật & nghe phát âm · Kéo để xoay thẻ'
-                      : 'Bấm vào quyển sách HSK 1 → 6 và kéo để xoay riêng từng quyển'}
+                      ? 'Chạm thẻ để lật và nghe · Kéo để xoay'
+                      : 'Chọn sách để xem chi tiết · Kéo để xoay'}
                   </span>
                 </div>
               </div>
@@ -1521,44 +1778,45 @@ export const LandingPage: React.FC = () => {
               {/* HSK Textbook Information Card (Appears cleanly on the right when in Book mode) */}
               {studioMode === 'hsk' && (
                 <div className="lg:col-span-4 flex flex-col justify-center">
-                  <EditorialPaperFrame className="p-3.5 sm:p-6 shadow-[0_20px_48px_-24px_rgba(28,25,23,0.18)] space-y-2.5 sm:space-y-4">
-                    <div className="flex items-start gap-3 sm:gap-4 pb-2.5 sm:pb-3.5 border-b border-[#1C1917]/10">
+                  <EditorialPaperFrame className="p-3 sm:p-6 shadow-[0_20px_48px_-24px_rgba(28,25,23,0.18)]">
+                    <div className="space-y-2.5 sm:space-y-4">
+                      <div className="flex items-start gap-2.5 sm:gap-4 pb-2 sm:pb-3.5 border-b border-[#1C1917]/10">
                       <img
                         src={activeBook.cover}
                         alt={activeBook.title}
                         decoding="async"
-                        className="w-12 h-16 sm:w-16 sm:h-22 object-cover rounded-[3px] border border-[#1C1917]/15 shadow-sm shrink-0"
+                        className="w-11 h-[60px] sm:w-16 sm:h-[88px] object-cover rounded-[3px] border border-[#1C1917]/15 shadow-sm shrink-0"
                       />
                       <div className="min-w-0">
                         <span
-                          className="inline-block px-2 py-0.5 text-[9.5px] sm:text-[10px] font-mono font-bold text-white uppercase"
+                          className="inline-block px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-mono font-bold text-white uppercase"
                           style={{ backgroundColor: activeBook.accent }}
                         >
                           {activeBook.zhTitle}
                         </span>
-                        <h3 className="font-display font-bold text-base sm:text-xl text-[#1C1917] mt-0.5 sm:mt-1 leading-snug">
+                        <h3 className="font-display font-bold text-[15px] sm:text-xl text-[#1C1917] mt-0.5 sm:mt-1 leading-snug">
                           {activeBook.title}
                         </h3>
-                        <p className="text-[10.5px] sm:text-[11px] text-[#78716C] mt-0.5">{activeBook.author}</p>
+                        <p className="text-[10px] sm:text-[11px] text-[#78716C] mt-0.5">{activeBook.author}</p>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="grid grid-cols-2 gap-2 text-[11px] sm:text-xs">
                       <div className="px-2.5 py-1.5 sm:px-3 sm:py-2 bg-[#F5F2EC] border border-[#1C1917]/10">
-                        <span className="text-[9.5px] sm:text-[10px] font-mono uppercase text-[#78716C] block">
+                        <span className="text-[9px] sm:text-[10px] font-mono uppercase text-[#78716C] block">
                           Từ vựng chuẩn
                         </span>
                         <strong className="text-[#1C1917] font-semibold">{activeBook.words}</strong>
                       </div>
                       <div className="px-2.5 py-1.5 sm:px-3 sm:py-2 bg-[#F5F2EC] border border-[#1C1917]/10">
-                        <span className="text-[9.5px] sm:text-[10px] font-mono uppercase text-[#78716C] block">
+                        <span className="text-[9px] sm:text-[10px] font-mono uppercase text-[#78716C] block">
                           Cấu trúc sách
                         </span>
                         <strong className="text-[#1C1917] font-semibold">{activeBook.lessons}</strong>
                       </div>
                     </div>
 
-                    <p className="text-xs sm:text-[13px] text-[#44403C] leading-relaxed">
+                    <p className="text-[11.5px] leading-[1.55] sm:text-[13px] sm:leading-relaxed text-[#44403C]">
                       {activeBook.desc}
                     </p>
 
@@ -1575,7 +1833,7 @@ export const LandingPage: React.FC = () => {
 
                     {/* Quick 1–6 Book Selector Pills + Direct Study CTA */}
                     <div className="pt-2 sm:pt-3 border-t border-[#1C1917]/10 space-y-2 sm:space-y-3">
-                      <div className="grid grid-cols-6 gap-1 sm:gap-1.5">
+                      <div className="grid grid-cols-6 gap-1.5">
                         {HSK_TEXTBOOKS.map((b) => {
                           const selected = b.level === activeHskLevel;
                           return (
@@ -1583,7 +1841,7 @@ export const LandingPage: React.FC = () => {
                               key={b.level}
                               type="button"
                               onClick={() => setActiveHskLevel(b.level)}
-                              className="py-1 sm:py-1.5 font-mono text-[10px] sm:text-[11px] font-bold border cursor-pointer transition-colors"
+                              className="py-1.5 font-mono text-[10px] sm:text-[11px] font-bold border cursor-pointer transition-colors"
                               style={{
                                 backgroundColor: selected ? b.accent : '#FFFFFF',
                                 borderColor: selected ? b.accent : 'rgba(28,25,23,0.16)',
@@ -1599,12 +1857,13 @@ export const LandingPage: React.FC = () => {
                       <a
                         href="#/login?tab=register"
                         onClick={handleNavigateAuth('#/login?tab=register')}
-                        className="w-full h-9 sm:h-10 rounded-md bg-[#C41E3A] hover:bg-[#A51730] text-white text-xs font-semibold inline-flex items-center justify-center gap-2 transition-colors"
+                        className="w-full h-9 sm:h-10 rounded-md bg-[#C41E3A] hover:bg-[#A51730] text-white text-[11.5px] sm:text-xs font-semibold inline-flex items-center justify-center gap-1.5 sm:gap-2 transition-colors"
                       >
                         <BookOpen className="w-3.5 h-3.5" />
                         <span>Học {activeBook.title} miễn phí</span>
                         <ArrowRight className="w-3.5 h-3.5" />
                       </a>
+                    </div>
                     </div>
                   </EditorialPaperFrame>
                 </div>
@@ -1612,14 +1871,15 @@ export const LandingPage: React.FC = () => {
             </div>
           </div>
         </section>
+        </div>
 
-        {/* ── QUIET EDITORIAL CHAPTER STATUS BAR (Includes Mobile Thumb Chapter Switcher) ── */}
+        {/* ── QUIET EDITORIAL CHAPTER STATUS BAR (Includes Ergonomic Mobile Thumb Switcher) ── */}
         <div
-          className={`fixed bottom-0 inset-x-0 z-30 h-11 bg-[#F4F0E9]/95 backdrop-blur-md border-t border-[#1C1917]/10 px-4 sm:px-10 flex items-center justify-between gap-2 sm:gap-4 transition-opacity duration-300 ${
+          className={`fixed bottom-0 inset-x-0 z-30 h-12 sm:h-11 bg-[#F4F0E9]/95 backdrop-blur-md border-t border-[#1C1917]/10 px-3.5 sm:px-10 flex items-center justify-between gap-2 sm:gap-4 transition-opacity duration-300 ${
             isHero ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'
           }`}
         >
-          <div className="flex items-center gap-2 sm:gap-3 text-[11px] font-mono text-[#57534E]">
+          <div className="flex items-center gap-2 sm:gap-3 text-[10.5px] sm:text-[11px] font-mono text-[#57534E]">
             <span className="font-bold text-[#C41E3A]">0{activeSlide + 1} / 05</span>
             <span className="hidden sm:inline text-[#1C1917]/25">|</span>
             <span className="hidden sm:inline font-medium text-[#1C1917]">
@@ -1627,32 +1887,33 @@ export const LandingPage: React.FC = () => {
             </span>
           </div>
 
-          {/* Mobile Thumb Prev/Next Chapter Buttons (Visible on < 640px where left rail is hidden) */}
-          <div className="flex sm:hidden items-center gap-1">
+          {/* Mobile Thumb Prev/Next Chapter Buttons (Ergonomic 36px targets with 8px gap) */}
+          <div className="flex sm:hidden items-center gap-2">
             <button
               type="button"
               onClick={() => stepChapter(-1)}
               aria-label="Bài trước"
-              className="w-7 h-7 rounded border border-[#1C1917]/15 bg-white flex items-center justify-center text-[#1C1917] active:bg-[#C41E3A] active:text-white cursor-pointer"
+              className="w-9 h-8 rounded-md border border-[#1C1917]/15 bg-white flex items-center justify-center text-[#1C1917] active:bg-[#C41E3A] active:text-white cursor-pointer transition-colors"
             >
-              <ChevronLeft className="w-3.5 h-3.5" />
+              <ChevronLeft className="w-4 h-4" />
             </button>
             <button
               type="button"
               onClick={() => stepChapter(1)}
               aria-label="Bài tiếp theo"
-              className="w-7 h-7 rounded border border-[#1C1917]/15 bg-white flex items-center justify-center text-[#1C1917] active:bg-[#C41E3A] active:text-white cursor-pointer"
+              className="w-9 h-8 rounded-md border border-[#1C1917]/15 bg-white flex items-center justify-center text-[#1C1917] active:bg-[#C41E3A] active:text-white cursor-pointer transition-colors"
             >
-              <ChevronRight className="w-3.5 h-3.5" />
+              <ChevronRight className="w-4 h-4" />
             </button>
           </div>
 
           <a
             href="#/login?tab=register"
             onClick={handleNavigateAuth('#/login?tab=register')}
-            className="text-[11px] sm:text-xs font-semibold text-[#C41E3A] hover:text-[#9E162E] inline-flex items-center gap-1 sm:gap-1.5 transition-colors"
+            className="text-[11px] sm:text-xs font-semibold text-[#C41E3A] hover:text-[#9E162E] inline-flex items-center gap-1 sm:gap-1.5 transition-colors whitespace-nowrap"
           >
-            <span>Bắt đầu học miễn phí</span>
+            <span className="sm:hidden">Học miễn phí</span>
+            <span className="hidden sm:inline">Bắt đầu học miễn phí</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </a>
         </div>
@@ -1662,29 +1923,36 @@ export const LandingPage: React.FC = () => {
           SLIDE-UP EDITORIAL FOOTER DRAWER
       ═══════════════════════════════════════════════════════════════════ */}
       <footer
-        style={{
-          transform: showFooter ? 'translate3d(0, 0, 0)' : 'translate3d(0, 150px, 0)',
-        }}
-        className="fixed bottom-0 inset-x-0 h-[136px] z-50 bg-[#FCFBF8] text-[#1C1917] border-t border-[#1C1917]/15 px-6 sm:px-10 flex items-center transition-transform duration-[420ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform"
+        className={`fixed bottom-0 inset-x-0 min-h-[124px] py-3.5 sm:py-0 sm:h-[136px] z-50 bg-[#FCFBF8] text-[#1C1917] border-t border-[#1C1917]/15 px-4 sm:px-10 flex items-center transition-transform duration-[420ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform ${
+          showFooter ? 'translate-y-0' : 'translate-y-full'
+        }`}
       >
-        <div className="max-w-7xl mx-auto w-full flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <HanziLogoMark variant="light" className="w-9 h-9" />
-            <div className="leading-tight">
-              <p className="font-display font-bold text-sm text-[#1C1917]">
-                Hanzi<span className="text-[#C41E3A]">4U</span> · Nền tảng tự học tiếng Trung HSK 1–6
+        <div className="max-w-7xl mx-auto w-full flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <HanziLogoMark variant="light" className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
+            <div className="leading-snug">
+              <p className="font-display font-bold text-[12.5px] sm:text-sm text-[#1C1917]">
+                Hanzi<span className="text-[#C41E3A]">4U</span> · Tự học tiếng Trung HSK 1–6
               </p>
-              <p className="text-[11px] text-[#57534E]">
-                © 2026 Hanzi4U (hanzi4u.id.vn) · 63 Âm Pinyin · Luyện viết chữ Hán · Thẻ lật từ & Sách HSK
+              <p className="text-[10px] sm:text-[11px] text-[#57534E]">
+                © 2026 Hanzi4U (hanzi4u.id.vn) · Pinyin · Chữ Hán · Giáo trình HSK
               </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-5 text-xs font-semibold text-[#1C1917]">
-            <a href="#/login?tab=register" className="hover:text-[#C41E3A] transition-colors">
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-5 text-[11.5px] sm:text-xs font-semibold text-[#1C1917]">
+            <a
+              href="#/login?tab=register"
+              onClick={handleNavigateAuth('#/login?tab=register')}
+              className="hover:text-[#C41E3A] transition-colors"
+            >
               Đăng ký miễn phí
             </a>
-            <a href="#/login" className="hover:text-[#C41E3A] transition-colors">
+            <a
+              href="#/login"
+              onClick={handleNavigateAuth('#/login')}
+              className="hover:text-[#C41E3A] transition-colors"
+            >
               Đăng nhập
             </a>
             <button

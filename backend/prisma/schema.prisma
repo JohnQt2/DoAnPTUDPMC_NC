@@ -59,6 +59,7 @@ model UserProfiles {
   goal                String?
   current_level       String?
   expected_duration   String?
+  expected_weeks      Int?
   daily_study_minutes Int?     @default(15)
   phone               String?
   bio                 String?
@@ -335,6 +336,8 @@ model UserRoadmaps {
   course_id             Int
   starting_level        String
   target_goal           String
+  expected_weeks        Int?
+  expected_duration     String?
   daily_commitment_mins Int      @default(15)
   is_active             Boolean  @default(true)
   created_at            DateTime @default(now())

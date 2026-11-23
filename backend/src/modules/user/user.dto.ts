@@ -56,6 +56,8 @@ export const UpdateProfileDto = z
       .optional(),
     target_weeks: z.coerce.number().int().min(1).max(104).optional(),
     targetWeeks: z.coerce.number().int().min(1).max(104).optional(),
+    expected_weeks: z.coerce.number().int().min(1).max(104).optional(),
+    expectedWeeks: z.coerce.number().int().min(1).max(104).optional(),
   })
   .superRefine((data, ctx) => {
     // Detect forbidden sensitive fields
@@ -141,6 +143,8 @@ export const OnboardingSurveyDto = z
     expected_duration: z.union([z.string(), z.number()]).optional(),
     target_weeks: z.coerce.number().int().min(1).max(104).optional(),
     targetWeeks: z.coerce.number().int().min(1).max(104).optional(),
+    expected_weeks: z.coerce.number().int().min(1).max(104).optional(),
+    expectedWeeks: z.coerce.number().int().min(1).max(104).optional(),
     daily_study_minutes: z.coerce
       .number({ invalid_type_error: 'Thời gian rảnh mỗi ngày phải là số nguyên dương tính theo phút.' })
       .int('Thời gian rảnh mỗi ngày phải là số nguyên.')
@@ -229,10 +233,17 @@ export const OnboardingSurveyDto = z
     const mins = data.daily_study_minutes ?? data.daily_commitment_mins ?? 15;
 
     // Normalize Expected Duration
-    const weeks = data.target_weeks || data.targetWeeks;
-    let durationStr = '12 tuần';
+    let weeks = data.target_weeks || data.targetWeeks || data.expected_weeks || data.expectedWeeks;
+    let durationStr = '8 tuần';
     if (data.expected_duration !== undefined && data.expected_duration !== null) {
       durationStr = typeof data.expected_duration === 'number' ? `${data.expected_duration} tuần` : String(data.expected_duration).trim();
+      if (!weeks) {
+        const match = durationStr.match(/(\d+)\s*(tuần|tháng|weeks|months)/i);
+        if (match) {
+          const num = parseInt(match[1], 10);
+          weeks = match[2].includes('tháng') || match[2].includes('month') ? num * 4 : num;
+        }
+      }
     } else if (weeks) {
       durationStr = `${weeks} tuần`;
     }
@@ -248,7 +259,11 @@ export const OnboardingSurveyDto = z
       daily_study_minutes: mins,
       daily_commitment_mins: mins,
       expected_duration: durationStr,
+      expectedDuration: durationStr,
       target_weeks: weeks,
+      targetWeeks: weeks,
+      expected_weeks: weeks,
+      expectedWeeks: weeks,
       reminder_time: reminderTimeVal,
       reminderTime: reminderTimeVal,
       course_id: data.course_id,

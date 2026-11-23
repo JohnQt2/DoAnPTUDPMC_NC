@@ -13,6 +13,11 @@ import {
   normalizeReminderTime,
 } from '../onboarding/OnboardingRoadmapPage';
 import {
+  requestPushSubscription,
+  unsubscribeWebPush,
+  startClientReminderWatcher,
+} from '../../lib/push-notification';
+import {
   User,
   Bell,
   Compass,
@@ -134,6 +139,7 @@ export const ProfilePage: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isRefreshingSessions, setIsRefreshingSessions] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [isTestingReminder, setIsTestingReminder] = useState(false);
   const [savedSnapshot, setSavedSnapshot] = useState<{
     displayName: string;
     reminderTime: string;
@@ -288,6 +294,10 @@ export const ProfilePage: React.FC = () => {
       setTargetGoal(loadedTargetGoal);
       setDailyCommitment(loadedDailyCommitment);
       setTargetWeeks(loadedTargetWeeks);
+
+      // Kích hoạt watcher thông báo nhắc học trên client
+      startClientReminderWatcher(loadedReminderTime, loadedNotifyWebpush, loadedCompletedLessons > 0);
+
       setSavedSnapshot({
         displayName: loadedDisplayName,
         reminderTime: loadedReminderTime,
@@ -342,6 +352,45 @@ export const ProfilePage: React.FC = () => {
     }
   };
 
+  const handleToggleWebpush = async (checked: boolean) => {
+    if (checked) {
+      const res = await requestPushSubscription();
+      if (!res.success) {
+        appNotice(res.error || 'Không thể bật thông báo trình duyệt.', 'error');
+        setNotifyWebpush(false);
+        return;
+      }
+      setNotifyWebpush(true);
+      startClientReminderWatcher(reminderTime, true, completedLessonsCount > 0);
+      celebrateSuccess('Đã kích hoạt thông báo trên trình duyệt', 'sparkle');
+    } else {
+      await unsubscribeWebPush();
+      setNotifyWebpush(false);
+      startClientReminderWatcher(reminderTime, false, completedLessonsCount > 0);
+    }
+  };
+
+  const handleSendTestReminder = async () => {
+    setIsTestingReminder(true);
+    try {
+      const res = await api.post<any>('/users/reminder-settings/test');
+      const details = res?.data || res;
+      let msg = 'Đã gửi thông báo kiểm tra!';
+      if (details?.email?.sent) {
+        msg += ' Đã gửi email nhắc học.';
+      }
+      if (details?.push?.sent) {
+        msg += ' Đã gửi thông báo Web Push tới trình duyệt.';
+      }
+      celebrateSuccess(msg, 'fireworks');
+      appNotice(msg, 'success');
+    } catch (err: any) {
+      appNotice(err.message || 'Lỗi khi gửi thông báo thử nghiệm.', 'error');
+    } finally {
+      setIsTestingReminder(false);
+    }
+  };
+
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
@@ -362,11 +411,15 @@ export const ProfilePage: React.FC = () => {
       });
 
       if (!isAdminRole) {
-        await api.put('/users/notifications', {
+        await api.patch('/users/reminder-settings', {
           reminder_time: reminderTime,
           notify_email: notifyEmail,
+          email_reminder_enabled: notifyEmail,
           notify_webpush: notifyWebpush,
+          browser_notification_enabled: notifyWebpush,
         });
+
+        startClientReminderWatcher(reminderTime, notifyWebpush, completedLessonsCount > 0);
 
         await api.post<any>('/users/onboarding', {
           starting_level: startingLevel,
@@ -747,9 +800,22 @@ export const ProfilePage: React.FC = () => {
                 <input
                   type="checkbox"
                   checked={notifyWebpush}
-                  onChange={(e) => setNotifyWebpush(e.target.checked)}
+                  onChange={(e) => handleToggleWebpush(e.target.checked)}
                   className="w-5 h-5 text-primary-600 rounded focus:ring-primary-500 cursor-pointer"
                 />
+              </div>
+
+              <div className="flex items-center justify-between pt-2">
+                <button
+                  type="button"
+                  onClick={handleSendTestReminder}
+                  disabled={isTestingReminder}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-primary-50 hover:bg-primary-100 text-primary-700 font-bold text-xs transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>{isTestingReminder ? 'Đang gửi thử nghiệm...' : 'Gửi thử thông báo mẫu ngay'}</span>
+                </button>
+                <span className="text-[11px] text-gray-400">Gửi 1 email và 1 thông báo trình duyệt kiểm tra</span>
               </div>
             </div>
           </GlassCard>

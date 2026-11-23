@@ -1,10 +1,14 @@
 import { app } from './app';
 import { env } from './config/env';
 import { connectDatabase, disconnectDatabase } from './shared/database/prisma.client';
+import { studyReminderJob } from './jobs/study-reminder.job';
 
 async function bootstrap() {
   try {
     await connectDatabase();
+
+    // Khởi chạy cron scheduler nhắc học hằng ngày
+    studyReminderJob.start();
 
     const server = app.listen(env.PORT, () => {
       console.log('====================================================');
@@ -17,6 +21,7 @@ async function bootstrap() {
 
     const gracefulShutdown = async (signal: string) => {
       console.log(`\nReceived ${signal}. Shutting down gracefully...`);
+      studyReminderJob.stop();
       server.close(async () => {
         await disconnectDatabase();
         console.log('Database disconnected. Process exited.');

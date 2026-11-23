@@ -30,6 +30,8 @@ model Users {
   auditLogs          AuditLogs[]
   uploadedMedia      MediaResources[]       @relation("MediaUploader")
   profile            UserProfiles?
+  pushSubscriptions  PushSubscriptions[]
+  reminderLogs       ReminderDeliveryLogs[]
 
   @@map("Users")
 }
@@ -60,8 +62,12 @@ model UserProfiles {
   current_level       String?
   expected_duration   String?
   expected_weeks      Int?
-  daily_study_minutes Int?     @default(15)
-  phone               String?
+  daily_study_minutes         Int?     @default(15)
+  reminder_time               String?  @default("20:00")
+  email_reminder_enabled      Boolean? @default(true)
+  browser_notification_enabled Boolean? @default(false)
+  timezone                    String?  @default("Asia/Ho_Chi_Minh")
+  phone                       String?
   bio                 String?
   created_at          DateTime @default(now())
   updated_at          DateTime @default(now()) @updatedAt
@@ -82,6 +88,37 @@ model NotificationSettings {
   user           Users    @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
 
   @@map("NotificationSettings")
+}
+
+model PushSubscriptions {
+  subscription_id Int      @id @default(autoincrement())
+  user_id         Int
+  endpoint        String   @unique
+  p256dh          String
+  auth            String
+  user_agent      String?
+  created_at      DateTime @default(now())
+  updated_at      DateTime @default(now()) @updatedAt
+
+  user            Users    @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@map("PushSubscriptions")
+}
+
+model ReminderDeliveryLogs {
+  log_id         Int      @id @default(autoincrement())
+  user_id        Int
+  study_date     String   // YYYY-MM-DD theo múi giờ Asia/Ho_Chi_Minh
+  channel        String   // "EMAIL" | "BROWSER"
+  offset_minutes Int      // -15, -5, 0, 5, 15
+  sent_at        DateTime @default(now())
+
+  user           Users    @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@unique([user_id, study_date, channel, offset_minutes])
+  @@index([user_id, study_date])
+  @@map("ReminderDeliveryLogs")
 }
 
 model Courses {

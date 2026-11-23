@@ -60,6 +60,7 @@ export const normalizeWeeks = (rawWeeks?: any, rawDuration?: any, estimatedDays?
   if (rawWeeks !== undefined && rawWeeks !== null) {
     const parsed = parseInt(String(rawWeeks), 10);
     if (!isNaN(parsed) && parsed > 0) {
+      if (parsed === 4 || parsed === 8 || parsed === 12 || parsed === 24) return parsed;
       if (parsed <= 5) return 4;
       if (parsed <= 9) return 8;
       if (parsed <= 15) return 12;
@@ -68,15 +69,16 @@ export const normalizeWeeks = (rawWeeks?: any, rawDuration?: any, estimatedDays?
   }
   if (rawDuration) {
     const str = String(rawDuration).toLowerCase();
-    if (str.includes('24') || str.includes('6 tháng')) return 24;
-    if (str.includes('12') || str.includes('3 tháng')) return 12;
-    if (str.includes('8') || str.includes('2 tháng')) return 8;
-    if (str.includes('4') || str.includes('1 tháng')) return 4;
-    const match = str.match(/(\d+)\s*(tuần|tháng|weeks|months)/i);
+    if (str.includes('24') || str.includes('6 tháng') || str.includes('6 thang')) return 24;
+    if (str.includes('12') || str.includes('3 tháng') || str.includes('3 thang')) return 12;
+    if (str.includes('8') || str.includes('2 tháng') || str.includes('2 thang')) return 8;
+    if (str.includes('4') || str.includes('1 tháng') || str.includes('1 thang')) return 4;
+    const match = str.match(/(\d+)\s*(tuần|tháng|tuan|thang|weeks|months)/i);
     if (match) {
       const num = parseInt(match[1], 10);
-      const isMonth = match[2].includes('tháng') || match[2].includes('month');
+      const isMonth = match[2].includes('tháng') || match[2].includes('month') || match[2].includes('thang');
       const weeks = isMonth ? num * 4 : num;
+      if (weeks === 4 || weeks === 8 || weeks === 12 || weeks === 24) return weeks;
       if (weeks <= 5) return 4;
       if (weeks <= 9) return 8;
       if (weeks <= 15) return 12;
@@ -180,18 +182,27 @@ export const OnboardingRoadmapPage: React.FC = () => {
 
       // Extract saved weeks / duration
       const savedWeeks =
+        rmData?.expectedWeeks ||
+        rmData?.expected_weeks ||
         rmData?.targetWeeks ||
         rmData?.target_weeks ||
+        profileRes?.expectedWeeks ||
+        profileRes?.expected_weeks ||
         profileRes?.targetWeeks ||
-        profileRes?.target_weeks;
+        profileRes?.target_weeks ||
+        userProfile?.expected_weeks;
       const savedDuration =
         rmData?.expectedDuration ||
         rmData?.expected_duration ||
         userProfile?.expected_duration ||
         profileRes?.expected_duration;
       const estimatedDays = rmData?.estimatedDays;
-      if (savedWeeks !== undefined || savedDuration || estimatedDays) {
-        setTargetWeeks(normalizeWeeks(savedWeeks, savedDuration, estimatedDays));
+      if (savedWeeks !== undefined && savedWeeks !== null) {
+        setTargetWeeks(normalizeWeeks(savedWeeks));
+      } else if (savedDuration) {
+        setTargetWeeks(normalizeWeeks(undefined, savedDuration));
+      } else if (estimatedDays) {
+        setTargetWeeks(normalizeWeeks(undefined, undefined, estimatedDays));
       }
 
       // Extract saved daily minutes
@@ -249,6 +260,11 @@ export const OnboardingRoadmapPage: React.FC = () => {
         target_goal: targetGoal,
         daily_commitment_mins: dailyCommitmentMins,
         target_weeks: targetWeeks,
+        targetWeeks: targetWeeks,
+        expected_weeks: targetWeeks,
+        expectedWeeks: targetWeeks,
+        expected_duration: `${targetWeeks} tuần`,
+        expectedDuration: `${targetWeeks} tuần`,
         reminder_time: reminderTime,
       });
       markOnboardingCompleted();

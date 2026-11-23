@@ -189,8 +189,12 @@ export const OnboardingSurveyForm: React.FC<OnboardingSurveyFormProps> = ({
                   key={goal.id}
                   type="button"
                   onClick={() => {
-                    setTargetGoal(goal.id);
-                    setTargetWeeks(goal.recommendedWeeks);
+                    if (targetGoal !== goal.id) {
+                      setTargetGoal(goal.id);
+                      const rec = goal.recommendedWeeks;
+                      const mappedWeeks = rec <= 5 ? 4 : rec <= 9 ? 8 : rec <= 15 ? 12 : 24;
+                      setTargetWeeks(mappedWeeks);
+                    }
                   }}
                   className={`${OPTION_CARD_BASE} min-h-[114px] ${optionCardStyle(isSelected)}`}
                 >

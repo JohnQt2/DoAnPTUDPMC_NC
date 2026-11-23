@@ -8,6 +8,7 @@ import { GlassCard, UserAvatar, ShimmerButton } from '../../components/ui';
 import {
   normalizeLevel,
   normalizeGoal,
+  normalizeWeeks,
   normalizeDailyMins,
   normalizeReminderTime,
 } from '../onboarding/OnboardingRoadmapPage';
@@ -123,6 +124,7 @@ export const ProfilePage: React.FC = () => {
   const [startingLevel, setStartingLevel] = useState('ZERO');
   const [targetGoal, setTargetGoal] = useState('HSK1');
   const [dailyCommitment, setDailyCommitment] = useState(15);
+  const [targetWeeks, setTargetWeeks] = useState(8);
 
   // Admin account management
   const [adminUsers, setAdminUsers] = useState<any[]>([]);
@@ -240,6 +242,24 @@ export const ProfilePage: React.FC = () => {
         userProf?.daily_study_minutes;
       const loadedDailyCommitment = normalizeDailyMins(savedCommitment);
 
+      const savedWeeks =
+        activeRm?.expectedWeeks ||
+        activeRm?.expected_weeks ||
+        activeRm?.targetWeeks ||
+        activeRm?.target_weeks ||
+        data.expectedWeeks ||
+        data.expected_weeks ||
+        data.targetWeeks ||
+        data.target_weeks ||
+        userProf?.expected_weeks;
+      const savedDuration =
+        activeRm?.expectedDuration ||
+        activeRm?.expected_duration ||
+        data.expectedDuration ||
+        data.expected_duration ||
+        userProf?.expected_duration;
+      const loadedTargetWeeks = normalizeWeeks(savedWeeks, savedDuration);
+
       const savedReminder =
         data.reminder_time ||
         data.reminderTime ||
@@ -267,6 +287,7 @@ export const ProfilePage: React.FC = () => {
       setStartingLevel(loadedStartingLevel);
       setTargetGoal(loadedTargetGoal);
       setDailyCommitment(loadedDailyCommitment);
+      setTargetWeeks(loadedTargetWeeks);
       setSavedSnapshot({
         displayName: loadedDisplayName,
         reminderTime: loadedReminderTime,
@@ -351,6 +372,12 @@ export const ProfilePage: React.FC = () => {
           starting_level: startingLevel,
           target_goal: targetGoal,
           daily_commitment_mins: dailyCommitment,
+          target_weeks: targetWeeks,
+          targetWeeks: targetWeeks,
+          expected_weeks: targetWeeks,
+          expectedWeeks: targetWeeks,
+          expected_duration: `${targetWeeks} tuần`,
+          expectedDuration: `${targetWeeks} tuần`,
           reminder_time: reminderTime,
         });
 

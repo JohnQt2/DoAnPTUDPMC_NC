@@ -5,6 +5,10 @@ import {
   CourseCurriculumItem,
 } from './roadmap-rule.engine';
 import { OnboardingSurveyInput } from './user.dto';
+import { mailerService } from '../../shared/mail/mailer.service';
+import { webPushService } from '../../shared/push/web-push.service';
+import { studyReminderJob } from '../../jobs/study-reminder.job';
+import { srsService } from '../srs/srs.service';
 
 export class UserService {
   async getProfile(userId: number) {
@@ -204,10 +208,14 @@ export class UserService {
       daily_study_minutes: userProfile?.daily_study_minutes || activeRoadmapData?.dailyCommitmentMins || 15,
       daily_commitment_mins: userProfile?.daily_study_minutes || activeRoadmapData?.dailyCommitmentMins || 15,
       dailyCommitmentMins: userProfile?.daily_study_minutes || activeRoadmapData?.dailyCommitmentMins || 15,
-      reminder_time: user.notificationSettings?.reminder_time || '20:00',
-      reminderTime: user.notificationSettings?.reminder_time || '20:00',
-      daily_reminder_time: user.notificationSettings?.reminder_time || '20:00',
-      dailyReminderTime: user.notificationSettings?.reminder_time || '20:00',
+      reminder_time: user.notificationSettings?.reminder_time || user.profile?.reminder_time || '20:00',
+      reminderTime: user.notificationSettings?.reminder_time || user.profile?.reminder_time || '20:00',
+      daily_reminder_time: user.notificationSettings?.reminder_time || user.profile?.reminder_time || '20:00',
+      dailyReminderTime: user.notificationSettings?.reminder_time || user.profile?.reminder_time || '20:00',
+      email_reminder_enabled: user.profile?.email_reminder_enabled ?? user.notificationSettings?.notify_email ?? true,
+      emailReminderEnabled: user.profile?.email_reminder_enabled ?? user.notificationSettings?.notify_email ?? true,
+      browser_notification_enabled: user.profile?.browser_notification_enabled ?? user.notificationSettings?.notify_webpush ?? false,
+      browserNotificationEnabled: user.profile?.browser_notification_enabled ?? user.notificationSettings?.notify_webpush ?? false,
       phone: userProfile?.phone || null,
       bio: userProfile?.bio || null,
       completedLessonsCount,
@@ -221,6 +229,10 @@ export class UserService {
             notify_email: user.notificationSettings.notify_email,
             notifyWebpush: user.notificationSettings.notify_webpush,
             notify_webpush: user.notificationSettings.notify_webpush,
+            emailReminderEnabled: user.profile?.email_reminder_enabled ?? user.notificationSettings.notify_email,
+            email_reminder_enabled: user.profile?.email_reminder_enabled ?? user.notificationSettings.notify_email,
+            browserNotificationEnabled: user.profile?.browser_notification_enabled ?? user.notificationSettings.notify_webpush,
+            browser_notification_enabled: user.profile?.browser_notification_enabled ?? user.notificationSettings.notify_webpush,
           }
         : {
             reminderTime: '20:00',
@@ -229,6 +241,10 @@ export class UserService {
             notify_email: true,
             notifyWebpush: false,
             notify_webpush: false,
+            emailReminderEnabled: true,
+            email_reminder_enabled: true,
+            browserNotificationEnabled: false,
+            browser_notification_enabled: false,
           },
     };
   }
@@ -1317,24 +1333,203 @@ export class UserService {
    */
   async updateNotificationSettings(
     userId: number,
-    data: { reminder_time?: string; notify_email?: boolean; notify_webpush?: boolean }
+    data: {
+      reminder_time?: string;
+      reminderTime?: string;
+      notify_email?: boolean;
+      notifyEmail?: boolean;
+      email_reminder_enabled?: boolean;
+      emailReminderEnabled?: boolean;
+      notify_webpush?: boolean;
+      notifyWebpush?: boolean;
+      browser_notification_enabled?: boolean;
+      browserNotificationEnabled?: boolean;
+    }
   ) {
+    const reminderTime = data.reminder_time || data.reminderTime;
+    const notifyEmail =
+      data.notify_email ??
+      data.notifyEmail ??
+      data.email_reminder_enabled ??
+      data.emailReminderEnabled;
+    const notifyWebpush =
+      data.notify_webpush ??
+      data.notifyWebpush ??
+      data.browser_notification_enabled ??
+      data.browserNotificationEnabled;
+
+    // Nếu người dùng đổi reminder_time sang giờ mới trong ngày, xóa các log của khung giờ cũ trong ngày để lịch nhắc mới hoạt động chính xác
+    if (reminderTime) {
+      const current = await prisma.notificationSettings.findUnique({
+        where: { user_id: userId },
+      });
+      if (current && current.reminder_time !== reminderTime) {
+        await studyReminderJob.clearDailyReminderLogs(userId);
+      }
+    }
+
     const settings = await prisma.notificationSettings.upsert({
       where: { user_id: userId },
       create: {
         user_id: userId,
-        reminder_time: data.reminder_time || '20:00',
-        notify_email: data.notify_email ?? true,
-        notify_webpush: data.notify_webpush ?? false,
+        reminder_time: reminderTime || '20:00',
+        notify_email: notifyEmail ?? true,
+        notify_webpush: notifyWebpush ?? false,
       },
       update: {
-        reminder_time: data.reminder_time,
-        notify_email: data.notify_email,
-        notify_webpush: data.notify_webpush,
+        ...(reminderTime !== undefined ? { reminder_time: reminderTime } : {}),
+        ...(notifyEmail !== undefined ? { notify_email: notifyEmail } : {}),
+        ...(notifyWebpush !== undefined ? { notify_webpush: notifyWebpush } : {}),
+      },
+    });
+
+    // Đồng bộ sang bảng UserProfiles
+    await prisma.userProfiles.upsert({
+      where: { user_id: userId },
+      create: {
+        user_id: userId,
+        reminder_time: reminderTime || '20:00',
+        email_reminder_enabled: notifyEmail ?? true,
+        browser_notification_enabled: notifyWebpush ?? false,
+        daily_study_minutes: 15,
+      },
+      update: {
+        ...(reminderTime !== undefined ? { reminder_time: reminderTime } : {}),
+        ...(notifyEmail !== undefined ? { email_reminder_enabled: notifyEmail } : {}),
+        ...(notifyWebpush !== undefined ? { browser_notification_enabled: notifyWebpush } : {}),
       },
     });
 
     return settings;
+  }
+
+  async getVapidPublicKey() {
+    return { publicKey: webPushService.getPublicKey() };
+  }
+
+  async savePushSubscription(
+    userId: number,
+    data: { endpoint: string; keys: { p256dh: string; auth: string }; userAgent?: string }
+  ) {
+    const sub = await webPushService.saveSubscription(userId, {
+      endpoint: data.endpoint,
+      p256dh: data.keys.p256dh,
+      auth: data.keys.auth,
+      userAgent: data.userAgent,
+    });
+
+    // Bật thông báo trình duyệt trong cài đặt của người dùng
+    await this.updateNotificationSettings(userId, {
+      notify_webpush: true,
+      browser_notification_enabled: true,
+    });
+
+    return sub;
+  }
+
+  async removePushSubscription(userId: number, endpoint?: string) {
+    await webPushService.removeSubscription(userId, endpoint);
+    return { success: true };
+  }
+
+  async sendTestReminder(userId: number) {
+    const user = await prisma.users.findUnique({
+      where: { user_id: userId },
+      include: {
+        profile: true,
+        notificationSettings: true,
+        roadmaps: {
+          where: { is_active: true },
+          include: { course: true },
+          take: 1,
+        },
+      },
+    });
+
+    if (!user) {
+      throw AppError.notFound('Không tìm thấy tài khoản người dùng.');
+    }
+
+    const reminderTime =
+      user.profile?.reminder_time ||
+      user.notificationSettings?.reminder_time ||
+      '20:00';
+
+    let lessonTitle = user.roadmaps[0]?.course?.title || 'Khóa học tiếng Trung HSK';
+    let lessonId: number | undefined;
+
+    const nextLesson = await prisma.userLessonProgress.findFirst({
+      where: {
+        user_id: userId,
+        status: { in: ['IN_PROGRESS', 'UNLOCKED'] },
+        is_completed: false,
+      },
+      include: { lesson: true },
+      orderBy: { lesson: { order_index: 'asc' } },
+    });
+
+    if (nextLesson) {
+      lessonTitle = nextLesson.lesson.title;
+      lessonId = nextLesson.lesson.lesson_id;
+    }
+
+    let vocabList: Array<{ character: string; pinyin: string; meaning: string }> = [];
+    try {
+      const srsQueue = await srsService.getDailyQueue(userId, 5);
+      if (srsQueue?.cards) {
+        vocabList = srsQueue.cards.slice(0, 5).map((c: any) => ({
+          character: c.character,
+          pinyin: c.pinyin,
+          meaning: c.meaning,
+        }));
+      }
+    } catch {
+      // Ignore
+    }
+
+    // 1. Gửi email mẫu
+    let emailResult: any = { sent: false, note: 'Email chưa được gửi (kênh email đang tắt)' };
+    const emailEnabled =
+      user.profile?.email_reminder_enabled !== false &&
+      user.notificationSettings?.notify_email !== false;
+
+    if (emailEnabled) {
+      const mailRes = await mailerService.sendReminderEmail({
+        toEmail: user.email,
+        displayName: user.display_name,
+        reminderTime,
+        offsetMinutes: 0,
+        lessonTitle,
+        lessonId,
+        vocabList,
+      });
+      emailResult = { sent: mailRes.sentViaSmtp, messageId: mailRes.messageId, error: mailRes.errorReason };
+    }
+
+    // 2. Gửi Web Push mẫu
+    const pushRes = await webPushService.sendToUser(userId, {
+      title: `[Test] Đến giờ học tiếng Trung rồi (${reminderTime})!`,
+      body: `Chào ${user.display_name}! Hãy bắt đầu bài học hôm nay: "${lessonTitle}".`,
+      icon: '/pwa-192x192.png',
+      badge: '/favicon.ico',
+      tag: `test-reminder-${Date.now()}`,
+      data: {
+        url: lessonId ? `/#/lessons/${lessonId}` : '/#/today',
+        isTest: true,
+      },
+    });
+
+    return {
+      success: true,
+      message: 'Đã gửi thông báo kiểm tra nhắc học.',
+      email: emailResult,
+      push: {
+        sent: pushRes.sentCount > 0,
+        sentCount: pushRes.sentCount,
+        failedCount: pushRes.failedCount,
+        note: pushRes.sentCount === 0 ? 'Chưa có thiết bị nào đăng ký nhận Web Push' : undefined,
+      },
+    };
   }
 
   /**

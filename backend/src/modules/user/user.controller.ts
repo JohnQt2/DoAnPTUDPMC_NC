@@ -4,6 +4,7 @@ import {
   UpdateProfileDto,
   OnboardingSurveyDto,
   UpdateNotificationsDto,
+  PushSubscriptionDto,
   AdminUpdateUserDto,
 } from './user.dto';
 
@@ -138,6 +139,53 @@ export class UserController {
         success: true,
         data: { message: 'Cập nhật cài đặt thông báo thành công.', settings },
       });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  getVapidPublicKey = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const data = await userService.getVapidPublicKey();
+      res.status(200).json({ success: true, data });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  subscribePush = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = req.user!.userId;
+      const dto = PushSubscriptionDto.parse(req.body);
+      const sub = await userService.savePushSubscription(userId, dto);
+      res.status(200).json({
+        success: true,
+        data: { message: 'Đăng ký thông báo trình duyệt thành công.', subscription: sub },
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  unsubscribePush = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = req.user!.userId;
+      const endpoint = req.body?.endpoint as string | undefined;
+      await userService.removePushSubscription(userId, endpoint);
+      res.status(200).json({
+        success: true,
+        data: { message: 'Hủy đăng ký thông báo trình duyệt thành công.' },
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  testReminderSettings = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = req.user!.userId;
+      const result = await userService.sendTestReminder(userId);
+      res.status(200).json({ success: true, data: result });
     } catch (err) {
       next(err);
     }

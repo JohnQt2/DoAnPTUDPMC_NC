@@ -280,8 +280,24 @@ export type PreviewOnboardingInput = OnboardingSurveyInput;
 
 export const UpdateNotificationsDto = z.object({
   reminder_time: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/).optional(),
+  reminderTime: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/).optional(),
   notify_email: z.boolean().optional(),
+  notifyEmail: z.boolean().optional(),
+  email_reminder_enabled: z.boolean().optional(),
+  emailReminderEnabled: z.boolean().optional(),
   notify_webpush: z.boolean().optional(),
+  notifyWebpush: z.boolean().optional(),
+  browser_notification_enabled: z.boolean().optional(),
+  browserNotificationEnabled: z.boolean().optional(),
+});
+
+export const PushSubscriptionDto = z.object({
+  endpoint: z.string().url('Endpoint phải là một URL hợp lệ.'),
+  keys: z.object({
+    p256dh: z.string().min(1, 'p256dh không được để trống.'),
+    auth: z.string().min(1, 'auth không được để trống.'),
+  }),
+  userAgent: z.string().optional(),
 });
 
 export const AdminUpdateUserDto = z.object({

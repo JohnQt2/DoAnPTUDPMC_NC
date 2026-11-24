@@ -177,6 +177,160 @@ export class MailerService {
   }
 
   /**
+   * Gửi email nhắc lịch học hằng ngày (5 mốc: -15, -5, 0, +5, +15 phút)
+   */
+  async sendReminderEmail(payload: {
+    toEmail: string;
+    displayName?: string;
+    reminderTime: string;
+    offsetMinutes: number;
+    lessonTitle?: string;
+    lessonId?: number;
+    vocabList?: Array<{ character: string; pinyin: string; meaning: string }>;
+  }): Promise<MailSendResult> {
+    const config = this.getSmtpConfig();
+    const { toEmail, displayName, reminderTime, offsetMinutes, lessonTitle, lessonId, vocabList } = payload;
+    const name = displayName || toEmail.split('@')[0] || 'học viên';
+
+    let subjectText = `[Hanzi4U] Nhắc lịch học tiếng Trung (${reminderTime})`;
+    let badgeText = 'LỊCH HỌC HẰNG NGÀY';
+    let heading = `⏰ Nhắc lịch học tiếng Trung (${reminderTime})`;
+    let description = `Đã đến giờ học tiếng Trung theo kế hoạch của bạn.`;
+    let badgeBg = '#fef2f2';
+    let badgeColor = '#be123c';
+
+    if (offsetMinutes === -15) {
+      subjectText = `[Hanzi4U] Còn 15 phút nữa đến giờ học tiếng Trung (${reminderTime})`;
+      badgeText = 'SẮP ĐẾN GIỜ HỌC • CÒN 15 PHÚT';
+      heading = `⏰ Còn 15 phút nữa đến giờ học tiếng Trung (${reminderTime})`;
+      description = `Lịch học hôm nay của bạn bắt đầu lúc <strong>${reminderTime}</strong>. Hãy sẵn sàng để ôn bài và bứt phá mục tiêu nhé!`;
+    } else if (offsetMinutes === -5) {
+      subjectText = `[Hanzi4U] Còn 5 phút nữa đến giờ học tiếng Trung (${reminderTime})`;
+      badgeText = 'SẮP ĐẾN GIỜ HỌC • CÒN 5 PHÚT';
+      heading = `🔔 Còn 5 phút nữa đến giờ học tiếng Trung (${reminderTime})`;
+      description = `Chuẩn bị góc học tập nào! Chỉ còn 5 phút nữa là đến giờ học hẹn trước <strong>${reminderTime}</strong>.`;
+    } else if (offsetMinutes === 0) {
+      subjectText = `[Hanzi4U] Đến giờ học tiếng Trung rồi (${reminderTime})!`;
+      badgeText = 'ĐÚNG GIỜ HỌC • BẮT ĐẦU NGAY';
+      heading = `🎯 Đến giờ học tiếng Trung rồi (${reminderTime})!`;
+      description = `Đã đúng giờ học <strong>${reminderTime}</strong> hôm nay. Dành 15-30 phút để duy trì phong độ và phản xạ tiếng Trung mỗi ngày!`;
+    } else if (offsetMinutes === 5) {
+      subjectText = `[Hanzi4U] Bạn đã trễ 5 phút so với lịch học ${reminderTime} hôm nay!`;
+      badgeText = 'NHẮC TRỄ HỌC • 5 PHÚT';
+      heading = `⚠️ Bạn đã trễ 5 phút so với lịch học ${reminderTime}!`;
+      description = `Hệ thống ghi nhận bạn chưa bắt đầu buổi học lúc <strong>${reminderTime}</strong>. Hãy vào làm một bài ngắn ngay để không bỏ lỡ thói quen nhé!`;
+      badgeBg = '#fffbeb';
+      badgeColor = '#b45309';
+    } else if (offsetMinutes === 15) {
+      subjectText = `[Hanzi4U] Bạn đã trễ 15 phút so với lịch học ${reminderTime} hôm nay!`;
+      badgeText = 'CẢNH BÁO TRỄ HỌC • 15 PHÚT';
+      heading = `🚨 Bạn đã trễ 15 phút so với lịch học ${reminderTime}!`;
+      description = `Đừng để đứt chuỗi học tập (streak)! Dành ít phút ôn tập nhanh để giữ vững tiến độ HSK hôm nay.`;
+      badgeBg = '#fef2f2';
+      badgeColor = '#991b1b';
+    }
+
+    const encodedSubject = `=?UTF-8?B?${Buffer.from(subjectText, 'utf-8').toString('base64')}?=`;
+    const messageId = `<reminder-${Date.now()}-${randomUUID()}@gmail.com>`;
+
+    let vocabHtml = '';
+    if (vocabList && vocabList.length > 0) {
+      const itemsHtml = vocabList
+        .slice(0, 5)
+        .map(
+          (v) => `
+          <div style="display:inline-block;padding:8px 12px;margin:4px;background:#ffffff;border:1px solid #fecdd3;border-radius:10px;text-align:center;">
+            <span style="font-size:20px;font-weight:bold;color:#be123c;display:block;">${v.character}</span>
+            <span style="font-size:12px;color:#4b5563;display:block;">${v.pinyin}</span>
+            <span style="font-size:11px;color:#6b7280;display:block;">${v.meaning}</span>
+          </div>`
+        )
+        .join('');
+
+      vocabHtml = `
+        <div style="margin:20px 0;padding:16px;background:#fff1f2;border-radius:12px;border:1px dashed #fb7185;">
+          <strong style="color:#9f1239;font-size:13px;display:block;margin-bottom:8px;">📖 Từ vựng gợi ý ôn tập hôm nay:</strong>
+          <div style="text-align:center;">${itemsHtml}</div>
+        </div>
+      `;
+    }
+
+    let lessonHtml = '';
+    if (lessonTitle) {
+      lessonHtml = `
+        <div style="margin:16px 0;padding:12px 16px;background:#f3f4f6;border-radius:10px;font-size:13px;color:#374151;">
+          📌 <strong>Bài học tiếp theo:</strong> ${lessonTitle}
+        </div>
+      `;
+    }
+
+    const targetUrl = lessonId
+      ? `${env.CLIENT_URL}/#/lessons/${lessonId}`
+      : `${env.CLIENT_URL}/#/today`;
+
+    const htmlBody = `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8" /></head>
+<body style="margin:0;padding:20px;background-color:#fdf2f8;font-family:Arial,sans-serif;">
+  <div style="max-width:540px;margin:0 auto;padding:28px;border:1px solid #fce7f3;border-radius:16px;background-color:#ffffff;box-shadow:0 4px 12px rgba(0,0,0,0.05);">
+    <div style="display:inline-block;padding:4px 10px;background-color:${badgeBg};color:${badgeColor};border-radius:9999px;font-size:11px;font-weight:bold;letter-spacing:0.5px;margin-bottom:12px;">
+      ${badgeText}
+    </div>
+    <h2 style="color:#111827;margin:0 0 12px 0;font-size:20px;line-height:1.4;">${heading}</h2>
+    <p style="color:#374151;font-size:14px;line-height:1.6;margin:0 0 16px 0;">
+      Xin chào <strong>${name}</strong>,<br/>
+      ${description}
+    </p>
+
+    ${lessonHtml}
+    ${vocabHtml}
+
+    <div style="text-align:center;margin:24px 0 16px 0;">
+      <a href="${targetUrl}" style="display:inline-block;padding:12px 28px;background:linear-gradient(135deg, #e11d48, #be123c);color:#ffffff;text-decoration:none;font-weight:bold;font-size:14px;border-radius:12px;box-shadow:0 4px 10px rgba(225,29,72,0.3);">
+        🚀 Vào học ngay
+      </a>
+    </div>
+
+    <hr style="border:none;border-top:1px solid #f3f4f6;margin:20px 0;" />
+    <p style="color:#9ca3af;font-size:11px;line-height:1.5;margin:0;text-align:center;">
+      Email này được gửi tự động theo cài đặt <strong>Nhắc lịch học hằng ngày</strong> của bạn trên Hanzi4U.<br/>
+      Bạn có thể điều chỉnh giờ nhắc hoặc bật/tắt nhận email bất kỳ lúc nào tại mục Hồ sơ cá nhân.
+    </p>
+  </div>
+</body>
+</html>`;
+
+    const base64Html =
+      Buffer.from(htmlBody, 'utf-8')
+        .toString('base64')
+        .match(/.{1,76}/g)
+        ?.join('\r\n') || '';
+
+    const mail: MailContent = {
+      from: `${this.SYSTEM_SENDER_NAME} <${config.user}>`,
+      to: toEmail,
+      subject: encodedSubject,
+      messageId,
+      base64Html,
+    };
+
+    const outcome = await this.runWithPortFallback(config, mail);
+    if (outcome.ok) {
+      console.log(`✅ [GMAIL SMTP DELIVERED] Reminder email (${offsetMinutes}m) sent to: ${toEmail}`);
+      return { sentViaSmtp: true, senderEmail: config.user, messageId };
+    }
+
+    console.error(`❌ [GMAIL SMTP REMINDER FAILED] ${toEmail}: ${outcome.rawMessage} (${outcome.errorReason})`);
+    return {
+      sentViaSmtp: false,
+      senderEmail: config.user,
+      messageId,
+      errorCode: outcome.errorCode,
+      errorReason: outcome.errorReason,
+    };
+  }
+
+  /**
    * Kiểm tra kết nối + đăng nhập SMTP (không gửi thư). Dùng cho lệnh `npm run check:smtp`.
    */
   async verifyConnection(): Promise<SmtpCheckResult> {

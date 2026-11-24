@@ -35,12 +35,12 @@ interface TestSummary {
 }
 
 const LEVEL_GRADIENTS: Record<string, string> = {
-  HSK1: 'from-emerald-400 to-teal-400',
-  HSK2: 'from-sky-400 to-indigo-400',
-  HSK3: 'from-amber-400 to-orange-400',
-  HSK4: 'from-rose-400 to-pink-400',
-  HSK5: 'from-violet-400 to-purple-400',
-  HSK6: 'from-fuchsia-400 to-amber-400',
+  HSK1: 'from-[#D97706] to-[#B45309]',
+  HSK2: 'from-[#157A57] to-[#116145]',
+  HSK3: 'from-[#D95B18] to-[#B4460E]',
+  HSK4: 'from-[#C41E3A] to-[#9E162E]',
+  HSK5: 'from-[#184375] to-[#12325A]',
+  HSK6: 'from-[#5A1063] to-[#430B4A]',
 };
 
 const SKILL_VI: Record<string, string> = {
@@ -224,7 +224,7 @@ export const ExamListPage: React.FC = () => {
               type="button"
               onClick={() => setSelectedLevel(lvl)}
               className={`relative px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-colors cursor-pointer ${
-                active ? 'text-slate-950' : 'text-slate-600 hover:text-slate-900'
+                active ? 'text-white' : 'text-[#57534E] hover:text-[#1C1917]'
               }`}
             >
               {active && (

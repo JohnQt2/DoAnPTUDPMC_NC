@@ -51,12 +51,12 @@ const SKILL_CATEGORIES = ['READING', 'LISTENING', 'GRAMMAR', 'VOCABULARY', 'PINY
 const BLOCK_TYPES = ['THEORY', 'AUDIO', 'PINYIN', 'HANZI', 'VOCABULARY', 'EXAMPLE'] as const;
 
 const LEVEL_BADGE: Record<string, string> = {
-  HSK1: 'from-emerald-500 to-teal-500',
-  HSK2: 'from-sky-500 to-blue-600',
-  HSK3: 'from-amber-500 to-orange-500',
-  HSK4: 'from-rose-500 to-primary-600',
-  HSK5: 'from-violet-600 to-purple-600',
-  HSK6: 'from-fuchsia-600 to-amber-500',
+  HSK1: 'from-[#D97706] to-[#B45309]',
+  HSK2: 'from-[#157A57] to-[#116145]',
+  HSK3: 'from-[#D95B18] to-[#B4460E]',
+  HSK4: 'from-[#C41E3A] to-[#9E162E]',
+  HSK5: 'from-[#184375] to-[#12325A]',
+  HSK6: 'from-[#5A1063] to-[#430B4A]',
 };
 
 function parseOptionsForEditor(raw: string): OptionItem[] {

@@ -119,12 +119,28 @@ export class UserService {
       activeRoadmapData = {
         // Giữ nguyên toàn bộ định dạng và thuộc tính cũ
         roadmapId: activeRoadmap.roadmap_id,
+        roadmap_id: activeRoadmap.roadmap_id,
         courseId: activeRoadmap.course_id,
+        course_id: activeRoadmap.course_id,
         courseTitle: activeRoadmap.course.title,
+        courseCode: activeRoadmap.course.code,
         courseLevel: activeRoadmap.course.level,
         startingLevel: activeRoadmap.starting_level,
+        starting_level: activeRoadmap.starting_level,
         targetGoal: activeRoadmap.target_goal,
+        target_goal: activeRoadmap.target_goal,
         dailyCommitmentMins: activeRoadmap.daily_commitment_mins,
+        daily_commitment_mins: activeRoadmap.daily_commitment_mins,
+        daily_study_minutes: activeRoadmap.daily_commitment_mins,
+        expected_duration: (activeRoadmap as any).expected_duration || user.profile?.expected_duration || null,
+        expectedDuration: (activeRoadmap as any).expected_duration || user.profile?.expected_duration || null,
+        expected_weeks: (activeRoadmap as any).expected_weeks || (user.profile as any)?.expected_weeks || null,
+        expectedWeeks: (activeRoadmap as any).expected_weeks || (user.profile as any)?.expected_weeks || null,
+        target_weeks: (activeRoadmap as any).expected_weeks || (user.profile as any)?.expected_weeks || null,
+        targetWeeks: (activeRoadmap as any).expected_weeks || (user.profile as any)?.expected_weeks || null,
+        reminder_time: user.notificationSettings?.reminder_time || '20:00',
+        reminderTime: user.notificationSettings?.reminder_time || '20:00',
+        daily_reminder_time: user.notificationSettings?.reminder_time || '20:00',
         // Bổ sung thêm các trường dữ liệu tiến độ thực tế (cả camelCase và snake_case)
         completed_lessons_count: completedRoadmapLessons,
         total_lessons_count: totalRoadmapLessons,
@@ -162,6 +178,10 @@ export class UserService {
             goal: userProfile.goal,
             current_level: userProfile.current_level,
             expected_duration: userProfile.expected_duration,
+            expected_weeks: (userProfile as any).expected_weeks,
+            expectedWeeks: (userProfile as any).expected_weeks,
+            target_weeks: (userProfile as any).expected_weeks,
+            targetWeeks: (userProfile as any).expected_weeks,
             daily_study_minutes: userProfile.daily_study_minutes,
             phone: userProfile.phone,
             bio: userProfile.bio,
@@ -170,9 +190,24 @@ export class UserService {
           }
         : null,
       goal: userProfile?.goal || activeRoadmapData?.targetGoal || null,
+      target_goal: userProfile?.goal || activeRoadmapData?.targetGoal || null,
+      targetGoal: userProfile?.goal || activeRoadmapData?.targetGoal || null,
       current_level: userProfile?.current_level || activeRoadmapData?.startingLevel || null,
-      expected_duration: userProfile?.expected_duration || null,
+      starting_level: userProfile?.current_level || activeRoadmapData?.startingLevel || null,
+      startingLevel: userProfile?.current_level || activeRoadmapData?.startingLevel || null,
+      expected_duration: userProfile?.expected_duration || activeRoadmapData?.expectedDuration || null,
+      expectedDuration: userProfile?.expected_duration || activeRoadmapData?.expectedDuration || null,
+      expected_weeks: (userProfile as any)?.expected_weeks || activeRoadmapData?.expectedWeeks || null,
+      expectedWeeks: (userProfile as any)?.expected_weeks || activeRoadmapData?.expectedWeeks || null,
+      target_weeks: (userProfile as any)?.expected_weeks || activeRoadmapData?.targetWeeks || null,
+      targetWeeks: (userProfile as any)?.expected_weeks || activeRoadmapData?.targetWeeks || null,
       daily_study_minutes: userProfile?.daily_study_minutes || activeRoadmapData?.dailyCommitmentMins || 15,
+      daily_commitment_mins: userProfile?.daily_study_minutes || activeRoadmapData?.dailyCommitmentMins || 15,
+      dailyCommitmentMins: userProfile?.daily_study_minutes || activeRoadmapData?.dailyCommitmentMins || 15,
+      reminder_time: user.notificationSettings?.reminder_time || '20:00',
+      reminderTime: user.notificationSettings?.reminder_time || '20:00',
+      daily_reminder_time: user.notificationSettings?.reminder_time || '20:00',
+      dailyReminderTime: user.notificationSettings?.reminder_time || '20:00',
       phone: userProfile?.phone || null,
       bio: userProfile?.bio || null,
       completedLessonsCount,
@@ -181,10 +216,20 @@ export class UserService {
       notificationSettings: user.notificationSettings
         ? {
             reminderTime: user.notificationSettings.reminder_time,
+            reminder_time: user.notificationSettings.reminder_time,
             notifyEmail: user.notificationSettings.notify_email,
+            notify_email: user.notificationSettings.notify_email,
             notifyWebpush: user.notificationSettings.notify_webpush,
+            notify_webpush: user.notificationSettings.notify_webpush,
           }
-        : null,
+        : {
+            reminderTime: '20:00',
+            reminder_time: '20:00',
+            notifyEmail: true,
+            notify_email: true,
+            notifyWebpush: false,
+            notify_webpush: false,
+          },
     };
   }
 
@@ -465,8 +510,14 @@ export class UserService {
       goal?: string;
       target_goal?: string;
       expected_duration?: string;
+      target_weeks?: number;
+      targetWeeks?: number;
+      expected_weeks?: number;
+      expectedWeeks?: number;
       current_level?: string;
       starting_level?: string;
+      reminder_time?: string;
+      reminderTime?: string;
     }
   ) {
     let avatarResourceId: number | null | undefined = data.avatar_resource_id;
@@ -499,13 +550,33 @@ export class UserService {
       include: {
         avatarResource: true,
         profile: true,
+        notificationSettings: true,
       },
     });
 
     const goal = data.goal || data.target_goal;
     const level = data.current_level || data.starting_level;
     const studyMins = data.daily_study_minutes ?? data.daily_commitment_mins;
-    const expectedDuration = data.expected_duration;
+    const weeks = data.expected_weeks || data.expectedWeeks || data.target_weeks || data.targetWeeks;
+    const expectedDuration = data.expected_duration || (weeks ? `${weeks} tuần` : undefined);
+    const reminderTime = data.reminder_time || data.reminderTime;
+
+    let updatedReminderTime = user.notificationSettings?.reminder_time || '20:00';
+    if (reminderTime !== undefined) {
+      const notif = await prisma.notificationSettings.upsert({
+        where: { user_id: userId },
+        create: {
+          user_id: userId,
+          reminder_time: reminderTime,
+          notify_email: true,
+          notify_webpush: false,
+        },
+        update: {
+          reminder_time: reminderTime,
+        },
+      });
+      updatedReminderTime = notif.reminder_time;
+    }
 
     const hasProfileUpdates =
       data.phone !== undefined ||
@@ -513,6 +584,7 @@ export class UserService {
       studyMins !== undefined ||
       goal !== undefined ||
       expectedDuration !== undefined ||
+      weeks !== undefined ||
       level !== undefined;
 
     let updatedProfile = user.profile;
@@ -526,6 +598,7 @@ export class UserService {
           daily_study_minutes: studyMins || 15,
           goal: goal || null,
           expected_duration: expectedDuration || null,
+          expected_weeks: weeks || null,
           current_level: level || null,
         },
         update: {
@@ -534,17 +607,27 @@ export class UserService {
           ...(studyMins !== undefined ? { daily_study_minutes: studyMins } : {}),
           ...(goal !== undefined ? { goal } : {}),
           ...(expectedDuration !== undefined ? { expected_duration: expectedDuration } : {}),
+          ...(weeks !== undefined ? { expected_weeks: weeks } : {}),
           ...(level !== undefined ? { current_level: level } : {}),
         },
       });
 
-      // If daily study mins or goal was updated, also reflect in active roadmap
-      if (studyMins !== undefined || goal !== undefined) {
+      // If daily study mins, goal, level, weeks, or expectedDuration was updated, also reflect in active roadmap
+      if (
+        studyMins !== undefined ||
+        goal !== undefined ||
+        level !== undefined ||
+        weeks !== undefined ||
+        expectedDuration !== undefined
+      ) {
         await prisma.userRoadmaps.updateMany({
           where: { user_id: userId, is_active: true },
           data: {
             ...(studyMins !== undefined ? { daily_commitment_mins: studyMins } : {}),
             ...(goal !== undefined ? { target_goal: goal } : {}),
+            ...(level !== undefined ? { starting_level: level } : {}),
+            ...(weeks !== undefined ? { expected_weeks: weeks } : {}),
+            ...(expectedDuration !== undefined ? { expected_duration: expectedDuration } : {}),
           },
         });
       }
@@ -574,9 +657,19 @@ export class UserService {
       phone: updatedProfile?.phone || null,
       bio: updatedProfile?.bio || null,
       goal: updatedProfile?.goal || null,
+      target_goal: updatedProfile?.goal || null,
+      targetGoal: updatedProfile?.goal || null,
       current_level: updatedProfile?.current_level || null,
+      starting_level: updatedProfile?.current_level || null,
+      startingLevel: updatedProfile?.current_level || null,
       expected_duration: updatedProfile?.expected_duration || null,
+      expectedDuration: updatedProfile?.expected_duration || null,
       daily_study_minutes: updatedProfile?.daily_study_minutes || null,
+      daily_commitment_mins: updatedProfile?.daily_study_minutes || null,
+      dailyCommitmentMins: updatedProfile?.daily_study_minutes || null,
+      reminder_time: updatedReminderTime,
+      reminderTime: updatedReminderTime,
+      daily_reminder_time: updatedReminderTime,
       profile: updatedProfile
         ? {
             profileId: updatedProfile.profile_id,
@@ -624,19 +717,24 @@ export class UserService {
     // 3. Thực thi lưu trữ nguyên tử trong transaction
     const result = await prisma.$transaction(async (tx) => {
       // 3.0. Lưu / cập nhật (upsert) đầy đủ thông tin khảo sát vào bảng user_profiles theo userId
+      const surveyWeeks = data.expected_weeks || data.target_weeks || data.expectedWeeks || data.targetWeeks;
+      const durationStr = data.expected_duration || (surveyWeeks ? `${surveyWeeks} tuần` : '8 tuần');
+
       const surveyProfile = await tx.userProfiles.upsert({
         where: { user_id: userId },
         create: {
           user_id: userId,
           goal: data.goal || data.target_goal,
           current_level: data.current_level || data.starting_level,
-          expected_duration: data.expected_duration || (data.target_weeks ? `${data.target_weeks} tuần` : '12 tuần'),
+          expected_duration: durationStr,
+          expected_weeks: surveyWeeks || null,
           daily_study_minutes: data.daily_study_minutes || matched.dailyCommitmentMins,
         },
         update: {
           goal: data.goal || data.target_goal,
           current_level: data.current_level || data.starting_level,
-          expected_duration: data.expected_duration || (data.target_weeks ? `${data.target_weeks} tuần` : '12 tuần'),
+          expected_duration: durationStr,
+          ...(surveyWeeks !== undefined ? { expected_weeks: surveyWeeks } : {}),
           daily_study_minutes: data.daily_study_minutes || matched.dailyCommitmentMins,
         },
       });
@@ -655,6 +753,8 @@ export class UserService {
           starting_level: data.starting_level,
           target_goal: data.target_goal,
           daily_commitment_mins: matched.dailyCommitmentMins,
+          expected_weeks: surveyWeeks || null,
+          expected_duration: durationStr,
           is_active: true,
         },
         include: { course: true },
@@ -778,29 +878,54 @@ export class UserService {
           goal: surveyProfile.goal,
           current_level: surveyProfile.current_level,
           expected_duration: surveyProfile.expected_duration,
+          expected_weeks: (surveyProfile as any).expected_weeks,
+          expectedWeeks: (surveyProfile as any).expected_weeks,
+          target_weeks: (surveyProfile as any).expected_weeks,
+          targetWeeks: (surveyProfile as any).expected_weeks,
           daily_study_minutes: surveyProfile.daily_study_minutes,
         },
         roadmap: {
           roadmapId: roadmap.roadmap_id,
+          roadmap_id: roadmap.roadmap_id,
           courseId: matched.courseId,
+          course_id: matched.courseId,
           courseTitle: matched.courseTitle,
           courseCode: matched.courseCode,
           courseLevel: matched.courseLevel,
           startingLevel: roadmap.starting_level,
+          starting_level: roadmap.starting_level,
           targetGoal: roadmap.target_goal,
+          target_goal: roadmap.target_goal,
           dailyCommitmentMins: roadmap.daily_commitment_mins,
+          daily_commitment_mins: roadmap.daily_commitment_mins,
+          daily_study_minutes: roadmap.daily_commitment_mins,
+          expected_duration: durationStr,
+          expectedDuration: durationStr,
+          expected_weeks: surveyWeeks || null,
+          expectedWeeks: surveyWeeks || null,
+          target_weeks: surveyWeeks || null,
+          targetWeeks: surveyWeeks || null,
           isActive: roadmap.is_active,
+          is_active: roadmap.is_active,
           createdAt: roadmap.created_at,
           estimatedDays: matched.estimatedDays,
           lessonsPerWeek: matched.lessonsPerWeek,
           totalLessons: matched.totalLessons,
           learningFocus: matched.learningFocus,
+          reminder_time: notifSettings.reminder_time,
+          reminderTime: notifSettings.reminder_time,
         },
         notification_settings: {
           reminderTime: notifSettings.reminder_time,
+          reminder_time: notifSettings.reminder_time,
           notifyEmail: notifSettings.notify_email,
+          notify_email: notifSettings.notify_email,
           notifyWebpush: notifSettings.notify_webpush,
+          notify_webpush: notifSettings.notify_webpush,
         },
+        reminder_time: notifSettings.reminder_time,
+        reminderTime: notifSettings.reminder_time,
+        daily_reminder_time: notifSettings.reminder_time,
         recommended_first_lesson: recommendedFirstLessonDetail,
         recommendedFirstLessonId: matched.recommendedFirstLessonId,
         initial_unlocked_lesson_ids: matched.initialUnlockedLessonIds,
@@ -868,6 +993,8 @@ export class UserService {
       estimatedDays: matched.estimatedDays,
       lessonsPerWeek: matched.lessonsPerWeek,
       totalLessons: matched.totalLessons,
+      targetWeeks: data.expected_weeks || data.target_weeks || data.expectedWeeks || data.targetWeeks || Math.ceil(matched.estimatedDays / 7),
+      target_weeks: data.expected_weeks || data.target_weeks || data.expectedWeeks || data.targetWeeks || Math.ceil(matched.estimatedDays / 7),
       learningFocus: matched.learningFocus,
       initialUnlockedLessonIds: matched.initialUnlockedLessonIds,
       recommended_first_lesson: recommendedFirstLessonDetail,
@@ -883,6 +1010,7 @@ export class UserService {
     const user = await prisma.users.findUnique({
       where: { user_id: userId },
       include: {
+        profile: true,
         roadmaps: {
           where: { is_active: true },
           include: { course: true },
@@ -1076,17 +1204,52 @@ export class UserService {
       };
     });
 
+    const activeRm = activeRoadmap as any;
+    const userProf = user.profile as any;
+    const chosenWeeks =
+      activeRm.expected_weeks ||
+      userProf?.expected_weeks ||
+      (activeRm.expected_duration ? parseInt(activeRm.expected_duration, 10) : null) ||
+      (userProf?.expected_duration ? parseInt(userProf.expected_duration, 10) : null) ||
+      Math.ceil(matched.estimatedDays / 7);
+
+    const durationStr =
+      activeRm.expected_duration ||
+      userProf?.expected_duration ||
+      (chosenWeeks ? `${chosenWeeks} tuần` : `${Math.ceil(matched.estimatedDays / 7)} tuần`);
+    const weeksNum = chosenWeeks;
+    const reminderTime = user.notificationSettings?.reminder_time || '20:00';
+
     return {
       roadmapId: activeRoadmap.roadmap_id,
+      roadmap_id: activeRoadmap.roadmap_id,
       courseId: activeRoadmap.course_id,
+      course_id: activeRoadmap.course_id,
       courseTitle: activeRoadmap.course.title,
       courseCode: activeRoadmap.course.code,
       courseLevel: activeRoadmap.course.level,
       startingLevel: activeRoadmap.starting_level,
+      starting_level: activeRoadmap.starting_level,
       targetGoal: activeRoadmap.target_goal,
+      target_goal: activeRoadmap.target_goal,
       dailyCommitmentMins: activeRoadmap.daily_commitment_mins,
+      daily_commitment_mins: activeRoadmap.daily_commitment_mins,
+      daily_study_minutes: activeRoadmap.daily_commitment_mins,
+      dailyStudyMinutes: activeRoadmap.daily_commitment_mins,
+      expected_duration: durationStr,
+      expectedDuration: durationStr,
+      expected_weeks: weeksNum,
+      expectedWeeks: weeksNum,
+      target_weeks: weeksNum,
+      targetWeeks: weeksNum,
+      reminder_time: reminderTime,
+      reminderTime: reminderTime,
+      daily_reminder_time: reminderTime,
+      dailyReminderTime: reminderTime,
       isActive: activeRoadmap.is_active,
+      is_active: activeRoadmap.is_active,
       createdAt: activeRoadmap.created_at,
+      created_at: activeRoadmap.created_at,
       completed_lessons_count: completedLessonsCount,
       total_lessons_count: totalLessonsCount,
       completion_percentage: completionPercentage,
@@ -1104,10 +1267,48 @@ export class UserService {
       notificationSettings: user.notificationSettings
         ? {
             reminderTime: user.notificationSettings.reminder_time,
+            reminder_time: user.notificationSettings.reminder_time,
             notifyEmail: user.notificationSettings.notify_email,
+            notify_email: user.notificationSettings.notify_email,
             notifyWebpush: user.notificationSettings.notify_webpush,
+            notify_webpush: user.notificationSettings.notify_webpush,
           }
-        : null,
+        : {
+            reminderTime: '20:00',
+            reminder_time: '20:00',
+            notifyEmail: true,
+            notify_email: true,
+            notifyWebpush: false,
+            notify_webpush: false,
+          },
+      roadmap: {
+        roadmapId: activeRoadmap.roadmap_id,
+        roadmap_id: activeRoadmap.roadmap_id,
+        courseId: activeRoadmap.course_id,
+        course_id: activeRoadmap.course_id,
+        courseTitle: activeRoadmap.course.title,
+        courseCode: activeRoadmap.course.code,
+        courseLevel: activeRoadmap.course.level,
+        startingLevel: activeRoadmap.starting_level,
+        starting_level: activeRoadmap.starting_level,
+        targetGoal: activeRoadmap.target_goal,
+        target_goal: activeRoadmap.target_goal,
+        dailyCommitmentMins: activeRoadmap.daily_commitment_mins,
+        daily_commitment_mins: activeRoadmap.daily_commitment_mins,
+        daily_study_minutes: activeRoadmap.daily_commitment_mins,
+        expected_duration: durationStr,
+        expectedDuration: durationStr,
+        target_weeks: weeksNum,
+        targetWeeks: weeksNum,
+        reminder_time: reminderTime,
+        reminderTime: reminderTime,
+        daily_reminder_time: reminderTime,
+        dailyReminderTime: reminderTime,
+        isActive: activeRoadmap.is_active,
+        is_active: activeRoadmap.is_active,
+        createdAt: activeRoadmap.created_at,
+        created_at: activeRoadmap.created_at,
+      },
     };
   }
 
@@ -1284,6 +1485,197 @@ export class UserService {
     });
 
     return user;
+  }
+
+  /**
+   * Bảng xếp hạng tuần thực tế từ dữ liệu học tập trong DB (Thứ 2 00:00 → Chủ nhật 23:59)
+   * Quy đổi XP minh bạch:
+   * - Hoàn thành 1 bài học: +50 XP
+   * - Làm bài kiểm tra / đề thi: +0.6 * điểm% (tối đa +60 XP, thưởng thêm +20 XP nếu đạt)
+   * - Luyện viết chữ Hán / Pinyin đạt: +10 XP
+   * - Ôn thẻ nhớ SRS: +5 XP / thẻ
+   */
+  async getWeeklyLeaderboard(currentUserId: number) {
+    const now = new Date();
+    const dayOfWeek = now.getDay(); // 0 = Sun, 1 = Mon, ...
+    const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    const weekStart = new Date(now);
+    weekStart.setDate(now.getDate() + diffToMonday);
+    weekStart.setHours(0, 0, 0, 0);
+
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6);
+    weekEnd.setHours(23, 59, 59, 999);
+
+    const users = await prisma.users.findMany({
+      where: {
+        status: 'ACTIVE',
+        role: 'STUDENT',
+      },
+      select: {
+        user_id: true,
+        display_name: true,
+        avatarResource: { select: { public_url: true } },
+        roadmaps: {
+          where: { is_active: true },
+          take: 1,
+          select: {
+            target_goal: true,
+            starting_level: true,
+            course: { select: { level: true } },
+          },
+        },
+        lessonProgress: {
+          select: {
+            is_completed: true,
+            completed_at: true,
+            last_studied_at: true,
+          },
+        },
+        submissions: {
+          select: {
+            score: true,
+            is_passed: true,
+            submitted_at: true,
+          },
+        },
+        practices: {
+          where: { is_successful: true },
+          select: {
+            practiced_at: true,
+          },
+        },
+        srsItems: {
+          where: { last_reviewed_at: { not: null } },
+          select: {
+            last_reviewed_at: true,
+          },
+        },
+      },
+    });
+
+    const toDateKey = (d: Date): string => {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    };
+
+    const computeStreak = (dates: Date[]): number => {
+      if (dates.length === 0) return 0;
+      const uniqueDays = new Set(dates.map(toDateKey));
+      const cursor = new Date();
+      cursor.setHours(0, 0, 0, 0);
+
+      // Allow streak to continue if user studied today OR yesterday
+      if (!uniqueDays.has(toDateKey(cursor))) {
+        cursor.setDate(cursor.getDate() - 1);
+        if (!uniqueDays.has(toDateKey(cursor))) return 0;
+      }
+
+      let streak = 0;
+      while (uniqueDays.has(toDateKey(cursor))) {
+        streak++;
+        cursor.setDate(cursor.getDate() - 1);
+      }
+      return streak;
+    };
+
+    const formatLevel = (raw?: string | null): string => {
+      if (!raw) return 'HSK 1';
+      const upper = raw.toUpperCase();
+      if (/^HSK\d$/.test(upper)) return upper.replace('HSK', 'HSK ');
+      return 'HSK 1';
+    };
+
+    const ranked = users.map((u) => {
+      const activityDates: Date[] = [];
+
+      let weeklyXp = 0;
+      let totalXp = 0;
+      let weeklyLessons = 0;
+      let totalCompletedLessons = 0;
+
+      for (const lp of u.lessonProgress) {
+        if (lp.last_studied_at) activityDates.push(lp.last_studied_at);
+        if (lp.is_completed) {
+          totalCompletedLessons++;
+          totalXp += 50;
+          const refDate = lp.completed_at || lp.last_studied_at;
+          if (refDate && refDate >= weekStart) {
+            weeklyLessons++;
+            weeklyXp += 50;
+          }
+        }
+      }
+
+      for (const sub of u.submissions) {
+        activityDates.push(sub.submitted_at);
+        const subXp = Math.round((sub.score || 0) * 0.6) + (sub.is_passed ? 20 : 0);
+        totalXp += subXp;
+        if (sub.submitted_at >= weekStart) {
+          weeklyXp += subXp;
+        }
+      }
+
+      for (const pr of u.practices) {
+        activityDates.push(pr.practiced_at);
+        totalXp += 10;
+        if (pr.practiced_at >= weekStart) {
+          weeklyXp += 10;
+        }
+      }
+
+      for (const srs of u.srsItems) {
+        if (srs.last_reviewed_at) {
+          activityDates.push(srs.last_reviewed_at);
+          totalXp += 5;
+          if (srs.last_reviewed_at >= weekStart) {
+            weeklyXp += 5;
+          }
+        }
+      }
+
+      const activeRoadmap = u.roadmaps[0];
+      const level = formatLevel(activeRoadmap?.course?.level || activeRoadmap?.target_goal);
+      const streak = computeStreak(activityDates);
+
+      return {
+        userId: u.user_id,
+        displayName: u.display_name,
+        avatarUrl: u.avatarResource?.public_url || null,
+        level,
+        weeklyXp,
+        totalXp,
+        streak,
+        weeklyLessons,
+        completedLessons: totalCompletedLessons,
+        isCurrentUser: u.user_id === currentUserId,
+      };
+    });
+
+    ranked.sort((a, b) => {
+      if (b.weeklyXp !== a.weeklyXp) return b.weeklyXp - a.weeklyXp;
+      if (b.streak !== a.streak) return b.streak - a.streak;
+      if (b.totalXp !== a.totalXp) return b.totalXp - a.totalXp;
+      return a.userId - b.userId;
+    });
+
+    const withRanks = ranked.map((entry, idx) => ({
+      rank: idx + 1,
+      ...entry,
+    }));
+
+    const currentUser = withRanks.find((e) => e.userId === currentUserId) || null;
+    const leaders = withRanks.slice(0, 20);
+
+    return {
+      weekStart: weekStart.toISOString(),
+      weekEnd: weekEnd.toISOString(),
+      totalParticipants: withRanks.length,
+      leaders,
+      currentUser,
+    };
   }
 }
 

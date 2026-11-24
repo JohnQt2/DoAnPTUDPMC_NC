@@ -77,109 +77,109 @@ const HSK_META: Record<
     label: 'HSK 1',
     vocab: '150 từ',
     subtitle: 'Nhập môn & Giao tiếp cơ bản',
-    pillGradient: 'from-emerald-300/90 via-teal-300/90 to-cyan-200/95',
-    heroBg: 'from-emerald-100/92 via-teal-50/90 to-cyan-100/90',
-    heroBorder: 'border-emerald-200/80',
-    accentText: 'text-emerald-800',
-    badge: 'bg-emerald-100/85 text-emerald-800 border-emerald-200/80',
-    progressBar: 'from-emerald-400 to-teal-400',
-    unitBadge: 'from-emerald-400 to-teal-400',
-    spotlight: 'rgba(52, 211, 153, 0.08)',
-    nodeHalo: 'ring-4 ring-emerald-300/35',
-    nodeIdle: 'bg-white/90 border-2 border-emerald-300/80 text-emerald-700',
-    lineColor: 'bg-emerald-300/65',
-    currentCard: 'bg-white/88 border-emerald-300/85 shadow-sm shadow-emerald-400/10',
-    actionIdle: 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100',
+    pillGradient: 'from-[#D97706] to-[#B45309]',
+    heroBg: 'from-[#FCFBF8]/95 via-[#FBF5EA]/92 to-[#F8F0DF]/88',
+    heroBorder: 'border-[#D97706]/20',
+    accentText: 'text-[#92400E]',
+    badge: 'bg-[#D97706]/10 text-[#92400E] border-[#D97706]/25',
+    progressBar: 'from-[#D97706] to-[#F59E0B]',
+    unitBadge: 'from-[#D97706] to-[#B45309]',
+    spotlight: 'rgba(217, 119, 6, 0.08)',
+    nodeHalo: 'ring-4 ring-[#D97706]/20',
+    nodeIdle: 'bg-white/90 border-2 border-[#D97706]/35 text-[#92400E]',
+    lineColor: 'bg-[#D97706]/35',
+    currentCard: 'bg-white/90 border-[#D97706]/35 shadow-sm shadow-[#D97706]/10',
+    actionIdle: 'bg-[#D97706]/8 text-[#92400E] hover:bg-[#D97706]/14',
   },
   HSK2: {
     label: 'HSK 2',
     vocab: '300 từ',
     subtitle: 'Đời sống & Du lịch trôi chảy',
-    pillGradient: 'from-sky-300/90 via-blue-300/85 to-indigo-200/95',
-    heroBg: 'from-sky-100/92 via-blue-50/90 to-indigo-100/90',
-    heroBorder: 'border-sky-200/80',
-    accentText: 'text-sky-800',
-    badge: 'bg-sky-100/85 text-sky-800 border-sky-200/80',
-    progressBar: 'from-sky-400 to-indigo-400',
-    unitBadge: 'from-sky-400 to-blue-400',
-    spotlight: 'rgba(56, 189, 248, 0.08)',
-    nodeHalo: 'ring-4 ring-sky-300/35',
-    nodeIdle: 'bg-white/90 border-2 border-sky-300/80 text-sky-700',
-    lineColor: 'bg-sky-300/65',
-    currentCard: 'bg-white/88 border-sky-300/85 shadow-sm shadow-sky-400/10',
-    actionIdle: 'bg-sky-50 text-sky-700 hover:bg-sky-100',
+    pillGradient: 'from-[#157A57] to-[#116145]',
+    heroBg: 'from-[#FCFBF8]/95 via-[#F1F8F5]/92 to-[#F6F3EC]/88',
+    heroBorder: 'border-[#157A57]/20',
+    accentText: 'text-[#157A57]',
+    badge: 'bg-[#157A57]/10 text-[#157A57] border-[#157A57]/25',
+    progressBar: 'from-[#157A57] to-[#1F9B70]',
+    unitBadge: 'from-[#157A57] to-[#116145]',
+    spotlight: 'rgba(21, 122, 87, 0.08)',
+    nodeHalo: 'ring-4 ring-[#157A57]/20',
+    nodeIdle: 'bg-white/90 border-2 border-[#157A57]/35 text-[#157A57]',
+    lineColor: 'bg-[#157A57]/35',
+    currentCard: 'bg-white/90 border-[#157A57]/35 shadow-sm shadow-[#157A57]/10',
+    actionIdle: 'bg-[#157A57]/8 text-[#157A57] hover:bg-[#157A57]/14',
   },
   HSK3: {
     label: 'HSK 3',
     vocab: '600 từ',
     subtitle: 'Trung cấp & Văn hóa xã hội',
-    pillGradient: 'from-amber-300/90 via-orange-200/90 to-rose-200/95',
-    heroBg: 'from-amber-100/92 via-orange-50/90 to-rose-100/88',
-    heroBorder: 'border-amber-200/80',
-    accentText: 'text-amber-800',
-    badge: 'bg-amber-100/85 text-amber-800 border-amber-200/80',
-    progressBar: 'from-amber-400 to-orange-400',
-    unitBadge: 'from-amber-400 to-orange-400',
-    spotlight: 'rgba(251, 191, 36, 0.08)',
-    nodeHalo: 'ring-4 ring-amber-300/35',
-    nodeIdle: 'bg-white/90 border-2 border-amber-300/80 text-amber-700',
-    lineColor: 'bg-amber-300/65',
-    currentCard: 'bg-white/88 border-amber-300/85 shadow-sm shadow-amber-400/10',
-    actionIdle: 'bg-amber-50 text-amber-800 hover:bg-amber-100',
+    pillGradient: 'from-[#D95B18] to-[#B4460E]',
+    heroBg: 'from-[#FCFBF8]/95 via-[#FBF3EC]/92 to-[#F8EFE5]/88',
+    heroBorder: 'border-[#D95B18]/20',
+    accentText: 'text-[#B4460E]',
+    badge: 'bg-[#D95B18]/10 text-[#B4460E] border-[#D95B18]/25',
+    progressBar: 'from-[#D95B18] to-[#E67E22]',
+    unitBadge: 'from-[#D95B18] to-[#B4460E]',
+    spotlight: 'rgba(217, 91, 24, 0.08)',
+    nodeHalo: 'ring-4 ring-[#D95B18]/20',
+    nodeIdle: 'bg-white/90 border-2 border-[#D95B18]/35 text-[#B4460E]',
+    lineColor: 'bg-[#D95B18]/35',
+    currentCard: 'bg-white/90 border-[#D95B18]/35 shadow-sm shadow-[#D95B18]/10',
+    actionIdle: 'bg-[#D95B18]/8 text-[#B4460E] hover:bg-[#D95B18]/14',
   },
   HSK4: {
     label: 'HSK 4',
     vocab: '1.200 từ',
     subtitle: 'Công sở, Phỏng vấn & Thuyết trình',
-    pillGradient: 'from-rose-300/90 via-pink-200/95 to-fuchsia-200/90',
-    heroBg: 'from-rose-100/92 via-pink-50/90 to-fuchsia-100/88',
-    heroBorder: 'border-rose-200/80',
-    accentText: 'text-rose-800',
-    badge: 'bg-rose-100/85 text-rose-800 border-rose-200/80',
-    progressBar: 'from-rose-400 to-pink-400',
-    unitBadge: 'from-rose-400 to-pink-400',
-    spotlight: 'rgba(251, 113, 133, 0.08)',
-    nodeHalo: 'ring-4 ring-rose-300/35',
-    nodeIdle: 'bg-white/90 border-2 border-rose-300/80 text-rose-700',
-    lineColor: 'bg-rose-300/65',
-    currentCard: 'bg-white/88 border-rose-300/85 shadow-sm shadow-rose-400/10',
-    actionIdle: 'bg-rose-50 text-rose-700 hover:bg-rose-100',
+    pillGradient: 'from-[#C41E3A]/90 via-[#C41E3A]/80 to-[#D4A017]/80',
+    heroBg: 'from-[#FCFBF8]/95 via-[#FBF2F3]/92 to-[#FAF3E6]/88',
+    heroBorder: 'border-[#C41E3A]/20',
+    accentText: 'text-[#A51730]',
+    badge: 'bg-[#C41E3A]/10 text-[#A51730] border-[#C41E3A]/20',
+    progressBar: 'from-[#C41E3A] to-[#D4A017]',
+    unitBadge: 'from-[#C41E3A] to-[#A51730]',
+    spotlight: 'rgba(196, 30, 58, 0.08)',
+    nodeHalo: 'ring-4 ring-[#C41E3A]/20',
+    nodeIdle: 'bg-white/90 border-2 border-[#C41E3A]/35 text-[#A51730]',
+    lineColor: 'bg-[#C41E3A]/35',
+    currentCard: 'bg-white/90 border-[#C41E3A]/35 shadow-sm shadow-[#C41E3A]/10',
+    actionIdle: 'bg-[#C41E3A]/8 text-[#A51730] hover:bg-[#C41E3A]/14',
   },
   HSK5: {
     label: 'HSK 5',
     vocab: '2.500 từ',
     subtitle: 'Báo chí, Công nghệ & Phân tích',
-    pillGradient: 'from-violet-300/90 via-purple-200/95 to-fuchsia-200/90',
-    heroBg: 'from-violet-100/92 via-purple-50/90 to-fuchsia-100/88',
-    heroBorder: 'border-violet-200/80',
-    accentText: 'text-violet-800',
-    badge: 'bg-violet-100/85 text-violet-800 border-violet-200/80',
-    progressBar: 'from-violet-400 to-purple-400',
-    unitBadge: 'from-violet-400 to-purple-400',
-    spotlight: 'rgba(167, 139, 250, 0.08)',
-    nodeHalo: 'ring-4 ring-violet-300/35',
-    nodeIdle: 'bg-white/90 border-2 border-violet-300/80 text-violet-700',
-    lineColor: 'bg-violet-300/65',
-    currentCard: 'bg-white/88 border-violet-300/85 shadow-sm shadow-violet-400/10',
-    actionIdle: 'bg-violet-50 text-violet-700 hover:bg-violet-100',
+    pillGradient: 'from-[#184375]/90 via-[#1E4F8A]/85 to-[#2D629F]/85',
+    heroBg: 'from-[#FCFBF8]/95 via-[#F2F5FA]/92 to-[#F7F3EC]/88',
+    heroBorder: 'border-[#184375]/20',
+    accentText: 'text-[#184375]',
+    badge: 'bg-[#184375]/10 text-[#184375] border-[#184375]/20',
+    progressBar: 'from-[#184375] to-[#2B6CB0]',
+    unitBadge: 'from-[#184375] to-[#12325A]',
+    spotlight: 'rgba(24, 67, 117, 0.08)',
+    nodeHalo: 'ring-4 ring-[#184375]/20',
+    nodeIdle: 'bg-white/90 border-2 border-[#184375]/35 text-[#184375]',
+    lineColor: 'bg-[#184375]/35',
+    currentCard: 'bg-white/90 border-[#184375]/35 shadow-sm shadow-[#184375]/10',
+    actionIdle: 'bg-[#184375]/8 text-[#184375] hover:bg-[#184375]/14',
   },
   HSK6: {
     label: 'HSK 6',
     vocab: '5.000+ từ',
     subtitle: 'Thành ngữ & Học thuật bản xứ',
-    pillGradient: 'from-fuchsia-300/90 via-pink-200/90 to-amber-200/95',
-    heroBg: 'from-fuchsia-100/90 via-pink-50/90 to-amber-100/88',
-    heroBorder: 'border-fuchsia-200/80',
-    accentText: 'text-fuchsia-800',
-    badge: 'bg-fuchsia-100/85 text-fuchsia-800 border-fuchsia-200/80',
-    progressBar: 'from-fuchsia-400 to-amber-400',
-    unitBadge: 'from-fuchsia-400 to-pink-400',
-    spotlight: 'rgba(232, 121, 249, 0.08)',
-    nodeHalo: 'ring-4 ring-fuchsia-300/35',
-    nodeIdle: 'bg-white/90 border-2 border-fuchsia-300/80 text-fuchsia-700',
-    lineColor: 'bg-fuchsia-300/65',
-    currentCard: 'bg-white/88 border-fuchsia-300/85 shadow-sm shadow-fuchsia-400/10',
-    actionIdle: 'bg-fuchsia-50 text-fuchsia-700 hover:bg-fuchsia-100',
+    pillGradient: 'from-[#5A1063]/90 via-[#6E1A78]/85 to-[#C29940]/85',
+    heroBg: 'from-[#FCFBF8]/95 via-[#F8F2F9]/92 to-[#FAF3E6]/88',
+    heroBorder: 'border-[#5A1063]/20',
+    accentText: 'text-[#5A1063]',
+    badge: 'bg-[#5A1063]/10 text-[#5A1063] border-[#5A1063]/20',
+    progressBar: 'from-[#5A1063] to-[#C29940]',
+    unitBadge: 'from-[#5A1063] to-[#7A2085]',
+    spotlight: 'rgba(90, 16, 99, 0.08)',
+    nodeHalo: 'ring-4 ring-[#5A1063]/20',
+    nodeIdle: 'bg-white/90 border-2 border-[#5A1063]/35 text-[#5A1063]',
+    lineColor: 'bg-[#5A1063]/35',
+    currentCard: 'bg-white/90 border-[#5A1063]/35 shadow-sm shadow-[#5A1063]/10',
+    actionIdle: 'bg-[#5A1063]/8 text-[#5A1063] hover:bg-[#5A1063]/14',
   },
 };
 
@@ -368,7 +368,7 @@ export const CourseListPage: React.FC = () => {
         </a>
       </div>
 
-      {/* Silky Unified HSK 1–6 Pastel Track (Single GPU-gliding Pill — Zero Jump!) */}
+      {/* Silky Unified HSK 1–6 Track (Single GPU-gliding Pill — Zero Jump!) */}
       <div className="relative p-1.5 rounded-[24px] glass-light grid grid-cols-3 sm:grid-cols-6 gap-1.5">
         {sliderStyle && (
           <div
@@ -378,7 +378,7 @@ export const CourseListPage: React.FC = () => {
               width: sliderStyle.width,
               height: sliderStyle.height,
             }}
-            className={`pointer-events-none absolute top-0 left-0 rounded-[18px] bg-gradient-to-br ${meta.pillGradient} dark:bg-none dark:bg-slate-800 border border-white/95 dark:border-slate-700 shadow-sm transition-[transform,width,height,background] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]`}
+            className={`pointer-events-none absolute top-0 left-0 rounded-[18px] bg-gradient-to-br ${meta.pillGradient} dark:bg-none dark:bg-slate-800 border border-white/25 dark:border-slate-700 shadow-md transition-[transform,width,height,background] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]`}
           />
         )}
 
@@ -394,7 +394,7 @@ export const CourseListPage: React.FC = () => {
               type="button"
               onClick={() => startTransition(() => setSelectedLevel(lvl))}
               className={`relative z-10 rounded-[18px] px-3 py-2.5 text-left transition-colors duration-200 cursor-pointer ${
-                isSelected ? 'text-slate-900 dark:text-slate-100' : 'text-slate-600 hover:text-slate-900'
+                isSelected ? 'text-white' : 'text-[#57534E] hover:text-[#1C1917]'
               }`}
             >
               <div className="flex items-center justify-between">
@@ -403,13 +403,13 @@ export const CourseListPage: React.FC = () => {
                 </span>
                 <Sparkles
                   className={`w-3.5 h-3.5 transition-opacity duration-200 ${
-                    isSelected ? 'opacity-80 text-slate-700' : 'opacity-0'
+                    isSelected ? 'opacity-95 text-[#FDE68A]' : 'opacity-0'
                   }`}
                 />
               </div>
               <p
                 className={`text-[11px] font-semibold mt-0.5 ${
-                  isSelected ? 'text-slate-700' : 'text-slate-400'
+                  isSelected ? 'text-white/85' : 'text-[#78716C]'
                 }`}
               >
                 {itemMeta.vocab}
@@ -419,9 +419,9 @@ export const CourseListPage: React.FC = () => {
         })}
       </div>
 
-      {/* Dreamy Pastel Liquid Glass Hero Banner */}
+      {/* Warm Porcelain Frosted Liquid Glass Hero Banner */}
       <div
-        className={`relative overflow-hidden rounded-[28px] p-6 sm:p-8 bg-gradient-to-br ${meta.heroBg} border ${meta.heroBorder} backdrop-blur-2xl shadow-[0_14px_38px_-14px_rgba(148,163,184,0.25),inset_0_1.5px_1px_rgba(255,255,255,0.95)] transition-colors duration-300`}
+        className={`relative overflow-hidden rounded-[28px] p-6 sm:p-8 bg-gradient-to-br ${meta.heroBg} border ${meta.heroBorder} backdrop-blur-2xl shadow-[0_14px_38px_-14px_rgba(28,25,23,0.12),inset_0_1.5px_1px_rgba(255,255,255,0.95)] transition-colors duration-300`}
       >
         <span
           aria-hidden="true"

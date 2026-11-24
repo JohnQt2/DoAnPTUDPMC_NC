@@ -6,6 +6,13 @@ import { celebrateSuccess } from '../../lib/celebration';
 import { appConfirm, appNotice } from '../../lib/dialog';
 import { GlassCard, UserAvatar, ShimmerButton } from '../../components/ui';
 import {
+  normalizeLevel,
+  normalizeGoal,
+  normalizeWeeks,
+  normalizeDailyMins,
+  normalizeReminderTime,
+} from '../onboarding/OnboardingRoadmapPage';
+import {
   User,
   Bell,
   Compass,
@@ -22,6 +29,9 @@ import {
   Camera,
   Sun,
   Moon,
+  RotateCcw,
+  RefreshCw,
+  CheckCircle2,
 } from 'lucide-react';
 
 const ROLE_LABEL: Record<string, string> = {
@@ -29,6 +39,73 @@ const ROLE_LABEL: Record<string, string> = {
   CONTENT_EDITOR: 'Biên tập nội dung',
   ADMIN: 'Quản trị viên',
 };
+
+function formatSessionIp(rawIp?: string | null): string {
+  const ip = (rawIp || '').trim();
+  if (!ip || ip === '::1' || ip === '127.0.0.1' || ip === '::ffff:127.0.0.1') {
+    return 'Thiết bị nội bộ (127.0.0.1)';
+  }
+  return ip.replace(/^::ffff:/i, '');
+}
+
+function formatSessionTimestamp(iso?: string | null): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const datePart = d.toLocaleDateString('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+  const timePart = d.toLocaleTimeString('vi-VN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+  return `${datePart} · ${timePart}`;
+}
+
+function parseDeviceInfo(rawUa?: string | null): {
+  label: string;
+  isMobile: boolean;
+} {
+  const ua = (rawUa || '').trim();
+  if (!ua) return { label: 'Trình duyệt web', isMobile: false };
+
+  const lower = ua.toLowerCase();
+
+  let browser = 'Trình duyệt';
+  if (lower.includes('coc_coc_browser')) browser = 'Cốc Cốc';
+  else if (lower.includes('edg/') || lower.includes('edge/')) browser = 'Edge';
+  else if (lower.includes('opr/') || lower.includes('opera')) browser = 'Opera';
+  else if (lower.includes('samsungbrowser')) browser = 'Samsung';
+  else if (lower.includes('firefox/') || lower.includes('fxios')) browser = 'Firefox';
+  else if (lower.includes('chrome/') || lower.includes('crios')) browser = 'Chrome';
+  else if (lower.includes('safari/')) browser = 'Safari';
+
+  let os = 'Thiết bị khác';
+  let isMobile = false;
+  if (lower.includes('iphone')) {
+    os = 'iPhone';
+    isMobile = true;
+  } else if (lower.includes('ipad')) {
+    os = 'iPad';
+    isMobile = true;
+  } else if (lower.includes('android')) {
+    os = 'Android';
+    isMobile = true;
+  } else if (lower.includes('windows')) {
+    os = 'Windows';
+  } else if (lower.includes('macintosh') || lower.includes('mac os')) {
+    os = 'macOS';
+  } else if (lower.includes('linux')) {
+    os = 'Linux';
+  }
+
+  if (lower.includes('mobile')) isMobile = true;
+
+  return { label: `${browser} · ${os}`, isMobile };
+}
 
 export const ProfilePage: React.FC = () => {
   const { user, updateUser, logout } = useAuth();
@@ -47,6 +124,7 @@ export const ProfilePage: React.FC = () => {
   const [startingLevel, setStartingLevel] = useState('ZERO');
   const [targetGoal, setTargetGoal] = useState('HSK1');
   const [dailyCommitment, setDailyCommitment] = useState(15);
+  const [targetWeeks, setTargetWeeks] = useState(8);
 
   // Admin account management
   const [adminUsers, setAdminUsers] = useState<any[]>([]);
@@ -54,7 +132,17 @@ export const ProfilePage: React.FC = () => {
   const [adminRoleFilter, setAdminRoleFilter] = useState('');
 
   const [isSaving, setIsSaving] = useState(false);
+  const [isRefreshingSessions, setIsRefreshingSessions] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [savedSnapshot, setSavedSnapshot] = useState<{
+    displayName: string;
+    reminderTime: string;
+    notifyEmail: boolean;
+    notifyWebpush: boolean;
+    startingLevel: string;
+    targetGoal: string;
+    dailyCommitment: number;
+  } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAvatarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -120,30 +208,109 @@ export const ProfilePage: React.FC = () => {
   const loadProfile = async () => {
     try {
       const data = await api.get<any>('/users/me');
-      setDisplayName(data.displayName || '');
-      setAvatarUrl(data.avatarUrl || '');
-      setCompletedLessonsCount(data.completedLessonsCount || 0);
-      if (data.notificationSettings) {
-        setReminderTime(data.notificationSettings.reminderTime || '20:00');
-        setNotifyEmail(data.notificationSettings.notifyEmail ?? true);
-        setNotifyWebpush(data.notificationSettings.notifyWebpush ?? false);
-      }
-      if (data.activeRoadmap) {
-        setStartingLevel(data.activeRoadmap.startingLevel);
-        setTargetGoal(data.activeRoadmap.targetGoal);
-        setDailyCommitment(data.activeRoadmap.dailyCommitmentMins);
-      }
+      const loadedDisplayName = data.displayName || data.display_name || '';
+      const loadedAvatarUrl = data.avatarUrl || data.avatar_url || '';
+      const loadedCompletedLessons = data.completedLessonsCount || data.completed_lessons_count || 0;
+
+      const activeRm = data.activeRoadmap || data.active_roadmap;
+      const userProf = data.profile;
+
+      const savedLevel =
+        activeRm?.startingLevel ||
+        activeRm?.starting_level ||
+        data.starting_level ||
+        data.startingLevel ||
+        data.current_level ||
+        userProf?.current_level;
+      const loadedStartingLevel = normalizeLevel(savedLevel);
+
+      const savedGoal =
+        activeRm?.targetGoal ||
+        activeRm?.target_goal ||
+        data.target_goal ||
+        data.targetGoal ||
+        data.goal ||
+        userProf?.goal;
+      const loadedTargetGoal = normalizeGoal(savedGoal);
+
+      const savedCommitment =
+        activeRm?.dailyCommitmentMins ||
+        activeRm?.daily_commitment_mins ||
+        data.daily_commitment_mins ||
+        data.dailyCommitmentMins ||
+        data.daily_study_minutes ||
+        userProf?.daily_study_minutes;
+      const loadedDailyCommitment = normalizeDailyMins(savedCommitment);
+
+      const savedWeeks =
+        activeRm?.expectedWeeks ||
+        activeRm?.expected_weeks ||
+        activeRm?.targetWeeks ||
+        activeRm?.target_weeks ||
+        data.expectedWeeks ||
+        data.expected_weeks ||
+        data.targetWeeks ||
+        data.target_weeks ||
+        userProf?.expected_weeks;
+      const savedDuration =
+        activeRm?.expectedDuration ||
+        activeRm?.expected_duration ||
+        data.expectedDuration ||
+        data.expected_duration ||
+        userProf?.expected_duration;
+      const loadedTargetWeeks = normalizeWeeks(savedWeeks, savedDuration);
+
+      const savedReminder =
+        data.reminder_time ||
+        data.reminderTime ||
+        data.daily_reminder_time ||
+        data.notificationSettings?.reminderTime ||
+        data.notificationSettings?.reminder_time ||
+        activeRm?.reminder_time;
+      const loadedReminderTime = normalizeReminderTime(savedReminder);
+
+      const loadedNotifyEmail =
+        data.notificationSettings?.notifyEmail ??
+        data.notificationSettings?.notify_email ??
+        true;
+      const loadedNotifyWebpush =
+        data.notificationSettings?.notifyWebpush ??
+        data.notificationSettings?.notify_webpush ??
+        false;
+
+      setDisplayName(loadedDisplayName);
+      setAvatarUrl(loadedAvatarUrl);
+      setCompletedLessonsCount(loadedCompletedLessons);
+      setReminderTime(loadedReminderTime);
+      setNotifyEmail(loadedNotifyEmail);
+      setNotifyWebpush(loadedNotifyWebpush);
+      setStartingLevel(loadedStartingLevel);
+      setTargetGoal(loadedTargetGoal);
+      setDailyCommitment(loadedDailyCommitment);
+      setTargetWeeks(loadedTargetWeeks);
+      setSavedSnapshot({
+        displayName: loadedDisplayName,
+        reminderTime: loadedReminderTime,
+        notifyEmail: loadedNotifyEmail,
+        notifyWebpush: loadedNotifyWebpush,
+        startingLevel: loadedStartingLevel,
+        targetGoal: loadedTargetGoal,
+        dailyCommitment: loadedDailyCommitment,
+      });
     } catch (err) {
       console.error('Failed to load profile:', err);
     }
   };
 
-  const loadSessions = async () => {
+  const loadSessions = async (showSpinner = false) => {
+    if (showSpinner) setIsRefreshingSessions(true);
     try {
       const data = await api.get<any[]>('/auth/sessions');
-      setSessions(data || []);
+      setSessions(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Failed to load sessions:', err);
+    } finally {
+      if (showSpinner) setIsRefreshingSessions(false);
     }
   };
 
@@ -205,10 +372,27 @@ export const ProfilePage: React.FC = () => {
           starting_level: startingLevel,
           target_goal: targetGoal,
           daily_commitment_mins: dailyCommitment,
+          target_weeks: targetWeeks,
+          targetWeeks: targetWeeks,
+          expected_weeks: targetWeeks,
+          expectedWeeks: targetWeeks,
+          expected_duration: `${targetWeeks} tuần`,
+          expectedDuration: `${targetWeeks} tuần`,
           reminder_time: reminderTime,
         });
+
+        await loadProfile();
       }
 
+      setSavedSnapshot({
+        displayName,
+        reminderTime,
+        notifyEmail,
+        notifyWebpush,
+        startingLevel,
+        targetGoal,
+        dailyCommitment,
+      });
       celebrateSuccess('Đã lưu cài đặt tài khoản', 'sparkle');
     } catch (err: any) {
       appNotice(err.message || 'Lỗi cập nhật hồ sơ.', 'error');
@@ -216,6 +400,31 @@ export const ProfilePage: React.FC = () => {
       setIsSaving(false);
     }
   };
+
+  const hasUnsavedChanges = Boolean(
+    savedSnapshot &&
+    (displayName !== savedSnapshot.displayName ||
+      (!isAdminRole &&
+        (reminderTime !== savedSnapshot.reminderTime ||
+          notifyEmail !== savedSnapshot.notifyEmail ||
+          notifyWebpush !== savedSnapshot.notifyWebpush ||
+          startingLevel !== savedSnapshot.startingLevel ||
+          targetGoal !== savedSnapshot.targetGoal ||
+          dailyCommitment !== savedSnapshot.dailyCommitment)))
+  );
+
+  const handleResetChanges = () => {
+    if (!savedSnapshot) return;
+    setDisplayName(savedSnapshot.displayName);
+    setReminderTime(savedSnapshot.reminderTime);
+    setNotifyEmail(savedSnapshot.notifyEmail);
+    setNotifyWebpush(savedSnapshot.notifyWebpush);
+    setStartingLevel(savedSnapshot.startingLevel);
+    setTargetGoal(savedSnapshot.targetGoal);
+    setDailyCommitment(savedSnapshot.dailyCommitment);
+  };
+
+  const maxSessions = Number(sessions[0]?.maxSessions) || 3;
 
   const handleRevokeSession = async (sessionId: number) => {
     const ok = await appConfirm({
@@ -294,11 +503,10 @@ export const ProfilePage: React.FC = () => {
           <button
             type="button"
             onClick={() => setTheme('light')}
-            className={`p-4 rounded-2xl border text-left flex items-center gap-3.5 transition-all cursor-pointer ${
-              theme === 'light'
-                ? 'bg-rose-50/80 border-rose-400 ring-2 ring-rose-400/25 shadow-sm'
-                : 'bg-white/50 border-white/80 hover:bg-white/80'
-            }`}
+            className={`p-4 rounded-2xl border text-left flex items-center gap-3.5 transition-all cursor-pointer ${theme === 'light'
+              ? 'bg-rose-50/80 border-rose-400 ring-2 ring-rose-400/25 shadow-sm'
+              : 'bg-white/50 border-white/80 hover:bg-white/80'
+              }`}
           >
             <span className="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
               <Sun className="w-5 h-5" />
@@ -312,11 +520,10 @@ export const ProfilePage: React.FC = () => {
           <button
             type="button"
             onClick={() => setTheme('dark')}
-            className={`p-4 rounded-2xl border text-left flex items-center gap-3.5 transition-all cursor-pointer ${
-              theme === 'dark'
-                ? 'bg-slate-800/90 border-rose-400 ring-2 ring-rose-400/25 shadow-sm'
-                : 'bg-white/50 border-white/80 hover:bg-white/80'
-            }`}
+            className={`p-4 rounded-2xl border text-left flex items-center gap-3.5 transition-all cursor-pointer ${theme === 'dark'
+              ? 'bg-slate-800/90 border-rose-400 ring-2 ring-rose-400/25 shadow-sm'
+              : 'bg-white/50 border-white/80 hover:bg-white/80'
+              }`}
           >
             <span className="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0">
               <Moon className="w-5 h-5" />
@@ -548,93 +755,193 @@ export const ProfilePage: React.FC = () => {
           </GlassCard>
         )}
 
-        <ShimmerButton type="submit" disabled={isSaving} size="lg">
-          <Save className="w-4 h-4" />
-          <span>{isSaving ? 'Đang lưu...' : 'Lưu cài đặt'}</span>
-        </ShimmerButton>
+        {/* Balanced Form Save Bar (Sticky when unsaved changes exist, right-aligned CTA) */}
+        <div
+          className={`rounded-2xl px-5 py-3.5 border backdrop-blur-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all ${hasUnsavedChanges
+            ? 'sticky bottom-4 z-30 bg-[#FCFBF8]/95 dark:bg-[#141c2b]/95 border-[#C41E3A]/35 dark:border-rose-400/40 shadow-[0_14px_34px_-14px_rgba(196,30,58,0.28)]'
+            : 'glass-light border-white/80'
+            }`}
+        >
+          <div className="flex items-center gap-2.5 text-xs font-semibold">
+            {hasUnsavedChanges ? (
+              <>
+                <span className="w-2 h-2 rounded-full bg-[#C41E3A] animate-pulse shrink-0" />
+                <span className="text-gray-800">Có thay đổi chưa lưu</span>
+              </>
+            ) : (
+              <>
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <span className="text-gray-600">Đã lưu mọi thay đổi</span>
+              </>
+            )}
+          </div>
+
+          <div className="flex items-center justify-end gap-2.5 shrink-0">
+            {hasUnsavedChanges && (
+              <button
+                type="button"
+                onClick={handleResetChanges}
+                disabled={isSaving}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-white/80 hover:bg-white border border-gray-200/80 text-xs font-bold text-gray-700 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Hủy thay đổi</span>
+              </button>
+            )}
+
+            <ShimmerButton
+              type="submit"
+              disabled={isSaving || (savedSnapshot !== null && !hasUnsavedChanges)}
+              size="md"
+              className="rounded-xl"
+            >
+              <Save className="w-4 h-4" />
+              <span>{isSaving ? 'Đang lưu...' : 'Lưu cài đặt'}</span>
+            </ShimmerButton>
+          </div>
+        </div>
       </form>
 
-      {/* Section 4: Device Sessions Management (Complete Liquid Glass) */}
-      <GlassCard className="p-6 sm:p-8 space-y-5 rounded-[28px]">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/75 pb-4">
-          <div className="flex items-center gap-3">
-            <Monitor className="w-5 h-5 text-gray-700" />
-            <div>
+      {/* Section 4: Device Sessions Management (Compact Liquid Glass) */}
+      <GlassCard className="p-5 sm:p-6 space-y-4 rounded-[24px]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-white/75">
+          <div className="flex items-start gap-3 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-white/75 border border-white/90 flex items-center justify-center text-gray-700 shrink-0 mt-0.5">
+              <Monitor className="w-4 h-4" />
+            </div>
+            <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-lg font-display font-bold text-gray-900">
+                <h2 className="text-base sm:text-lg font-display font-bold text-gray-900 leading-tight">
                   Thiết bị đang đăng nhập
                 </h2>
-                <span className="px-2.5 py-0.5 rounded-full bg-white/75 border border-white text-[11px] font-bold text-slate-600">
-                  {sessions.length}/3 thiết bị
+                <span
+                  className={`px-2 py-0.5 rounded-full border text-[11px] font-bold tabular-nums ${sessions.length >= maxSessions
+                    ? 'bg-amber-50/90 border-amber-200 text-amber-800 dark:bg-amber-950/40 dark:border-amber-700/60 dark:text-amber-300'
+                    : 'bg-white/80 border-white text-slate-600'
+                    }`}
+                >
+                  {sessions.length}/{maxSessions}
                 </span>
               </div>
-              <p className="text-xs text-gray-500 mt-0.5">
-                Phiên tự động gia hạn 30 ngày khi học lại. Tối đa 3 thiết bị cùng lúc — thiết bị cũ nhất sẽ tự đăng xuất khi vượt quá.
+              <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
+                Tối đa {maxSessions} thiết bị cùng lúc
               </p>
             </div>
           </div>
 
-          {sessions.length > 1 && (
+          <div className="flex items-center gap-2 self-start sm:self-center shrink-0">
             <button
               type="button"
-              onClick={handleRevokeOtherSessions}
-              className="text-xs text-rose-600 dark:text-rose-300 hover:text-rose-700 dark:hover:text-rose-200 font-bold underline cursor-pointer"
+              onClick={() => loadSessions(true)}
+              disabled={isRefreshingSessions}
+              title="Làm mới danh sách thiết bị"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-600 hover:text-gray-900 bg-white/75 hover:bg-white border border-white/90 transition-colors cursor-pointer disabled:opacity-60"
             >
-              Đăng xuất tất cả thiết bị khác
+              <RefreshCw
+                className={`w-3.5 h-3.5 ${isRefreshingSessions ? 'animate-spin' : ''}`}
+              />
+              <span>Làm mới</span>
             </button>
-          )}
+
+            {sessions.length > 1 && (
+              <button
+                type="button"
+                onClick={handleRevokeOtherSessions}
+                className="px-3 py-1.5 rounded-xl text-xs font-semibold text-rose-600 dark:text-rose-300 bg-rose-50/80 hover:bg-rose-100/90 border border-rose-200/70 transition-colors cursor-pointer"
+              >
+                Đăng xuất thiết bị khác
+              </button>
+            )}
+          </div>
         </div>
 
-        <div className="divide-y divide-white/65">
-          {sessions.map((sess) => {
-            const isMobile = sess.user_agent?.toLowerCase().includes('mobile');
-            return (
-              <div key={sess.session_id} className="py-4 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-white/65 border border-white/85 flex items-center justify-center text-gray-600 shrink-0">
-                    {isMobile ? <Smartphone className="w-5 h-5" /> : <Laptop className="w-5 h-5" />}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-bold text-gray-900 truncate">
-                        {sess.user_agent?.slice(0, 42) || 'Thiết bị trình duyệt'}
-                      </span>
-                      {sess.isCurrent && (
-                        <span className="text-[10px] bg-emerald-500/15 text-emerald-800 border border-emerald-200/70 px-2.5 py-0.5 rounded-full font-bold">
-                          Thiết bị hiện tại
-                        </span>
-                      )}
+        <div className="space-y-2.5">
+          {sessions.length === 0 ? (
+            <div className="p-5 rounded-2xl bg-white/45 border border-white/80 text-center text-xs text-gray-500">
+              Không tìm thấy phiên đăng nhập nào đang hoạt động.
+            </div>
+          ) : (
+            sessions.map((sess) => {
+              const { label: deviceLabel, isMobile } = parseDeviceInfo(sess.user_agent);
+              const ipDisplay = formatSessionIp(sess.ip_address);
+              const loginTimestamp = formatSessionTimestamp(sess.created_at);
+              const expiryDate = sess.expires_at
+                ? new Date(sess.expires_at).toLocaleDateString('vi-VN')
+                : null;
+              return (
+                <div
+                  key={sess.session_id}
+                  className={`p-3 sm:p-3.5 rounded-2xl border flex items-center justify-between gap-2.5 transition-colors ${sess.isCurrent
+                    ? 'bg-white/75 border-emerald-200/75 shadow-[0_6px_18px_-14px_rgba(16,185,129,0.45)]'
+                    : 'bg-white/50 hover:bg-white/70 border-white/85'
+                    }`}
+                >
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div
+                      className={`w-9 h-9 rounded-xl border flex items-center justify-center shrink-0 ${sess.isCurrent
+                        ? 'bg-emerald-50/90 border-emerald-200/80 text-emerald-700'
+                        : 'bg-white/80 border-white/90 text-gray-600'
+                        }`}
+                    >
+                      {isMobile ? <Smartphone className="w-4 h-4" /> : <Laptop className="w-4 h-4" />}
                     </div>
-                    <span className="text-xs text-gray-500">
-                      IP: {sess.ip_address || '127.0.0.1'} • Đăng nhập:{' '}
-                      {new Date(sess.created_at).toLocaleDateString('vi-VN')}
-                    </span>
-                  </div>
-                </div>
 
-                {sess.isCurrent ? (
-                  <button
-                    type="button"
-                    onClick={logout}
-                    className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-gray-700 hover:text-rose-600 bg-white/65 hover:bg-rose-50/90 rounded-xl border border-white/85 transition-colors cursor-pointer shrink-0"
-                    title="Đăng xuất phiên hiện tại"
-                  >
-                    <LogOut className="w-3.5 h-3.5" />
-                    <span>Đăng xuất</span>
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => handleRevokeSession(sess.session_id)}
-                    className="p-2 text-gray-500 hover:text-rose-600 hover:bg-rose-50/90 rounded-xl transition-colors cursor-pointer shrink-0"
-                    title="Thu hồi phiên"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-            );
-          })}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span
+                          className="text-sm font-bold text-gray-900 truncate"
+                          title={sess.user_agent || deviceLabel}
+                        >
+                          {deviceLabel}
+                        </span>
+                        {sess.isCurrent && (
+                          <span className="inline-flex items-center gap-1 text-[10px] bg-emerald-500/12 text-emerald-700 border border-emerald-200/80 px-2 py-0.5 rounded-full font-bold shrink-0">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                            Hiện tại
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-gray-500 mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                        <span className="font-medium">{ipDisplay}</span>
+                        <span aria-hidden="true">·</span>
+                        <span>Đăng nhập {loginTimestamp}</span>
+                        {expiryDate && (
+                          <>
+                            <span aria-hidden="true" className="hidden sm:inline">·</span>
+                            <span className="hidden sm:inline text-gray-400">
+                              Hết hạn {expiryDate}
+                            </span>
+                          </>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+
+                  {sess.isCurrent ? (
+                    <button
+                      type="button"
+                      onClick={logout}
+                      className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-gray-700 hover:text-rose-600 bg-white/85 hover:bg-rose-50/90 rounded-xl border border-gray-200/70 hover:border-rose-200 transition-colors cursor-pointer shrink-0"
+                      title="Đăng xuất phiên hiện tại"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      <span>Đăng xuất</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handleRevokeSession(sess.session_id)}
+                      className="p-2 text-gray-400 hover:text-rose-600 hover:bg-rose-50/90 rounded-xl border border-transparent hover:border-rose-200/60 transition-colors cursor-pointer shrink-0"
+                      title="Đăng xuất thiết bị này"
+                      aria-label={`Đăng xuất ${deviceLabel}`}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              );
+            })
+          )}
         </div>
       </GlassCard>
 

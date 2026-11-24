@@ -19,6 +19,8 @@ export interface ThreeStudyDioramaStageProps {
   onCardClick?: (cardId: string, cardIdx: number) => void;
   /** Called when the user clicks directly on a 3D HSK textbook mesh in Scene 3 */
   onBookClick?: (level: number) => void;
+  /** Called when the user clicks directly on the 3D TianZiGe slab in Scene 1 to enter interactive stroke drawing */
+  onTabletClick?: () => void;
   theme?: 'dark' | 'light';
   className?: string;
 }
@@ -170,13 +172,14 @@ function createTianZiGeTexture(char: string, pinyin: string, strokes: number): T
   ctx.stroke();
   ctx.setLineDash([]);
 
-  // Clean minimalist metadata header
+  // Clean minimalist metadata header (Noto Sans / Segoe UI renders Pinyin carons ǒ/ǎ/ǐ cleanly)
   ctx.fillStyle = '#C41E3A';
-  ctx.font = '600 18px "JetBrains Mono", monospace';
+  ctx.font = '700 20px "Noto Sans", "Segoe UI", Arial, sans-serif';
   ctx.textAlign = 'left';
   ctx.fillText(pinyin, 62, 80);
   ctx.textAlign = 'right';
   ctx.fillStyle = '#6B625C';
+  ctx.font = '600 18px "Be Vietnam Pro", "Noto Sans", "Segoe UI", sans-serif';
   ctx.fillText(`${strokes} nét`, size - 62, 80);
 
   // Calligraphic Hanzi in sumi ink
@@ -233,7 +236,7 @@ function createTianZiGeBackTexture(
 
   // Top scholarly inscription
   ctx.fillStyle = '#E6BE4C';
-  ctx.font = '600 17px "JetBrains Mono", monospace';
+  ctx.font = '600 17px "Be Vietnam Pro", "Noto Sans", "Segoe UI", sans-serif';
   ctx.fillText('LUYỆN VIẾT CHỮ HÁN · THỨ TỰ NÉT', size / 2, 82);
 
   // Central Traditional Vermilion Seal Square (印章)
@@ -254,7 +257,7 @@ function createTianZiGeBackTexture(
 
   // Pinyin & stroke metadata below seal
   ctx.fillStyle = '#F5EFE6';
-  ctx.font = '700 24px "JetBrains Mono", monospace';
+  ctx.font = '700 24px "Noto Sans", "Segoe UI", Arial, sans-serif';
   ctx.fillText(`${pinyin} · ${strokes} nét chuẩn`, size / 2, 392);
 
   ctx.fillStyle = 'rgba(230, 190, 76, 0.78)';
@@ -293,7 +296,7 @@ function createCardFrontTexture(spec: (typeof CARD_SPECS)[number]): THREE.Canvas
   ctx.textBaseline = 'middle';
 
   ctx.fillStyle = '#78716C';
-  ctx.font = '600 20px "JetBrains Mono", monospace';
+  ctx.font = '600 20px "Be Vietnam Pro", "Noto Sans", "Segoe UI", sans-serif';
   ctx.fillText('HSK 1 · THẺ LẬT TỪ', w / 2, 88);
 
   ctx.fillStyle = spec.ink;
@@ -301,16 +304,16 @@ function createCardFrontTexture(spec: (typeof CARD_SPECS)[number]): THREE.Canvas
   ctx.fillText(spec.hanzi, w / 2, h / 2 - 28);
 
   ctx.fillStyle = spec.accent;
-  ctx.font = '700 40px "JetBrains Mono", monospace';
+  ctx.font = '700 40px "Noto Sans", "Segoe UI", Arial, sans-serif';
   ctx.fillText(spec.pinyin, w / 2, h / 2 + 114);
 
   ctx.fillStyle = '#44403C';
-  ctx.font = '600 30px "Be Vietnam Pro", sans-serif';
+  ctx.font = '600 30px "Be Vietnam Pro", "Noto Sans", sans-serif';
   ctx.fillText(spec.meaning, w / 2, h - 122);
 
   // Subtle interactive click prompt on bottom of card face
   ctx.fillStyle = 'rgba(28, 25, 23, 0.42)';
-  ctx.font = '500 16px "JetBrains Mono", monospace';
+  ctx.font = '500 16px "Be Vietnam Pro", "Noto Sans", "Segoe UI", sans-serif';
   ctx.fillText('↻ BẤM VÀO THẺ ĐỂ LẬT', w / 2, h - 62);
 
   const tex = new THREE.CanvasTexture(canvas);
@@ -343,7 +346,7 @@ function createCardBackTexture(spec: (typeof CARD_SPECS)[number]): THREE.CanvasT
   ctx.textBaseline = 'middle';
 
   ctx.fillStyle = '#F2C94C';
-  ctx.font = '600 22px "JetBrains Mono", monospace';
+  ctx.font = '600 22px "Be Vietnam Pro", "Noto Sans", "Segoe UI", sans-serif';
   ctx.fillText(`HÁN-VIỆT: ${spec.sino.toUpperCase()}`, w / 2, 102);
 
   ctx.fillStyle = '#FFFFFF';
@@ -351,7 +354,7 @@ function createCardBackTexture(spec: (typeof CARD_SPECS)[number]): THREE.CanvasT
   ctx.fillText(spec.hanzi, w / 2, 214);
 
   ctx.fillStyle = '#F5EFE6';
-  ctx.font = '600 32px "Be Vietnam Pro", sans-serif';
+  ctx.font = '600 32px "Be Vietnam Pro", "Noto Sans", sans-serif';
   ctx.fillText(spec.meaning, w / 2, 306);
 
   ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
@@ -364,11 +367,11 @@ function createCardBackTexture(spec: (typeof CARD_SPECS)[number]): THREE.CanvasT
   ctx.fillText(spec.example, w / 2, 426);
 
   ctx.fillStyle = '#D6D0C8';
-  ctx.font = '500 20px "Be Vietnam Pro", sans-serif';
+  ctx.font = '500 20px "Be Vietnam Pro", "Noto Sans", sans-serif';
   ctx.fillText(spec.exampleVi, w / 2, 494);
 
   ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-  ctx.font = '500 16px "JetBrains Mono", monospace';
+  ctx.font = '500 16px "Be Vietnam Pro", "Noto Sans", "Segoe UI", sans-serif';
   ctx.fillText('↻ BẤM ĐỂ LẬT MẶT TRƯỚC', w / 2, h - 62);
 
   const tex = new THREE.CanvasTexture(canvas);
@@ -454,6 +457,7 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
   enabledScenes = [0, 1, 2, 3],
   onCardClick,
   onBookClick,
+  onTabletClick,
   theme = 'light',
   className = '',
 }) => {
@@ -464,8 +468,8 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
   const isActiveRef = useRef<boolean>(isActive);
   isActiveRef.current = isActive;
 
-  const callbacksRef = useRef({ onCardClick, onBookClick });
-  callbacksRef.current = { onCardClick, onBookClick };
+  const callbacksRef = useRef({ onCardClick, onBookClick, onTabletClick });
+  callbacksRef.current = { onCardClick, onBookClick, onTabletClick };
 
   const stateRef = useRef({
     activeScene,
@@ -567,47 +571,92 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
     });
 
     // ══════════════════════════════════════════════════════════════════════════
-    // SCENE 0: 4 TONES SCULPTURAL ACOUSTIC CURVES (mā · má · mǎ · mà)
+    // SCENE 0: 3D GUQIN & JADE HARMONIC PITCH SYNTHESIZER (5-LEVEL TONE STAGE)
+    // - 5 Golden Guqin Pitch Strings (Chao Yuen Ren 1..5 pitch levels: 55, 35, 214, 51)
+    // - 28 Morphing 3D Acoustic Resonance Wave Pillars with Brass & Pearl Caps
+    // - Elevated Active Tone Ribbon + Whisper-Thin Reference Filaments + Gyroscopic Sonic Orb
     // ══════════════════════════════════════════════════════════════════════════
     const tonesGroup = new THREE.Group();
     rootRig.add(tonesGroup);
 
-    const railGeo = new THREE.BoxGeometry(4.5, 0.014, 0.014);
-    const railMat = new THREE.MeshBasicMaterial({
-      color: isLight ? 0x1c1917 : 0xffffff,
-      transparent: true,
-      opacity: isLight ? 0.16 : 0.15,
+    const brassStageMat = new THREE.MeshStandardMaterial({
+      color: 0xc89d42,
+      metalness: 0.78,
+      roughness: 0.26,
     });
-    [-1.1, 0, 1.1].forEach((ry) => {
+
+    // Architectural Base Plinth & Side Bridge Pillars (Guqin acoustic resonator bridge)
+    const plinthGeo = new THREE.BoxGeometry(4.45, 0.08, 0.56);
+    const plinthMat = new THREE.MeshStandardMaterial({
+      color: 0x261f1d,
+      metalness: 0.2,
+      roughness: 0.42,
+    });
+    const plinthMesh = new THREE.Mesh(plinthGeo, plinthMat);
+    plinthMesh.position.set(0, -1.36, 0);
+    tonesGroup.add(plinthMesh);
+
+    const plinthGoldTrimGeo = new THREE.BoxGeometry(4.52, 0.025, 0.6);
+    const plinthGoldTrim = new THREE.Mesh(plinthGoldTrimGeo, brassStageMat);
+    plinthGoldTrim.position.set(0, -1.31, 0);
+    tonesGroup.add(plinthGoldTrim);
+
+    // Left & Right Vertical Pitch Scale Posts (Cao độ 1 → 5)
+    const postGeo = new THREE.CylinderGeometry(0.026, 0.026, 2.55, 16);
+    [-2.14, 2.14].forEach((px) => {
+      const post = new THREE.Mesh(postGeo, brassStageMat);
+      post.position.set(px, -0.05, -0.18);
+      tonesGroup.add(post);
+    });
+
+    // 5 Horizontal Guqin Pitch Strings (Levels 1..5: y = -1.04 to +1.04)
+    const railGeo = new THREE.CylinderGeometry(0.008, 0.008, 4.28, 12);
+    railGeo.rotateZ(Math.PI / 2);
+    const railMat = new THREE.MeshBasicMaterial({
+      color: isLight ? 0x8a6d2f : 0xffffff,
+      transparent: true,
+      opacity: isLight ? 0.28 : 0.22,
+    });
+    const pegGeo = new THREE.SphereGeometry(0.042, 14, 14);
+    [-1.04, -0.52, 0, 0.52, 1.04].forEach((ry) => {
       const r = new THREE.Mesh(railGeo, railMat);
-      r.position.set(0, ry, -0.5);
+      r.position.set(0, ry, -0.18);
       tonesGroup.add(r);
+      [-2.14, 2.14].forEach((px) => {
+        const peg = new THREE.Mesh(pegGeo, brassStageMat);
+        peg.position.set(px, ry, -0.18);
+        tonesGroup.add(peg);
+      });
     });
 
     const toneCurves = [
+      // Tone 1 (55): High flat plateau
       new THREE.CatmullRomCurve3([
-        new THREE.Vector3(-1.95, 1.05, 0),
-        new THREE.Vector3(-0.65, 1.05, 0),
-        new THREE.Vector3(0.65, 1.05, 0),
-        new THREE.Vector3(1.95, 1.05, 0),
+        new THREE.Vector3(-1.92, 1.04, 0),
+        new THREE.Vector3(-0.64, 1.04, 0),
+        new THREE.Vector3(0.64, 1.04, 0),
+        new THREE.Vector3(1.92, 1.04, 0),
       ]),
+      // Tone 2 (35): Rising from mid-level 3 to high-level 5
       new THREE.CatmullRomCurve3([
-        new THREE.Vector3(-1.95, -0.45, 0),
-        new THREE.Vector3(-0.5, -0.1, 0),
-        new THREE.Vector3(0.85, 0.52, 0),
-        new THREE.Vector3(1.95, 1.15, 0),
+        new THREE.Vector3(-1.92, -0.08, 0),
+        new THREE.Vector3(-0.6, 0.16, 0),
+        new THREE.Vector3(0.72, 0.64, 0),
+        new THREE.Vector3(1.92, 1.06, 0),
       ]),
+      // Tone 3 (214): Dipping from level 2 down to 1, then rising to level 4
       new THREE.CatmullRomCurve3([
-        new THREE.Vector3(-1.95, -0.25, 0),
-        new THREE.Vector3(-0.55, -1.1, 0),
-        new THREE.Vector3(0.75, -0.75, 0),
-        new THREE.Vector3(1.95, 0.42, 0),
+        new THREE.Vector3(-1.92, -0.36, 0),
+        new THREE.Vector3(-0.58, -1.04, 0),
+        new THREE.Vector3(0.68, -0.56, 0),
+        new THREE.Vector3(1.92, 0.52, 0),
       ]),
+      // Tone 4 (51): Sharp decisive drop from peak level 5 down to level 1
       new THREE.CatmullRomCurve3([
-        new THREE.Vector3(-1.95, 1.12, 0),
-        new THREE.Vector3(-0.55, 0.48, 0),
-        new THREE.Vector3(0.75, -0.35, 0),
-        new THREE.Vector3(1.95, -1.12, 0),
+        new THREE.Vector3(-1.92, 1.06, 0),
+        new THREE.Vector3(-0.56, 0.46, 0),
+        new THREE.Vector3(0.72, -0.34, 0),
+        new THREE.Vector3(1.92, -1.04, 0),
       ]),
     ];
 
@@ -620,27 +669,81 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
     }> = [];
 
     toneCurves.forEach((curve, idx) => {
-      const tubeGeo = new THREE.TubeGeometry(curve, 64, 0.11, 18, false);
+      const tubeGeo = new THREE.TubeGeometry(curve, 72, 0.058, 20, false);
       const mat = new THREE.MeshStandardMaterial({
         color: toneColors[idx],
-        metalness: 0.12,
-        roughness: 0.32,
+        metalness: 0.25,
+        roughness: 0.24,
+        transparent: true,
+        opacity: 1,
       });
       const mesh = new THREE.Mesh(tubeGeo, mat);
-      const baseZ = (1.5 - idx) * 0.5;
+      const baseZ = 0.24;
       mesh.position.z = baseZ;
       tonesGroup.add(mesh);
       toneMeshes.push({ mesh, mat, baseZ, curve });
     });
 
-    const orbGeo = new THREE.SphereGeometry(0.18, 24, 24);
+    // 28 Morphing 3D Acoustic Resonance Wave Pillars (Harmonic Spectrum Visualizer)
+    const BAR_COUNT = 28;
+    const barGeo = new THREE.CylinderGeometry(0.036, 0.036, 1, 16);
+    const capGeo = new THREE.SphereGeometry(0.052, 16, 16);
+    const waveBars: Array<{
+      u: number;
+      x: number;
+      barMesh: THREE.Mesh;
+      barMat: THREE.MeshStandardMaterial;
+      capMesh: THREE.Mesh;
+      currentY: number;
+    }> = [];
+
+    for (let i = 0; i < BAR_COUNT; i++) {
+      const u = i / (BAR_COUNT - 1);
+      const x = -1.92 + u * 3.84;
+      const barMat = new THREE.MeshStandardMaterial({
+        color: 0xd4a646,
+        metalness: 0.42,
+        roughness: 0.28,
+        transparent: true,
+        opacity: 0.86,
+      });
+      const barMesh = new THREE.Mesh(barGeo, barMat);
+      const capMesh = new THREE.Mesh(capGeo, brassStageMat);
+      tonesGroup.add(barMesh);
+      tonesGroup.add(capMesh);
+      waveBars.push({
+        u,
+        x,
+        barMesh,
+        barMat,
+        capMesh,
+        currentY: 0,
+      });
+    }
+
+    // Luminous Travelling Pitch Orb + Dual Gyroscopic Sonic Halo Rings
+    const pitchOrbGroup = new THREE.Group();
+    tonesGroup.add(pitchOrbGroup);
+
+    const orbGeo = new THREE.SphereGeometry(0.145, 28, 28);
     const orbMat = new THREE.MeshStandardMaterial({
       color: 0xffffff,
-      roughness: 0.25,
-      metalness: 0.08,
+      roughness: 0.16,
+      metalness: 0.15,
+      emissive: 0xc41e3a,
+      emissiveIntensity: 0.22,
     });
     const pitchOrb = new THREE.Mesh(orbGeo, orbMat);
-    tonesGroup.add(pitchOrb);
+    pitchOrbGroup.add(pitchOrb);
+
+    const haloRing1Geo = new THREE.TorusGeometry(0.24, 0.014, 14, 48);
+    const haloRing1 = new THREE.Mesh(haloRing1Geo, brassStageMat);
+    pitchOrbGroup.add(haloRing1);
+
+    const haloRing2Geo = new THREE.TorusGeometry(0.32, 0.009, 12, 48);
+    const haloRing2 = new THREE.Mesh(haloRing2Geo, brassStageMat);
+    haloRing2.rotation.x = Math.PI / 2.4;
+    pitchOrbGroup.add(haloRing2);
 
     // ══════════════════════════════════════════════════════════════════════════
     // SCENE 1: REFINED TIANZIGE MATTE PORCELAIN & WALNUT CALLIGRAPHY SLAB
@@ -682,6 +785,7 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
       tabletFaceMat,
       tabletBackMat,
     ]);
+    tabletMesh.userData = { kind: 'tablet' };
     strokeGroup.add(tabletMesh);
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -860,6 +964,7 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
 
     const getInteractiveTargets = (): THREE.Object3D[] => {
       const sc = stateRef.current.activeScene;
+      if (sc === 1) return [tabletMesh];
       if (sc === 2) return cardEntries.map((c) => c.mesh);
       if (sc === 3) return hskBookEntries.map((b) => b.mesh);
       return [];
@@ -981,6 +1086,11 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
           const hits = raycaster.intersectObjects(targets, false);
           if (hits.length > 0) {
             const ud = hits[0].object.userData;
+            if (ud.kind === 'tablet' && callbacksRef.current.onTabletClick) {
+              callbacksRef.current.onTabletClick();
+              container.style.cursor = 'pointer';
+              return;
+            }
             if (ud.kind === 'card' && callbacksRef.current.onCardClick) {
               if (cardEntries[ud.cardIdx]) {
                 cardEntries[ud.cardIdx].userRotY = 0;
@@ -1094,22 +1204,56 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
       rootRig.rotation.x += (dragRotX - rootRig.rotation.x) * Math.min(1, dt * 8);
 
       if (tonesGroup.visible) {
+        const activeToneIdx = Math.min(3, Math.max(0, st.activeToneIdx));
+        const activeTone = toneMeshes[activeToneIdx] || toneMeshes[0];
+        const activeColor = new THREE.Color(toneColors[activeToneIdx]);
+        const goldBaseColor = new THREE.Color(0xd4a646);
+
         toneMeshes.forEach((entry, idx) => {
-          const isSelected = idx === st.activeToneIdx;
-          const targetZ = isSelected ? 0.98 : entry.baseZ - 0.35;
-          const targetScale = isSelected ? 1.1 : 0.88;
-          entry.mesh.position.z += (targetZ - entry.mesh.position.z) * Math.min(1, dt * 8);
-          entry.mesh.scale.x += (targetScale - entry.mesh.scale.x) * Math.min(1, dt * 8);
-          entry.mesh.scale.y += (targetScale - entry.mesh.scale.y) * Math.min(1, dt * 8);
+          const isSelected = idx === activeToneIdx;
+          const targetZ = isSelected ? 0.28 : -0.18;
+          const targetOpacity = isSelected ? 1.0 : 0.16;
+          const targetTubeScale = isSelected ? 1.05 : 0.42;
+
+          entry.mesh.position.z += (targetZ - entry.mesh.position.z) * Math.min(1, dt * 9);
+          entry.mat.opacity += (targetOpacity - entry.mat.opacity) * Math.min(1, dt * 9);
+          entry.mesh.scale.z += (targetTubeScale - entry.mesh.scale.z) * Math.min(1, dt * 9);
         });
-        const activeTone = toneMeshes[st.activeToneIdx] || toneMeshes[0];
-        const u = ((t * 0.48 * m) % 1 + 1) % 1;
+
+        const u = ((t * 0.42 * m) % 1 + 1) % 1;
         const pt = activeTone.curve.getPointAt(u);
-        pitchOrb.position.set(
-          pt.x * activeTone.mesh.scale.x,
-          pt.y * activeTone.mesh.scale.y,
-          activeTone.mesh.position.z
-        );
+
+        orbMat.emissive.copy(activeColor);
+        pitchOrbGroup.position.set(pt.x, pt.y, activeTone.mesh.position.z);
+        haloRing1.rotation.z = t * 1.8 * m;
+        haloRing1.rotation.y = Math.sin(t * 1.2) * 0.4 * m;
+        haloRing2.rotation.z = -t * 1.4 * m;
+        const pulseScale = 1 + Math.sin(t * 5.0 * m) * 0.08;
+        haloRing1.scale.setScalar(pulseScale);
+
+        // Morph the 28 3D acoustic resonance pillars to follow the active tone curve + sonic ripple
+        const baseFloorY = -1.28;
+        waveBars.forEach((bar) => {
+          const curvePt = activeTone.curve.getPointAt(bar.u);
+          const distToOrb = Math.abs(bar.u - u);
+          const sonicPulse = Math.max(0, 1 - distToOrb * 5.5);
+          const harmonicWave = Math.sin(t * 3.8 * m + bar.u * 9.0) * 0.04;
+          const targetTopY = curvePt.y + sonicPulse * 0.16 + harmonicWave;
+
+          bar.currentY += (targetTopY - bar.currentY) * Math.min(1, dt * 11);
+          const barHeight = Math.max(0.14, bar.currentY - baseFloorY);
+
+          bar.barMesh.scale.set(
+            1 + sonicPulse * 0.45,
+            barHeight,
+            1 + sonicPulse * 0.45
+          );
+          bar.barMesh.position.set(bar.x, baseFloorY + barHeight / 2, 0.04);
+          bar.capMesh.position.set(bar.x, baseFloorY + barHeight + 0.03, 0.04);
+          bar.capMesh.scale.setScalar(1 + sonicPulse * 0.38);
+
+          bar.barMat.color.copy(goldBaseColor).lerp(activeColor, 0.35 + sonicPulse * 0.65);
+        });
       }
 
       if (strokeGroup.visible) {
@@ -1193,14 +1337,25 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
       tabletMatRef.current = null;
       tabletBackMatRef.current = null;
 
+      plinthGeo.dispose();
+      plinthMat.dispose();
+      plinthGoldTrimGeo.dispose();
+      postGeo.dispose();
+      pegGeo.dispose();
       railGeo.dispose();
       railMat.dispose();
+      barGeo.dispose();
+      capGeo.dispose();
+      waveBars.forEach((wb) => wb.barMat.dispose());
       toneMeshes.forEach((tm) => {
         tm.mesh.geometry.dispose();
         tm.mat.dispose();
       });
       orbGeo.dispose();
       orbMat.dispose();
+      haloRing1Geo.dispose();
+      haloRing2Geo.dispose();
+      brassStageMat.dispose();
       tabletGeo.dispose();
       tabletFaceMat.map?.dispose();
       tabletFaceMat.dispose();
@@ -1249,7 +1404,7 @@ export const ThreeStudyDioramaStage: React.FC<ThreeStudyDioramaStageProps> = ({
     <div
       ref={mountRef}
       role="img"
-      aria-label="Mô hình học tiếng Trung 3D Hanzi4U"
+      aria-label="Không gian học tiếng Trung Hanzi4U"
       className={`relative w-full h-full select-none touch-none ${className}`}
     />
   );

@@ -40,7 +40,7 @@ export const PathMap: React.FC<{
     <div className="space-y-6">
       {/* Section header */}
       <div className="flex items-center gap-3">
-        <div className="flex-1 px-5 py-3.5 rounded-2xl bg-white/80 dark:bg-slate-800/90 border border-rose-100 dark:border-white/10 shadow-sm font-extrabold text-slate-800 dark:text-slate-100">
+        <div className="flex-1 px-5 py-3.5 rounded-2xl glass-light font-extrabold text-[#1C1917]">
           {title}
         </div>
         {onHeaderAction && (
@@ -48,7 +48,7 @@ export const PathMap: React.FC<{
             type="button"
             onClick={onHeaderAction}
             aria-label="Chi tiết"
-            className="w-12 h-12 rounded-2xl bg-white/80 dark:bg-slate-800/90 border border-rose-100 dark:border-white/10 shadow-sm flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-rose-500 cursor-pointer"
+            className="w-12 h-12 rounded-2xl glass-light flex items-center justify-center text-[#57534E] hover:text-[#C41E3A] cursor-pointer transition-colors"
           >
             <FileText className="w-5 h-5" />
           </button>
@@ -65,7 +65,7 @@ export const PathMap: React.FC<{
           <path
             d={roadPath}
             fill="none"
-            className="stroke-rose-200 dark:stroke-slate-700"
+            className="stroke-[#E6DACB] dark:stroke-slate-700"
             strokeWidth="9"
             strokeLinecap="round"
             vectorEffect="non-scaling-stroke"
@@ -73,7 +73,7 @@ export const PathMap: React.FC<{
           <path
             d={roadPath}
             fill="none"
-            className="stroke-white dark:stroke-slate-500"
+            className="stroke-[#FCFBF8] dark:stroke-slate-500"
             strokeWidth="2"
             strokeDasharray="8 10"
             strokeLinecap="round"
@@ -89,24 +89,24 @@ export const PathMap: React.FC<{
 
           const tile = (
             <div className="relative">
-              {isCurrent && <span className="absolute -inset-2 rounded-[22px] border-2 border-rose-400" />}
+              {isCurrent && <span className="absolute -inset-2 rounded-[22px] border-2 border-[#D4A017]" />}
               <div
-                className={`relative w-[72px] h-[72px] rounded-[18px] flex items-center justify-center font-chinese font-black text-3xl transition-transform ${
+                className={`relative w-[72px] h-[72px] rounded-[18px] flex items-center justify-center font-hanzi-serif font-black text-3xl transition-transform ${
                   isLocked
-                    ? 'bg-slate-100 text-slate-600 border border-slate-200'
+                    ? 'bg-[#EFEAE2] text-[#78716C] border border-[#1C1917]/10'
                     : 'bg-[#C41E3A] text-white shadow-[0_6px_0_#8A1228] hover:-translate-y-0.5'
                 }`}
               >
-                <span className="absolute inset-[5px] rounded-[13px] border border-white/40" />
+                <span className="absolute inset-[5px] rounded-[13px] border border-[#E6BE4C]/45" />
                 {node.glyph}
               </div>
               {isLocked && (
-                <span className="absolute -bottom-2 -right-2 w-7 h-7 rounded-full bg-slate-600 text-white flex items-center justify-center border-2 border-white">
+                <span className="absolute -bottom-2 -right-2 w-7 h-7 rounded-full bg-[#57534E] text-white flex items-center justify-center border-2 border-[#FCFBF8]">
                   <Lock className="w-3.5 h-3.5" />
                 </span>
               )}
               {isDone && (
-                <span className="absolute -bottom-2 -right-2 w-7 h-7 rounded-full bg-emerald-700 text-white flex items-center justify-center border-2 border-white">
+                <span className="absolute -bottom-2 -right-2 w-7 h-7 rounded-full bg-[#157A57] text-white flex items-center justify-center border-2 border-[#FCFBF8]">
                   <Check className="w-4 h-4" />
                 </span>
               )}
@@ -131,7 +131,7 @@ export const PathMap: React.FC<{
 
               {isCurrent && (
                 <span
-                  className={`absolute top-5 ${i % 2 === 0 ? 'left-full ml-4' : 'right-full mr-4'} whitespace-nowrap px-3 py-1.5 rounded-xl bg-slate-800 text-white text-xs font-bold`}
+                  className={`absolute top-5 ${i % 2 === 0 ? 'left-full ml-4' : 'right-full mr-4'} whitespace-nowrap px-3 py-1.5 rounded-xl bg-[#1C1917] text-white text-xs font-bold shadow-md`}
                 >
                   Học tiếp
                 </span>
@@ -140,10 +140,10 @@ export const PathMap: React.FC<{
               <span
                 className={`max-w-[150px] truncate px-3 py-1 rounded-lg text-xs font-bold ${
                   isCurrent
-                    ? 'bg-rose-700 text-white'
+                    ? 'bg-[#C41E3A] text-white'
                     : isLocked
-                      ? 'bg-white/80 text-slate-600 border border-slate-200'
-                      : 'bg-white text-rose-700 border border-rose-200'
+                      ? 'bg-[#FCFBF8]/85 text-[#78716C] border border-[#1C1917]/10'
+                      : 'bg-[#FCFBF8] text-[#A51730] border border-[#C41E3A]/20'
                 }`}
               >
                 {node.label}
@@ -162,7 +162,7 @@ export const TodayFloatingButton: React.FC<{
   label?: string;
 }> = ({ fallbackLessonId, label = 'Bài hôm nay' }) => {
   const cls =
-    'fixed bottom-6 left-1/2 lg:left-[calc(50%+var(--sidebar-offset,17.25rem)/2)] -translate-x-1/2 z-30 inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-rose-700 hover:bg-rose-800 text-white font-bold text-sm shadow-lg shadow-rose-500/30 cursor-pointer transition-transform hover:-translate-y-0.5';
+    'fixed bottom-6 left-1/2 lg:left-[calc(50%+var(--sidebar-offset,17.25rem)/2)] -translate-x-1/2 z-30 inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-[#C41E3A] hover:bg-[#A51730] text-white font-bold text-sm shadow-lg shadow-[#C41E3A]/30 cursor-pointer transition-transform hover:-translate-y-0.5';
   return (
     <button
       type="button"

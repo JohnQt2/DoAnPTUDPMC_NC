@@ -116,6 +116,19 @@ export class UserController {
     }
   };
 
+  getWeeklyLeaderboard = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = req.user!.userId;
+      const leaderboard = await userService.getWeeklyLeaderboard(userId);
+      res.status(200).json({
+        success: true,
+        data: leaderboard,
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
+
   updateNotifications = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userId = req.user!.userId;

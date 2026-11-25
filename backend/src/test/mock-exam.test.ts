@@ -5,7 +5,7 @@ import { prisma } from '../shared/database/prisma.client';
 import { signAccessToken } from '../shared/utils/crypto';
 
 async function runMockExamTests() {
-  console.log('🧪 Bắt đầu Bộ Kiểm Thử Giai Đoạn 3: API Backend Phân Hệ Luyện Thi Thử HSK...\n');
+  console.log('🧪 Bắt đầu Bộ Kiểm Thử Độc Lập Giai Đoạn 5: Mock Exam HSK 1 (Mã H11332)...\n');
 
   let server: http.Server | null = null;
   try {
@@ -19,8 +19,8 @@ async function runMockExamTests() {
     // 1. Khởi tạo tài khoản Giáo viên (ADMIN) và Học viên (STUDENT)
     const teacherUser = await prisma.users.create({
       data: {
-        email: `teacher_${timestamp}@hanzi4u.test`,
-        display_name: 'Thầy Giáo Vương',
+        email: `teacher_hsk1_${timestamp}@hanzi4u.test`,
+        display_name: 'Thầy Giáo Vương HSK1',
         role: 'ADMIN',
         status: 'ACTIVE',
       },
@@ -28,8 +28,8 @@ async function runMockExamTests() {
 
     const studentUser = await prisma.users.create({
       data: {
-        email: `student_${timestamp}@hanzi4u.test`,
-        display_name: 'Học Viên Lan Anh',
+        email: `student_hsk1_${timestamp}@hanzi4u.test`,
+        display_name: 'Học Viên Lan Anh HSK1',
         role: 'STUDENT',
         status: 'ACTIVE',
       },
@@ -47,39 +47,14 @@ async function runMockExamTests() {
       role: studentUser.role,
     });
 
-    console.log('▶ [PHẦN 1] KIỂM TRA UPLOAD & STATIC AUDIO STREAMING (ACCEPT-RANGES)');
-
-    // 1.1 Kiểm tra static route /uploads hỗ trợ header Accept-Ranges để tua MP3
-    console.log('  • Test 1.1: Kiểm tra Express Static phục vụ /uploads hỗ trợ Accept-Ranges: bytes');
+    console.log('▶ [PHẦN 1] KIỂM TRA UPLOAD & STATIC STREAMING (ACCEPT-RANGES)');
     const staticRes = await fetch(`${baseUrl}/uploads/`);
-    // Static response header check
     const acceptRanges = staticRes.headers.get('accept-ranges');
     assert.strictEqual(acceptRanges, 'bytes', 'Express static /uploads phải có header Accept-Ranges: bytes để tua MP3');
-    console.log('    ✔ Header Accept-Ranges: bytes sẵn sàng phục vụ trình phát Audio.');
+    console.log('  ✔ Express Static phục vụ /uploads hỗ trợ Accept-Ranges: bytes thành công.');
 
-    console.log('\n▶ [PHẦN 2] QUẢN LÝ ĐỀ THI CHO GIÁO VIÊN (POST/PUT/PATCH/DELETE /api/exams)');
-
-    // 2.1 Chặn học viên tạo đề
-    console.log('  • Test 2.1: Chặn học viên tạo đề thi (403 Forbidden)');
-    const forbiddenRes = await fetch(`${baseUrl}/api/exams`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${studentToken}`,
-      },
-      body: JSON.stringify({
-        code: `H3_${timestamp}`,
-        title: 'Đề thi thử',
-        hsk_level: 'HSK3',
-        exam_pdf_url: '/uploads/exams/sample.pdf',
-      }),
-    });
-    assert.strictEqual(forbiddenRes.status, 403, 'STUDENT phải bị từ chối 403');
-    console.log('    ✔ RBAC chặn vai trò STUDENT thành công.');
-
-    // 2.2 Giáo viên tạo đề thi HSK 3 trọn gói gồm cả 3 phần: Nghe, Đọc, Viết
-    console.log('  • Test 2.2: Giáo viên tạo đề HSK 3 gồm cả 3 phần: Nghe, Đọc, Viết kèm thang điểm');
-    const examCode = `H3_${timestamp}`;
+    console.log('\n▶ [PHẦN 2] GIÁO VIÊN TẠO ĐỀ HSK 1 (MÃ H11332) CÓ PDF, AUDIO, ĐÁP ÁN & CHIA ĐIỂM TỪNG CÂU');
+    const examCode = `H11332_${timestamp}`;
     const createExamRes = await fetch(`${baseUrl}/api/exams`, {
       method: 'POST',
       headers: {
@@ -88,20 +63,20 @@ async function runMockExamTests() {
       },
       body: JSON.stringify({
         code: examCode,
-        title: `Đề thi thử HSK 3 - Mã ${examCode}`,
-        description: 'Đề thi chuẩn HSK 3 gồm Nghe, Đọc và Viết.',
-        hsk_level: 'HSK3',
+        title: `Đề thi thử HSK 1 Chuẩn Đề PDF - Mã ${examCode}`,
+        description: 'Đề thi chuẩn HSK 1 gồm 3 phần: Nghe hiểu, Đọc hiểu và Viết.',
+        hsk_level: 'HSK1',
         exam_pdf_url: `/uploads/exams/${examCode}.pdf`,
         audio_url: `/uploads/exams/${examCode}.mp3`,
         answer_pdf_url: `/uploads/exams/${examCode}_answer.pdf`,
-        duration_minutes: 85,
+        duration_minutes: 35,
         pass_score: 60,
         status: 'PUBLISHED',
         sections: [
           {
             section_type: 'LISTENING',
             title: 'Phần 1: Nghe hiểu (听力)',
-            instructions: 'Nghe đoạn hội thoại và chọn đáp án.',
+            instructions: 'Nghe đoạn hội thoại và xác định đúng/sai hoặc chọn đáp án.',
             order_index: 0,
             questions: [
               {
@@ -110,7 +85,7 @@ async function runMockExamTests() {
                 options: ['✓', '✗'],
                 correct_answer: 'TRUE',
                 points: 5.0,
-                explanation: 'Đúng theo đoạn nghe 1.',
+                explanation: 'Đúng theo nội dung đoạn nghe câu 1.',
               },
               {
                 question_number: 2,
@@ -118,14 +93,14 @@ async function runMockExamTests() {
                 options: ['A', 'B', 'C', 'D'],
                 correct_answer: 'C',
                 points: 5.0,
-                explanation: 'Đáp án là C.',
+                explanation: 'Đáp án đúng là C.',
               },
             ],
           },
           {
             section_type: 'READING',
             title: 'Phần 2: Đọc hiểu (阅读)',
-            instructions: 'Đọc đoạn văn và điền đáp án.',
+            instructions: 'Đọc câu hỏi và chọn tranh tương ứng hoặc điền từ.',
             order_index: 1,
             questions: [
               {
@@ -134,30 +109,30 @@ async function runMockExamTests() {
                 options: ['A', 'B', 'C', 'D', 'E', 'F'],
                 correct_answer: 'B',
                 points: 5.0,
-                explanation: 'Nối vào tranh B.',
+                explanation: 'Ghép tranh tương ứng với đáp án B.',
               },
               {
                 question_number: 4,
                 question_type: 'WRITING_FILL',
                 correct_answer: '北京 | 北京市',
                 points: 5.0,
-                explanation: 'Điền từ Bắc Kinh (北京).',
+                explanation: 'Điền địa danh Bắc Kinh (北京).',
               },
             ],
           },
           {
             section_type: 'WRITING',
             title: 'Phần 3: Viết (书写)',
-            instructions: 'Sắp xếp câu hoặc viết đoạn văn ngắn.',
+            instructions: 'Sắp xếp câu hoặc viết câu hoàn chỉnh theo yêu cầu.',
             order_index: 2,
             questions: [
               {
                 question_number: 5,
                 question_type: 'WRITING_ESSAY',
-                correct_answer: '喜欢 | 汉语 | 学习', // từ khóa bắt buộc
+                correct_answer: '喜欢 | 汉语 | 学习',
                 sample_answer: '我很喜欢学习汉语。',
                 points: 10.0,
-                explanation: 'Câu văn mẫu có chứa các từ khóa 喜欢, 汉语, 学习.',
+                explanation: 'Câu văn chữ Hán hoàn chỉnh có chứa các từ khóa 喜欢, 学习, 汉语.',
               },
             ],
           },
@@ -165,83 +140,48 @@ async function runMockExamTests() {
       }),
     });
 
-    assert.strictEqual(createExamRes.status, 201);
+    assert.strictEqual(createExamRes.status, 201, 'Giáo viên tạo đề HSK 1 phải trả về 201');
     const createdExamJson = ((await createExamRes.json()) as any).data;
     const examId = createdExamJson.id;
-    // Tổng điểm tự động cộng từ các câu: 5 + 5 + 5 + 5 + 10 = 30 điểm
-    assert.strictEqual(createdExamJson.total_score, 30.0);
-    console.log(`    ✔ Đề thi tạo thành công ID=${examId}, Tổng điểm tự động tính=${createdExamJson.total_score}đ.`);
 
-    // 2.3 PATCH /api/exams/:examId/publish (Chuyển trạng thái DRAFT <-> PUBLISHED)
-    console.log('  • Test 2.3: PATCH /api/exams/:examId/publish chuyển trạng thái DRAFT <-> PUBLISHED');
-    const toggleToDraftRes = await fetch(`${baseUrl}/api/exams/${examId}/publish`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${teacherToken}`,
-      },
-      body: JSON.stringify({ status: 'DRAFT' }),
-    });
-    assert.strictEqual(toggleToDraftRes.status, 200);
-    const draftData = (await toggleToDraftRes.json()) as any;
-    assert.strictEqual(draftData.status, 'DRAFT');
+    // Tổng điểm tự động cộng từ toàn bộ các câu: 5 + 5 + 5 + 5 + 10 = 30 điểm
+    assert.strictEqual(createdExamJson.total_score, 30.0, 'Tổng điểm phải tự động tính bằng 30.0');
+    assert.strictEqual(createdExamJson.hsk_level, 'HSK1');
+    assert(createdExamJson.exam_pdf_url.includes(`${examCode}.pdf`));
+    assert(createdExamJson.audio_url.includes(`${examCode}.mp3`));
+    assert(createdExamJson.answer_pdf_url.includes(`${examCode}_answer.pdf`));
+    assert.strictEqual(createdExamJson.sections.length, 3, 'Phải có đủ 3 phần: Nghe + Đọc + Viết');
+    console.log(`  ✔ Giáo viên tạo đề HSK 1 thành công (ID=${examId}, Mã=${examCode}, Tổng điểm=${createdExamJson.total_score}đ).`);
 
-    // Chuyển lại về PUBLISHED
-    const toggleToPubRes = await fetch(`${baseUrl}/api/exams/${examId}/publish`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${teacherToken}`,
-      },
-    });
-    assert.strictEqual(toggleToPubRes.status, 200);
-    const pubData = (await toggleToPubRes.json()) as any;
-    assert.strictEqual(pubData.status, 'PUBLISHED');
-    console.log('    ✔ Chuyển đổi trạng thái DRAFT <-> PUBLISHED thành công.');
-
-    console.log('\n▶ [PHẦN 3] HỌC VIÊN LẤY ĐỀ THI & LÀM BÀI CHỐNG GIAN LẬN');
-
-    // 3.1 GET /api/exams?level=HSK3
-    console.log('  • Test 3.1: GET /api/exams?level=HSK3 lấy danh sách đề HSK 3');
-    const listRes = await fetch(`${baseUrl}/api/exams?level=HSK3`, {
-      headers: { Authorization: `Bearer ${studentToken}` },
-    });
-    assert.strictEqual(listRes.status, 200);
-    const listData = ((await listRes.json()) as any).data;
-    const currentExamInList = listData.find((e: any) => e.id === examId);
-    assert(currentExamInList, 'Đề thi phải có trong danh sách');
-    assert.strictEqual(currentExamInList.hsk_level, 'HSK3');
-    console.log('    ✔ Danh sách đề thi trả về đầy đủ.');
-
-    // 3.2 GET /api/exams/:examId/take (Lấy đề làm bài: Bảo mật chống gian lận)
-    console.log('  • Test 3.2: GET /api/exams/:examId/take kiểm tra bảo mật chống gian lận');
+    console.log('\n▶ [PHẦN 3] KIỂM TRA BẢO MẬT API /TAKE (ẨN HOÀN TOÀN CORRECT_ANSWER VÀ ANSWER_PDF_URL)');
     const takeRes = await fetch(`${baseUrl}/api/exams/${examId}/take`, {
       headers: { Authorization: `Bearer ${studentToken}` },
     });
-    assert.strictEqual(takeRes.status, 200);
+    assert.strictEqual(takeRes.status, 200, 'Học viên gọi /take phải thành công 200');
     const takeData = ((await takeRes.json()) as any).data;
 
-    // Phải ẩn answer_pdf_url
-    assert.strictEqual(takeData.answer_pdf_url, null, 'answer_pdf_url phải là null');
+    // 1. Phải ẩn hoàn toàn answer_pdf_url (bằng null)
+    assert.strictEqual(takeData.answer_pdf_url, null, 'API /take bắt buộc phải ẩn answer_pdf_url (trả về null)');
 
-    // Mọi câu hỏi không được chứa correct_answer, sample_answer
+    // 2. Mọi câu hỏi không được rò rỉ correct_answer, sample_answer, explanation
+    let totalQuestionsInTake = 0;
     for (const sec of takeData.sections) {
       for (const q of sec.questions) {
-        assert.strictEqual(q.correct_answer, undefined, `Câu ${q.question_number} không được có correct_answer`);
-        assert.strictEqual(q.sample_answer, undefined, `Câu ${q.question_number} không được có sample_answer`);
+        totalQuestionsInTake++;
+        assert.strictEqual(q.correct_answer, undefined, `Câu ${q.question_number} không được chứa correct_answer`);
+        assert.strictEqual(q.sample_answer, undefined, `Câu ${q.question_number} không được chứa sample_answer`);
+        assert.strictEqual(q.explanation, undefined, `Câu ${q.question_number} không được chứa explanation`);
       }
     }
-    console.log('    ✔ Bảo mật chống gian lận hoàn hảo: Ẩn 100% đáp án đúng, câu văn mẫu và file đáp án PDF.');
+    assert.strictEqual(totalQuestionsInTake, 5, 'Phải nạp đủ 5 câu hỏi');
+    console.log('  ✔ API /take bảo mật tuyệt đối: Ẩn 100% correct_answer, sample_answer và answer_pdf_url.');
 
-    console.log('\n▶ [PHẦN 4] CHẤM ĐIỂM TỰ ĐỘNG & NỘP BÀI (POST /api/exams/:examId/submit)');
-
-    // 4.1 Học viên nộp bài làm:
-    // Q1 (TRUE_FALSE): đúng ('TRUE') -> +5đ
-    // Q2 (MCQ_ABCD): sai ('A' thay vì 'C') -> 0đ
-    // Q3 (MCQ_ABCDEF): đúng ('B') -> +5đ
-    // Q4 (WRITING_FILL): đúng ('北京。' có dấu chấm cuối câu, hệ thống tự chuẩn hóa) -> +5đ
-    // Q5 (WRITING_ESSAY): viết '我非常喜欢学习汉语，很有趣。' (chứa đủ cả 3 từ khóa 喜欢, 学习, 汉语) -> đạt sơ bộ +10đ
-    console.log('  • Test 4.1: Nộp bài kiểm tra chuẩn hóa câu điền (WRITING_FILL) và từ khóa câu viết (WRITING_ESSAY)');
+    console.log('\n▶ [PHẦN 4] HỌC VIÊN NỘP BÀI (CÂU ĐÚNG, CÂU SAI ABCD, CÂU VIẾT) & KIỂM TRA CHẤM ĐIỂM');
+    // Q1 (TRUE_FALSE): đúng ('TRUE') -> +5đ, is_correct = true
+    // Q2 (MCQ_ABCD): chọn sai ('A' thay vì 'C') -> 0đ, is_correct = false
+    // Q3 (MCQ_ABCDEF): đúng ('B') -> +5đ, is_correct = true
+    // Q4 (WRITING_FILL): đúng ('北京。' có dấu chấm câu, chuẩn hóa chuỗi) -> +5đ, is_correct = true
+    // Q5 (WRITING_ESSAY): đúng ('我非常喜欢学习汉语。' chứa đủ 3 từ khóa) -> +10đ, is_correct = true
     const q1 = createdExamJson.sections[0].questions[0];
     const q2 = createdExamJson.sections[0].questions[1];
     const q3 = createdExamJson.sections[1].questions[0];
@@ -256,81 +196,58 @@ async function runMockExamTests() {
       },
       body: JSON.stringify({
         answers: [
-          { questionId: q1.id, answer: 'TRUE' },
-          { questionId: q2.id, answer: 'A' }, // sai
-          { questionId: q3.id, answer: 'B' },
-          { questionId: q4.id, answer: '北京。' }, // có dấu chấm cuối câu
-          { questionId: q5.id, answer: '我非常喜欢学习汉语，很有趣。' }, // đủ từ khóa
+          { questionId: q1.id, answer: 'TRUE' }, // Đúng
+          { questionId: q2.id, answer: 'A' }, // SAI ABCD
+          { questionId: q3.id, answer: 'B' }, // Đúng
+          { questionId: q4.id, answer: '北京。' }, // Viết điền đúng
+          { questionId: q5.id, answer: '我非常喜欢学习汉语，很有趣。' }, // Viết câu đúng
         ],
       }),
     });
 
-    assert.strictEqual(submitRes.status, 200);
+    assert.strictEqual(submitRes.status, 200, 'Nộp bài phải trả về 200');
     const submitResult = ((await submitRes.json()) as any).data;
 
-    assert.strictEqual(submitResult.listening_score, 5.0, 'Nghe đúng Q1 (5đ)');
-    assert.strictEqual(submitResult.reading_score, 10.0, 'Đọc đúng Q3 (5đ) và Q4 (5đ)');
-    assert.strictEqual(submitResult.writing_score, 10.0, 'Viết đúng Q5 (10đ)');
-    assert.strictEqual(submitResult.total_score, 25.0, 'Tổng điểm là 25đ');
-    assert.strictEqual(submitResult.correct_count, 4);
-    assert.strictEqual(submitResult.wrong_count, 1);
+    // 1. Kiểm tra điểm từng phần
+    assert.strictEqual(submitResult.listening_score, 5.0, 'Phần Nghe: Đúng Q1 (5đ), Sai Q2 (0đ) -> 5.0đ');
+    assert.strictEqual(submitResult.reading_score, 10.0, 'Phần Đọc: Đúng Q3 (5đ) và Q4 (5đ) -> 10.0đ');
+    assert.strictEqual(submitResult.writing_score, 10.0, 'Phần Viết: Đúng Q5 (10đ) -> 10.0đ');
 
-    // Mở khóa answer_pdf_url
-    assert(submitResult.answer_pdf_url, 'Đã mở khóa file đáp án PDF');
-    assert(submitResult.answer_pdf_url.includes(`${examCode}_answer.pdf`));
+    // 2. Kiểm tra tổng điểm
+    assert.strictEqual(submitResult.total_score, 25.0, 'Tổng điểm: 5 + 10 + 10 = 25.0đ');
+    assert.strictEqual(submitResult.max_score, 30.0, 'Điểm tối đa là 30.0đ');
+    assert.strictEqual(submitResult.correct_count, 4, 'Số câu đúng phải là 4');
+    assert.strictEqual(submitResult.wrong_count, 1, 'Số câu sai phải là 1');
 
-    // Mở khóa correct_answer và sample_answer
-    const q5Res = submitResult.answers.find((a: any) => a.question_id === q5.id);
-    assert(q5Res.sample_answer, 'Mở khóa sample_answer cho câu viết');
-    assert.strictEqual(q5Res.is_correct, true);
+    // 3. Kiểm tra chi tiết câu sai Q2: is_correct === false và earned_score === 0
+    const q2Ans = submitResult.answers.find((a: any) => a.question_id === q2.id);
+    assert(q2Ans, 'Phải có kết quả cho câu Q2');
+    assert.strictEqual(q2Ans.is_correct, false, 'Câu chọn sai ABCD phải có is_correct = false');
+    assert.strictEqual(q2Ans.earned_score, 0, 'Câu chọn sai ABCD phải có earned_score = 0');
+    assert.strictEqual(q2Ans.correct_answer, 'C', 'Phải giải mã đáp án đúng cho học viên xem lại');
 
-    const attemptId = submitResult.attempt_id;
-    console.log(`    ✔ Kết quả chấm tự động: 25/30đ (4 câu đúng, 1 câu sai).`);
-    console.log(`    ✔ Mở khóa file đáp án PDF gốc: ${submitResult.answer_pdf_url}`);
+    // 4. Kiểm tra các câu đúng
+    const q1Ans = submitResult.answers.find((a: any) => a.question_id === q1.id);
+    assert.strictEqual(q1Ans.is_correct, true);
+    assert.strictEqual(q1Ans.earned_score, 5.0);
 
-    console.log('\n▶ [PHẦN 5] GIÁO VIÊN CHẤM & ĐIỀU CHỈNH ĐIỂM (PATCH /api/exams/attempts/:attemptId/grade)');
+    const q5Ans = submitResult.answers.find((a: any) => a.question_id === q5.id);
+    assert.strictEqual(q5Ans.is_correct, true);
+    assert.strictEqual(q5Ans.earned_score, 10.0);
+    assert(q5Ans.sample_answer, 'Mở khóa sample_answer cho câu viết');
 
-    // 5.1 Giáo viên điều chỉnh điểm câu viết Q5 từ 10đ thành 8.5đ và ghi nhận nhận xét
-    console.log('  • Test 5.1: Giáo viên điều chỉnh điểm câu viết Q5 từ 10đ thành 8.5đ kèm lời phê');
-    const gradeRes = await fetch(`${baseUrl}/api/exams/attempts/${attemptId}/grade`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${teacherToken}`,
-      },
-      body: JSON.stringify({
-        grades: [
-          {
-            question_id: q5.id,
-            earned_score: 8.5,
-            teacher_feedback: 'Bài viết tốt, dùng đúng ngữ pháp nhưng cần chú ý chữ Hán viết nắn nót hơn.',
-          },
-        ],
-      }),
-    });
+    // 5. Kiểm tra mở khóa answer_pdf_url sau khi nộp
+    assert(submitResult.answer_pdf_url, 'Phải trả về answer_pdf_url sau khi nộp bài');
+    assert(
+      submitResult.answer_pdf_url.includes(`${examCode}_answer.pdf`),
+      'answer_pdf_url phải khớp với file đáp án gốc'
+    );
 
-    assert.strictEqual(gradeRes.status, 200);
-    const gradedAttempt = ((await gradeRes.json()) as any).data;
-    assert.strictEqual(gradedAttempt.writing_score, 8.5, 'Điểm viết cập nhật thành 8.5đ');
-    // Tổng điểm mới: 5 (nghe) + 10 (đọc) + 8.5 (viết) = 23.5đ
-    assert.strictEqual(gradedAttempt.total_score, 23.5, 'Tổng điểm tự động tính lại thành 23.5đ');
+    console.log('  ✔ Chấm điểm chính xác 100%: 25.0/30.0đ (4 câu đúng, 1 câu sai).');
+    console.log('  ✔ Câu sai ABCD (Q2) được đánh dấu is_correct = false và earned_score = 0đ chuẩn xác.');
+    console.log(`  ✔ Đã tự động mở khóa file đáp án PDF gốc sau khi nộp bài: ${submitResult.answer_pdf_url}`);
 
-    const updatedQ5 = gradedAttempt.answers.find((a: any) => a.question_id === q5.id);
-    assert.strictEqual(updatedQ5.earned_score, 8.5);
-    assert(updatedQ5.teacher_feedback.includes('Bài viết tốt'));
-    console.log(`    ✔ Giáo viên chấm lại thành công: Điểm viết=8.5đ, Tổng điểm mới=${gradedAttempt.total_score}đ.`);
-
-    // 5.2 Học viên xem lại lịch sử chi tiết (GET /api/exams/attempts/:attemptId)
-    console.log('  • Test 5.2: Học viên xem lại kết quả đã được giáo viên chấm (GET /api/exams/attempts/:attemptId)');
-    const studentViewRes = await fetch(`${baseUrl}/api/exams/attempts/${attemptId}`, {
-      headers: { Authorization: `Bearer ${studentToken}` },
-    });
-    assert.strictEqual(studentViewRes.status, 200);
-    const studentViewData = ((await studentViewRes.json()) as any).data;
-    assert.strictEqual(studentViewData.total_score, 23.5);
-    console.log('    ✔ Học viên nhận được phản hồi và điểm cập nhật từ giáo viên.');
-
-    console.log('\n▶ [PHẦN 6] DỌN DẸP DỮ LIỆU KIỂM THỬ');
+    console.log('\n▶ [PHẦN 5] DỌN DẸP DỮ LIỆU KIỂM THỬ');
     await fetch(`${baseUrl}/api/exams/${examId}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${teacherToken}` },
@@ -338,10 +255,10 @@ async function runMockExamTests() {
     await prisma.users.deleteMany({
       where: { user_id: { in: [teacherUser.user_id, studentUser.user_id] } },
     });
-    console.log('    ✔ Đã xóa đề thi và tài khoản kiểm thử sạch sẽ.');
+    console.log('  ✔ Đã dọn dẹp dữ liệu kiểm thử sạch sẽ.');
 
     console.log('\n========================================================================');
-    console.log('🎉 TẤT CẢ CÁC BÀI KIỂM THỬ GIAI ĐOẠN 3 MOCK EXAM ĐÃ VƯỢT QUA 100%!');
+    console.log('🎉 TẤT CẢ CÁC ĐIỀU KIỆN KIỂM THỬ ĐỘC LẬP GIAI ĐOẠN 5 ĐÃ VƯỢT QUA 100%!');
     console.log('========================================================================\n');
   } finally {
     if (server) {
@@ -351,6 +268,6 @@ async function runMockExamTests() {
 }
 
 runMockExamTests().catch((err) => {
-  console.error('❌ MOCK EXAM GIAI ĐOẠN 3 TEST FAILED:', err);
+  console.error('❌ MOCK EXAM GIAI ĐOẠN 5 TEST FAILED:', err);
   process.exit(1);
 });

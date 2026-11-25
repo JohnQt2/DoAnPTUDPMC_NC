@@ -22,6 +22,7 @@ import {
   RefreshCw,
   BookOpen,
   Volume2,
+  PenTool,
 } from 'lucide-react';
 
 interface QuestionItem {
@@ -87,6 +88,13 @@ interface AttemptResult {
   answers: any[];
 }
 
+// Helper to count Hanzi (Chinese characters)
+const countHanzi = (str: string): number => {
+  if (!str) return 0;
+  const match = str.match(/[\u4e00-\u9fa5]/g);
+  return match ? match.length : 0;
+};
+
 export const StudentExamSplitScreen: React.FC<{ examId: number; onBack?: () => void }> = ({
   examId,
   onBack,
@@ -126,7 +134,9 @@ export const StudentExamSplitScreen: React.FC<{ examId: number; onBack?: () => v
         setLoading(true);
         setError(null);
         // Sử dụng endpoint /take bảo mật chống gian lận trong lúc làm bài
-        const data = await api.get<ExamDetail>(`/exams/${examId}/take`).catch(() => api.get<ExamDetail>(`/exams/${examId}`));
+        const data = await api
+          .get<ExamDetail>(`/exams/${examId}/take`)
+          .catch(() => api.get<ExamDetail>(`/exams/${examId}`));
         if (!data) throw new Error('Không có dữ liệu đề thi.');
         setExam(data);
         setTimeLeft(data.duration_minutes * 60);
@@ -232,7 +242,7 @@ export const StudentExamSplitScreen: React.FC<{ examId: number; onBack?: () => v
   ).length;
 
   // Submit Exam
-  const handleSubmitExam = async (forceAuto: boolean = false) => {
+  const handleSubmitExam = async (_forceAuto: boolean = false) => {
     if (!exam || isSubmitting) return;
 
     try {
@@ -260,7 +270,7 @@ export const StudentExamSplitScreen: React.FC<{ examId: number; onBack?: () => v
 
       setAttemptResult(res);
 
-      // Nếu có đáp án PDF mở khóa, tự động thông báo
+      // Nếu có đáp án PDF mở khóa, tự động cập nhật
       if (res.answer_pdf_url) {
         setExam((prev) => (prev ? { ...prev, answer_pdf_url: res.answer_pdf_url } : null));
       }
@@ -269,8 +279,8 @@ export const StudentExamSplitScreen: React.FC<{ examId: number; onBack?: () => v
       if (res.is_passed) {
         try {
           confetti({
-            particleCount: 100,
-            spread: 70,
+            particleCount: 120,
+            spread: 80,
             origin: { y: 0.6 },
           });
         } catch {
@@ -288,10 +298,10 @@ export const StudentExamSplitScreen: React.FC<{ examId: number; onBack?: () => v
 
   if (loading) {
     return (
-      <div className="min-h-[80vh] flex flex-col items-center justify-center space-y-4">
+      <div className="min-h-[80vh] flex flex-col items-center justify-center space-y-4 font-sans">
         <RefreshCw className="w-8 h-8 text-[#C41E3A] animate-spin" />
         <p className="text-slate-600 dark:text-slate-400 font-bold text-sm">
-          Đang nạp đề thi và cấu hình giao diện chia đôi màn hình...
+          Đang nạp đề thi và cấu hình phòng thi chia đôi màn hình...
         </p>
       </div>
     );
@@ -299,16 +309,16 @@ export const StudentExamSplitScreen: React.FC<{ examId: number; onBack?: () => v
 
   if (error || !exam) {
     return (
-      <div className="max-w-lg mx-auto my-20 p-8 rounded-3xl bg-white dark:bg-[#141a22] border border-red-200 dark:border-red-900/40 text-center space-y-4">
+      <div className="max-w-lg mx-auto my-20 p-8 rounded-3xl bg-white dark:bg-[#141a22] border border-red-200 dark:border-red-900/40 text-center space-y-4 font-sans">
         <AlertCircle className="w-12 h-12 text-red-600 mx-auto" />
         <h2 className="text-xl font-bold text-slate-900 dark:text-white">Không thể tải đề thi</h2>
         <p className="text-sm text-slate-600 dark:text-slate-400">{error || 'Đề thi không tồn tại.'}</p>
         <button
           type="button"
-          onClick={() => (onBack ? onBack() : (window.location.hash = '#/exams'))}
+          onClick={() => (onBack ? onBack() : (window.location.hash = '#/mock-exams'))}
           className="px-5 py-2.5 rounded-xl bg-[#C41E3A] text-white font-bold text-sm cursor-pointer"
         >
-          Quay lại danh sách đề
+          Quay lại danh sách đề thi
         </button>
       </div>
     );
@@ -332,10 +342,10 @@ export const StudentExamSplitScreen: React.FC<{ examId: number; onBack?: () => v
             onClick={() => {
               if (!attemptResult && answeredCount > 0) {
                 if (confirm('Bạn đang làm dở bài thi. Rời khỏi trang bài làm sẽ không lưu lại?')) {
-                  onBack ? onBack() : (window.location.hash = '#/exams');
+                  onBack ? onBack() : (window.location.hash = '#/mock-exams');
                 }
               } else {
-                onBack ? onBack() : (window.location.hash = '#/exams');
+                onBack ? onBack() : (window.location.hash = '#/mock-exams');
               }
             }}
             className="p-2 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
@@ -373,8 +383,9 @@ export const StudentExamSplitScreen: React.FC<{ examId: number; onBack?: () => v
               <span>{formatTime(timeLeft)}</span>
             </div>
           ) : (
-            <div className="px-3 py-1 rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 text-xs font-black border border-emerald-300">
-              ĐÃ NỘP BÀI THI
+            <div className="px-3.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 text-xs font-black border border-emerald-300 flex items-center gap-1.5">
+              <CheckCircle2 className="w-4 h-4" />
+              <span>ĐÃ HOÀN TẤT BÀI THI</span>
             </div>
           )}
         </div>
@@ -383,7 +394,7 @@ export const StudentExamSplitScreen: React.FC<{ examId: number; onBack?: () => v
         <div className="flex items-center gap-3">
           <div className="hidden sm:block text-right">
             <div className="text-[11px] font-bold text-slate-500">
-              {attemptResult ? 'Điểm số của bạn' : 'Tiến độ làm bài'}
+              {attemptResult ? 'Điểm của bạn' : 'Tiến độ làm bài'}
             </div>
             <div className="text-xs font-extrabold text-[#C41E3A]">
               {attemptResult ? (
@@ -443,8 +454,10 @@ export const StudentExamSplitScreen: React.FC<{ examId: number; onBack?: () => v
               <div>
                 <div className="flex items-center gap-2">
                   <span
-                    className={`px-2.5 py-0.5 rounded-full text-xs font-black uppercase ${
-                      attemptResult.is_passed ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'
+                    className={`px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider ${
+                      attemptResult.is_passed
+                        ? 'bg-emerald-500/20 text-emerald-400'
+                        : 'bg-red-500/20 text-red-400'
                     }`}
                   >
                     {attemptResult.is_passed ? 'CHÚC MỪNG BẠN ĐÃ ĐẠT (PASS)' : 'CHƯA ĐẠT CHUẨN'}
@@ -517,13 +530,13 @@ export const StudentExamSplitScreen: React.FC<{ examId: number; onBack?: () => v
         </div>
       )}
 
-      {/* ── GIAO DIỆN CHIA ĐÔI MÀN HÌNH (SPLIT-SCREEN WORKSPACE) ───────────── */}
+      {/* ── GIAO DIỆN CHIA ĐÔI MÀN HÌNH (SPLIT-SCREEN WORKSPACE) 58% / 42% ─── */}
       <main className="flex-1 flex flex-col lg:flex-row h-[calc(100vh-4rem)] overflow-hidden">
-        {/* ── BÊN TRÁI (LEFT PANE): XEM TRỰC TIẾP FILE ĐỀ PDF + AUDIO PLAYER ── */}
-        <section className="w-full lg:w-1/2 flex flex-col border-b lg:border-b-0 lg:border-r border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-[#0E131F]">
-          {/* Audio Player Bar */}
+        {/* ── CỘT BÊN TRÁI (~58% CHIỀU RỘNG): FILE ĐỀ PDF + AUDIO PLAYER ─────── */}
+        <section className="w-full lg:w-[58%] flex flex-col border-b lg:border-b-0 lg:border-r border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-[#0E131F]">
+          {/* Pinned Audio Player Bar */}
           {exam.audio_url && (
-            <div className="p-3 bg-white dark:bg-[#141a22] border-b border-slate-200 dark:border-white/10 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+            <div className="p-3 bg-white dark:bg-[#141a22] border-b border-slate-200 dark:border-white/10 flex flex-wrap items-center justify-between gap-3 shadow-xs shrink-0">
               <audio ref={audioRef} src={exam.audio_url} preload="auto" />
 
               <div className="flex items-center gap-2">
@@ -540,7 +553,7 @@ export const StudentExamSplitScreen: React.FC<{ examId: number; onBack?: () => v
                   type="button"
                   onClick={() => rewindAudio(5)}
                   className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 cursor-pointer text-xs flex items-center gap-1 font-bold"
-                  title="Tua lại 5 giây"
+                  title="Tua lùi 5 giây"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
                   <span>-5s</span>
@@ -583,7 +596,7 @@ export const StudentExamSplitScreen: React.FC<{ examId: number; onBack?: () => v
 
               {/* Speed Pills */}
               <div className="flex items-center gap-1">
-                {[0.75, 1.0, 1.25].map((rate) => (
+                {[0.75, 1.0, 1.25, 1.5].map((rate) => (
                   <button
                     key={rate}
                     type="button"
@@ -602,13 +615,13 @@ export const StudentExamSplitScreen: React.FC<{ examId: number; onBack?: () => v
           )}
 
           {/* PDF Viewer Header Toolbar */}
-          <div className="px-4 py-2 bg-slate-50 dark:bg-[#111722] border-b border-slate-200 dark:border-white/10 flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
+          <div className="px-4 py-2 bg-slate-50 dark:bg-[#111722] border-b border-slate-200 dark:border-white/10 flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300 shrink-0">
             <div className="flex items-center gap-2">
               <FileText className="w-4 h-4 text-[#C41E3A]" />
               <span>
                 {pdfViewMode === 'answer'
                   ? 'Đang xem: File Đáp Án & Transcript (答案)'
-                  : 'Đang xem: File Đề Thi PDF Chuẩn'}
+                  : 'Đang xem: File Đề Thi Chuẩn HSK (PDF)'}
               </span>
             </div>
 
@@ -637,18 +650,28 @@ export const StudentExamSplitScreen: React.FC<{ examId: number; onBack?: () => v
 
           {/* PDF Embedded View */}
           <div className="flex-1 w-full h-full relative bg-slate-200 dark:bg-[#0B0F17]">
-            <iframe
-              src={currentPdfUrl}
-              title="Đề thi PDF"
-              className="w-full h-full border-0 absolute inset-0"
-            />
+            {currentPdfUrl ? (
+              <iframe
+                src={currentPdfUrl}
+                title="Đề thi PDF"
+                className="w-full h-full border-0 absolute inset-0"
+              />
+            ) : (
+              <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center text-slate-500 space-y-2">
+                <FileText className="w-12 h-12 text-slate-400" />
+                <p className="font-bold text-sm">Chưa có liên kết file PDF</p>
+                <p className="text-xs max-w-sm">
+                  Thí sinh làm bài trực tiếp theo danh sách câu hỏi ở cột bên phải.
+                </p>
+              </div>
+            )}
           </div>
         </section>
 
-        {/* ── BÊN PHẢI (RIGHT PANE): PHIẾU TRẢ LỜI & CHẤM ĐIỂM CHI TIẾT ─────── */}
-        <section className="w-full lg:w-1/2 flex flex-col h-full overflow-hidden bg-white dark:bg-[#141a22]">
+        {/* ── CỘT BÊN PHẢI (~42% CHIỀU RỘNG): PHIẾU TRẢ LỜI & CHẤM ĐIỂM ──────── */}
+        <section className="w-full lg:w-[42%] flex flex-col h-full overflow-hidden bg-white dark:bg-[#141a22]">
           {/* Section Navigation Tabs */}
-          <div className="p-3 bg-slate-50 dark:bg-[#111722] border-b border-slate-200 dark:border-white/10 flex items-center justify-between gap-2 overflow-x-auto">
+          <div className="p-3 bg-slate-50 dark:bg-[#111722] border-b border-slate-200 dark:border-white/10 flex items-center justify-between gap-2 overflow-x-auto shrink-0">
             <div className="flex items-center gap-2">
               {exam.sections.map((sec, idx) => {
                 const secQuestions = sec.questions;
@@ -684,21 +707,16 @@ export const StudentExamSplitScreen: React.FC<{ examId: number; onBack?: () => v
           </div>
 
           {/* Question Quick Jump Matrix (Ma trận số câu hỏi) */}
-          <div className="p-3 border-b border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/5 overflow-x-auto">
+          <div className="p-3 border-b border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/5 overflow-x-auto shrink-0">
             <div className="flex flex-wrap items-center gap-1.5">
               {activeSection.questions.map((q) => {
                 const ans = userAnswers[q.id];
                 const isAnswered = ans !== undefined && ans.trim() !== '';
 
-                // Nếu đã có kết quả
-                let resultColor = '';
+                // Phản hồi kết quả sau khi nộp bài
+                let resFeedback: any = null;
                 if (attemptResult) {
-                  const resAns = attemptResult.answers.find((a) => a.question_id === q.id);
-                  if (resAns) {
-                    resultColor = resAns.is_correct
-                      ? 'bg-emerald-600 text-white border-emerald-600'
-                      : 'bg-red-600 text-white border-red-600';
-                  }
+                  resFeedback = attemptResult.answers.find((a) => a.question_id === q.id);
                 }
 
                 return (
@@ -709,15 +727,21 @@ export const StudentExamSplitScreen: React.FC<{ examId: number; onBack?: () => v
                       const el = document.getElementById(`question-card-${q.id}`);
                       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }}
-                    className={`w-7 h-7 rounded-lg text-xs font-bold border flex items-center justify-center transition-all cursor-pointer ${
-                      resultColor
-                        ? resultColor
+                    className={`min-w-7 h-7 px-1.5 rounded-lg text-xs font-black border flex items-center justify-center gap-0.5 transition-all cursor-pointer ${
+                      resFeedback
+                        ? resFeedback.is_correct
+                          ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                          : 'bg-red-600 text-white border-red-600 shadow-md ring-1 ring-red-400'
                         : isAnswered
                           ? 'bg-[#C41E3A] text-white border-[#C41E3A] shadow-xs'
                           : 'bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:border-slate-400'
                     }`}
+                    title={`Câu ${q.question_number}`}
                   >
-                    {q.question_number}
+                    <span>{q.question_number}</span>
+                    {resFeedback && (
+                      <span className="text-[10px]">{resFeedback.is_correct ? '✓' : '✗'}</span>
+                    )}
                   </button>
                 );
               })}
@@ -726,7 +750,7 @@ export const StudentExamSplitScreen: React.FC<{ examId: number; onBack?: () => v
 
           {/* Section Instructions Banner */}
           {activeSection.instructions && (
-            <div className="px-5 py-2.5 bg-slate-100/70 dark:bg-white/5 border-b border-slate-200 dark:border-white/10 text-xs text-slate-600 dark:text-slate-400 flex items-center gap-2">
+            <div className="px-5 py-2 bg-slate-100/70 dark:bg-white/5 border-b border-slate-200 dark:border-white/10 text-xs text-slate-600 dark:text-slate-400 flex items-center gap-2 shrink-0">
               <HelpCircle className="w-4 h-4 text-[#C41E3A] shrink-0" />
               <span>{activeSection.instructions}</span>
             </div>
@@ -743,27 +767,51 @@ export const StudentExamSplitScreen: React.FC<{ examId: number; onBack?: () => v
                 feedback = attemptResult.answers.find((a) => a.question_id === q.id);
               }
 
+              const isSubmitted = Boolean(attemptResult);
+              const isWrong = feedback && !feedback.is_correct;
+              const isCorrect = feedback && feedback.is_correct;
+
               return (
                 <div
                   key={q.id}
                   id={`question-card-${q.id}`}
                   className={`p-5 rounded-2xl border transition-all ${
-                    feedback
-                      ? feedback.is_correct
+                    isSubmitted
+                      ? isCorrect
                         ? 'border-emerald-300 bg-emerald-50/40 dark:bg-emerald-950/20'
-                        : 'border-red-400 bg-red-50/60 dark:bg-red-950/25 ring-2 ring-red-400/40'
+                        : 'border-red-500 bg-red-50/70 dark:bg-red-950/30 ring-2 ring-red-500/50 shadow-sm'
                       : 'border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 hover:border-slate-300'
                   }`}
                 >
                   {/* Question Header */}
                   <div className="flex items-center justify-between gap-3 mb-3">
                     <div className="flex items-center gap-2">
-                      <span className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-white/10 text-slate-800 dark:text-white font-extrabold text-xs flex items-center justify-center">
+                      <span
+                        className={`w-8 h-8 rounded-xl font-black text-xs flex items-center justify-center ${
+                          isSubmitted
+                            ? isCorrect
+                              ? 'bg-emerald-600 text-white'
+                              : 'bg-red-600 text-white font-extrabold'
+                            : 'bg-slate-100 dark:bg-white/10 text-slate-800 dark:text-white'
+                        }`}
+                      >
                         {q.question_number}
                       </span>
+
+                      {/* Prominent Red ✗ mark beside question number when wrong */}
+                      {isWrong && (
+                        <span
+                          className="text-red-600 font-black text-lg leading-none"
+                          title="Câu trả lời chưa đúng"
+                        >
+                          ✗
+                        </span>
+                      )}
+
                       <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
                         {q.prompt_text || `Câu ${q.question_number}`}
                       </span>
+
                       <span className="text-[11px] font-semibold text-[#C41E3A] px-2 py-0.5 rounded-md bg-[#C41E3A]/10">
                         {q.points} điểm
                       </span>
@@ -772,14 +820,14 @@ export const StudentExamSplitScreen: React.FC<{ examId: number; onBack?: () => v
                     {/* Result Badge */}
                     {feedback && (
                       <div className="flex items-center gap-1.5 font-bold text-xs">
-                        {feedback.is_correct ? (
+                        {isCorrect ? (
                           <span className="flex items-center gap-1 text-emerald-700 dark:text-emerald-300 px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/40">
                             <CheckCircle2 className="w-4 h-4" />
                             <span>ĐÚNG (+{feedback.earned_score}đ)</span>
                           </span>
                         ) : (
-                          <span className="flex items-center gap-1 text-red-700 dark:text-red-300 px-2.5 py-1 rounded-full bg-red-100 dark:bg-red-900/50 font-black tracking-wide">
-                            <XCircle className="w-4 h-4 text-red-600" />
+                          <span className="flex items-center gap-1.5 text-red-700 dark:text-red-300 px-3 py-1 rounded-full bg-red-100 dark:bg-red-900/60 font-black tracking-wide border border-red-300 dark:border-red-800">
+                            <XCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
                             <span className="text-sm">✗ SAI (0 / {q.points}đ)</span>
                           </span>
                         )}
@@ -792,32 +840,55 @@ export const StudentExamSplitScreen: React.FC<{ examId: number; onBack?: () => v
                     {/* 1. TRUE_FALSE (✓ / ✗) */}
                     {q.question_type === 'TRUE_FALSE' && (
                       <div className="grid grid-cols-2 gap-3">
-                        <button
-                          type="button"
-                          disabled={Boolean(attemptResult)}
-                          onClick={() => handleSelectAnswer(q.id, 'TRUE')}
-                          className={`py-3 px-4 rounded-xl font-bold text-sm border flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                            selectedAns.toUpperCase() === 'TRUE'
-                              ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
-                              : 'bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:border-emerald-500'
-                          }`}
-                        >
-                          <Check className="w-4 h-4" />
-                          <span>✓ Đúng</span>
-                        </button>
-                        <button
-                          type="button"
-                          disabled={Boolean(attemptResult)}
-                          onClick={() => handleSelectAnswer(q.id, 'FALSE')}
-                          className={`py-3 px-4 rounded-xl font-bold text-sm border flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                            selectedAns.toUpperCase() === 'FALSE'
-                              ? 'bg-red-600 text-white border-red-600 shadow-sm'
-                              : 'bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:border-red-500'
-                          }`}
-                        >
-                          <X className="w-4 h-4" />
-                          <span>✗ Sai</span>
-                        </button>
+                        {[
+                          { val: 'TRUE', label: '✓ Đúng' },
+                          { val: 'FALSE', label: '✗ Sai' },
+                        ].map(({ val, label }) => {
+                          const isChosen = selectedAns.toUpperCase() === val;
+                          const correctVal = feedback ? (feedback.correct_answer || '').toUpperCase() : '';
+                          const isThisCorrect = isSubmitted && correctVal === val;
+                          const isThisWrongChoice = isSubmitted && isChosen && !feedback?.is_correct;
+
+                          let btnStyle =
+                            'bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:border-[#C41E3A]/50';
+
+                          if (isSubmitted) {
+                            if (isThisCorrect) {
+                              btnStyle =
+                                'bg-emerald-600 text-white border-emerald-600 font-black shadow-md ring-2 ring-emerald-400/50';
+                            } else if (isThisWrongChoice) {
+                              btnStyle =
+                                'bg-red-600 text-white border-red-600 font-black shadow-md ring-2 ring-red-400/50';
+                            } else {
+                              btnStyle =
+                                'bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/5 text-slate-400 opacity-60';
+                            }
+                          } else if (isChosen) {
+                            btnStyle = 'bg-[#C41E3A] text-white border-[#C41E3A] shadow-sm font-bold';
+                          }
+
+                          return (
+                            <button
+                              key={val}
+                              type="button"
+                              disabled={isSubmitted}
+                              onClick={() => handleSelectAnswer(q.id, val)}
+                              className={`py-3 px-4 rounded-xl font-bold text-sm border flex items-center justify-center gap-2 transition-all cursor-pointer ${btnStyle}`}
+                            >
+                              <span>{label}</span>
+                              {isThisWrongChoice && (
+                                <span className="ml-1 px-1.5 py-0.5 rounded bg-black/30 text-white text-xs font-black">
+                                  ✗ Lựa chọn sai
+                                </span>
+                              )}
+                              {isThisCorrect && (
+                                <span className="ml-1 px-1.5 py-0.5 rounded bg-black/20 text-white text-xs font-black">
+                                  ✓ Đáp án đúng
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
                       </div>
                     )}
 
@@ -826,20 +897,47 @@ export const StudentExamSplitScreen: React.FC<{ examId: number; onBack?: () => v
                       <div className="grid grid-cols-4 gap-2">
                         {(q.options && q.options.length > 0 ? q.options : ['A', 'B', 'C', 'D']).map(
                           (opt) => {
-                            const isSelected = selectedAns.toUpperCase() === opt.toUpperCase();
+                            const isChosen = selectedAns.toUpperCase() === opt.toUpperCase();
+                            const correctVal = feedback
+                              ? (feedback.correct_answer || '').toUpperCase()
+                              : '';
+                            const isThisCorrect = isSubmitted && correctVal === opt.toUpperCase();
+                            const isThisWrongChoice = isSubmitted && isChosen && !feedback?.is_correct;
+
+                            let btnStyle =
+                              'bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:border-[#C41E3A]/60';
+
+                            if (isSubmitted) {
+                              if (isThisCorrect) {
+                                btnStyle =
+                                  'bg-emerald-600 text-white border-emerald-600 font-black shadow-md ring-2 ring-emerald-400/50 scale-102';
+                              } else if (isThisWrongChoice) {
+                                btnStyle =
+                                  'bg-red-600 text-white border-red-600 font-black shadow-md ring-2 ring-red-400/50 scale-102';
+                              } else {
+                                btnStyle =
+                                  'bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/5 text-slate-400 opacity-50';
+                              }
+                            } else if (isChosen) {
+                              btnStyle =
+                                'bg-[#C41E3A] text-white border-[#C41E3A] shadow-md shadow-[#C41E3A]/20 scale-102 font-black';
+                            }
+
                             return (
                               <button
                                 key={opt}
                                 type="button"
-                                disabled={Boolean(attemptResult)}
+                                disabled={isSubmitted}
                                 onClick={() => handleSelectAnswer(q.id, opt)}
-                                className={`py-3 rounded-xl font-display font-black text-base border flex items-center justify-center transition-all cursor-pointer ${
-                                  isSelected
-                                    ? 'bg-[#C41E3A] text-white border-[#C41E3A] shadow-md shadow-[#C41E3A]/20 scale-102'
-                                    : 'bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:border-[#C41E3A]/60'
-                                }`}
+                                className={`py-3 rounded-xl font-display font-black text-base border flex items-center justify-center gap-1.5 transition-all cursor-pointer ${btnStyle}`}
                               >
-                                {opt}
+                                <span>{opt}</span>
+                                {isThisWrongChoice && (
+                                  <span className="text-white text-xs font-black">✗</span>
+                                )}
+                                {isThisCorrect && (
+                                  <span className="text-white text-xs font-black">✓</span>
+                                )}
                               </button>
                             );
                           }
@@ -854,20 +952,47 @@ export const StudentExamSplitScreen: React.FC<{ examId: number; onBack?: () => v
                           ? q.options
                           : ['A', 'B', 'C', 'D', 'E', 'F']
                         ).map((opt) => {
-                          const isSelected = selectedAns.toUpperCase() === opt.toUpperCase();
+                          const isChosen = selectedAns.toUpperCase() === opt.toUpperCase();
+                          const correctVal = feedback
+                            ? (feedback.correct_answer || '').toUpperCase()
+                            : '';
+                          const isThisCorrect = isSubmitted && correctVal === opt.toUpperCase();
+                          const isThisWrongChoice = isSubmitted && isChosen && !feedback?.is_correct;
+
+                          let btnStyle =
+                            'bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:border-[#C41E3A]/60';
+
+                          if (isSubmitted) {
+                            if (isThisCorrect) {
+                              btnStyle =
+                                'bg-emerald-600 text-white border-emerald-600 font-black shadow-md ring-2 ring-emerald-400/50 scale-102';
+                            } else if (isThisWrongChoice) {
+                              btnStyle =
+                                'bg-red-600 text-white border-red-600 font-black shadow-md ring-2 ring-red-400/50 scale-102';
+                            } else {
+                              btnStyle =
+                                'bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/5 text-slate-400 opacity-50';
+                            }
+                          } else if (isChosen) {
+                            btnStyle =
+                              'bg-[#C41E3A] text-white border-[#C41E3A] shadow-md shadow-[#C41E3A]/20 scale-102 font-black';
+                          }
+
                           return (
                             <button
                               key={opt}
                               type="button"
-                              disabled={Boolean(attemptResult)}
+                              disabled={isSubmitted}
                               onClick={() => handleSelectAnswer(q.id, opt)}
-                              className={`py-3 rounded-xl font-display font-black text-sm border flex items-center justify-center transition-all cursor-pointer ${
-                                isSelected
-                                  ? 'bg-[#C41E3A] text-white border-[#C41E3A] shadow-md shadow-[#C41E3A]/20 scale-102'
-                                  : 'bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:border-[#C41E3A]/60'
-                              }`}
+                              className={`py-3 rounded-xl font-display font-black text-sm border flex items-center justify-center gap-1 transition-all cursor-pointer ${btnStyle}`}
                             >
-                              {opt}
+                              <span>{opt}</span>
+                              {isThisWrongChoice && (
+                                <span className="text-white text-xs font-black">✗</span>
+                              )}
+                              {isThisCorrect && (
+                                <span className="text-white text-xs font-black">✓</span>
+                              )}
                             </button>
                           );
                         })}
@@ -876,61 +1001,94 @@ export const StudentExamSplitScreen: React.FC<{ examId: number; onBack?: () => v
 
                     {/* 4. WRITING_FILL (Viết điền đáp án ngắn) */}
                     {q.question_type === 'WRITING_FILL' && (
-                      <div>
+                      <div className="space-y-1.5">
                         <input
                           type="text"
                           value={selectedAns}
-                          disabled={Boolean(attemptResult)}
+                          disabled={isSubmitted}
                           onChange={(e) => handleSelectAnswer(q.id, e.target.value)}
                           placeholder="Nhập từ hoặc sắp xếp câu trả lời..."
-                          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 text-sm font-medium outline-none focus:ring-2 focus:ring-[#C41E3A]/30 focus:border-[#C41E3A]"
+                          className={`w-full px-4 py-2.5 rounded-xl border text-sm font-medium outline-none transition-all ${
+                            isSubmitted
+                              ? isCorrect
+                                ? 'border-emerald-500 bg-emerald-50/30'
+                                : 'border-red-500 bg-red-50/50'
+                              : 'border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 focus:ring-2 focus:ring-[#C41E3A]/30 focus:border-[#C41E3A]'
+                          }`}
                         />
                       </div>
                     )}
 
-                    {/* 5. WRITING_ESSAY (Viết câu / đoạn văn) */}
+                    {/* 5. WRITING_ESSAY (Viết câu / đoạn văn) với Live Hanzi Counter */}
                     {q.question_type === 'WRITING_ESSAY' && (
-                      <div>
+                      <div className="space-y-2">
                         <textarea
                           rows={3}
                           value={selectedAns}
-                          disabled={Boolean(attemptResult)}
+                          disabled={isSubmitted}
                           onChange={(e) => handleSelectAnswer(q.id, e.target.value)}
-                          placeholder="Nhập bài viết câu văn hoặc đoạn văn của bạn vào đây..."
-                          className="w-full p-3 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 text-sm font-medium outline-none focus:ring-2 focus:ring-[#C41E3A]/30 focus:border-[#C41E3A]"
+                          placeholder="Nhập câu văn hoặc đoạn văn chữ Hán của bạn vào đây..."
+                          className={`w-full p-3.5 rounded-xl border text-sm font-medium outline-none transition-all ${
+                            isSubmitted
+                              ? isCorrect
+                                ? 'border-emerald-500 bg-emerald-50/30'
+                                : 'border-red-500 bg-red-50/50'
+                              : 'border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 focus:ring-2 focus:ring-[#C41E3A]/30 focus:border-[#C41E3A]'
+                          }`}
                         />
+                        {/* Live Character & Hanzi Counter */}
+                        <div className="flex items-center justify-between text-[11px] text-slate-500 font-medium px-1">
+                          <span className="flex items-center gap-1">
+                            <PenTool className="w-3.5 h-3.5 text-[#C41E3A]" />
+                            <span>
+                              Đã viết: <b className="text-slate-800 dark:text-white">{countHanzi(selectedAns)}</b> chữ Hán
+                            </span>
+                          </span>
+                          <span>Tổng số ký tự: {selectedAns.length}</span>
+                        </div>
                       </div>
                     )}
                   </div>
 
-                  {/* ── CHI TIẾT GIẢI THÍCH & ĐÁP ÁN ĐÚNG KHI BỊ SAI ──────── */}
+                  {/* ── CHI TIẾT GIẢI THÍCH & ĐÁP ÁN ĐÚNG KHI ĐÃ NỘP BÀI ──────── */}
                   {feedback && (
-                    <div className="mt-4 pt-3 border-t border-slate-200/80 dark:border-white/10 space-y-1.5 text-xs">
+                    <div className="mt-4 pt-3.5 border-t border-slate-200/80 dark:border-white/10 space-y-2 text-xs">
                       <div className="flex flex-wrap items-center gap-3">
-                        <span className="font-bold text-slate-500">
-                          Bạn chọn:{' '}
+                        <span className="font-bold text-slate-500 flex items-center gap-1">
+                          <span>Bạn đã chọn:</span>
                           <b
-                            className={`px-2 py-0.5 rounded-md ${
+                            className={`px-2.5 py-1 rounded-md flex items-center gap-1 ${
                               feedback.is_correct
-                                ? 'bg-emerald-100 text-emerald-800'
-                                : 'bg-red-200 text-red-900 font-black'
+                                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 font-bold'
+                                : 'bg-red-200 text-red-900 dark:bg-red-950/80 dark:text-red-300 font-black'
                             }`}
                           >
-                            {feedback.user_answer || '(Bỏ trống)'}
+                            {!feedback.is_correct && <span className="text-red-700 font-black">✗</span>}
+                            <span>{feedback.user_answer || '(Chưa điền/Bỏ trống)'}</span>
                           </b>
                         </span>
 
-                        <span className="font-bold text-slate-500">
-                          Đáp án đúng:{' '}
-                          <b className="px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 font-black">
-                            {feedback.correct_answer || feedback.sample_answer || 'Xem file đáp án PDF'}
+                        <span className="font-bold text-slate-500 flex items-center gap-1">
+                          <span>Đáp án chuẩn:</span>
+                          <b className="px-2.5 py-1 rounded-md bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-black flex items-center gap-1">
+                            <span>✓</span>
+                            <span>{feedback.correct_answer || feedback.sample_answer || 'Xem file đáp án PDF'}</span>
                           </b>
                         </span>
                       </div>
 
+                      {/* Sample answer for writing questions */}
+                      {feedback.sample_answer && (
+                        <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 text-amber-900 dark:text-amber-200 text-xs">
+                          <b>Bài viết mẫu tham khảo (参考答案):</b>
+                          <p className="mt-1 font-sans">{feedback.sample_answer}</p>
+                        </div>
+                      )}
+
+                      {/* Explanation */}
                       {feedback.explanation && (
-                        <p className="text-slate-600 dark:text-slate-400 italic bg-white/70 dark:bg-white/5 p-2 rounded-lg">
-                          💡 <b>Giải thích:</b> {feedback.explanation}
+                        <p className="text-slate-600 dark:text-slate-400 italic bg-white/70 dark:bg-white/5 p-2.5 rounded-xl border border-slate-100 dark:border-white/5">
+                          💡 <b>Giải thích chi tiết:</b> {feedback.explanation}
                         </p>
                       )}
                     </div>
@@ -946,7 +1104,7 @@ export const StudentExamSplitScreen: React.FC<{ examId: number; onBack?: () => v
       {showConfirmSubmit && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
           <div className="w-full max-w-md p-6 rounded-3xl bg-white dark:bg-[#141a22] border border-slate-200 dark:border-white/10 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-150">
-            <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto">
+            <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 flex items-center justify-center mx-auto">
               <AlertCircle className="w-6 h-6" />
             </div>
 
@@ -957,8 +1115,8 @@ export const StudentExamSplitScreen: React.FC<{ examId: number; onBack?: () => v
               <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                 Bạn đã hoàn thành <b>{answeredCount}</b> trên tổng số <b>{totalCount}</b> câu hỏi.
                 {totalCount - answeredCount > 0 && (
-                  <span className="block text-red-600 font-bold mt-1">
-                    Còn {totalCount - answeredCount} câu bạn chưa trả lời!
+                  <span className="block text-red-600 font-bold mt-1.5">
+                    ⚠️ Còn {totalCount - answeredCount} câu bạn chưa chọn đáp án!
                   </span>
                 )}
               </p>
@@ -968,7 +1126,7 @@ export const StudentExamSplitScreen: React.FC<{ examId: number; onBack?: () => v
               <button
                 type="button"
                 onClick={() => setShowConfirmSubmit(false)}
-                className="py-2.5 rounded-xl border border-slate-200 dark:border-white/10 font-bold text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-100 cursor-pointer"
+                className="py-2.5 rounded-xl border border-slate-200 dark:border-white/10 font-bold text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 cursor-pointer"
               >
                 Tiếp tục làm bài
               </button>

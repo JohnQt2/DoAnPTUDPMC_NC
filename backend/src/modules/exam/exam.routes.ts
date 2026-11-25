@@ -49,17 +49,37 @@ const router = Router();
 // ── Public / Học viên routes (kèm optional auth để lấy best_score) ─────────────
 router.get('/', optionalAuthenticate, examController.listExams);
 router.get('/admin/all', authenticate, authorize('ADMIN', 'CONTENT_EDITOR', 'TEACHER'), examController.listAdminExams);
+
+// ── Làm bài thi (Học viên - Tuyệt đối ẩn đáp án và file PDF đáp án) ───────────
+router.get('/:examId/take', authenticate, examController.getExamForTaking);
+router.get('/:id/take', authenticate, examController.getExamForTaking);
+
+// ── Chi tiết đề thi (kèm kiểm tra đã nộp bài hay chưa) ────────────────────────
+router.get('/:examId', optionalAuthenticate, examController.getExamById);
 router.get('/:id', optionalAuthenticate, examController.getExamById);
 
 // ── Nộp bài & xem kết quả bài làm (Học viên đăng nhập) ─────────────────────────
+router.post('/:examId/submit', authenticate, examController.submitExam);
 router.post('/:id/submit', authenticate, examController.submitExam);
+router.get('/:examId/my-attempts', authenticate, examController.getUserAttempts);
 router.get('/:id/my-attempts', authenticate, examController.getUserAttempts);
 router.get('/attempts/:attemptId', authenticate, examController.getAttemptDetails);
 
 // ── Quản lý đề thi (Giáo viên / Admin) ─────────────────────────────────────────
 router.post('/', authenticate, authorize('ADMIN', 'CONTENT_EDITOR', 'TEACHER'), examController.createExam);
+router.put('/:examId', authenticate, authorize('ADMIN', 'CONTENT_EDITOR', 'TEACHER'), examController.updateExam);
 router.put('/:id', authenticate, authorize('ADMIN', 'CONTENT_EDITOR', 'TEACHER'), examController.updateExam);
+router.patch('/:examId/publish', authenticate, authorize('ADMIN', 'CONTENT_EDITOR', 'TEACHER'), examController.publishExam);
+router.patch('/:id/publish', authenticate, authorize('ADMIN', 'CONTENT_EDITOR', 'TEACHER'), examController.publishExam);
+router.patch('/attempts/:attemptId/grade', authenticate, authorize('ADMIN', 'CONTENT_EDITOR', 'TEACHER'), examController.gradeAttempt);
+router.delete('/:examId', authenticate, authorize('ADMIN', 'CONTENT_EDITOR', 'TEACHER'), examController.deleteExam);
 router.delete('/:id', authenticate, authorize('ADMIN', 'CONTENT_EDITOR', 'TEACHER'), examController.deleteExam);
+router.post(
+  '/:examId/sections',
+  authenticate,
+  authorize('ADMIN', 'CONTENT_EDITOR', 'TEACHER'),
+  examController.saveSections
+);
 router.post(
   '/:id/sections',
   authenticate,

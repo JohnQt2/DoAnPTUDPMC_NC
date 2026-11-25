@@ -9,7 +9,7 @@ export class ExamController {
    */
   listExams = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const level = req.query.level as string | undefined;
+      const level = (req.query.level || req.query.hsk_level) as string | undefined;
       const status = req.query.status as string | undefined;
       const userId = req.user?.userId;
       const isAdmin =
@@ -36,7 +36,7 @@ export class ExamController {
    */
   listAdminExams = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const level = req.query.level as string | undefined;
+      const level = (req.query.level || req.query.hsk_level) as string | undefined;
       const data = await examService.listExams({
         hsk_level: level,
         isAdmin: true,
@@ -54,7 +54,7 @@ export class ExamController {
    */
   getExamById = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = parseInt(req.params.id, 10);
+      const id = parseInt(req.params.examId || req.params.id, 10);
       if (isNaN(id)) {
         throw AppError.badRequest('ID đề thi không hợp lệ.');
       }
@@ -66,6 +66,25 @@ export class ExamController {
         (req.user?.role as string) === 'TEACHER';
 
       const data = await examService.getExamById(id, userId, isAdmin);
+      res.json({ success: true, data });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  /**
+   * GET /api/exams/:examId/take
+   * Lấy đề thi cho học viên làm bài (Tuyệt đối che giấu đáp án đúng và file PDF đáp án)
+   */
+  getExamForTaking = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const examId = parseInt(req.params.examId || req.params.id, 10);
+      if (isNaN(examId)) {
+        throw AppError.badRequest('ID đề thi không hợp lệ.');
+      }
+
+      const userId = req.user?.userId;
+      const data = await examService.getExamForTaking(examId, userId);
       res.json({ success: true, data });
     } catch (err) {
       next(err);
@@ -127,12 +146,12 @@ export class ExamController {
   };
 
   /**
-   * PUT /api/v1/exams/:id
+   * PUT /api/v1/exams/:id hoặc /api/exams/:examId
    * Cập nhật thông tin đề thi (Giáo viên / Admin)
    */
   updateExam = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = parseInt(req.params.id, 10);
+      const id = parseInt(req.params.examId || req.params.id, 10);
       if (isNaN(id)) {
         throw AppError.badRequest('ID đề thi không hợp lệ.');
       }
@@ -150,12 +169,31 @@ export class ExamController {
   };
 
   /**
+   * PATCH /api/exams/:examId/publish
+   * Chuyển trạng thái DRAFT <-> PUBLISHED (Giáo viên / Admin)
+   */
+  publishExam = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const examId = parseInt(req.params.examId || req.params.id, 10);
+      if (isNaN(examId)) {
+        throw AppError.badRequest('ID đề thi không hợp lệ.');
+      }
+
+      const status = req.body?.status;
+      const result = await examService.publishExam(examId, status);
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  /**
    * POST /api/v1/exams/:id/sections
    * Lưu nhanh cấu trúc Phần thi & Câu hỏi kèm thang điểm (Giáo viên / Admin)
    */
   saveSections = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = parseInt(req.params.id, 10);
+      const id = parseInt(req.params.examId || req.params.id, 10);
       if (isNaN(id)) {
         throw AppError.badRequest('ID đề thi không hợp lệ.');
       }
@@ -178,12 +216,12 @@ export class ExamController {
   };
 
   /**
-   * DELETE /api/v1/exams/:id
+   * DELETE /api/v1/exams/:id hoặc /api/exams/:examId
    * Xóa đề thi (Giáo viên / Admin)
    */
   deleteExam = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = parseInt(req.params.id, 10);
+      const id = parseInt(req.params.examId || req.params.id, 10);
       if (isNaN(id)) {
         throw AppError.badRequest('ID đề thi không hợp lệ.');
       }
@@ -233,12 +271,12 @@ export class ExamController {
   };
 
   /**
-   * POST /api/v1/exams/:id/submit
+   * POST /api/v1/exams/:id/submit hoặc /api/exams/:examId/submit
    * Nộp bài thi thử & nhận kết quả chấm tự động
    */
   submitExam = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const examId = parseInt(req.params.id, 10);
+      const examId = parseInt(req.params.examId || req.params.id, 10);
       if (isNaN(examId)) {
         throw AppError.badRequest('ID đề thi không hợp lệ.');
       }
@@ -248,7 +286,7 @@ export class ExamController {
         throw AppError.unauthorized('Vui lòng đăng nhập để nộp bài.');
       }
 
-      const { answers } = req.body;
+      const answers = req.body?.answers !== undefined ? req.body.answers : req.body;
       if (!Array.isArray(answers)) {
         throw AppError.badRequest('answers phải là một danh sách câu trả lời.');
       }
@@ -261,12 +299,35 @@ export class ExamController {
   };
 
   /**
+   * PATCH /api/exams/attempts/:attemptId/grade
+   * Cho phép giáo viên chấm hoặc điều chỉnh điểm các câu hỏi (WRITING_ESSAY, v.v.)
+   */
+  gradeAttempt = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const attemptId = parseInt(req.params.attemptId || req.params.id, 10);
+      if (isNaN(attemptId)) {
+        throw AppError.badRequest('ID bài làm không hợp lệ.');
+      }
+
+      const grades = Array.isArray(req.body) ? req.body : req.body?.grades;
+      if (!Array.isArray(grades)) {
+        throw AppError.badRequest('grades phải là một mảng danh sách điểm câu hỏi.');
+      }
+
+      const result = await examService.gradeAttempt(attemptId, grades);
+      res.json({ success: true, data: result });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  /**
    * GET /api/v1/exams/attempts/:attemptId
    * Xem kết quả bài làm chi tiết
    */
   getAttemptDetails = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const attemptId = parseInt(req.params.attemptId, 10);
+      const attemptId = parseInt(req.params.attemptId || req.params.id, 10);
       if (isNaN(attemptId)) {
         throw AppError.badRequest('ID bài làm không hợp lệ.');
       }
@@ -294,7 +355,7 @@ export class ExamController {
    */
   getUserAttempts = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const examId = parseInt(req.params.id, 10);
+      const examId = parseInt(req.params.examId || req.params.id, 10);
       if (isNaN(examId)) {
         throw AppError.badRequest('ID đề thi không hợp lệ.');
       }

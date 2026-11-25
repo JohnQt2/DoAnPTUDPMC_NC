@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../../lib/api';
 import {
   FileText,
@@ -11,11 +11,15 @@ import {
   AlertCircle,
   ArrowLeft,
   Clock,
-  Award,
   Layers,
   Sparkles,
   Eye,
   RefreshCw,
+  Play,
+  Pause,
+  ExternalLink,
+  X,
+  Volume2,
 } from 'lucide-react';
 
 interface QuestionConfig {
@@ -63,6 +67,14 @@ export const TeacherExamManager: React.FC<{ onBack?: () => void }> = ({ onBack }
   const [uploadingAudio, setUploadingAudio] = useState(false);
   const [uploadingAnswerPdf, setUploadingAnswerPdf] = useState(false);
 
+  // Preview modal state
+  const [previewPdfUrl, setPreviewPdfUrl] = useState<string | null>(null);
+  const [previewPdfTitle, setPreviewPdfTitle] = useState<string>('');
+
+  // Audio test player in teacher view
+  const audioPreviewRef = useRef<HTMLAudioElement | null>(null);
+  const [isPreviewAudioPlaying, setIsPreviewAudioPlaying] = useState(false);
+
   // Sections State
   const [sections, setSections] = useState<SectionConfig[]>([
     {
@@ -84,6 +96,9 @@ export const TeacherExamManager: React.FC<{ onBack?: () => void }> = ({ onBack }
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
   // Batch Generator State
+  const [batchMode, setBatchMode] = useState<'range' | 'count'>('range');
+  const [batchFromQuestion, setBatchFromQuestion] = useState<number>(1);
+  const [batchToQuestion, setBatchToQuestion] = useState<number>(20);
   const [batchCount, setBatchCount] = useState<number>(10);
   const [batchType, setBatchType] = useState<
     'MCQ_ABCD' | 'TRUE_FALSE' | 'MCQ_ABCDEF' | 'WRITING_FILL' | 'WRITING_ESSAY'
@@ -107,12 +122,43 @@ export const TeacherExamManager: React.FC<{ onBack?: () => void }> = ({ onBack }
     fetchExams();
   }, []);
 
-  // Tính tổng điểm toàn bộ các câu hỏi
-  const totalCalculatedScore = sections.reduce(
-    (sum, sec) => sum + sec.questions.reduce((qSum, q) => qSum + Number(q.points || 0), 0),
-    0
+  // Update batch from question when switching sections
+  useEffect(() => {
+    const currentSec = sections[activeSectionTab];
+    if (currentSec && currentSec.questions.length > 0) {
+      const maxInSec = Math.max(...currentSec.questions.map((q) => q.question_number));
+      setBatchFromQuestion(maxInSec + 1);
+      setBatchToQuestion(maxInSec + 10);
+    } else {
+      let maxOverall = 0;
+      for (const s of sections) {
+        for (const q of s.questions) {
+          if (q.question_number > maxOverall) maxOverall = q.question_number;
+        }
+      }
+      setBatchFromQuestion(maxOverall + 1);
+      setBatchToQuestion(maxOverall + 10);
+    }
+  }, [activeSectionTab, sections.length]);
+
+  // Audio Play/Pause helper
+  const togglePlayAudioPreview = () => {
+    const audio = audioPreviewRef.current;
+    if (!audio) return;
+    if (isPreviewAudioPlaying) {
+      audio.pause();
+      setIsPreviewAudioPlaying(false);
+    } else {
+      audio.play().then(() => setIsPreviewAudioPlaying(true)).catch(console.error);
+    }
+  };
+
+  // Tính tổng điểm từng phần và toàn bộ đề thi
+  const sectionScores = sections.map((sec) =>
+    sec.questions.reduce((sum, q) => sum + Number(q.points || 0), 0)
   );
 
+  const totalCalculatedScore = sectionScores.reduce((sum, s) => sum + s, 0);
   const totalQuestionsCount = sections.reduce((sum, sec) => sum + sec.questions.length, 0);
 
   // Upload file helper
@@ -133,10 +179,11 @@ export const TeacherExamManager: React.FC<{ onBack?: () => void }> = ({ onBack }
 
       const res = await api.upload<any>('/exams/upload', formData);
       if (res && res.urls) {
-        if (type === 'exam_pdf') setExamPdfUrl(res.urls[type] || res.urls['file'] || '');
-        if (type === 'audio') setAudioUrl(res.urls[type] || res.urls['file'] || '');
-        if (type === 'answer_pdf') setAnswerPdfUrl(res.urls[type] || res.urls['file'] || '');
-        setMessage({ text: `Tải lên file ${file.name} thành công!`, type: 'success' });
+        const uploadedUrl = res.urls[type] || res.urls['file'] || '';
+        if (type === 'exam_pdf') setExamPdfUrl(uploadedUrl);
+        if (type === 'audio') setAudioUrl(uploadedUrl);
+        if (type === 'answer_pdf') setAnswerPdfUrl(uploadedUrl);
+        setMessage({ text: `Tải lên file "${file.name}" thành công!`, type: 'success' });
       }
     } catch (err: any) {
       setMessage({ text: err.message || 'Lỗi khi tải file lên máy chủ.', type: 'error' });
@@ -152,17 +199,25 @@ export const TeacherExamManager: React.FC<{ onBack?: () => void }> = ({ onBack }
     const currentSec = sections[activeSectionTab];
     if (!currentSec) return;
 
-    // Tìm số câu lớn nhất hiện có trên tất cả các section
-    let maxNum = 0;
-    for (const sec of sections) {
-      for (const q of sec.questions) {
-        if (q.question_number > maxNum) maxNum = q.question_number;
+    let startNum = 1;
+    let endNum = 1;
+
+    if (batchMode === 'range') {
+      startNum = Math.min(batchFromQuestion, batchToQuestion);
+      endNum = Math.max(batchFromQuestion, batchToQuestion);
+    } else {
+      let maxNum = 0;
+      for (const sec of sections) {
+        for (const q of sec.questions) {
+          if (q.question_number > maxNum) maxNum = q.question_number;
+        }
       }
+      startNum = maxNum + 1;
+      endNum = maxNum + batchCount;
     }
 
     const newQuestions: QuestionConfig[] = [];
-    for (let i = 1; i <= batchCount; i++) {
-      const qNum = maxNum + i;
+    for (let qNum = startNum; qNum <= endNum; qNum++) {
       let defaultOptions: string[] = ['A', 'B', 'C', 'D'];
       let defaultAns = 'A';
 
@@ -188,13 +243,21 @@ export const TeacherExamManager: React.FC<{ onBack?: () => void }> = ({ onBack }
     }
 
     const updatedSections = [...sections];
-    updatedSections[activeSectionTab].questions = [
-      ...updatedSections[activeSectionTab].questions,
-      ...newQuestions,
-    ];
+    // Loại bỏ các câu đã có trùng question_number trong section này để tránh duplicate
+    const existingNumbers = new Set(newQuestions.map((q) => q.question_number));
+    const keptQuestions = updatedSections[activeSectionTab].questions.filter(
+      (q) => !existingNumbers.has(q.question_number)
+    );
+
+    const merged = [...keptQuestions, ...newQuestions].sort(
+      (a, b) => a.question_number - b.question_number
+    );
+
+    updatedSections[activeSectionTab].questions = merged;
     setSections(updatedSections);
+
     setMessage({
-      text: `Đã tự động thêm nhanh ${batchCount} câu hỏi (${batchType}) vào "${currentSec.title}"!`,
+      text: `Đã tự động thêm nhanh các câu ${startNum} → ${endNum} (${batchType}, ${batchPoints}đ/câu) vào "${currentSec.title}"!`,
       type: 'success',
     });
   };
@@ -202,7 +265,7 @@ export const TeacherExamManager: React.FC<{ onBack?: () => void }> = ({ onBack }
   // Thêm phần Viết (书写) nếu chưa có
   const handleAddWritingSection = () => {
     if (sections.some((s) => s.section_type === 'WRITING')) {
-      alert('Đề thi đã có Phần 3: Viết.');
+      alert('Đề thi đã có Phần 3: Viết (书写).');
       return;
     }
     setSections([
@@ -529,7 +592,7 @@ export const TeacherExamManager: React.FC<{ onBack?: () => void }> = ({ onBack }
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={2}
-                  placeholder="VD: Đề gồm 40 câu hỏi, thời gian 35 phút..."
+                  placeholder="VD: Đề gồm 40 câu hỏi (20 câu Nghe, 20 câu Đọc), thời gian 35 phút..."
                   className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 text-sm focus:ring-2 focus:ring-[#C41E3A]/30 focus:border-[#C41E3A] outline-none"
                 />
               </div>
@@ -571,14 +634,30 @@ export const TeacherExamManager: React.FC<{ onBack?: () => void }> = ({ onBack }
             </h2>
 
             {/* 1. File Đề PDF */}
-            <div className="p-3.5 rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/5 space-y-2">
+            <div className="p-4 rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/5 space-y-2.5">
               <div className="flex items-center justify-between text-xs font-bold text-slate-800 dark:text-white">
                 <span className="flex items-center gap-1.5 text-red-600 dark:text-red-400">
                   <FileText className="w-4 h-4" />
                   1. File Đề PDF chính *
                 </span>
-                {examPdfUrl && <span className="text-emerald-600 font-bold">✓ Đã có file</span>}
+                {examPdfUrl ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-emerald-600 font-bold">✓ Đã có file</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPreviewPdfUrl(examPdfUrl);
+                        setPreviewPdfTitle('Xem trước File Đề Thi PDF');
+                      }}
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-[#C41E3A] hover:underline cursor-pointer"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>Xem trước PDF</span>
+                    </button>
+                  </div>
+                ) : null}
               </div>
+
               <input
                 type="file"
                 accept=".pdf"
@@ -596,7 +675,7 @@ export const TeacherExamManager: React.FC<{ onBack?: () => void }> = ({ onBack }
             </div>
 
             {/* 2. File Nghe Audio MP3 */}
-            <div className="p-3.5 rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/5 space-y-2">
+            <div className="p-4 rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/5 space-y-2.5">
               <div className="flex items-center justify-between text-xs font-bold text-slate-800 dark:text-white">
                 <span className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
                   <Headphones className="w-4 h-4" />
@@ -604,6 +683,7 @@ export const TeacherExamManager: React.FC<{ onBack?: () => void }> = ({ onBack }
                 </span>
                 {audioUrl && <span className="text-emerald-600 font-bold">✓ Đã có file</span>}
               </div>
+
               <input
                 type="file"
                 accept="audio/*,.mp3,.m4a,.wav"
@@ -618,19 +698,64 @@ export const TeacherExamManager: React.FC<{ onBack?: () => void }> = ({ onBack }
                 placeholder="Hoặc dán URL: /uploads/exams/H11332.mp3"
                 className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 outline-none font-mono"
               />
+
+              {/* Nghe thử Audio ngay sau khi tải */}
+              {audioUrl && (
+                <div className="mt-2 p-3 rounded-xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-blue-800 dark:text-blue-300 flex items-center gap-1.5">
+                      <Volume2 className="w-3.5 h-3.5 text-blue-600" />
+                      <span>Trình nghe thử Audio đề thi:</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={togglePlayAudioPreview}
+                      className="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-all"
+                    >
+                      {isPreviewAudioPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3 ml-0.5" />}
+                      <span>{isPreviewAudioPlaying ? 'Dừng phát' : 'Nghe thử'}</span>
+                    </button>
+                  </div>
+                  <audio
+                    ref={audioPreviewRef}
+                    src={audioUrl}
+                    controls
+                    onEnded={() => setIsPreviewAudioPlaying(false)}
+                    onPause={() => setIsPreviewAudioPlaying(false)}
+                    onPlay={() => setIsPreviewAudioPlaying(true)}
+                    className="w-full h-8"
+                  />
+                </div>
+              )}
             </div>
 
             {/* 3. File Đáp Án PDF */}
-            <div className="p-3.5 rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/5 space-y-2">
+            <div className="p-4 rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/5 space-y-2.5">
               <div className="flex items-center justify-between text-xs font-bold text-slate-800 dark:text-white">
                 <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
                   <FileText className="w-4 h-4" />
                   3. File Đáp Án & Transcript PDF (Tùy chọn)
                 </span>
-                {answerPdfUrl && <span className="text-emerald-600 font-bold">✓ Đã có file</span>}
+                {answerPdfUrl ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-emerald-600 font-bold">✓ Đã có file</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPreviewPdfUrl(answerPdfUrl);
+                        setPreviewPdfTitle('Xem trước File Đáp Án & Transcript PDF');
+                      }}
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 hover:underline cursor-pointer"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>Xem trước PDF</span>
+                    </button>
+                  </div>
+                ) : null}
               </div>
-              <p className="text-[11px] text-slate-500">
-                Chỉ hiển thị và mở khóa cho học viên sau khi hoàn thành nộp bài làm.
+
+              <p className="text-[11px] text-slate-500 leading-relaxed">
+                Chỉ hiển thị và tự động mở khóa cho học viên sau khi hoàn tất nộp bài thi.
               </p>
               <input
                 type="file"
@@ -653,20 +778,34 @@ export const TeacherExamManager: React.FC<{ onBack?: () => void }> = ({ onBack }
         {/* Right Column (2 cols): Sections & Question Builder */}
         <div className="lg:col-span-2 space-y-6">
           <div className="p-6 rounded-3xl bg-white dark:bg-[#141a22] border border-slate-200 dark:border-white/10 shadow-sm space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-slate-200 dark:border-white/10">
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg font-display font-extrabold text-slate-900 dark:text-white">
-                  3. Cấu hình Phiếu Trả Lời & Thang Điểm
-                </h2>
-                <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300">
-                  {totalQuestionsCount} câu | Tổng: {totalCalculatedScore}đ
-                </span>
+            {/* Header with Section Score Summary */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200 dark:border-white/10">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-display font-extrabold text-slate-900 dark:text-white">
+                    3. Cấu hình Phiếu Trả Lời & Thang Điểm
+                  </h2>
+                  <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-[#C41E3A]/10 text-[#C41E3A]">
+                    {totalQuestionsCount} câu | Tổng: {totalCalculatedScore}đ
+                  </span>
+                </div>
+                {/* Realtime section breakdown */}
+                <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                  {sections.map((sec, idx) => (
+                    <span
+                      key={idx}
+                      className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-white/5 font-semibold"
+                    >
+                      {sec.title.split(':')[0]}: <b>{sec.questions.length} câu</b> ({sectionScores[idx]}đ)
+                    </span>
+                  ))}
+                </div>
               </div>
 
               <button
                 type="button"
                 onClick={handleAddWritingSection}
-                className="text-xs font-bold px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 border border-purple-200 transition-colors cursor-pointer"
+                className="text-xs font-bold px-3.5 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 border border-purple-200 transition-colors cursor-pointer"
               >
                 + Thêm Phần 3: Viết (书写)
               </button>
@@ -687,7 +826,7 @@ export const TeacherExamManager: React.FC<{ onBack?: () => void }> = ({ onBack }
                   >
                     <span>{sec.title}</span>
                     <span className="px-1.5 py-0.2 rounded-full bg-white/20 text-[10px]">
-                      {sec.questions.length} câu
+                      {sec.questions.length} câu ({sectionScores[idx]}đ)
                     </span>
                   </button>
                   {sections.length > 1 && (
@@ -704,31 +843,89 @@ export const TeacherExamManager: React.FC<{ onBack?: () => void }> = ({ onBack }
               ))}
             </div>
 
-            {/* Quick Generator Tool */}
+            {/* Quick Bulk Generator Tool */}
             {sections[activeSectionTab] && (
-              <div className="p-4 rounded-2xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/70 dark:border-amber-900/40 space-y-3">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-amber-800 dark:text-amber-300">
-                  <Sparkles className="w-4 h-4 text-amber-600" />
-                  <span>Bộ tạo nhanh danh sách câu hỏi hàng loạt vào: "{sections[activeSectionTab].title}"</span>
+              <div className="p-4 rounded-2xl bg-amber-50/70 dark:bg-amber-950/25 border border-amber-200/80 dark:border-amber-900/50 space-y-3.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-amber-900 dark:text-amber-300">
+                    <Sparkles className="w-4 h-4 text-amber-600" />
+                    <span>Bộ tạo nhanh hàng loạt vào "{sections[activeSectionTab].title}"</span>
+                  </div>
+
+                  {/* Mode Selector */}
+                  <div className="flex items-center gap-1 text-[11px] font-bold">
+                    <button
+                      type="button"
+                      onClick={() => setBatchMode('range')}
+                      className={`px-2 py-0.5 rounded-md cursor-pointer ${
+                        batchMode === 'range'
+                          ? 'bg-amber-600 text-white'
+                          : 'bg-white/60 text-amber-800 hover:bg-white'
+                      }`}
+                    >
+                      Từ câu X đến câu Y
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setBatchMode('count')}
+                      className={`px-2 py-0.5 rounded-md cursor-pointer ${
+                        batchMode === 'count'
+                          ? 'bg-amber-600 text-white'
+                          : 'bg-white/60 text-amber-800 hover:bg-white'
+                      }`}
+                    >
+                      Theo số lượng
+                    </button>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs">
+                  {batchMode === 'range' ? (
+                    <>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                          Từ câu số:
+                        </label>
+                        <input
+                          type="number"
+                          value={batchFromQuestion}
+                          onChange={(e) => setBatchFromQuestion(Math.max(1, Number(e.target.value)))}
+                          min={1}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-amber-300 dark:border-amber-800 bg-white dark:bg-white/5 font-bold"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                          Đến câu số:
+                        </label>
+                        <input
+                          type="number"
+                          value={batchToQuestion}
+                          onChange={(e) => setBatchToQuestion(Math.max(1, Number(e.target.value)))}
+                          min={1}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-amber-300 dark:border-amber-800 bg-white dark:bg-white/5 font-bold"
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <div className="sm:col-span-2">
+                      <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                        Số lượng câu cần thêm:
+                      </label>
+                      <input
+                        type="number"
+                        value={batchCount}
+                        onChange={(e) => setBatchCount(Math.max(1, Number(e.target.value)))}
+                        min={1}
+                        max={60}
+                        className="w-full px-2.5 py-1.5 rounded-lg border border-amber-300 dark:border-amber-800 bg-white dark:bg-white/5 font-bold"
+                      />
+                    </div>
+                  )}
+
                   <div>
                     <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
-                      Số lượng câu:
-                    </label>
-                    <input
-                      type="number"
-                      value={batchCount}
-                      onChange={(e) => setBatchCount(Math.max(1, Number(e.target.value)))}
-                      min={1}
-                      max={50}
-                      className="w-full px-2.5 py-1.5 rounded-lg border border-amber-300 dark:border-amber-800 bg-white dark:bg-white/5 font-bold"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
-                      Loại câu hỏi:
+                      Dạng câu hỏi:
                     </label>
                     <select
                       value={batchType}
@@ -742,6 +939,7 @@ export const TeacherExamManager: React.FC<{ onBack?: () => void }> = ({ onBack }
                       <option value="WRITING_ESSAY">Viết câu / đoạn văn</option>
                     </select>
                   </div>
+
                   <div>
                     <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
                       Điểm mỗi câu:
@@ -754,13 +952,16 @@ export const TeacherExamManager: React.FC<{ onBack?: () => void }> = ({ onBack }
                       className="w-full px-2.5 py-1.5 rounded-lg border border-amber-300 dark:border-amber-800 bg-white dark:bg-white/5 font-bold"
                     />
                   </div>
-                  <div className="flex items-end">
+
+                  <div className="flex items-end col-span-2 sm:col-span-1">
                     <button
                       type="button"
                       onClick={handleBatchGenerate}
-                      className="w-full py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-sm cursor-pointer"
+                      className="w-full py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-sm cursor-pointer transition-colors"
                     >
-                      + Tạo {batchCount} câu
+                      {batchMode === 'range'
+                        ? `+ Tạo ${Math.max(0, batchToQuestion - batchFromQuestion + 1)} câu`
+                        : `+ Tạo ${batchCount} câu`}
                     </button>
                   </div>
                 </div>
@@ -802,181 +1003,204 @@ export const TeacherExamManager: React.FC<{ onBack?: () => void }> = ({ onBack }
                 </div>
 
                 {sections[activeSectionTab].questions.length === 0 ? (
-                  <div className="p-8 text-center border-2 border-dashed border-slate-200 dark:border-white/10 rounded-2xl text-slate-400 text-sm">
-                    Phần này chưa có câu hỏi nào. Dùng công cụ "Bộ tạo nhanh" ở trên để sinh hàng loạt!
+                  <div className="p-8 text-center border-2 border-dashed border-slate-200 dark:border-white/10 rounded-2xl text-slate-400 text-sm space-y-2">
+                    <p>Phần này chưa có câu hỏi nào.</p>
+                    <p className="text-xs text-slate-500">
+                      Sử dụng công cụ "Bộ tạo nhanh" ở trên để sinh hàng loạt câu hỏi trong vài giây!
+                    </p>
                   </div>
                 ) : (
-                  <div className="space-y-2.5 max-h-[500px] overflow-y-auto pr-1">
+                  <div className="space-y-3 max-h-[550px] overflow-y-auto pr-1">
                     {sections[activeSectionTab].questions.map((q, qIndex) => (
                       <div
                         key={qIndex}
-                        className="p-3 rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-50/70 dark:bg-white/5 hover:border-[#C41E3A]/40 transition-all flex flex-wrap items-center gap-3 text-xs"
+                        className="p-3.5 rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-50/70 dark:bg-white/5 hover:border-[#C41E3A]/40 transition-all space-y-2 text-xs"
                       >
-                        {/* Question Number */}
-                        <div className="w-16">
-                          <label className="block text-[10px] font-bold text-slate-500">Số câu</label>
-                          <input
-                            type="number"
-                            value={q.question_number}
-                            onChange={(e) => {
-                              const updated = [...sections];
-                              updated[activeSectionTab].questions[qIndex].question_number = Number(
-                                e.target.value
-                              );
-                              setSections(updated);
-                            }}
-                            className="w-full px-2 py-1 rounded-lg border border-slate-200 bg-white dark:bg-white/5 font-bold text-center"
-                          />
-                        </div>
+                        <div className="flex flex-wrap items-center gap-3">
+                          {/* Question Number */}
+                          <div className="w-16">
+                            <label className="block text-[10px] font-bold text-slate-500">Số câu</label>
+                            <input
+                              type="number"
+                              value={q.question_number}
+                              onChange={(e) => {
+                                const updated = [...sections];
+                                updated[activeSectionTab].questions[qIndex].question_number = Number(
+                                  e.target.value
+                                );
+                                setSections(updated);
+                              }}
+                              className="w-full px-2 py-1 rounded-lg border border-slate-200 bg-white dark:bg-white/5 font-bold text-center"
+                            />
+                          </div>
 
-                        {/* Question Type */}
-                        <div className="w-36">
-                          <label className="block text-[10px] font-bold text-slate-500">Dạng câu hỏi</label>
-                          <select
-                            value={q.question_type}
-                            onChange={(e) => {
-                              const updated = [...sections];
-                              const newType = e.target.value as any;
-                              updated[activeSectionTab].questions[qIndex].question_type = newType;
-                              if (newType === 'TRUE_FALSE') {
-                                updated[activeSectionTab].questions[qIndex].options = ['✓', '✗'];
-                                updated[activeSectionTab].questions[qIndex].correct_answer = 'TRUE';
-                              } else if (newType === 'MCQ_ABCDEF') {
-                                updated[activeSectionTab].questions[qIndex].options = [
-                                  'A',
-                                  'B',
-                                  'C',
-                                  'D',
-                                  'E',
-                                  'F',
-                                ];
-                                updated[activeSectionTab].questions[qIndex].correct_answer = 'A';
-                              } else if (newType === 'MCQ_ABCD') {
-                                updated[activeSectionTab].questions[qIndex].options = [
-                                  'A',
-                                  'B',
-                                  'C',
-                                  'D',
-                                ];
-                                updated[activeSectionTab].questions[qIndex].correct_answer = 'A';
-                              }
-                              setSections(updated);
-                            }}
-                            className="w-full px-2 py-1 rounded-lg border border-slate-200 bg-white dark:bg-white/5 font-semibold text-[11px]"
-                          >
-                            <option value="MCQ_ABCD">A / B / C / D</option>
-                            <option value="TRUE_FALSE">Đúng / Sai (✓ / ✗)</option>
-                            <option value="MCQ_ABCDEF">Ghép A – F</option>
-                            <option value="WRITING_FILL">Viết điền từ</option>
-                            <option value="WRITING_ESSAY">Viết câu / đoạn</option>
-                          </select>
-                        </div>
-
-                        {/* Correct Answer */}
-                        <div className="flex-1 min-w-[140px]">
-                          <label className="block text-[10px] font-bold text-slate-500">
-                            Đáp án đúng * (nhiều đáp án cách bởi |)
-                          </label>
-                          {q.question_type === 'TRUE_FALSE' ? (
-                            <div className="flex items-center gap-2">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const updated = [...sections];
+                          {/* Question Type */}
+                          <div className="w-36">
+                            <label className="block text-[10px] font-bold text-slate-500">
+                              Dạng câu hỏi
+                            </label>
+                            <select
+                              value={q.question_type}
+                              onChange={(e) => {
+                                const updated = [...sections];
+                                const newType = e.target.value as any;
+                                updated[activeSectionTab].questions[qIndex].question_type = newType;
+                                if (newType === 'TRUE_FALSE') {
+                                  updated[activeSectionTab].questions[qIndex].options = ['✓', '✗'];
                                   updated[activeSectionTab].questions[qIndex].correct_answer = 'TRUE';
-                                  setSections(updated);
-                                }}
-                                className={`px-3 py-1 rounded-lg font-bold border transition-all cursor-pointer ${
-                                  q.correct_answer === 'TRUE'
-                                    ? 'bg-emerald-600 text-white border-emerald-600'
-                                    : 'border-slate-200 bg-white text-slate-600'
-                                }`}
-                              >
-                                ✓ Đúng
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const updated = [...sections];
-                                  updated[activeSectionTab].questions[qIndex].correct_answer = 'FALSE';
-                                  setSections(updated);
-                                }}
-                                className={`px-3 py-1 rounded-lg font-bold border transition-all cursor-pointer ${
-                                  q.correct_answer === 'FALSE'
-                                    ? 'bg-red-600 text-white border-red-600'
-                                    : 'border-slate-200 bg-white text-slate-600'
-                                }`}
-                              >
-                                ✗ Sai
-                              </button>
-                            </div>
-                          ) : q.question_type === 'MCQ_ABCD' || q.question_type === 'MCQ_ABCDEF' ? (
-                            <div className="flex items-center gap-1">
-                              {(q.options || ['A', 'B', 'C', 'D']).map((opt) => (
+                                } else if (newType === 'MCQ_ABCDEF') {
+                                  updated[activeSectionTab].questions[qIndex].options = [
+                                    'A',
+                                    'B',
+                                    'C',
+                                    'D',
+                                    'E',
+                                    'F',
+                                  ];
+                                  updated[activeSectionTab].questions[qIndex].correct_answer = 'A';
+                                } else if (newType === 'MCQ_ABCD') {
+                                  updated[activeSectionTab].questions[qIndex].options = [
+                                    'A',
+                                    'B',
+                                    'C',
+                                    'D',
+                                  ];
+                                  updated[activeSectionTab].questions[qIndex].correct_answer = 'A';
+                                }
+                                setSections(updated);
+                              }}
+                              className="w-full px-2 py-1 rounded-lg border border-slate-200 bg-white dark:bg-white/5 font-semibold text-[11px]"
+                            >
+                              <option value="MCQ_ABCD">A / B / C / D</option>
+                              <option value="TRUE_FALSE">Đúng / Sai (✓ / ✗)</option>
+                              <option value="MCQ_ABCDEF">Ghép A – F</option>
+                              <option value="WRITING_FILL">Viết điền từ</option>
+                              <option value="WRITING_ESSAY">Viết câu / đoạn</option>
+                            </select>
+                          </div>
+
+                          {/* Correct Answer */}
+                          <div className="flex-1 min-w-[160px]">
+                            <label className="block text-[10px] font-bold text-slate-500">
+                              Đáp án đúng * (Click chọn nhanh hoặc nhập)
+                            </label>
+                            {q.question_type === 'TRUE_FALSE' ? (
+                              <div className="flex items-center gap-2">
                                 <button
-                                  key={opt}
                                   type="button"
                                   onClick={() => {
                                     const updated = [...sections];
-                                    updated[activeSectionTab].questions[qIndex].correct_answer = opt;
+                                    updated[activeSectionTab].questions[qIndex].correct_answer = 'TRUE';
                                     setSections(updated);
                                   }}
-                                  className={`w-7 h-7 rounded-lg font-bold border flex items-center justify-center transition-all cursor-pointer ${
-                                    q.correct_answer === opt
-                                      ? 'bg-[#C41E3A] text-white border-[#C41E3A]'
-                                      : 'border-slate-200 bg-white text-slate-700 hover:border-slate-400'
+                                  className={`px-3 py-1 rounded-lg font-bold border transition-all cursor-pointer ${
+                                    q.correct_answer === 'TRUE'
+                                      ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                                      : 'border-slate-200 bg-white text-slate-600 hover:border-emerald-500'
                                   }`}
                                 >
-                                  {opt}
+                                  ✓ Đúng
                                 </button>
-                              ))}
-                            </div>
-                          ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const updated = [...sections];
+                                    updated[activeSectionTab].questions[qIndex].correct_answer = 'FALSE';
+                                    setSections(updated);
+                                  }}
+                                  className={`px-3 py-1 rounded-lg font-bold border transition-all cursor-pointer ${
+                                    q.correct_answer === 'FALSE'
+                                      ? 'bg-red-600 text-white border-red-600 shadow-xs'
+                                      : 'border-slate-200 bg-white text-slate-600 hover:border-red-500'
+                                  }`}
+                                >
+                                  ✗ Sai
+                                </button>
+                              </div>
+                            ) : q.question_type === 'MCQ_ABCD' || q.question_type === 'MCQ_ABCDEF' ? (
+                              <div className="flex items-center gap-1">
+                                {(q.options || ['A', 'B', 'C', 'D']).map((opt) => (
+                                  <button
+                                    key={opt}
+                                    type="button"
+                                    onClick={() => {
+                                      const updated = [...sections];
+                                      updated[activeSectionTab].questions[qIndex].correct_answer = opt;
+                                      setSections(updated);
+                                    }}
+                                    className={`w-7 h-7 rounded-lg font-bold border flex items-center justify-center transition-all cursor-pointer ${
+                                      q.correct_answer === opt
+                                        ? 'bg-[#C41E3A] text-white border-[#C41E3A] shadow-xs'
+                                        : 'border-slate-200 bg-white text-slate-700 hover:border-slate-400'
+                                    }`}
+                                  >
+                                    {opt}
+                                  </button>
+                                ))}
+                              </div>
+                            ) : (
+                              <input
+                                type="text"
+                                value={q.correct_answer || ''}
+                                onChange={(e) => {
+                                  const updated = [...sections];
+                                  updated[activeSectionTab].questions[qIndex].correct_answer =
+                                    e.target.value;
+                                  setSections(updated);
+                                }}
+                                placeholder="VD: 苹果 | 苹果汁"
+                                className="w-full px-2.5 py-1 rounded-lg border border-slate-200 bg-white dark:bg-white/5 font-medium"
+                              />
+                            )}
+                          </div>
+
+                          {/* Points */}
+                          <div className="w-20">
+                            <label className="block text-[10px] font-bold text-slate-500">Điểm</label>
                             <input
-                              type="text"
-                              value={q.correct_answer || ''}
+                              type="number"
+                              step={0.5}
+                              value={q.points}
                               onChange={(e) => {
                                 const updated = [...sections];
-                                updated[activeSectionTab].questions[qIndex].correct_answer =
-                                  e.target.value;
+                                updated[activeSectionTab].questions[qIndex].points = Number(
+                                  e.target.value
+                                );
                                 setSections(updated);
                               }}
-                              placeholder="VD: 苹果 | 苹果汁"
-                              className="w-full px-2.5 py-1 rounded-lg border border-slate-200 bg-white dark:bg-white/5 font-medium"
+                              className="w-full px-2 py-1 rounded-lg border border-slate-200 bg-white dark:bg-white/5 font-bold text-center text-[#C41E3A]"
                             />
-                          )}
-                        </div>
+                          </div>
 
-                        {/* Points */}
-                        <div className="w-20">
-                          <label className="block text-[10px] font-bold text-slate-500">Điểm</label>
-                          <input
-                            type="number"
-                            step={0.5}
-                            value={q.points}
-                            onChange={(e) => {
+                          {/* Delete Question */}
+                          <button
+                            type="button"
+                            onClick={() => {
                               const updated = [...sections];
-                              updated[activeSectionTab].questions[qIndex].points = Number(
-                                e.target.value
-                              );
+                              updated[activeSectionTab].questions.splice(qIndex, 1);
                               setSections(updated);
                             }}
-                            className="w-full px-2 py-1 rounded-lg border border-slate-200 bg-white dark:bg-white/5 font-bold text-center text-[#C41E3A]"
-                          />
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 cursor-pointer self-end mb-0.5"
+                            title="Xóa câu này"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </div>
 
-                        {/* Delete Question */}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const updated = [...sections];
-                            updated[activeSectionTab].questions.splice(qIndex, 1);
-                            setSections(updated);
-                          }}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 cursor-pointer self-end mb-1"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        {/* Optional Explanation Field */}
+                        <div className="pt-1">
+                          <input
+                            type="text"
+                            value={q.explanation || ''}
+                            onChange={(e) => {
+                              const updated = [...sections];
+                              updated[activeSectionTab].questions[qIndex].explanation = e.target.value;
+                              setSections(updated);
+                            }}
+                            placeholder="Giải thích / transcript đáp án cho câu này (hiển thị khi học viên xem kết quả)..."
+                            className="w-full px-2.5 py-1 text-[11px] rounded-lg border border-slate-200/80 dark:border-white/5 bg-white/70 dark:bg-white/5 text-slate-600 dark:text-slate-300 outline-none focus:border-[#C41E3A]"
+                          />
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -1075,6 +1299,47 @@ export const TeacherExamManager: React.FC<{ onBack?: () => void }> = ({ onBack }
           </div>
         )}
       </div>
+
+      {/* PDF Preview Modal */}
+      {previewPdfUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xs">
+          <div className="w-full max-w-4xl h-[85vh] rounded-3xl bg-white dark:bg-[#141a22] border border-slate-200 dark:border-white/10 shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="px-6 py-4 border-b border-slate-200 dark:border-white/10 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FileText className="w-5 h-5 text-[#C41E3A]" />
+                <h3 className="font-display font-extrabold text-base text-slate-900 dark:text-white">
+                  {previewPdfTitle}
+                </h3>
+              </div>
+              <div className="flex items-center gap-2">
+                <a
+                  href={previewPdfUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="p-2 rounded-xl text-slate-500 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 cursor-pointer"
+                  title="Mở tab mới"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setPreviewPdfUrl(null)}
+                  className="p-2 rounded-xl text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            <div className="flex-1 w-full h-full bg-slate-100 dark:bg-black relative">
+              <iframe
+                src={previewPdfUrl}
+                title="Xem trước PDF"
+                className="w-full h-full border-0 absolute inset-0"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

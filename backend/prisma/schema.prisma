@@ -30,6 +30,10 @@ model Users {
   auditLogs          AuditLogs[]
   uploadedMedia      MediaResources[]       @relation("MediaUploader")
   profile            UserProfiles?
+  pushSubscriptions  PushSubscriptions[]
+  reminderLogs       ReminderDeliveryLogs[]
+  createdMockExams   MockExam[]             @relation("ExamCreator")
+  mockExamAttempts   ExamAttempt[]
 
   @@map("Users")
 }
@@ -60,8 +64,12 @@ model UserProfiles {
   current_level       String?
   expected_duration   String?
   expected_weeks      Int?
-  daily_study_minutes Int?     @default(15)
-  phone               String?
+  daily_study_minutes         Int?     @default(15)
+  reminder_time               String?  @default("20:00")
+  email_reminder_enabled      Boolean? @default(true)
+  browser_notification_enabled Boolean? @default(false)
+  timezone                    String?  @default("Asia/Ho_Chi_Minh")
+  phone                       String?
   bio                 String?
   created_at          DateTime @default(now())
   updated_at          DateTime @default(now()) @updatedAt
@@ -82,6 +90,37 @@ model NotificationSettings {
   user           Users    @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
 
   @@map("NotificationSettings")
+}
+
+model PushSubscriptions {
+  subscription_id Int      @id @default(autoincrement())
+  user_id         Int
+  endpoint        String   @unique
+  p256dh          String
+  auth            String
+  user_agent      String?
+  created_at      DateTime @default(now())
+  updated_at      DateTime @default(now()) @updatedAt
+
+  user            Users    @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@map("PushSubscriptions")
+}
+
+model ReminderDeliveryLogs {
+  log_id         Int      @id @default(autoincrement())
+  user_id        Int
+  study_date     String   // YYYY-MM-DD theo múi giờ Asia/Ho_Chi_Minh
+  channel        String   // "EMAIL" | "BROWSER"
+  offset_minutes Int      // -15, -5, 0, 5, 15
+  sent_at        DateTime @default(now())
+
+  user           Users    @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@unique([user_id, study_date, channel, offset_minutes])
+  @@index([user_id, study_date])
+  @@map("ReminderDeliveryLogs")
 }
 
 model Courses {
@@ -682,4 +721,110 @@ model ExerciseAnswer {
   exercise     Exercise @relation(fields: [exercise_id], references: [exercise_id], onDelete: Cascade)
 
   @@map("ExerciseAnswer")
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  MOCK EXAM REPOSITORY — Phân hệ Luyện thi thử HSK 1–6 (PDF + Audio)
+// ═══════════════════════════════════════════════════════════════
+
+model MockExam {
+  id               Int           @id @default(autoincrement())
+  code             String        @unique // Mã đề (VD: H11332)
+  title            String        // VD: Đề thi thử HSK 1 - Mã H11332
+  description      String?
+  hsk_level        String        // HSK1, HSK2, HSK3, HSK4, HSK5, HSK6
+  exam_pdf_url     String        // URL file đề PDF
+  audio_url        String?       // URL file nghe MP3
+  answer_pdf_url   String?       // URL file đáp án/transcript PDF (chỉ hiển thị sau khi nộp)
+  duration_minutes Int           @default(35)
+  total_score      Float         @default(100)
+  pass_score       Float         @default(60)
+  status           String        @default("PUBLISHED") // DRAFT, PUBLISHED
+  created_by       Int?
+  created_at       DateTime      @default(now())
+  updated_at       DateTime      @default(now()) @updatedAt
+
+  creator          Users?        @relation("ExamCreator", fields: [created_by], references: [user_id], onDelete: SetNull)
+  sections         ExamSection[]
+  attempts         ExamAttempt[]
+
+  @@index([hsk_level])
+  @@index([status])
+  @@map("MockExam")
+}
+
+model ExamSection {
+  id           Int            @id @default(autoincrement())
+  exam_id      Int
+  section_type String         // LISTENING, READING, WRITING
+  title        String         // VD: Phần 1: Nghe hiểu (听力)
+  instructions String?
+  audio_url    String?        // Tùy chọn nếu có file nghe riêng
+  order_index  Int            @default(0)
+
+  exam         MockExam       @relation(fields: [exam_id], references: [id], onDelete: Cascade)
+  questions    ExamQuestion[]
+
+  @@index([exam_id, order_index])
+  @@map("ExamSection")
+}
+
+model ExamQuestion {
+  id              Int                 @id @default(autoincrement())
+  section_id      Int
+  question_number Int                 // 1, 2, 3... 40
+  question_type   String              // MCQ_ABCD, TRUE_FALSE, MCQ_ABCDEF, WRITING_FILL, WRITING_ESSAY
+  prompt_text     String?             // Tùy chọn ghi chú/tiêu đề câu
+  options         String?             // JSON array ["A","B","C","D"]
+  correct_answer  String?             // A, B, TRUE, FALSE, đáp án viết cách nhau bởi |
+  sample_answer   String?             // Đáp án mẫu cho phần viết
+  points          Float               @default(2.5) // Điểm riêng cho từng câu
+  explanation     String?             // Giải thích đáp án
+  order_index     Int                 @default(0)
+
+  section         ExamSection         @relation(fields: [section_id], references: [id], onDelete: Cascade)
+  attemptAnswers  ExamAttemptAnswer[]
+
+  @@index([section_id, order_index])
+  @@map("ExamQuestion")
+}
+
+model ExamAttempt {
+  id              Int                 @id @default(autoincrement())
+  user_id         Int
+  exam_id         Int
+  listening_score Float               @default(0)
+  reading_score   Float               @default(0)
+  writing_score   Float               @default(0)
+  total_score     Float               @default(0)
+  correct_count   Int                 @default(0)
+  wrong_count     Int                 @default(0)
+  is_passed       Boolean             @default(false)
+  started_at      DateTime            @default(now())
+  submitted_at    DateTime?
+
+  user            Users               @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  exam            MockExam            @relation(fields: [exam_id], references: [id], onDelete: Cascade)
+  answers         ExamAttemptAnswer[]
+
+  @@index([user_id])
+  @@index([exam_id])
+  @@map("ExamAttempt")
+}
+
+model ExamAttemptAnswer {
+  id               Int          @id @default(autoincrement())
+  attempt_id       Int
+  question_id      Int
+  user_answer      String?
+  is_correct       Boolean      @default(false)
+  earned_score     Float        @default(0)
+  teacher_feedback String?
+
+  attempt          ExamAttempt  @relation(fields: [attempt_id], references: [id], onDelete: Cascade)
+  question         ExamQuestion @relation(fields: [question_id], references: [id], onDelete: Cascade)
+
+  @@index([attempt_id])
+  @@index([question_id])
+  @@map("ExamAttemptAnswer")
 }

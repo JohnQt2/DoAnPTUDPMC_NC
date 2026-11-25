@@ -56,6 +56,11 @@ const envSchema = z.object({
   SMTP_USER: z.string().default('hieuhoanghuu436@gmail.com'),
   SMTP_PASS: z.string().default('nxax fptz ldpt txyu'),
   SMTP_FROM: z.string().default('ChinaEasy <hieuhoanghuu436@gmail.com>'),
+  VAPID_PUBLIC_KEY: z
+    .string()
+    .default('BLmqwm52lA6xZWyp7WxNYRXDfmHsEjTh5f-JwC3QJpDxHfHtu6PWiQ9S0bhKIIuKEfdxadViQXrzsfffHSpsryg'),
+  VAPID_PRIVATE_KEY: z.string().default('cOlOhSiSVwi5z7VyYHhemkhRWWGJbIfRxR-pWrfM1k8'),
+  VAPID_SUBJECT: z.string().default('mailto:hieuhoanghuu436@gmail.com'),
 });
 
 const parsed = envSchema.safeParse(

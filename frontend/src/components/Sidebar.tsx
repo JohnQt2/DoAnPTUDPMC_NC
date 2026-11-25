@@ -34,7 +34,7 @@ export const STUDENT_SIDEBAR_ITEMS = [
   { label: 'Từ vựng', hash: '#/vocab', icon: BookOpen },
   { label: 'Bảng chữ cái', hash: '#/speak-learn', icon: Languages },
   { label: 'Luyện nói', hash: '#/speak-practice', icon: MessagesSquare },
-  { label: 'Đề thi', hash: '#/exams', icon: FileText },
+  { label: 'Đề thi HSK', hash: '#/mock-exams', icon: FileText },
   { label: 'Xếp hạng', hash: '#/leaderboard', icon: Trophy },
   { label: 'Tiến độ', hash: '#/progress', icon: TrendingUp },
 ];
@@ -348,6 +348,7 @@ export const Sidebar: React.FC<{
     return [
       { label: 'Quản lý khóa học', hash: '#/admin/courses', icon: BookOpen },
       { label: 'Ngân hàng câu hỏi', hash: '#/admin/questions', icon: FileQuestion },
+      { label: 'Đề thi thử HSK', hash: '#/teacher/exams', icon: FileText },
       ...(isSuperAdmin
         ? [{ label: 'Người dùng & Phân quyền', hash: '#/admin/users', icon: Users }]
         : []),
@@ -358,6 +359,7 @@ export const Sidebar: React.FC<{
     if (isAdmin) {
       if (basePath.startsWith('#/admin/questions')) return '#/admin/questions';
       if (basePath.startsWith('#/admin/users') && isSuperAdmin) return '#/admin/users';
+      if (basePath.startsWith('#/teacher/exams') || basePath.startsWith('#/admin/exams')) return '#/teacher/exams';
       return '#/admin/courses';
     }
     if (
@@ -386,7 +388,13 @@ export const Sidebar: React.FC<{
     }
     if (basePath.startsWith('#/speak-learn') || basePath === '#/pinyin') return '#/speak-learn';
     if (basePath.startsWith('#/speak-practice')) return '#/speak-practice';
-    if (basePath.startsWith('#/exams') || basePath.startsWith('#/test')) return '#/exams';
+    if (
+      basePath.startsWith('#/mock-exams') ||
+      basePath.startsWith('#/exams') ||
+      basePath.startsWith('#/test')
+    ) {
+      return '#/mock-exams';
+    }
     if (basePath.startsWith('#/leaderboard')) return '#/leaderboard';
     if (basePath.startsWith('#/progress')) return '#/progress';
     return '';

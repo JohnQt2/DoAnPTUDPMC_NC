@@ -27,6 +27,14 @@ router.get('/roadmap', authenticate, userController.getActiveRoadmap);
 router.get('/roadmap/active', authenticate, userController.getActiveRoadmap);
 router.put('/notifications', authenticate, userController.updateNotifications);
 router.patch('/notifications', authenticate, userController.updateNotifications);
+router.put('/reminder-settings', authenticate, userController.updateNotifications);
+router.patch('/reminder-settings', authenticate, userController.updateNotifications);
+router.post('/reminder-settings/test', authenticate, userController.testReminderSettings);
+
+// Web Push Notification Endpoints
+router.get('/push/vapid-public-key', authenticate, userController.getVapidPublicKey);
+router.post('/push/subscribe', authenticate, userController.subscribePush);
+router.delete('/push/unsubscribe', authenticate, userController.unsubscribePush);
 
 // Admin User Management & Audit Endpoints (RBAC: ADMIN)
 router.get('/admin/all', authenticate, authorize('ADMIN'), userController.adminListUsers);

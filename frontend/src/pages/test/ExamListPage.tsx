@@ -105,7 +105,9 @@ export const ExamListPage: React.FC = () => {
           {/* Card 1: Mô phỏng thi thật */}
           <button
             type="button"
-            onClick={() => setSection('MOCK_EXAM')}
+            onClick={() => {
+              window.location.hash = '#/mock-exams';
+            }}
             className="group relative overflow-hidden rounded-[26px] p-7 sm:p-8 text-left bg-white dark:bg-[#141a22] border border-slate-200/90 dark:border-white/10 hover:border-[#C41E3A]/60 shadow-sm hover:shadow-xl transition-all duration-200 cursor-pointer flex flex-col justify-between min-h-[270px]"
           >
             {/* Top-right decorative corner arc */}

@@ -2,10 +2,18 @@ import { app } from './app';
 import { env } from './config/env';
 import { connectDatabase, disconnectDatabase } from './shared/database/prisma.client';
 import { studyReminderJob } from './jobs/study-reminder.job';
+import { examService } from './modules/exam/exam.service';
 
 async function bootstrap() {
   try {
     await connectDatabase();
+
+    // Tự động kiểm tra và khởi tạo đề thi thử HSK mẫu nếu DB chưa có
+    try {
+      await examService.ensureSeedExam();
+    } catch (seedErr) {
+      console.warn('Exam seed check notice:', seedErr);
+    }
 
     // Khởi chạy cron scheduler nhắc học hằng ngày
     studyReminderJob.start();

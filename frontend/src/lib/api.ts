@@ -234,8 +234,9 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
     await silentRefreshAccessToken({ notifyOnFail: false });
   }
 
+  const isFormData = typeof FormData !== 'undefined' && customConfig.body instanceof FormData;
   const reqHeaders: Record<string, string> = {
-    'Content-Type': 'application/json',
+    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
     ...(headers as Record<string, string>),
   };
 
@@ -342,4 +343,6 @@ export const api = {
     request<T>(endpoint, { ...options, method: 'PATCH', body: body ? JSON.stringify(body) : undefined }),
   delete: <T>(endpoint: string, options?: RequestOptions) =>
     request<T>(endpoint, { ...options, method: 'DELETE' }),
+  upload: <T>(endpoint: string, formData: FormData, options?: RequestOptions) =>
+    request<T>(endpoint, { ...options, method: 'POST', body: formData }),
 };

@@ -1,4 +1,5 @@
 import express from 'express';
+import path from 'path';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { env } from './config/env';
@@ -14,6 +15,7 @@ import { learningRoutes } from './modules/learning/learning.routes';
 import { assessmentRoutes } from './modules/assessment/assessment.routes';
 import { srsRoutes } from './modules/srs/srs.routes';
 import { contentRoutes } from './modules/content/content.routes';
+import { examRoutes } from './modules/exam/exam.routes';
 import { userController } from './modules/user/user.controller';
 import { authenticate } from './shared/middleware/auth.middleware';
 
@@ -25,7 +27,12 @@ app.set('trust proxy', 1);
 
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
+  // Allow framing for uploads (PDF split screen preview)
+  if (req.path.startsWith('/uploads')) {
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  } else {
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  }
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('Permissions-Policy', 'camera=(), geolocation=()');
   if (env.NODE_ENV === 'production') {
@@ -85,6 +92,21 @@ app.use('/api/v1/srs', srsRoutes);
 app.use('/api/v1/content', contentRoutes);
 // Shorthand aliases (/api/courses, /api/units, /api/materials) for frontend convenience
 app.use('/api', contentRoutes);
+
+// Static file serving for uploads (PDFs, Audio MP3s)
+app.use(
+  '/uploads',
+  (req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.removeHeader('X-Frame-Options');
+    next();
+  },
+  express.static(path.join(process.cwd(), 'uploads'))
+);
+
+// Mock Exam Module — Phân hệ Luyện thi thử HSK 1–6 (PDF + Audio)
+app.use('/api/v1/exams', examRoutes);
+app.use('/exams', examRoutes);
 
 // Global Error Handler
 app.use(errorHandler);

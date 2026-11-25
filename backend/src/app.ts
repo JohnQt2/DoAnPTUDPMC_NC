@@ -93,19 +93,23 @@ app.use('/api/v1/content', contentRoutes);
 // Shorthand aliases (/api/courses, /api/units, /api/materials) for frontend convenience
 app.use('/api', contentRoutes);
 
-// Static file serving for uploads (PDFs, Audio MP3s)
+// Static file serving for uploads (PDFs, Audio MP3s with Accept-Ranges support)
 app.use(
   '/uploads',
   (req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Accept-Ranges', 'bytes');
     res.removeHeader('X-Frame-Options');
     next();
   },
-  express.static(path.join(process.cwd(), 'uploads'))
+  express.static(path.join(process.cwd(), 'uploads'), {
+    acceptRanges: true,
+  })
 );
 
 // Mock Exam Module — Phân hệ Luyện thi thử HSK 1–6 (PDF + Audio)
 app.use('/api/v1/exams', examRoutes);
+app.use('/api/exams', examRoutes);
 app.use('/exams', examRoutes);
 
 // Global Error Handler

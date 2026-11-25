@@ -125,7 +125,8 @@ export const StudentExamSplitScreen: React.FC<{ examId: number; onBack?: () => v
       try {
         setLoading(true);
         setError(null);
-        const data = await api.get<ExamDetail>(`/exams/${examId}`);
+        // Sử dụng endpoint /take bảo mật chống gian lận trong lúc làm bài
+        const data = await api.get<ExamDetail>(`/exams/${examId}/take`).catch(() => api.get<ExamDetail>(`/exams/${examId}`));
         if (!data) throw new Error('Không có dữ liệu đề thi.');
         setExam(data);
         setTimeLeft(data.duration_minutes * 60);

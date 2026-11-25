@@ -6,6 +6,8 @@ import {
   CreateSectionDto,
   SubmitExamDto,
   HskLevel,
+  ExamStatus,
+  GradeQuestionItemDto,
 } from './exam.dto';
 
 function normalizeTrueFalse(val?: string | null): 'TRUE' | 'FALSE' | null {
@@ -14,6 +16,14 @@ function normalizeTrueFalse(val?: string | null): 'TRUE' | 'FALSE' | null {
   if (['TRUE', 'T', '✓', 'V', '1', 'ĐÚNG', 'DUNG', 'YES', 'Y'].includes(s)) return 'TRUE';
   if (['FALSE', 'F', '✗', 'X', '0', 'SAI', 'NO', 'N'].includes(s)) return 'FALSE';
   return null;
+}
+
+function normalizeWritingText(text: string): string {
+  return text
+    .trim()
+    .replace(/\s+/g, ' ')
+    .replace(/[.。!！?？]+$/, '')
+    .toLowerCase();
 }
 
 export class ExamService {
@@ -433,6 +443,197 @@ export class ExamService {
   }
 
   /**
+   * Chuyển đổi trạng thái DRAFT <-> PUBLISHED (Giáo viên / Admin)
+   */
+  async publishExam(examId: number, targetStatus?: ExamStatus) {
+    const existing = await prisma.mockExam.findUnique({ where: { id: examId } });
+    if (!existing) {
+      throw AppError.notFound('Không tìm thấy đề thi.');
+    }
+
+    const nextStatus = targetStatus || (existing.status === 'PUBLISHED' ? 'DRAFT' : 'PUBLISHED');
+
+    const updated = await prisma.mockExam.update({
+      where: { id: examId },
+      data: { status: nextStatus },
+    });
+
+    return {
+      success: true,
+      id: updated.id,
+      code: updated.code,
+      status: updated.status,
+      message: `Đề thi ${updated.code} hiện ở trạng thái ${updated.status}.`,
+    };
+  }
+
+  /**
+   * Cho phép giáo viên chấm điểm hoặc điều chỉnh điểm các câu hỏi (WRITING_ESSAY, v.v.)
+   */
+  async gradeAttempt(attemptId: number, grades: GradeQuestionItemDto[]) {
+    const attempt = await prisma.examAttempt.findUnique({
+      where: { id: attemptId },
+      include: {
+        exam: {
+          include: {
+            sections: {
+              include: {
+                questions: true,
+              },
+            },
+          },
+        },
+        answers: true,
+      },
+    });
+
+    if (!attempt) {
+      throw AppError.notFound('Không tìm thấy bài làm cần chấm.');
+    }
+
+    const questionSectionMap = new Map<number, string>();
+    for (const sec of attempt.exam.sections) {
+      for (const q of sec.questions) {
+        questionSectionMap.set(q.id, sec.section_type);
+      }
+    }
+
+    await prisma.$transaction(async (tx) => {
+      for (const g of grades || []) {
+        const qId = g.question_id !== undefined ? Number(g.question_id) : Number(g.questionId);
+        const score = g.earned_score !== undefined ? Number(g.earned_score) : Number(g.earnedScore ?? 0);
+        const feedback = g.teacher_feedback || g.teacherFeedback || null;
+
+        if (!qId) continue;
+
+        const existingAns = attempt.answers.find((a) => a.question_id === qId);
+        if (existingAns) {
+          await tx.examAttemptAnswer.update({
+            where: { id: existingAns.id },
+            data: {
+              earned_score: score,
+              is_correct: score > 0,
+              ...(feedback ? { teacher_feedback: feedback } : {}),
+            },
+          });
+        }
+      }
+
+      const updatedAnswers = await tx.examAttemptAnswer.findMany({
+        where: { attempt_id: attemptId },
+      });
+
+      let listeningScore = 0;
+      let readingScore = 0;
+      let writingScore = 0;
+      let totalScore = 0;
+      let correctCount = 0;
+      let wrongCount = 0;
+
+      for (const ans of updatedAnswers) {
+        const sType = questionSectionMap.get(ans.question_id);
+        const s = ans.earned_score || 0;
+        if (sType === 'LISTENING') listeningScore += s;
+        else if (sType === 'READING') readingScore += s;
+        else if (sType === 'WRITING') writingScore += s;
+
+        totalScore += s;
+        if (ans.is_correct) correctCount++;
+        else wrongCount++;
+      }
+
+      const isPassed = totalScore >= attempt.exam.pass_score;
+
+      await tx.examAttempt.update({
+        where: { id: attemptId },
+        data: {
+          listening_score: Math.round(listeningScore * 10) / 10,
+          reading_score: Math.round(readingScore * 10) / 10,
+          writing_score: Math.round(writingScore * 10) / 10,
+          total_score: Math.round(totalScore * 10) / 10,
+          correct_count: correctCount,
+          wrong_count: wrongCount,
+          is_passed: isPassed,
+        },
+      });
+    });
+
+    return this.getAttemptDetails(attemptId, attempt.user_id, true);
+  }
+
+  /**
+   * Lấy đề thi cho học viên làm bài (GET /api/exams/:examId/take)
+   * Tuyệt đối ẩn answer_pdf_url, correct_answer và sample_answer
+   */
+  async getExamForTaking(examId: number, userId?: number) {
+    const exam = await prisma.mockExam.findUnique({
+      where: { id: examId },
+      include: {
+        sections: {
+          orderBy: { order_index: 'asc' },
+          include: {
+            questions: {
+              orderBy: { question_number: 'asc' },
+            },
+          },
+        },
+      },
+    });
+
+    if (!exam) {
+      throw AppError.notFound('Không tìm thấy đề thi.');
+    }
+
+    if (exam.status !== 'PUBLISHED') {
+      throw AppError.forbidden('Đề thi này chưa được công khai.');
+    }
+
+    const sanitizedSections = exam.sections.map((section) => ({
+      id: section.id,
+      section_type: section.section_type,
+      title: section.title,
+      instructions: section.instructions,
+      audio_url: section.audio_url,
+      questions: section.questions.map((q) => {
+        let parsedOptions: any = q.options;
+        if (typeof q.options === 'string') {
+          try {
+            parsedOptions = JSON.parse(q.options);
+          } catch {
+            parsedOptions = q.options;
+          }
+        }
+
+        return {
+          id: q.id,
+          section_id: q.section_id,
+          question_number: q.question_number,
+          question_type: q.question_type,
+          prompt_text: q.prompt_text,
+          options: parsedOptions,
+          points: q.points,
+          order_index: q.order_index,
+        };
+      }),
+    }));
+
+    return {
+      id: exam.id,
+      code: exam.code,
+      title: exam.title,
+      description: exam.description,
+      hsk_level: exam.hsk_level,
+      exam_pdf_url: exam.exam_pdf_url,
+      audio_url: exam.audio_url,
+      answer_pdf_url: null, // Bảo mật chống lộ file đáp án
+      duration_minutes: exam.duration_minutes,
+      total_score: exam.total_score,
+      pass_score: exam.pass_score,
+      sections: sanitizedSections,
+    };
+  }
+
+  /**
    * Xóa đề thi (Giáo viên / Admin)
    */
   async deleteExam(id: number) {
@@ -467,11 +668,13 @@ export class ExamService {
       throw AppError.notFound('Không tìm thấy đề thi.');
     }
 
-    // Bản đồ câu trả lời của thí sinh theo question_id
+    // Bản đồ câu trả lời của thí sinh theo question_id (hỗ trợ cả questionId / question_id, answer / user_answer)
     const userAnswersMap = new Map<number, string>();
     for (const item of dto.answers || []) {
-      if (item && item.question_id) {
-        userAnswersMap.set(item.question_id, String(item.user_answer || '').trim());
+      const qId = item.questionId !== undefined ? Number(item.questionId) : Number(item.question_id);
+      const ans = item.answer !== undefined ? String(item.answer) : String(item.user_answer ?? '');
+      if (qId) {
+        userAnswersMap.set(qId, ans.trim());
       }
     }
 
@@ -514,19 +717,60 @@ export class ExamService {
             isCorrect = true;
           }
         } else if (q.question_type === 'WRITING_FILL') {
-          // Cho phép nhiều đáp án chấp nhận cách nhau bởi dấu '|'
+          // Chuẩn hóa chuỗi (bỏ khoảng trắng thừa, chuẩn hóa dấu câu cuối) và so khớp với danh sách đáp án trong correct_answer (phân cách bởi |)
           if (uAns && cAns) {
-            const acceptedVariants = cAns.split('|').map((v) => v.trim().toLowerCase());
-            const userNormalized = uAns.toLowerCase();
+            const acceptedVariants = cAns.split('|').map((v) => normalizeWritingText(v));
+            const userNormalized = normalizeWritingText(uAns);
             if (acceptedVariants.includes(userNormalized)) {
               isCorrect = true;
             }
           }
         } else if (q.question_type === 'WRITING_ESSAY') {
-          // Viết câu / đoạn văn: Nếu có làm bài (từ 5 ký tự trở lên), tạm thời tính điểm khuyến khích
-          if (uAns.length >= 5) {
-            isCorrect = true;
-            teacherFeedback = 'Bài viết đã được hệ thống ghi nhận. Giáo viên có thể xem xét thêm.';
+          // WRITING_ESSAY: Kiểm tra không bỏ trống và đối chiếu từ khóa bắt buộc (nếu giáo viên cấu hình trong correct_answer) để tính điểm sơ bộ; nếu bỏ trống/không đạt -> is_correct = false, earned_score = 0 và đính kèm sample_answer để đối chiếu.
+          if (!uAns || uAns.trim().length === 0) {
+            isCorrect = false;
+            earnedScore = 0;
+            teacherFeedback = 'Chưa làm bài viết. Vui lòng đối chiếu với đáp án mẫu.';
+          } else if (cAns) {
+            const requiredKeywords = cAns
+              .split(/[|,]/)
+              .map((k) => k.trim().toLowerCase())
+              .filter(Boolean);
+            const userNormalized = uAns.toLowerCase();
+            const matchedKeywords = requiredKeywords.filter((kw) => userNormalized.includes(kw));
+
+            if (requiredKeywords.length > 0) {
+              const matchRatio = matchedKeywords.length / requiredKeywords.length;
+              if (matchRatio >= 0.5) {
+                isCorrect = true;
+                earnedScore = Math.round(maxPoints * matchRatio * 10) / 10;
+                teacherFeedback = `Đạt sơ bộ (${matchedKeywords.length}/${requiredKeywords.length} từ khóa bắt buộc). Giáo viên có thể chấm thẩm định thêm.`;
+              } else {
+                isCorrect = false;
+                earnedScore = 0;
+                teacherFeedback = `Chưa đủ từ khóa bắt buộc (${matchedKeywords.length}/${requiredKeywords.length} từ khóa). Vui lòng xem đáp án mẫu.`;
+              }
+            } else {
+              if (uAns.trim().length >= 10) {
+                isCorrect = true;
+                earnedScore = maxPoints;
+                teacherFeedback = 'Đã ghi nhận bài viết đầy đủ. Chờ giáo viên chấm thẩm định nếu cần.';
+              } else {
+                isCorrect = false;
+                earnedScore = 0;
+                teacherFeedback = 'Bài viết quá ngắn. Vui lòng xem câu văn mẫu.';
+              }
+            }
+          } else {
+            if (uAns.trim().length >= 10) {
+              isCorrect = true;
+              earnedScore = maxPoints;
+              teacherFeedback = 'Đã ghi nhận bài viết.';
+            } else {
+              isCorrect = false;
+              earnedScore = 0;
+              teacherFeedback = 'Bài viết quá ngắn.';
+            }
           }
         }
 

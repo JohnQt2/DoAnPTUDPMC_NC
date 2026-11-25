@@ -60,10 +60,29 @@ export interface UpdateExamDto {
 }
 
 export interface SubmitAnswerItemDto {
-  question_id: number;
+  question_id?: number;
+  questionId?: number;
   user_answer?: string;
+  answer?: string;
 }
 
 export interface SubmitExamDto {
   answers: SubmitAnswerItemDto[];
+}
+
+export interface TogglePublishDto {
+  status?: ExamStatus;
+}
+
+export interface GradeQuestionItemDto {
+  question_id?: number;
+  questionId?: number;
+  earned_score?: number;
+  earnedScore?: number;
+  teacher_feedback?: string;
+  teacherFeedback?: string;
+}
+
+export interface GradeAttemptDto {
+  grades: GradeQuestionItemDto[];
 }

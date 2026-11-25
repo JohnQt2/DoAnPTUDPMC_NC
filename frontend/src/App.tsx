@@ -34,6 +34,9 @@ import { TestPage } from './pages/test/TestPage';
 import { TestResultPage } from './pages/test/TestResultPage';
 import { LeaderboardPage } from './pages/leaderboard/LeaderboardPage';
 import { AdminCMSPage } from './pages/admin/AdminCMSPage';
+import { MockExamListPage } from './pages/exam/MockExamListPage';
+import { StudentExamSplitScreen } from './pages/exam/StudentExamSplitScreen';
+import { TeacherExamManager } from './pages/exam/TeacherExamManager';
 import { Lock, ShieldAlert, ArrowRight, Home } from 'lucide-react';
 
 const AppContent: React.FC = () => {
@@ -155,6 +158,21 @@ const AppContent: React.FC = () => {
     );
   }
 
+  // ──────────────────────────────────────────────────────────────────────────
+  // DEDICATED FULLSCREEN SPLIT-SCREEN WORKSPACE FOR MOCK EXAMS (PDF + AUDIO)
+  // ──────────────────────────────────────────────────────────────────────────
+  if (basePath.startsWith('#/mock-exam/')) {
+    const id = parseInt(basePath.replace('#/mock-exam/', ''), 10);
+    return (
+      <StudentExamSplitScreen
+        examId={id || 1}
+        onBack={() => {
+          window.location.hash = '#/mock-exams';
+        }}
+      />
+    );
+  }
+
   const isAdminRole = user.role === 'ADMIN' || user.role === 'CONTENT_EDITOR';
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -163,6 +181,8 @@ const AppContent: React.FC = () => {
   if (isAdminRole) {
     const isAdminProfile = basePath.startsWith('#/profile');
     const isAdminLessonPreview = basePath.startsWith('#/lessons/');
+    const isTeacherExams = basePath.startsWith('#/teacher/exams') || basePath.startsWith('#/admin/exams');
+    const isMockExamList = basePath === '#/mock-exams' || basePath === '#/exams';
     const adminTab: 'courses' | 'questions' | 'rbac' = basePath.startsWith('#/admin/questions')
       ? 'questions'
       : basePath.startsWith('#/admin/users') && user.role === 'ADMIN'
@@ -184,12 +204,26 @@ const AppContent: React.FC = () => {
         >
           <main className="flex-1 pb-16">
             <PageTransition
-              routeKey={isAdminProfile ? 'admin-profile' : isAdminLessonPreview ? basePath : adminTab}
+              routeKey={
+                isAdminProfile
+                  ? 'admin-profile'
+                  : isAdminLessonPreview
+                    ? basePath
+                    : isTeacherExams
+                      ? 'admin-exams'
+                      : isMockExamList
+                        ? 'admin-mock-exams'
+                        : adminTab
+              }
             >
               {isAdminProfile ? (
                 <ProfilePage />
               ) : isAdminLessonPreview ? (
                 <LessonPage lessonId={parseInt(basePath.replace('#/lessons/', ''), 10) || 1} />
+              ) : isTeacherExams ? (
+                <TeacherExamManager onBack={() => { window.location.hash = '#/mock-exams'; }} />
+              ) : isMockExamList ? (
+                <MockExamListPage />
               ) : (
                 <AdminCMSPage initialTab={adminTab} />
               )}
@@ -266,7 +300,33 @@ const AppContent: React.FC = () => {
       return <SpeakingPracticePage />;
     }
 
-    if (basePath === '#/exams') {
+    if (basePath === '#/mock-exams' || basePath === '#/exams') {
+      return <MockExamListPage />;
+    }
+
+    if (basePath.startsWith('#/mock-exam/')) {
+      const id = parseInt(basePath.replace('#/mock-exam/', ''), 10);
+      return (
+        <StudentExamSplitScreen
+          examId={id || 1}
+          onBack={() => {
+            window.location.hash = '#/mock-exams';
+          }}
+        />
+      );
+    }
+
+    if (basePath.startsWith('#/teacher/exams') || basePath.startsWith('#/admin/exams')) {
+      return (
+        <TeacherExamManager
+          onBack={() => {
+            window.location.hash = '#/mock-exams';
+          }}
+        />
+      );
+    }
+
+    if (basePath === '#/quizzes' || basePath === '#/old-exams') {
       return <ExamListPage />;
     }
 

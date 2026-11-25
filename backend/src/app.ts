@@ -27,9 +27,10 @@ app.set('trust proxy', 1);
 
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
-  // Allow framing for uploads (PDF split screen preview)
+  // Allow framing for uploads (PDF split screen preview across different dev ports)
   if (req.path.startsWith('/uploads')) {
-    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+    res.removeHeader('X-Frame-Options');
+    res.setHeader('Content-Security-Policy', "frame-ancestors *");
   } else {
     res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   }
@@ -52,8 +53,8 @@ app.use(
 );
 
 app.use(cookieParser());
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '60mb' }));
+app.use(express.urlencoded({ extended: true, limit: '60mb' }));
 
 // Health Check Endpoint (UC16)
 app.get('/api/v1/health', async (req, res) => {
@@ -93,17 +94,42 @@ app.use('/api/v1/content', contentRoutes);
 // Shorthand aliases (/api/courses, /api/units, /api/materials) for frontend convenience
 app.use('/api', contentRoutes);
 
-// Static file serving for uploads (PDFs, Audio MP3s with Accept-Ranges support)
+// Static file serving for uploads (PDFs, Audio MP3s with Accept-Ranges support and cross-origin iframe embedding)
 app.use(
   '/uploads',
   (req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Range, Accept-Ranges, Content-Type');
+    res.setHeader('Access-Control-Expose-Headers', 'Content-Range, Content-Length, Accept-Ranges');
     res.setHeader('Accept-Ranges', 'bytes');
     res.removeHeader('X-Frame-Options');
+    res.setHeader('Content-Security-Policy', "frame-ancestors *; default-src * 'unsafe-inline' 'unsafe-eval' data: blob:");
+    if (req.method === 'OPTIONS') {
+      return res.sendStatus(200);
+    }
     next();
   },
   express.static(path.join(process.cwd(), 'uploads'), {
     acceptRanges: true,
+    setHeaders: (res, filePath) => {
+      res.setHeader('Accept-Ranges', 'bytes');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.removeHeader('X-Frame-Options');
+      res.setHeader('Content-Security-Policy', "frame-ancestors *; default-src * 'unsafe-inline' 'unsafe-eval' data: blob:");
+      const ext = path.extname(filePath).toLowerCase();
+      if (ext === '.pdf') {
+        res.setHeader('Content-Type', 'application/pdf');
+      } else if (ext === '.mp3') {
+        res.setHeader('Content-Type', 'audio/mpeg');
+      } else if (ext === '.m4a') {
+        res.setHeader('Content-Type', 'audio/mp4');
+      } else if (ext === '.wav') {
+        res.setHeader('Content-Type', 'audio/wav');
+      } else if (ext === '.ogg') {
+        res.setHeader('Content-Type', 'audio/ogg');
+      }
+    },
   })
 );
 

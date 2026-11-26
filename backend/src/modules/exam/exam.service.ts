@@ -227,7 +227,7 @@ export class ExamService {
     });
 
     if (existing) {
-      throw AppError.badRequest(`Mã đề thi "${data.code}" đã tồn tại. Vui lòng chọn mã khác.`);
+      throw AppError.badRequest('Mã đề này đã tồn tại, vui lòng chọn mã khác hoặc cập nhật đề cũ.');
     }
 
     // Tính tổng điểm từ danh sách câu hỏi nếu có
@@ -329,7 +329,7 @@ export class ExamService {
         where: { code: data.code.trim().toUpperCase() },
       });
       if (codeCheck) {
-        throw AppError.badRequest(`Mã đề "${data.code}" đã được sử dụng.`);
+        throw AppError.badRequest('Mã đề này đã tồn tại, vui lòng chọn mã khác hoặc cập nhật đề cũ.');
       }
     }
 
@@ -342,9 +342,15 @@ export class ExamService {
           ...(data.title ? { title: data.title.trim() } : {}),
           ...(data.description !== undefined ? { description: data.description } : {}),
           ...(data.hsk_level ? { hsk_level: data.hsk_level } : {}),
-          ...(data.exam_pdf_url ? { exam_pdf_url: data.exam_pdf_url.trim() } : {}),
-          ...(data.audio_url !== undefined ? { audio_url: data.audio_url } : {}),
-          ...(data.answer_pdf_url !== undefined ? { answer_pdf_url: data.answer_pdf_url } : {}),
+          ...(data.exam_pdf_url !== undefined
+            ? { exam_pdf_url: data.exam_pdf_url && data.exam_pdf_url.trim() ? data.exam_pdf_url.trim() : existing.exam_pdf_url }
+            : {}),
+          ...(data.audio_url !== undefined
+            ? { audio_url: data.audio_url && data.audio_url.trim() ? data.audio_url.trim() : null }
+            : {}),
+          ...(data.answer_pdf_url !== undefined
+            ? { answer_pdf_url: data.answer_pdf_url && data.answer_pdf_url.trim() ? data.answer_pdf_url.trim() : null }
+            : {}),
           ...(data.duration_minutes ? { duration_minutes: data.duration_minutes } : {}),
           ...(data.pass_score !== undefined ? { pass_score: data.pass_score } : {}),
           ...(data.status ? { status: data.status } : {}),
@@ -446,12 +452,35 @@ export class ExamService {
    * Chuyển đổi trạng thái DRAFT <-> PUBLISHED (Giáo viên / Admin)
    */
   async publishExam(examId: number, targetStatus?: ExamStatus) {
-    const existing = await prisma.mockExam.findUnique({ where: { id: examId } });
+    const existing = await prisma.mockExam.findUnique({
+      where: { id: examId },
+      include: {
+        sections: {
+          include: {
+            questions: {
+              select: { id: true, points: true },
+            },
+          },
+        },
+      },
+    });
     if (!existing) {
       throw AppError.notFound('Không tìm thấy đề thi.');
     }
 
     const nextStatus = targetStatus || (existing.status === 'PUBLISHED' ? 'DRAFT' : 'PUBLISHED');
+
+    if (nextStatus === 'PUBLISHED') {
+      const allQuestions = existing.sections.flatMap((s) => s.questions);
+      const computedScore = allQuestions.reduce((sum, q) => sum + Number(q.points || 0), 0);
+      const effectiveTotalScore = Math.max(computedScore, Number(existing.total_score || 0));
+
+      if (allQuestions.length < 1 || effectiveTotalScore <= 0) {
+        throw AppError.badRequest(
+          'Đề thi phải có ít nhất 1 câu hỏi và tổng điểm lớn hơn 0 trước khi xuất bản.'
+        );
+      }
+    }
 
     const updated = await prisma.mockExam.update({
       where: { id: examId },
@@ -712,7 +741,11 @@ export class ExamService {
           if (normUser !== null && normCorrect !== null && normUser === normCorrect) {
             isCorrect = true;
           }
-        } else if (q.question_type === 'MCQ_ABCD' || q.question_type === 'MCQ_ABCDEF') {
+        } else if (
+          q.question_type === 'MCQ_ABC' ||
+          q.question_type === 'MCQ_ABCD' ||
+          q.question_type === 'MCQ_ABCDEF'
+        ) {
           if (uAns && cAns && uAns.toUpperCase() === cAns.toUpperCase()) {
             isCorrect = true;
           }

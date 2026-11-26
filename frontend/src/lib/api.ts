@@ -346,3 +346,41 @@ export const api = {
   upload: <T>(endpoint: string, formData: FormData, options?: RequestOptions) =>
     request<T>(endpoint, { ...options, method: 'POST', body: formData }),
 };
+
+/**
+ * Chuẩn hóa URL tài nguyên tĩnh (PDF đề thi, Audio MP3, PDF đáp án, hình ảnh).
+ * Đảm bảo các đường dẫn tương đối `/uploads/...` được ghép chính xác origin của Backend
+ * thay vì trỏ nhầm vào Vite dev server (gây lỗi SPA load nhầm index.html vào iframe và audio player).
+ */
+export function resolveMediaUrl(url?: string | null): string {
+  if (!url) return '';
+  const trimmed = url.trim();
+  if (!trimmed) return '';
+  if (
+    trimmed.startsWith('http://') ||
+    trimmed.startsWith('https://') ||
+    trimmed.startsWith('blob:') ||
+    trimmed.startsWith('data:')
+  ) {
+    return trimmed;
+  }
+
+  // Lấy Backend origin từ biến môi trường VITE_API_URL hoặc fallback về server Backend
+  const envApiUrl = (import.meta as any).env?.VITE_API_URL as string | undefined;
+  let backendOrigin = '';
+  if (envApiUrl && envApiUrl.startsWith('http')) {
+    backendOrigin = envApiUrl.replace(/\/api(\/v\d+)?\/?$/, '');
+  } else if (typeof window !== 'undefined') {
+    // Khi đang chạy Vite dev server ở port 5173, backend đang chạy ở port 5000
+    if (window.location.port === '5173') {
+      backendOrigin = `${window.location.protocol}//${window.location.hostname}:5000`;
+    } else {
+      backendOrigin = window.location.origin;
+    }
+  } else {
+    backendOrigin = 'http://localhost:5000';
+  }
+
+  const normalizedPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+  return `${backendOrigin}${normalizedPath}`;
+}

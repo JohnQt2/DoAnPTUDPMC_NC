@@ -1,8 +1,9 @@
 export type HskLevel = 'HSK1' | 'HSK2' | 'HSK3' | 'HSK4' | 'HSK5' | 'HSK6';
 export type SectionType = 'LISTENING' | 'READING' | 'WRITING';
 export type QuestionType =
-  | 'MCQ_ABCD'
   | 'TRUE_FALSE'
+  | 'MCQ_ABC'
+  | 'MCQ_ABCD'
   | 'MCQ_ABCDEF'
   | 'WRITING_FILL'
   | 'WRITING_ESSAY';
@@ -18,6 +19,8 @@ export interface CreateQuestionDto {
   points: number;
   explanation?: string;
   order_index?: number;
+  needsReview?: boolean;
+  reviewReason?: string;
 }
 
 export interface CreateSectionDto {
@@ -37,6 +40,7 @@ export interface CreateExamDto {
   exam_pdf_url: string;
   audio_url?: string;
   answer_pdf_url?: string;
+  transcript_pdf_url?: string;
   duration_minutes?: number;
   total_score?: number;
   pass_score?: number;
@@ -49,9 +53,10 @@ export interface UpdateExamDto {
   title?: string;
   description?: string;
   hsk_level?: HskLevel;
-  exam_pdf_url?: string;
-  audio_url?: string;
-  answer_pdf_url?: string;
+  exam_pdf_url?: string | null;
+  audio_url?: string | null;
+  answer_pdf_url?: string | null;
+  transcript_pdf_url?: string | null;
   duration_minutes?: number;
   total_score?: number;
   pass_score?: number;
@@ -85,4 +90,33 @@ export interface GradeQuestionItemDto {
 
 export interface GradeAttemptDto {
   grades: GradeQuestionItemDto[];
+}
+
+export interface UploadedFileMetadata {
+  url: string;
+  filename: string;
+  originalName: string;
+  size: number;
+  mimetype?: string;
+}
+
+export interface ParsedExamStructureDto {
+  code: string;
+  title: string;
+  description?: string;
+  hsk_level: HskLevel;
+  duration_minutes: number;
+  total_score: number;
+  pass_score: number;
+  exam_pdf_url?: string;
+  answer_pdf_url?: string;
+  audio_url?: string;
+  transcript_pdf_url?: string;
+  sections: CreateSectionDto[];
+  metadata: {
+    hasMissingChars: boolean;
+    reviewQuestionsCount: number;
+    files: Record<string, UploadedFileMetadata>;
+    detectedQuestionsCount: number;
+  };
 }

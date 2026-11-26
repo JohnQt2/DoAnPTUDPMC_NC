@@ -1,6 +1,8 @@
-import webpush from 'web-push';
+import * as webpushNamespace from 'web-push';
 import { prisma } from '../database/prisma.client';
 import { env } from '../../config/env';
+
+const webpush = (webpushNamespace as any).default ?? webpushNamespace;
 
 export interface WebPushPayload {
   title: string;

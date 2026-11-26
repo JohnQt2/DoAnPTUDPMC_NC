@@ -12,6 +12,7 @@ import {
   BookOpen,
   Users,
   Sparkles,
+  CheckCircle2,
 } from 'lucide-react';
 
 interface LeaderboardEntry {
@@ -48,6 +49,7 @@ export const LeaderboardPage: React.FC = () => {
   const [data, setData] = useState<WeeklyLeaderboardResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [justRefreshed, setJustRefreshed] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const loadLeaderboard = async (showSpinner = false) => {
@@ -61,7 +63,11 @@ export const LeaderboardPage: React.FC = () => {
       setErrorMsg(err?.message || 'Không thể tải bảng xếp hạng lúc này.');
     } finally {
       setIsLoading(false);
-      if (showSpinner) setIsRefreshing(false);
+      if (showSpinner) {
+        setIsRefreshing(false);
+        setJustRefreshed(true);
+        setTimeout(() => setJustRefreshed(false), 1600);
+      }
     }
   };
 
@@ -98,7 +104,7 @@ export const LeaderboardPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full glass-light text-xs font-bold text-gray-700">
+          <span className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full glass-light border border-[#1C1917]/10 dark:border-white/12 text-xs font-bold text-gray-700">
             <Calendar className="w-3.5 h-3.5 text-[#C41E3A] dark:text-rose-400" />
             <span>{weekRangeLabel}</span>
           </span>
@@ -106,10 +112,23 @@ export const LeaderboardPage: React.FC = () => {
             type="button"
             onClick={() => loadLeaderboard(true)}
             disabled={isRefreshing}
-            title="Cập nhật bảng xếp hạng"
-            className="p-2 rounded-full glass-light text-gray-600 hover:text-gray-900 hover:bg-white transition-colors cursor-pointer disabled:opacity-60"
+            className={`inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full glass-light border text-xs font-bold transition-all cursor-pointer disabled:opacity-65 ${
+              justRefreshed
+                ? 'border-emerald-300 text-emerald-700 dark:border-emerald-700 dark:text-emerald-300 bg-emerald-50/75 dark:bg-emerald-950/35'
+                : 'border-[#1C1917]/10 dark:border-white/12 text-gray-600 hover:text-gray-900 hover:bg-white'
+            }`}
           >
-            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            {justRefreshed ? (
+              <>
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                <span>Đã cập nhật</span>
+              </>
+            ) : (
+              <>
+                <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-[#C41E3A]' : ''}`} />
+                <span>{isRefreshing ? 'Đang tải...' : 'Tải lại'}</span>
+              </>
+            )}
           </button>
         </div>
       </div>

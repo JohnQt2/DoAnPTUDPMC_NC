@@ -208,6 +208,7 @@ export const ExamListPage: React.FC<{ initialMode?: 'MOCK_EXAM' | 'WORKBOOK' | n
   const [submissions, setSubmissions] = useState<any[]>(cachedSubs || []);
   const [loading, setLoading] = useState(!cachedMockExams && !cachedTests);
   const [refreshing, setRefreshing] = useState(false);
+  const [justRefreshed, setJustRefreshed] = useState(false);
 
   // Interactive Attempt Detail Review Modal (powered by GET /exams/attempts/:attemptId)
   const [attemptModalOpen, setAttemptModalOpen] = useState(false);
@@ -290,7 +291,11 @@ export const ExamListPage: React.FC<{ initialMode?: 'MOCK_EXAM' | 'WORKBOOK' | n
       }
     } finally {
       setLoading(false);
-      if (showSpinner) setRefreshing(false);
+      if (showSpinner) {
+        setRefreshing(false);
+        setJustRefreshed(true);
+        setTimeout(() => setJustRefreshed(false), 1600);
+      }
     }
   }, []);
 
@@ -371,9 +376,6 @@ export const ExamListPage: React.FC<{ initialMode?: 'MOCK_EXAM' | 'WORKBOOK' | n
     });
   }, [section, legacyMockTests, workbookTests, selectedLevel, normalizedQuery]);
 
-  const totalMockCount = mockExams.length + legacyMockTests.length;
-  const totalWorkbookCount = workbookTests.length;
-
   const getLevelCount = (lvl: string) => {
     const upper = lvl.toUpperCase();
     if (section === 'MOCK_EXAM') {
@@ -437,16 +439,8 @@ export const ExamListPage: React.FC<{ initialMode?: 'MOCK_EXAM' | 'WORKBOOK' | n
             </span>
 
             <div className="relative z-10 space-y-5">
-              <div className="flex items-center justify-between gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-[#C41E3A] text-white flex items-center justify-center shadow-[0_4px_0_#8A1228]">
-                  <AlarmClock className="w-6 h-6" />
-                </div>
-                {mockExams.length > 0 && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#C41E3A]/10 text-[#C41E3A] dark:text-rose-300 text-[11px] font-extrabold">
-                    <Headphones className="w-3.5 h-3.5" />
-                    <span>PDF + Audio</span>
-                  </span>
-                )}
+              <div className="w-12 h-12 rounded-2xl bg-[#C41E3A] text-white flex items-center justify-center shadow-[0_4px_0_#8A1228]">
+                <AlarmClock className="w-6 h-6" />
               </div>
 
               <div className="space-y-2.5">
@@ -454,21 +448,14 @@ export const ExamListPage: React.FC<{ initialMode?: 'MOCK_EXAM' | 'WORKBOOK' | n
                   Mô phỏng thi thật
                 </h2>
                 <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed max-w-md">
-                  Phòng thi thử chuẩn HSK 1–6: xem đề PDF chia đôi màn hình kèm file nghe Audio, tính giờ chuẩn, chấm điểm tách riêng Nghe – Đọc – Viết và mở khóa đáp án sau khi nộp.
+                  Đây là bản mô phỏng sát nhất với phòng thi thật: làm bài chia đôi màn hình cùng đề chuẩn, file nghe và đồng hồ đếm ngược, tự chấm điểm tách kỹ năng ngay sau khi nộp.
                 </p>
               </div>
             </div>
 
-            <div className="relative z-10 pt-6 flex items-center justify-between gap-3">
-              <span className="inline-flex items-center gap-2 text-sm font-extrabold text-[#C41E3A] group-hover:gap-3 transition-all">
-                <span>Vào kho đề</span>
-                <ArrowRight className="w-4 h-4" />
-              </span>
-              {!loading && totalMockCount > 0 && (
-                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-100/90 dark:bg-white/5 px-2.5 py-1 rounded-full">
-                  {totalMockCount} bộ đề
-                </span>
-              )}
+            <div className="relative z-10 pt-6 inline-flex items-center gap-2 text-sm font-extrabold text-[#C41E3A] group-hover:gap-3 transition-all">
+              <span>Vào kho đề</span>
+              <ArrowRight className="w-4 h-4" />
             </div>
           </button>
 
@@ -506,16 +493,9 @@ export const ExamListPage: React.FC<{ initialMode?: 'MOCK_EXAM' | 'WORKBOOK' | n
               </div>
             </div>
 
-            <div className="relative z-10 pt-6 flex items-center justify-between gap-3">
-              <span className="inline-flex items-center gap-2 text-sm font-extrabold text-[#C41E3A] group-hover:gap-3 transition-all">
-                <span>Vào kho đề</span>
-                <ArrowRight className="w-4 h-4" />
-              </span>
-              {!loading && totalWorkbookCount > 0 && (
-                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-100/90 dark:bg-white/5 px-2.5 py-1 rounded-full">
-                  {totalWorkbookCount} bài tập
-                </span>
-              )}
+            <div className="relative z-10 pt-6 inline-flex items-center gap-2 text-sm font-extrabold text-[#C41E3A] group-hover:gap-3 transition-all">
+              <span>Vào kho đề</span>
+              <ArrowRight className="w-4 h-4" />
             </div>
           </button>
         </div>
@@ -544,7 +524,7 @@ export const ExamListPage: React.FC<{ initialMode?: 'MOCK_EXAM' | 'WORKBOOK' | n
           <button
             type="button"
             onClick={() => enterSection(null)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl glass-light text-xs font-bold text-slate-700 hover:text-[#C41E3A] cursor-pointer transition-colors"
+            className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full glass-light border border-[#1C1917]/10 dark:border-white/12 text-xs font-bold text-slate-700 hover:text-[#C41E3A] cursor-pointer transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Đổi chế độ</span>
@@ -558,10 +538,10 @@ export const ExamListPage: React.FC<{ initialMode?: 'MOCK_EXAM' | 'WORKBOOK' | n
           {isTeacherOrAdmin && (
             <a
               href="#/teacher/exams"
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl glass-light border border-slate-200/80 dark:border-white/10 text-xs font-bold text-slate-700 hover:text-[#C41E3A] transition-colors"
+              className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full glass-light border border-[#1C1917]/10 dark:border-white/12 text-xs font-bold text-slate-700 hover:text-[#C41E3A] transition-colors"
             >
               <Settings className="w-3.5 h-3.5" />
-              <span>Quản lý đề PDF</span>
+              <span>Quản lý đề</span>
             </a>
           )}
 
@@ -569,18 +549,31 @@ export const ExamListPage: React.FC<{ initialMode?: 'MOCK_EXAM' | 'WORKBOOK' | n
             type="button"
             onClick={() => loadAllExamData(true)}
             disabled={refreshing}
-            title="Làm mới danh sách đề"
-            className="p-2 rounded-xl glass-light text-slate-600 hover:text-[#C41E3A] transition-colors cursor-pointer disabled:opacity-60"
+            className={`inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full glass-light border text-xs font-bold transition-all cursor-pointer disabled:opacity-65 ${
+              justRefreshed
+                ? 'border-emerald-300 text-emerald-700 dark:border-emerald-700 dark:text-emerald-300 bg-emerald-50/75 dark:bg-emerald-950/35'
+                : 'border-[#1C1917]/10 dark:border-white/12 text-slate-600 hover:text-[#1C1917] hover:bg-white'
+            }`}
           >
-            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+            {justRefreshed ? (
+              <>
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                <span>Đã cập nhật</span>
+              </>
+            ) : (
+              <>
+                <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin text-[#C41E3A]' : ''}`} />
+                <span>{refreshing ? 'Đang tải...' : 'Tải lại'}</span>
+              </>
+            )}
           </button>
 
           <button
             type="button"
             onClick={() => enterSection(isMockSection ? 'WORKBOOK' : 'MOCK_EXAM')}
-            className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-bold text-[#C41E3A] hover:bg-primary-50 dark:hover:bg-rose-950/30 cursor-pointer transition-colors"
+            className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full glass-light border border-[#C41E3A]/20 dark:border-rose-400/25 text-xs font-bold text-[#C41E3A] dark:text-rose-300 hover:bg-[#C41E3A]/8 dark:hover:bg-rose-950/35 cursor-pointer transition-colors"
           >
-            Chuyển sang {isMockSection ? 'Luyện tập' : 'Mô phỏng thi thật'}
+            <span>Chuyển sang {isMockSection ? 'Luyện tập' : 'Mô phỏng thi thật'}</span>
           </button>
         </div>
       </div>
@@ -668,12 +661,12 @@ export const ExamListPage: React.FC<{ initialMode?: 'MOCK_EXAM' | 'WORKBOOK' | n
           <motion.div
             key={`${section}-${selectedLevel}-${normalizedQuery}`}
             initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
+            animate={{ opacity: refreshing ? 0.55 : 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
             className="grid grid-cols-1 md:grid-cols-2 gap-4"
           >
-            {/* Real PDF + Audio Split-Screen Mock Exams from /api/v1/exams */}
+            {/* Real Mock Exams from /api/v1/exams — Clean uncluttered local card anatomy */}
             {isMockSection &&
               filteredPdfMockExams.map((ex) => {
                 const lvlKey = (ex.hsk_level || 'HSK1').toUpperCase();
@@ -686,17 +679,12 @@ export const ExamListPage: React.FC<{ initialMode?: 'MOCK_EXAM' | 'WORKBOOK' | n
                     className="p-6 flex flex-col justify-between gap-5"
                   >
                     <div className="space-y-3">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span
-                            className={`px-3 py-1 rounded-full text-[11px] font-black text-white bg-gradient-to-r ${lvlGrad}`}
-                          >
-                            {ex.code} • {lvlKey.replace('HSK', 'HSK ')}
-                          </span>
-                          <span className="px-2.5 py-0.5 rounded-full bg-[#C41E3A]/10 text-[#C41E3A] dark:text-rose-300 border border-[#C41E3A]/20 text-[10px] font-extrabold">
-                            Đề chuẩn PDF
-                          </span>
-                        </div>
+                      <div className="flex items-center justify-between gap-2">
+                        <span
+                          className={`px-3 py-1 rounded-full text-[11px] font-black text-white bg-gradient-to-r ${lvlGrad}`}
+                        >
+                          {ex.code} • {lvlKey.replace('HSK', 'HSK ')}
+                        </span>
 
                         {ex.user_best_score !== null && (
                           <span
@@ -711,16 +699,9 @@ export const ExamListPage: React.FC<{ initialMode?: 'MOCK_EXAM' | 'WORKBOOK' | n
                         )}
                       </div>
 
-                      <div className="space-y-1">
-                        <h3 className="text-base font-display font-bold text-slate-900 leading-snug">
-                          {ex.title}
-                        </h3>
-                        {ex.description && (
-                          <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
-                            {ex.description}
-                          </p>
-                        )}
-                      </div>
+                      <h3 className="text-base font-display font-bold text-slate-900 leading-snug">
+                        {ex.title}
+                      </h3>
 
                       <div className="flex flex-wrap items-center gap-1.5">
                         {uniqueSkills.map((sk) => (
@@ -731,29 +712,17 @@ export const ExamListPage: React.FC<{ initialMode?: 'MOCK_EXAM' | 'WORKBOOK' | n
                             {SKILL_VI[sk] || sk}
                           </span>
                         ))}
-                        {ex.audio_url && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-emerald-50/90 dark:bg-emerald-950/35 border border-emerald-200/70 dark:border-emerald-800/60 text-[10px] font-bold text-emerald-700 dark:text-emerald-300">
-                            <Headphones className="w-3 h-3" />
-                            Audio MP3
-                          </span>
-                        )}
-                        {ex.has_answer_pdf && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-amber-50/90 dark:bg-amber-950/35 border border-amber-200/70 dark:border-amber-800/60 text-[10px] font-bold text-amber-800 dark:text-amber-300">
-                            <FileCheck2 className="w-3 h-3" />
-                            Đáp án PDF
-                          </span>
-                        )}
                       </div>
                     </div>
 
-                    <div className="pt-4 border-t border-white/75 flex flex-wrap items-center justify-between gap-3">
+                    <div className="pt-4 border-t border-white/75 flex items-center justify-between gap-3">
                       <div className="flex items-center gap-3 text-xs text-slate-600 font-semibold">
                         <span className="inline-flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5 text-[#C41E3A]" />
+                          <Clock className="w-3.5 h-3.5 text-rose-500" />
                           {ex.duration_minutes} phút
                         </span>
                         <span className="inline-flex items-center gap-1">
-                          <Award className="w-3.5 h-3.5 text-[#D4A017]" />
+                          <Award className="w-3.5 h-3.5 text-amber-500" />
                           {ex.questions_count || 40} câu • Đạt ≥{formatScore(ex.pass_score)}/{formatScore(ex.total_score)}đ
                         </span>
                       </div>
@@ -764,10 +733,10 @@ export const ExamListPage: React.FC<{ initialMode?: 'MOCK_EXAM' | 'WORKBOOK' | n
                             type="button"
                             onClick={() => openLatestAttemptForExam(ex.id)}
                             title="Xem lại kết quả lần thi gần nhất"
-                            className="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-white/80 hover:bg-white border border-slate-200/80 dark:border-white/15 text-[11px] font-bold text-slate-700 hover:text-[#C41E3A] transition-colors cursor-pointer"
+                            className="inline-flex items-center gap-1 px-2.5 py-2 rounded-xl bg-white/80 hover:bg-white border border-slate-200/80 dark:border-white/15 text-[11px] font-bold text-slate-600 hover:text-[#C41E3A] transition-colors cursor-pointer"
                           >
                             <History className="w-3.5 h-3.5" />
-                            <span>{ex.user_attempts_count} lượt</span>
+                            <span>{ex.user_attempts_count}</span>
                           </button>
                         )}
 

@@ -1,0 +1,1509 @@
+{
+  "levelCode": "HSK1",
+  "lessonNumber": 3,
+  "category": "WORKBOOK_LESSON",
+  "titleZh": "你叫什么名字？",
+  "titlePinyin": "Nǐ jiào shénme míngzi?",
+  "titleVi": "Cô tên gì?",
+  "sortOrder": 3,
+  "exerciseSets": [
+    {
+      "code": "HSK1-L03-LISTENING",
+      "skill": "LISTENING",
+      "titleZh": "一、听力",
+      "titleVi": "Phần 1: Nghe hiểu",
+      "instructions": "第1-4题判断对错，第5-8题听对话选图片，第9-12题听句子回答问题",
+      "estimatedMinutes": 15,
+      "audioUrl": "/media/practice/hsk1/audio/03-1.mp3",
+      "questions": [
+        {
+          "code": "HSK1-L03-LISTENING-P1-Q01",
+          "type": "TRUE_FALSE",
+          "prompt": {
+            "part": 1,
+            "instruction": "第1-4题：听词或短语，判断对错",
+            "audioText": "老师 (lǎoshī)",
+            "imageUrl": "/media/practice/hsk1/images/HSK1-L03-L-P1-Q01.png"
+          },
+          "answer": {
+            "value": false
+          },
+          "explanation": "录音是'老师'（Giáo viên），但图片是一个正在微笑的小男孩/学生（Học sinh），因此不一致（×）。",
+          "score": 1,
+          "sourcePage": 15,
+          "sourceAudio": "03-1.mp3",
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-LISTENING-P1-Q02",
+          "type": "TRUE_FALSE",
+          "prompt": {
+            "part": 1,
+            "instruction": "第1-4题：听词或短语，判断对错",
+            "audioText": "学生 (xuésheng)",
+            "imageUrl": "/media/practice/hsk1/images/HSK1-L03-L-P1-Q02.png"
+          },
+          "answer": {
+            "value": false
+          },
+          "explanation": "录音是'学生'（Học sinh），但图片是一位在黑板前讲课的女老师（Giáo viên），因此不一致（×）。",
+          "score": 1,
+          "sourcePage": 15,
+          "sourceAudio": "03-1.mp3",
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-LISTENING-P1-Q03",
+          "type": "TRUE_FALSE",
+          "prompt": {
+            "part": 1,
+            "instruction": "第1-4题：听词或短语，判断对错",
+            "audioText": "中国人 (Zhōngguó rén)",
+            "imageUrl": "/media/practice/hsk1/images/HSK1-L03-L-P1-Q03.png"
+          },
+          "answer": {
+            "value": true
+          },
+          "explanation": "录音是'中国人'（Người Trung Quốc），图片为中国亚洲面孔职场人士，符合一致（√）。",
+          "score": 1,
+          "sourcePage": 15,
+          "sourceAudio": "03-1.mp3",
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-LISTENING-P1-Q04",
+          "type": "TRUE_FALSE",
+          "prompt": {
+            "part": 1,
+            "instruction": "第1-4题：听词或短语，判断对错",
+            "audioText": "美国人 (Měiguó rén)",
+            "imageUrl": "/media/practice/hsk1/images/HSK1-L03-L-P1-Q04.png"
+          },
+          "answer": {
+            "value": true
+          },
+          "explanation": "录音是'美国人'（Người Mỹ），图片为欧美年轻人群体，符合一致（√）。",
+          "score": 1,
+          "sourcePage": 15,
+          "sourceAudio": "03-1.mp3",
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-LISTENING-P2-Q05",
+          "type": "IMAGE_CHOICE",
+          "prompt": {
+            "part": 2,
+            "instruction": "第5-8题：听对话，选择与对话内容一致的图片",
+            "dialogue": "女：你是学生吗？\n男：不是，我是老师。",
+            "options": [
+              {
+                "key": "A",
+                "imageUrl": "/media/practice/hsk1/images/HSK1-L03-L-P2-OptA.png"
+              },
+              {
+                "key": "B",
+                "imageUrl": "/media/practice/hsk1/images/HSK1-L03-L-P2-OptB.png"
+              },
+              {
+                "key": "C",
+                "imageUrl": "/media/practice/hsk1/images/HSK1-L03-L-P2-OptC.png"
+              },
+              {
+                "key": "D",
+                "imageUrl": "/media/practice/hsk1/images/HSK1-L03-L-P2-OptD.png"
+              },
+              {
+                "key": "E",
+                "imageUrl": "/media/practice/hsk1/images/HSK1-L03-L-P2-OptE.png"
+              }
+            ]
+          },
+          "answer": {
+            "value": "B"
+          },
+          "explanation": "男：不是，我是老师 (Tôi là giáo viên) -> Đáp án B.",
+          "score": 1,
+          "sourcePage": 16,
+          "sourceAudio": "03-1.mp3",
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-LISTENING-P2-Q06",
+          "type": "IMAGE_CHOICE",
+          "prompt": {
+            "part": 2,
+            "instruction": "第5-8题：听对话，选择与对话内容一致的图片",
+            "dialogue": "男：你是中国学生吗？\n女：不是，我是美国学生。",
+            "options": [
+              {
+                "key": "A",
+                "imageUrl": "/media/practice/hsk1/images/HSK1-L03-L-P2-OptA.png"
+              },
+              {
+                "key": "B",
+                "imageUrl": "/media/practice/hsk1/images/HSK1-L03-L-P2-OptB.png"
+              },
+              {
+                "key": "C",
+                "imageUrl": "/media/practice/hsk1/images/HSK1-L03-L-P2-OptC.png"
+              },
+              {
+                "key": "D",
+                "imageUrl": "/media/practice/hsk1/images/HSK1-L03-L-P2-OptD.png"
+              },
+              {
+                "key": "E",
+                "imageUrl": "/media/practice/hsk1/images/HSK1-L03-L-P2-OptE.png"
+              }
+            ]
+          },
+          "answer": {
+            "value": "A"
+          },
+          "explanation": "女：不是，我是美国学生 (Tôi là học sinh Mỹ) -> Đáp án A.",
+          "score": 1,
+          "sourcePage": 16,
+          "sourceAudio": "03-1.mp3",
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-LISTENING-P2-Q07",
+          "type": "IMAGE_CHOICE",
+          "prompt": {
+            "part": 2,
+            "instruction": "第5-8题：听对话，选择与对话内容一致的图片",
+            "dialogue": "男：您好，您是美国人吗？\n男：是，我是美国人。",
+            "options": [
+              {
+                "key": "A",
+                "imageUrl": "/media/practice/hsk1/images/HSK1-L03-L-P2-OptA.png"
+              },
+              {
+                "key": "B",
+                "imageUrl": "/media/practice/hsk1/images/HSK1-L03-L-P2-OptB.png"
+              },
+              {
+                "key": "C",
+                "imageUrl": "/media/practice/hsk1/images/HSK1-L03-L-P2-OptC.png"
+              },
+              {
+                "key": "D",
+                "imageUrl": "/media/practice/hsk1/images/HSK1-L03-L-P2-OptD.png"
+              },
+              {
+                "key": "E",
+                "imageUrl": "/media/practice/hsk1/images/HSK1-L03-L-P2-OptE.png"
+              }
+            ]
+          },
+          "answer": {
+            "value": "E"
+          },
+          "explanation": "男：是，我是美国人 (Vâng, tôi là người Mỹ) -> Đáp án E.",
+          "score": 1,
+          "sourcePage": 16,
+          "sourceAudio": "03-1.mp3",
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-LISTENING-P2-Q08",
+          "type": "IMAGE_CHOICE",
+          "prompt": {
+            "part": 2,
+            "instruction": "第5-8题：听对话，选择与对话内容一致的图片",
+            "dialogue": "男：老师，您叫什么名字？\n女：我叫李月。",
+            "options": [
+              {
+                "key": "A",
+                "imageUrl": "/media/practice/hsk1/images/HSK1-L03-L-P2-OptA.png"
+              },
+              {
+                "key": "B",
+                "imageUrl": "/media/practice/hsk1/images/HSK1-L03-L-P2-OptB.png"
+              },
+              {
+                "key": "C",
+                "imageUrl": "/media/practice/hsk1/images/HSK1-L03-L-P2-OptC.png"
+              },
+              {
+                "key": "D",
+                "imageUrl": "/media/practice/hsk1/images/HSK1-L03-L-P2-OptD.png"
+              },
+              {
+                "key": "E",
+                "imageUrl": "/media/practice/hsk1/images/HSK1-L03-L-P2-OptE.png"
+              }
+            ]
+          },
+          "answer": {
+            "value": "D"
+          },
+          "explanation": "男：老师，您叫什么名字？女：我叫李月。 -> Đáp án D.",
+          "score": 1,
+          "sourcePage": 16,
+          "sourceAudio": "03-1.mp3",
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-LISTENING-P3-Q09",
+          "type": "SINGLE_CHOICE",
+          "prompt": {
+            "part": 3,
+            "instruction": "第9-12题：听句子，回答问题",
+            "transcript": "她叫李月，她是老师。\n问：她叫什么名字？",
+            "questionText": "问：她叫什么名字？",
+            "options": [
+              {
+                "key": "A",
+                "text": "李月 (Lǐ Yuè)"
+              },
+              {
+                "key": "B",
+                "text": "刘月 (Liú Yuè)"
+              },
+              {
+                "key": "C",
+                "text": "王月 (Wáng Yuè)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "A"
+          },
+          "explanation": "句子中明确说明：她叫李月。因此答案选 A。",
+          "score": 1,
+          "sourcePage": 17,
+          "sourceAudio": "03-1.mp3",
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-LISTENING-P3-Q10",
+          "type": "SINGLE_CHOICE",
+          "prompt": {
+            "part": 3,
+            "instruction": "第9-12题：听句子，回答问题",
+            "transcript": "大卫是美国人，他是学生。\n问：大卫是中国人吗？",
+            "questionText": "问：大卫是中国人吗？",
+            "options": [
+              {
+                "key": "A",
+                "text": "是 (shì)"
+              },
+              {
+                "key": "B",
+                "text": "不是 (bú shì)"
+              },
+              {
+                "key": "C",
+                "text": "不知道 (bù zhīdào)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "B"
+          },
+          "explanation": "大卫是美国人，所以不是中国人。答案选 B 不是。",
+          "score": 1,
+          "sourcePage": 17,
+          "sourceAudio": "03-1.mp3",
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-LISTENING-P3-Q11",
+          "type": "SINGLE_CHOICE",
+          "prompt": {
+            "part": 3,
+            "instruction": "第9-12题：听句子，回答问题",
+            "transcript": "他叫王心，他是中国人。\n问：他是哪国人？",
+            "questionText": "问：他是哪国人？",
+            "options": [
+              {
+                "key": "A",
+                "text": "美国人 (Měiguó rén)"
+              },
+              {
+                "key": "B",
+                "text": "中国人 (Zhōngguó rén)"
+              },
+              {
+                "key": "C",
+                "text": "日本人 (Rìběn rén)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "B"
+          },
+          "explanation": "他是中国人。答案选 B 中国人。",
+          "score": 1,
+          "sourcePage": 17,
+          "sourceAudio": "03-1.mp3",
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-LISTENING-P3-Q12",
+          "type": "SINGLE_CHOICE",
+          "prompt": {
+            "part": 3,
+            "instruction": "第9-12题：听句子，回答问题",
+            "transcript": "我叫马丁，我是美国人，我是学生。\n问：马丁是哪国人？",
+            "questionText": "问：马丁是哪国人？",
+            "options": [
+              {
+                "key": "A",
+                "text": "中国人 (Zhōngguó rén)"
+              },
+              {
+                "key": "B",
+                "text": "日本人 (Rìběn rén)"
+              },
+              {
+                "key": "C",
+                "text": "美国人 (Měiguó rén)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "C"
+          },
+          "explanation": "我是美国人。答案选 C 美国人。",
+          "score": 1,
+          "sourcePage": 17,
+          "sourceAudio": "03-1.mp3",
+          "verificationStatus": "NEEDS_REVIEW"
+        }
+      ]
+    },
+    {
+      "code": "HSK1-L03-READING",
+      "skill": "READING",
+      "titleZh": "二、阅读",
+      "titleVi": "Phần 2: Đọc hiểu",
+      "instructions": "第13-17题看图片判断是否一致，第18-22题选择正确回答，第23-30题选词填空",
+      "estimatedMinutes": 15,
+      "questions": [
+        {
+          "code": "HSK1-L03-READING-P1-Q13",
+          "type": "TRUE_FALSE",
+          "prompt": {
+            "part": 1,
+            "instruction": "第13-17题：看图片，判断图片内容是否与提示词一致",
+            "wordZh": "中国 人",
+            "wordPinyin": "Zhōngguó rén",
+            "imageUrl": "/media/practice/hsk1/images/HSK1-L03-R-P1-Q13.png"
+          },
+          "answer": {
+            "value": false
+          },
+          "explanation": "提示词是'中国人'，图片为两位西方白人女性喝咖啡，因此不一致（×）。",
+          "score": 1,
+          "sourcePage": 18,
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-READING-P1-Q14",
+          "type": "TRUE_FALSE",
+          "prompt": {
+            "part": 1,
+            "instruction": "第13-17题：看图片，判断图片内容是否与提示词一致",
+            "wordZh": "老师",
+            "wordPinyin": "lǎoshī",
+            "imageUrl": "/media/practice/hsk1/images/HSK1-L03-R-P1-Q14.png"
+          },
+          "answer": {
+            "value": false
+          },
+          "explanation": "提示词是'老师'，图片为一群正在教室坐着的小学生，因此不一致（×）。",
+          "score": 1,
+          "sourcePage": 18,
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-READING-P1-Q15",
+          "type": "TRUE_FALSE",
+          "prompt": {
+            "part": 1,
+            "instruction": "第13-17题：看图片，判断图片内容是否与提示词一致",
+            "wordZh": "你好",
+            "wordPinyin": "nǐ hǎo",
+            "imageUrl": "/media/practice/hsk1/images/HSK1-L03-R-P1-Q15.png"
+          },
+          "answer": {
+            "value": true
+          },
+          "explanation": "提示词是'你好'，图片为两人握手问候，内容一致（√）。",
+          "score": 1,
+          "sourcePage": 18,
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-READING-P1-Q16",
+          "type": "TRUE_FALSE",
+          "prompt": {
+            "part": 1,
+            "instruction": "第13-17题：看图片，判断图片内容是否与提示词一致",
+            "wordZh": "再见",
+            "wordPinyin": "zàijiàn",
+            "imageUrl": "/media/practice/hsk1/images/HSK1-L03-R-P1-Q16.png"
+          },
+          "answer": {
+            "value": true
+          },
+          "explanation": "提示词是'再见'，图片为背书包小男孩回头挥手告别，内容一致（√）。",
+          "score": 1,
+          "sourcePage": 18,
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-READING-P1-Q17",
+          "type": "TRUE_FALSE",
+          "prompt": {
+            "part": 1,
+            "instruction": "第13-17题：看图片，判断图片内容是否与提示词一致",
+            "wordZh": "学生",
+            "wordPinyin": "xuésheng",
+            "imageUrl": "/media/practice/hsk1/images/HSK1-L03-R-P1-Q17.png"
+          },
+          "answer": {
+            "value": false
+          },
+          "explanation": "提示词是'学生'，图片为女教师在黑板前讲课，因此不一致（×）。",
+          "score": 1,
+          "sourcePage": 18,
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-READING-P2-Q18",
+          "type": "SINGLE_CHOICE",
+          "prompt": {
+            "part": 2,
+            "instruction": "第18-22题：看问题，选择正确的回答",
+            "questionText": "18. 你叫什么名字？ (Nǐ jiào shénme míngzi?)",
+            "options": [
+              {
+                "key": "A",
+                "text": "不是，我是中国人。(Bú shì, wǒ shì Zhōngguó rén.)"
+              },
+              {
+                "key": "B",
+                "text": "我不是学生，我是老师。(Wǒ bú shì xuésheng, wǒ shì lǎoshī.)"
+              },
+              {
+                "key": "C",
+                "text": "你好，我叫大卫。(Nǐ hǎo, wǒ jiào Dàwèi.)"
+              },
+              {
+                "key": "D",
+                "text": "是，我是老师。(Shì, wǒ shì lǎoshī.)"
+              },
+              {
+                "key": "E",
+                "text": "我叫李心。(Wǒ jiào Lǐ Xīn.)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "E"
+          },
+          "explanation": "问名字用'我叫...'回答：我叫李心。答案选 E。",
+          "score": 1,
+          "sourcePage": 19,
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-READING-P2-Q19",
+          "type": "SINGLE_CHOICE",
+          "prompt": {
+            "part": 2,
+            "instruction": "第18-22题：看问题，选择正确的回答",
+            "questionText": "19. 您是老师吗？ (Nín shì lǎoshī ma?)",
+            "options": [
+              {
+                "key": "A",
+                "text": "不是，我是中国人。(Bú shì, wǒ shì Zhōngguó rén.)"
+              },
+              {
+                "key": "B",
+                "text": "我不是学生，我是老师。(Wǒ bú shì xuésheng, wǒ shì lǎoshī.)"
+              },
+              {
+                "key": "C",
+                "text": "你好，我叫大卫。(Nǐ hǎo, wǒ jiào Dàwèi.)"
+              },
+              {
+                "key": "D",
+                "text": "是，我是老师。(Shì, wǒ shì lǎoshī.)"
+              },
+              {
+                "key": "E",
+                "text": "我叫李心。(Wǒ jiào Lǐ Xīn.)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "D"
+          },
+          "explanation": "问是否是老师：是，我是老师。答案选 D。",
+          "score": 1,
+          "sourcePage": 19,
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-READING-P2-Q20",
+          "type": "SINGLE_CHOICE",
+          "prompt": {
+            "part": 2,
+            "instruction": "第18-22题：看问题，选择正确的回答",
+            "questionText": "20. 你好，我叫李月。(Nǐ hǎo, wǒ jiào Lǐ Yuè.)",
+            "options": [
+              {
+                "key": "A",
+                "text": "不是，我是中国人。(Bú shì, wǒ shì Zhōngguó rén.)"
+              },
+              {
+                "key": "B",
+                "text": "我不是学生，我是老师。(Wǒ bú shì xuésheng, wǒ shì lǎoshī.)"
+              },
+              {
+                "key": "C",
+                "text": "你好，我叫大卫。(Nǐ hǎo, wǒ jiào Dàwèi.)"
+              },
+              {
+                "key": "D",
+                "text": "是，我是老师。(Shì, wǒ shì lǎoshī.)"
+              },
+              {
+                "key": "E",
+                "text": "我叫李心。(Wǒ jiào Lǐ Xīn.)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "C"
+          },
+          "explanation": "打招呼并自我介绍：你好，我叫大卫。答案选 C。",
+          "score": 1,
+          "sourcePage": 19,
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-READING-P2-Q21",
+          "type": "SINGLE_CHOICE",
+          "prompt": {
+            "part": 2,
+            "instruction": "第18-22题：看问题，选择正确的回答",
+            "questionText": "21. 你是美国人吗？ (Nǐ shì Měiguó rén ma?)",
+            "options": [
+              {
+                "key": "A",
+                "text": "不是，我是中国人。(Bú shì, wǒ shì Zhōngguó rén.)"
+              },
+              {
+                "key": "B",
+                "text": "我不是学生，我是老师。(Wǒ bú shì xuésheng, wǒ shì lǎoshī.)"
+              },
+              {
+                "key": "C",
+                "text": "你好，我叫大卫。(Nǐ hǎo, wǒ jiào Dàwèi.)"
+              },
+              {
+                "key": "D",
+                "text": "是，我是老师。(Shì, wǒ shì lǎoshī.)"
+              },
+              {
+                "key": "E",
+                "text": "我叫李心。(Wǒ jiào Lǐ Xīn.)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "A"
+          },
+          "explanation": "不是，我是中国人。答案选 A。",
+          "score": 1,
+          "sourcePage": 19,
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-READING-P2-Q22",
+          "type": "SINGLE_CHOICE",
+          "prompt": {
+            "part": 2,
+            "instruction": "第18-22题：看问题，选择正确的回答",
+            "questionText": "22. 你是学生吗？ (Nǐ shì xuésheng ma?)",
+            "options": [
+              {
+                "key": "A",
+                "text": "不是，我是中国人。(Bú shì, wǒ shì Zhōngguó rén.)"
+              },
+              {
+                "key": "B",
+                "text": "我不是学生，我是老师。(Wǒ bú shì xuésheng, wǒ shì lǎoshī.)"
+              },
+              {
+                "key": "C",
+                "text": "你好，我叫大卫。(Nǐ hǎo, wǒ jiào Dàwèi.)"
+              },
+              {
+                "key": "D",
+                "text": "是，我是老师。(Shì, wǒ shì lǎoshī.)"
+              },
+              {
+                "key": "E",
+                "text": "我叫李心。(Wǒ jiào Lǐ Xīn.)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "B"
+          },
+          "explanation": "我不是学生，我是老师。答案选 B。",
+          "score": 1,
+          "sourcePage": 19,
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-READING-P3-Q23",
+          "type": "SINGLE_CHOICE",
+          "prompt": {
+            "part": 3,
+            "instruction": "第23-26题：看句子，选择正确的词语填空 (A. 什么 shénme, B. 是 shì, C. 不 bù, D. 名字 míngzi, E. 吗 ma)",
+            "sentence": "我（ ）是 中国 人，我 是 美国人。",
+            "options": [
+              {
+                "key": "A",
+                "text": "A. 什么 (shénme)"
+              },
+              {
+                "key": "B",
+                "text": "B. 是 (shì)"
+              },
+              {
+                "key": "C",
+                "text": "C. 不 (bù)"
+              },
+              {
+                "key": "D",
+                "text": "D. 名字 (míngzi)"
+              },
+              {
+                "key": "E",
+                "text": "E. 吗 (ma)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "C"
+          },
+          "explanation": "我（不）是中国人，我是美国人。答案选 C 不。",
+          "score": 1,
+          "sourcePage": 20,
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-READING-P3-Q24",
+          "type": "SINGLE_CHOICE",
+          "prompt": {
+            "part": 3,
+            "instruction": "第23-26题：看句子，选择正确的词语填空",
+            "sentence": "您 是 老师（ ）？",
+            "options": [
+              {
+                "key": "A",
+                "text": "A. 什么 (shénme)"
+              },
+              {
+                "key": "B",
+                "text": "B. 是 (shì)"
+              },
+              {
+                "key": "C",
+                "text": "C. 不 (bù)"
+              },
+              {
+                "key": "D",
+                "text": "D. 名字 (míngzi)"
+              },
+              {
+                "key": "E",
+                "text": "E. 吗 (ma)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "E"
+          },
+          "explanation": "疑问句末尾用疑问助词'吗'：您是老师（吗）？答案选 E。",
+          "score": 1,
+          "sourcePage": 20,
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-READING-P3-Q25",
+          "type": "SINGLE_CHOICE",
+          "prompt": {
+            "part": 3,
+            "instruction": "第23-26题：看句子，选择正确的词语填空",
+            "sentence": "他 叫（ ）？",
+            "options": [
+              {
+                "key": "A",
+                "text": "A. 什么 (shénme)"
+              },
+              {
+                "key": "B",
+                "text": "B. 是 (shì)"
+              },
+              {
+                "key": "C",
+                "text": "C. 不 (bù)"
+              },
+              {
+                "key": "D",
+                "text": "D. 名字 (míngzi)"
+              },
+              {
+                "key": "E",
+                "text": "E. 吗 (ma)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "A"
+          },
+          "explanation": "询问名字：他叫（什么）？答案选 A。",
+          "score": 1,
+          "sourcePage": 20,
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-READING-P3-Q26",
+          "type": "SINGLE_CHOICE",
+          "prompt": {
+            "part": 3,
+            "instruction": "第23-26题：看句子，选择正确的词语填空",
+            "sentence": "李月（ ）中国 人，她 是 老师。",
+            "options": [
+              {
+                "key": "A",
+                "text": "A. 什么 (shénme)"
+              },
+              {
+                "key": "B",
+                "text": "B. 是 (shì)"
+              },
+              {
+                "key": "C",
+                "text": "C. 不 (bù)"
+              },
+              {
+                "key": "D",
+                "text": "D. 名字 (míngzi)"
+              },
+              {
+                "key": "E",
+                "text": "E. 吗 (ma)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "B"
+          },
+          "explanation": "李月（是）中国人，她是老师。答案选 B 是。",
+          "score": 1,
+          "sourcePage": 20,
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-READING-P3-Q27",
+          "type": "SINGLE_CHOICE",
+          "prompt": {
+            "part": 3,
+            "instruction": "第27-30题：看句子，选择正确的词语填空 (F. 老师 lǎoshī, G. 学生 xuésheng, H. 中国 Zhōngguó, I. 美国 Měiguó)",
+            "sentence": "大卫 不 是 老师，他 是（ ）。",
+            "options": [
+              {
+                "key": "F",
+                "text": "F. 老师 (lǎoshī)"
+              },
+              {
+                "key": "G",
+                "text": "G. 学生 (xuésheng)"
+              },
+              {
+                "key": "H",
+                "text": "H. 中国 (Zhōngguó)"
+              },
+              {
+                "key": "I",
+                "text": "I. 美国 (Měiguó)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "G"
+          },
+          "explanation": "大卫不是老师，他是（学生）。答案选 G。",
+          "score": 1,
+          "sourcePage": 20,
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-READING-P3-Q28",
+          "type": "SINGLE_CHOICE",
+          "prompt": {
+            "part": 3,
+            "instruction": "第27-30题：看句子，选择正确的词语填空",
+            "sentence": "（ ），谢谢您！",
+            "options": [
+              {
+                "key": "F",
+                "text": "F. 老师 (lǎoshī)"
+              },
+              {
+                "key": "G",
+                "text": "G. 学生 (xuésheng)"
+              },
+              {
+                "key": "H",
+                "text": "H. 中国 (Zhōngguó)"
+              },
+              {
+                "key": "I",
+                "text": "I. 美国 (Měiguó)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "F"
+          },
+          "explanation": "对长辈/教师的尊称与感谢：（老师），谢谢您！答案选 F。",
+          "score": 1,
+          "sourcePage": 20,
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-READING-P3-Q29",
+          "type": "SINGLE_CHOICE",
+          "prompt": {
+            "part": 3,
+            "instruction": "第27-30题：看句子，选择正确的词语填空",
+            "sentence": "我 不 是 中国 人，我 是（ ）人。",
+            "options": [
+              {
+                "key": "F",
+                "text": "F. 老师 (lǎoshī)"
+              },
+              {
+                "key": "G",
+                "text": "G. 学生 (xuésheng)"
+              },
+              {
+                "key": "H",
+                "text": "H. 中国 (Zhōngguó)"
+              },
+              {
+                "key": "I",
+                "text": "I. 美国 (Měiguó)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "I"
+          },
+          "explanation": "我不是中国人，我是（美国）人。答案选 I。",
+          "score": 1,
+          "sourcePage": 20,
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-READING-P3-Q30",
+          "type": "SINGLE_CHOICE",
+          "prompt": {
+            "part": 3,
+            "instruction": "第27-30题：看句子，选择正确的词语填空",
+            "sentence": "你们 好，你们 是（ ）学生 吗？",
+            "options": [
+              {
+                "key": "F",
+                "text": "F. 老师 (lǎoshī)"
+              },
+              {
+                "key": "G",
+                "text": "G. 学生 (xuésheng)"
+              },
+              {
+                "key": "H",
+                "text": "H. 中国 (Zhōngguó)"
+              },
+              {
+                "key": "I",
+                "text": "I. 美国 (Měiguó)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "H"
+          },
+          "explanation": "你们是（中国）学生吗？答案选 H。",
+          "score": 1,
+          "sourcePage": 20,
+          "verificationStatus": "NEEDS_REVIEW"
+        }
+      ]
+    },
+    {
+      "code": "HSK1-L03-PHONETICS",
+      "skill": "PHONETICS",
+      "titleZh": "三、语音",
+      "titleVi": "Phần 3: Ngữ âm",
+      "instructions": "第1-8题听录音选择听到的音节，第9-16题听录音给'不'标注声调",
+      "estimatedMinutes": 10,
+      "audioUrl": "/media/practice/hsk1/audio/03-2.mp3",
+      "questions": [
+        {
+          "code": "HSK1-L03-PHONETICS-P1-Q01",
+          "type": "LISTEN_AND_CHOOSE",
+          "prompt": {
+            "part": 1,
+            "instruction": "第1-8题：听录音，选择听到的音节",
+            "audioText": "sì",
+            "options": [
+              {
+                "key": "A",
+                "text": "sì"
+              },
+              {
+                "key": "B",
+                "text": "cì"
+              }
+            ]
+          },
+          "answer": {
+            "value": "A"
+          },
+          "explanation": "录音声节为 sì（四），答案选 A。",
+          "score": 1,
+          "sourcePage": 21,
+          "sourceAudio": "03-2.mp3",
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-PHONETICS-P1-Q02",
+          "type": "LISTEN_AND_CHOOSE",
+          "prompt": {
+            "part": 1,
+            "instruction": "第1-8题：听录音，选择听到的音节",
+            "audioText": "suān",
+            "options": [
+              {
+                "key": "A",
+                "text": "suān"
+              },
+              {
+                "key": "B",
+                "text": "cuān"
+              }
+            ]
+          },
+          "answer": {
+            "value": "A"
+          },
+          "explanation": "录音声节为 suān（酸），答案选 A。",
+          "score": 1,
+          "sourcePage": 21,
+          "sourceAudio": "03-2.mp3",
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-PHONETICS-P1-Q03",
+          "type": "LISTEN_AND_CHOOSE",
+          "prompt": {
+            "part": 1,
+            "instruction": "第1-8题：听录音，选择听到的音节",
+            "audioText": "cǐ",
+            "options": [
+              {
+                "key": "A",
+                "text": "zǐ"
+              },
+              {
+                "key": "B",
+                "text": "cǐ"
+              }
+            ]
+          },
+          "answer": {
+            "value": "B"
+          },
+          "explanation": "录音声节为 cǐ（此），答案选 B。",
+          "score": 1,
+          "sourcePage": 21,
+          "sourceAudio": "03-2.mp3",
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-PHONETICS-P1-Q04",
+          "type": "LISTEN_AND_CHOOSE",
+          "prompt": {
+            "part": 1,
+            "instruction": "第1-8题：听录音，选择听到的音节",
+            "audioText": "suàn",
+            "options": [
+              {
+                "key": "A",
+                "text": "zuàn"
+              },
+              {
+                "key": "B",
+                "text": "suàn"
+              }
+            ]
+          },
+          "answer": {
+            "value": "B"
+          },
+          "explanation": "录音声节为 suàn（算），答案选 B。",
+          "score": 1,
+          "sourcePage": 21,
+          "sourceAudio": "03-2.mp3",
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-PHONETICS-P1-Q05",
+          "type": "LISTEN_AND_CHOOSE",
+          "prompt": {
+            "part": 1,
+            "instruction": "第1-8题：听录音，选择听到的音节",
+            "audioText": "xiā",
+            "options": [
+              {
+                "key": "A",
+                "text": "jiā"
+              },
+              {
+                "key": "B",
+                "text": "xiā"
+              }
+            ]
+          },
+          "answer": {
+            "value": "B"
+          },
+          "explanation": "录音声节为 xiā（虾），答案选 B。",
+          "score": 1,
+          "sourcePage": 21,
+          "sourceAudio": "03-2.mp3",
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-PHONETICS-P1-Q06",
+          "type": "LISTEN_AND_CHOOSE",
+          "prompt": {
+            "part": 1,
+            "instruction": "第1-8题：听录音，选择听到的音节",
+            "audioText": "xīn",
+            "options": [
+              {
+                "key": "A",
+                "text": "xīn"
+              },
+              {
+                "key": "B",
+                "text": "qīn"
+              }
+            ]
+          },
+          "answer": {
+            "value": "A"
+          },
+          "explanation": "录音声节为 xīn（新），答案选 A。",
+          "score": 1,
+          "sourcePage": 21,
+          "sourceAudio": "03-2.mp3",
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-PHONETICS-P1-Q07",
+          "type": "LISTEN_AND_CHOOSE",
+          "prompt": {
+            "part": 1,
+            "instruction": "第1-8题：听录音，选择听到的音节",
+            "audioText": "xiāng",
+            "options": [
+              {
+                "key": "A",
+                "text": "jiāng"
+              },
+              {
+                "key": "B",
+                "text": "xiāng"
+              }
+            ]
+          },
+          "answer": {
+            "value": "B"
+          },
+          "explanation": "录音声节为 xiāng（香），答案选 B。",
+          "score": 1,
+          "sourcePage": 21,
+          "sourceAudio": "03-2.mp3",
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-PHONETICS-P1-Q08",
+          "type": "LISTEN_AND_CHOOSE",
+          "prompt": {
+            "part": 1,
+            "instruction": "第1-8题：听录音，选择听到的音节",
+            "audioText": "jiǔ",
+            "options": [
+              {
+                "key": "A",
+                "text": "qiú"
+              },
+              {
+                "key": "B",
+                "text": "jiǔ"
+              }
+            ]
+          },
+          "answer": {
+            "value": "B"
+          },
+          "explanation": "录音声节为 jiǔ（酒），答案选 B。",
+          "score": 1,
+          "sourcePage": 21,
+          "sourceAudio": "03-2.mp3",
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-PHONETICS-P2-Q09",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "part": 2,
+            "instruction": "第9-16题：听录音，给下列词语中的“不”标注声调 (Biến điệu của '不')",
+            "wordZh": "不是",
+            "wordPinyinBase": "bu shi",
+            "options": [
+              {
+                "key": "bù",
+                "text": "bù (thanh 4)"
+              },
+              {
+                "key": "bú",
+                "text": "bú (thanh 2)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "bú"
+          },
+          "explanation": "'不' đứng trước âm tiết thanh 4 (shì) biến điệu thành thanh 2: bú shì (不是)。",
+          "score": 1,
+          "sourcePage": 21,
+          "sourceAudio": "03-2.mp3",
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-PHONETICS-P2-Q10",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "part": 2,
+            "instruction": "第9-16题：听录音，给下列词语中的“不”标注声调",
+            "wordZh": "不想",
+            "wordPinyinBase": "bu xiang",
+            "options": [
+              {
+                "key": "bù",
+                "text": "bù (thanh 4)"
+              },
+              {
+                "key": "bú",
+                "text": "bú (thanh 2)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "bù"
+          },
+          "explanation": "'不' đứng trước âm tiết thanh 3 (xiǎng) giữ nguyên thanh 4: bù xiǎng (不想)。",
+          "score": 1,
+          "sourcePage": 21,
+          "sourceAudio": "03-2.mp3",
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-PHONETICS-P2-Q11",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "part": 2,
+            "instruction": "第9-16题：听录音，给下列词语中的“不”标注声调",
+            "wordZh": "不好",
+            "wordPinyinBase": "bu hao",
+            "options": [
+              {
+                "key": "bù",
+                "text": "bù (thanh 4)"
+              },
+              {
+                "key": "bú",
+                "text": "bú (thanh 2)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "bù"
+          },
+          "explanation": "'不' đứng trước âm tiết thanh 3 (hǎo) giữ nguyên thanh 4: bù hǎo (不好)。",
+          "score": 1,
+          "sourcePage": 21,
+          "sourceAudio": "03-2.mp3",
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-PHONETICS-P2-Q12",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "part": 2,
+            "instruction": "第9-16题：听录音，给下列词语中的“不”标注声调",
+            "wordZh": "不看",
+            "wordPinyinBase": "bu kan",
+            "options": [
+              {
+                "key": "bù",
+                "text": "bù (thanh 4)"
+              },
+              {
+                "key": "bú",
+                "text": "bú (thanh 2)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "bú"
+          },
+          "explanation": "'不' đứng trước âm tiết thanh 4 (kàn) biến điệu thành thanh 2: bú kàn (不看)。",
+          "score": 1,
+          "sourcePage": 21,
+          "sourceAudio": "03-2.mp3",
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-PHONETICS-P2-Q13",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "part": 2,
+            "instruction": "第9-16题：听录音，给下列词语中的“不”标注声调",
+            "wordZh": "不能",
+            "wordPinyinBase": "bu neng",
+            "options": [
+              {
+                "key": "bù",
+                "text": "bù (thanh 4)"
+              },
+              {
+                "key": "bú",
+                "text": "bú (thanh 2)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "bù"
+          },
+          "explanation": "'不' đứng trước âm tiết thanh 2 (néng) giữ nguyên thanh 4: bù néng (不能)。",
+          "score": 1,
+          "sourcePage": 21,
+          "sourceAudio": "03-2.mp3",
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-PHONETICS-P2-Q14",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "part": 2,
+            "instruction": "第9-16题：听录音，给下列词语中的“不”标注声调",
+            "wordZh": "不说",
+            "wordPinyinBase": "bu shuo",
+            "options": [
+              {
+                "key": "bù",
+                "text": "bù (thanh 4)"
+              },
+              {
+                "key": "bú",
+                "text": "bú (thanh 2)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "bù"
+          },
+          "explanation": "'不' đứng trước âm tiết thanh 1 (shuō) giữ nguyên thanh 4: bù shuō (不说)。",
+          "score": 1,
+          "sourcePage": 21,
+          "sourceAudio": "03-2.mp3",
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-PHONETICS-P2-Q15",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "part": 2,
+            "instruction": "第9-16题：听录音，给下列词语中的“不”标注声调",
+            "wordZh": "不去",
+            "wordPinyinBase": "bu qu",
+            "options": [
+              {
+                "key": "bù",
+                "text": "bù (thanh 4)"
+              },
+              {
+                "key": "bú",
+                "text": "bú (thanh 2)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "bú"
+          },
+          "explanation": "'不' đứng trước âm tiết thanh 4 (qù) biến điệu thành thanh 2: bú qù (不去)。",
+          "score": 1,
+          "sourcePage": 21,
+          "sourceAudio": "03-2.mp3",
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-PHONETICS-P2-Q16",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "part": 2,
+            "instruction": "第9-16题：听录音，给下列词语中的“不”标注声调",
+            "wordZh": "不买",
+            "wordPinyinBase": "bu mai",
+            "options": [
+              {
+                "key": "bù",
+                "text": "bù (thanh 4)"
+              },
+              {
+                "key": "bú",
+                "text": "bú (thanh 2)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "bù"
+          },
+          "explanation": "'不' đứng trước âm tiết thanh 3 (mǎi) giữ nguyên thanh 4: bù mǎi (不买)。",
+          "score": 1,
+          "sourcePage": 21,
+          "sourceAudio": "03-2.mp3",
+          "verificationStatus": "NEEDS_REVIEW"
+        }
+      ]
+    },
+    {
+      "code": "HSK1-L03-HANZI",
+      "skill": "HANZI",
+      "titleZh": "四、汉字",
+      "titleVi": "Phần 4: Chữ Hán",
+      "instructions": "练习汉字笔画与独体字书写",
+      "estimatedMinutes": 10,
+      "questions": [
+        {
+          "code": "HSK1-L03-HANZI-P1-Q01",
+          "type": "CHARACTER_WRITING",
+          "prompt": {
+            "character": "月",
+            "pinyin": "yuè",
+            "meaning": "Mặt trăng / Tháng",
+            "strokeName": "横折钩 (héngzhégōu)",
+            "strokes": [
+              "丿",
+              "𠃌",
+              "一",
+              "一"
+            ],
+            "instruction": "笔画练习：描写含有‘横折钩’的字 '月'"
+          },
+          "answer": {
+            "completed": true
+          },
+          "explanation": "月字结构：撇、横折钩、横、横。",
+          "score": 1,
+          "sourcePage": 22,
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-HANZI-P1-Q02",
+          "type": "CHARACTER_WRITING",
+          "prompt": {
+            "character": "心",
+            "pinyin": "xīn",
+            "meaning": "Trái tim / Tâm",
+            "strokeName": "卧钩 (wògōu)",
+            "strokes": [
+              "丶",
+              "㇂",
+              "丶",
+              "丶"
+            ],
+            "instruction": "笔画练习：描写含有‘卧钩’的字 '心'"
+          },
+          "answer": {
+            "completed": true
+          },
+          "explanation": "心字结构：点、卧钩、点、点。",
+          "score": 1,
+          "sourcePage": 22,
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-HANZI-P2-Q03",
+          "type": "CHARACTER_WRITING",
+          "prompt": {
+            "character": "人",
+            "pinyin": "rén",
+            "meaning": "Người / Nhân",
+            "strokes": [
+              "丿",
+              "乀"
+            ],
+            "instruction": "独体字书写：人 (rén)"
+          },
+          "answer": {
+            "completed": true
+          },
+          "explanation": "人字笔顺：先撇后捺。",
+          "score": 1,
+          "sourcePage": 22,
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L03-HANZI-P2-Q04",
+          "type": "CHARACTER_WRITING",
+          "prompt": {
+            "character": "中",
+            "pinyin": "zhōng",
+            "meaning": "Ở giữa / Trung",
+            "strokes": [
+              "丨",
+              "𠃍",
+              "一",
+              "丨"
+            ],
+            "instruction": "独体字书写：中 (zhōng)"
+          },
+          "answer": {
+            "completed": true
+          },
+          "explanation": "中字笔顺：竖、横折、横、竖。",
+          "score": 1,
+          "sourcePage": 22,
+          "verificationStatus": "NEEDS_REVIEW"
+        }
+      ]
+    }
+  ]
+}

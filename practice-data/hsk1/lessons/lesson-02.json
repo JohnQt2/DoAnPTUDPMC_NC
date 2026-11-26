@@ -1,0 +1,2013 @@
+{
+  "levelCode": "HSK1",
+  "lessonNumber": 2,
+  "category": "WORKBOOK_LESSON",
+  "titleZh": "谢谢你！",
+  "titlePinyin": "Xièxie nǐ!",
+  "titleVi": "Bài 2: Cảm ơn anh!",
+  "sortOrder": 2,
+  "exerciseSets": [
+    {
+      "code": "HSK1-L02-PRONUNCIATION",
+      "skill": "PHONETICS",
+      "titleZh": "语音练习",
+      "titleVi": "Luyện phát âm",
+      "instructions": "朗读单音节、双音节词语并完成读图猜词练习。",
+      "estimatedMinutes": 15,
+      "audioUrl": "/media/practice/hsk1/audio/02-1.mp3",
+      "questions": [
+        {
+          "code": "HSK1-L02-PRONUNCIATION-Q01",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "朗读下列单音节词语 (Đọc to các từ có một âm tiết dưới đây)",
+            "content": "zhī ? zhí ? zhǐ ? zhì ? zān ? zán ? zǎn ? zàn ? chuāng ? chuáng ? chuǎng ? chuàng ? xuān ? xuán ? xuǎn ? xuàn ? xiāng ? xiáng ? xiǎng ? xiàng ? yīng ? yíng ? yǐng ? yìng ? shēn ? shén ? shěn ? shèn ? rāng ? ráng ? rǎng ? ràng"
+          },
+          "answer": {
+            "value": "zhī\nzhí\nzhǐ\nzhì\nzān\nzán\nzǎn\nzàn\nchuāng\nchuáng\nchuǎng\nchuàng\nxuān\nxuán\nxuǎn\nxuàn\nxiāng\nxiáng\nxiǎng\nxiàng\nyīng\nyíng\nyǐng\nyìng\nshēn\nshén\nshěn\nshèn\nrāng\nráng\nrǎng\nràng"
+          },
+          "explanation": "Đối chiếu trực tiếp danh sách âm tiết in ở bài tập 1, trang 11. Audio gắn theo biểu tượng 02-1.",
+          "score": 1,
+          "sourcePage": 11,
+          "sourceAudio": "02-1.mp3",
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L02-PRONUNCIATION-Q02",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "朗读下列双音节词语 (Đọc to các từ có hai âm tiết dưới đây)",
+            "content": "rènzhēn ? rúguǒ ? xǐzǎo ? zhàopiàn ? cídiǎn ? yǐqián ? yǐhòu ? yánliào ? zháojí ? huǒchē ? zìjǐ ? yǎnjìng ? tóngxué ? tóngshì ? tóngyì ? tūrán ? yìsi ? zhàngfu ? tóufa ? shìqing"
+          },
+          "answer": {
+            "value": "rènzhēn\nrúguǒ\nxǐzǎo\nzhàopiàn\ncídiǎn\nyǐqián\nyǐhòu\nyánliào\nzháojí\nhuǒchē\nzìjǐ\nyǎnjìng\ntóngxué\ntóngshì\ntóngyì\ntūrán\nyìsi\nzhàngfu\ntóufa\nshìqing"
+          },
+          "explanation": "Đối chiếu trực tiếp danh sách từ in ở bài tập 2, trang 11. Audio gắn theo biểu tượng 02-2.",
+          "score": 1,
+          "sourcePage": 11,
+          "sourceAudio": "02-2.mp3",
+          "verificationStatus": "NEEDS_REVIEW"
+        },
+        {
+          "code": "HSK1-L02-PRONUNCIATION-Q03",
+          "type": "IMAGE_CHOICE",
+          "prompt": {
+            "instruction": "读一读，猜一猜：给下列词语选择相应的图片 (Choose the matching image for the word below)",
+            "dialogue": "E. 汉堡 (hànbǎo)",
+            "options": [
+              {
+                "key": "1",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/vocab-hamburger.png"
+              },
+              {
+                "key": "2",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/vocab-champagne.png"
+              },
+              {
+                "key": "3",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/vocab-microphone.png"
+              },
+              {
+                "key": "4",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/vocab-chocolate.png"
+              },
+              {
+                "key": "5",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/vocab-sofa.png"
+              }
+            ]
+          },
+          "answer": {
+            "value": "1"
+          },
+          "explanation": "Answer key (page 2): picture 1 matches option E.",
+          "score": 1,
+          "sourcePage": 11,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-PRONUNCIATION-Q04",
+          "type": "IMAGE_CHOICE",
+          "prompt": {
+            "instruction": "读一读，猜一猜：给下列词语选择相应的图片 (Choose the matching image for the word below)",
+            "dialogue": "C. 香槟 (xiāngbīn)",
+            "options": [
+              {
+                "key": "1",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/vocab-hamburger.png"
+              },
+              {
+                "key": "2",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/vocab-champagne.png"
+              },
+              {
+                "key": "3",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/vocab-microphone.png"
+              },
+              {
+                "key": "4",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/vocab-chocolate.png"
+              },
+              {
+                "key": "5",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/vocab-sofa.png"
+              }
+            ]
+          },
+          "answer": {
+            "value": "2"
+          },
+          "explanation": "Answer key (page 2): picture 2 matches option C.",
+          "score": 1,
+          "sourcePage": 11,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-PRONUNCIATION-Q05",
+          "type": "IMAGE_CHOICE",
+          "prompt": {
+            "instruction": "读一读，猜一猜：给下列词语选择相应的图片 (Choose the matching image for the word below)",
+            "dialogue": "D. 麦克风 (màikèfēng)",
+            "options": [
+              {
+                "key": "1",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/vocab-hamburger.png"
+              },
+              {
+                "key": "2",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/vocab-champagne.png"
+              },
+              {
+                "key": "3",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/vocab-microphone.png"
+              },
+              {
+                "key": "4",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/vocab-chocolate.png"
+              },
+              {
+                "key": "5",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/vocab-sofa.png"
+              }
+            ]
+          },
+          "answer": {
+            "value": "3"
+          },
+          "explanation": "Answer key (page 2): picture 3 matches option D.",
+          "score": 1,
+          "sourcePage": 11,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-PRONUNCIATION-Q06",
+          "type": "IMAGE_CHOICE",
+          "prompt": {
+            "instruction": "读一读，猜一猜：给下列词语选择相应的图片 (Choose the matching image for the word below)",
+            "dialogue": "A. 巧克力 (qiǎokèlì)",
+            "options": [
+              {
+                "key": "1",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/vocab-hamburger.png"
+              },
+              {
+                "key": "2",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/vocab-champagne.png"
+              },
+              {
+                "key": "3",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/vocab-microphone.png"
+              },
+              {
+                "key": "4",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/vocab-chocolate.png"
+              },
+              {
+                "key": "5",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/vocab-sofa.png"
+              }
+            ]
+          },
+          "answer": {
+            "value": "4"
+          },
+          "explanation": "Answer key (page 2): picture 4 matches option A.",
+          "score": 1,
+          "sourcePage": 11,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-PRONUNCIATION-Q07",
+          "type": "IMAGE_CHOICE",
+          "prompt": {
+            "instruction": "读一读，猜一猜：给下列词语选择相应的图片 (Choose the matching image for the word below)",
+            "dialogue": "B. 沙发 (shāfā)",
+            "options": [
+              {
+                "key": "1",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/vocab-hamburger.png"
+              },
+              {
+                "key": "2",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/vocab-champagne.png"
+              },
+              {
+                "key": "3",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/vocab-microphone.png"
+              },
+              {
+                "key": "4",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/vocab-chocolate.png"
+              },
+              {
+                "key": "5",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/vocab-sofa.png"
+              }
+            ]
+          },
+          "answer": {
+            "value": "5"
+          },
+          "explanation": "Answer key (page 2): picture 5 matches option B.",
+          "score": 1,
+          "sourcePage": 11,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        }
+      ]
+    },
+    {
+      "code": "HSK1-L02-INITIALS",
+      "skill": "LISTENING",
+      "titleZh": "听声母",
+      "titleVi": "Nghe thanh mẫu",
+      "instructions": "听录音，写出听到的声母并朗读 (Nghe bài ghi âm, viết các thanh mẫu nghe được và đọc to các âm tiết).",
+      "estimatedMinutes": 10,
+      "audioUrl": "/media/practice/hsk1/audio/02-3.mp3",
+      "questions": [
+        {
+          "code": "HSK1-L02-INITIALS-Q01",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的声母并朗读 (Nghe bài ghi âm, viết các thanh mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 1,
+            "promptText": "1. ____én"
+          },
+          "answer": {
+            "value": "r"
+          },
+          "explanation": "Đáp án 1 đối chiếu answer_page_2/3: thanh mẫu \"r\" kết hợp thành âm tiết \"rén\" (rén (人)). Audio 02-3.mp3.",
+          "score": 1,
+          "sourcePage": 11,
+          "sourceAudio": "02-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-INITIALS-Q02",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的声母并朗读 (Nghe bài ghi âm, viết các thanh mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 2,
+            "promptText": "2. ____én"
+          },
+          "answer": {
+            "value": "sh"
+          },
+          "explanation": "Đáp án 2 đối chiếu answer_page_2/3: thanh mẫu \"sh\" kết hợp thành âm tiết \"shén\" (shén (神)). Audio 02-3.mp3.",
+          "score": 1,
+          "sourcePage": 11,
+          "sourceAudio": "02-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-INITIALS-Q03",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的声母并朗读 (Nghe bài ghi âm, viết các thanh mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 3,
+            "promptText": "3. ____āng"
+          },
+          "answer": {
+            "value": "zh"
+          },
+          "explanation": "Đáp án 3 đối chiếu answer_page_2/3: thanh mẫu \"zh\" kết hợp thành âm tiết \"zhāng\" (zhāng (张)). Audio 02-3.mp3.",
+          "score": 1,
+          "sourcePage": 11,
+          "sourceAudio": "02-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-INITIALS-Q04",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的声母并朗读 (Nghe bài ghi âm, viết các thanh mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 4,
+            "promptText": "4. ____āng"
+          },
+          "answer": {
+            "value": "z"
+          },
+          "explanation": "Đáp án 4 đối chiếu answer_page_2/3: thanh mẫu \"z\" kết hợp thành âm tiết \"zāng\" (zāng (脏)). Audio 02-3.mp3.",
+          "score": 1,
+          "sourcePage": 11,
+          "sourceAudio": "02-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-INITIALS-Q05",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的声母并朗读 (Nghe bài ghi âm, viết các thanh mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 5,
+            "promptText": "5. ____ǒu"
+          },
+          "answer": {
+            "value": "sh"
+          },
+          "explanation": "Đáp án 5 đối chiếu answer_page_2/3: thanh mẫu \"sh\" kết hợp thành âm tiết \"shǒu\" (shǒu (手)). Audio 02-3.mp3.",
+          "score": 1,
+          "sourcePage": 11,
+          "sourceAudio": "02-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-INITIALS-Q06",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的声母并朗读 (Nghe bài ghi âm, viết các thanh mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 6,
+            "promptText": "6. ____uō"
+          },
+          "answer": {
+            "value": "zh"
+          },
+          "explanation": "Đáp án 6 đối chiếu answer_page_2/3: thanh mẫu \"zh\" kết hợp thành âm tiết \"zhuō\" (zhuō (桌)). Audio 02-3.mp3.",
+          "score": 1,
+          "sourcePage": 11,
+          "sourceAudio": "02-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-INITIALS-Q07",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的声母并朗读 (Nghe bài ghi âm, viết các thanh mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 7,
+            "promptText": "7. ____uò"
+          },
+          "answer": {
+            "value": "z"
+          },
+          "explanation": "Đáp án 7 đối chiếu answer_page_2/3: thanh mẫu \"z\" kết hợp thành âm tiết \"zuò\" (zuò (做)). Audio 02-3.mp3.",
+          "score": 1,
+          "sourcePage": 11,
+          "sourceAudio": "02-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-INITIALS-Q08",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的声母并朗读 (Nghe bài ghi âm, viết các thanh mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 8,
+            "promptText": "8. ____àn"
+          },
+          "answer": {
+            "value": "zh"
+          },
+          "explanation": "Đáp án 8 đối chiếu answer_page_2/3: thanh mẫu \"zh\" kết hợp thành âm tiết \"zhàn\" (zhàn (站)). Audio 02-3.mp3.",
+          "score": 1,
+          "sourcePage": 11,
+          "sourceAudio": "02-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-INITIALS-Q09",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的声母并朗读 (Nghe bài ghi âm, viết các thanh mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 9,
+            "promptText": "9. ____ì"
+          },
+          "answer": {
+            "value": "z"
+          },
+          "explanation": "Đáp án 9 đối chiếu answer_page_2/3: thanh mẫu \"z\" kết hợp thành âm tiết \"zì\" (zì (字)). Audio 02-3.mp3.",
+          "score": 1,
+          "sourcePage": 11,
+          "sourceAudio": "02-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-INITIALS-Q10",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的声母并朗读 (Nghe bài ghi âm, viết các thanh mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 10,
+            "promptText": "10. ____ān"
+          },
+          "answer": {
+            "value": "s"
+          },
+          "explanation": "Đáp án 10 đối chiếu answer_page_2/3: thanh mẫu \"s\" kết hợp thành âm tiết \"sān\" (sān (三)). Audio 02-3.mp3.",
+          "score": 1,
+          "sourcePage": 11,
+          "sourceAudio": "02-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-INITIALS-Q11",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的声母并朗读 (Nghe bài ghi âm, viết các thanh mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 11,
+            "promptText": "11. ____ì"
+          },
+          "answer": {
+            "value": "s"
+          },
+          "explanation": "Đáp án 11 đối chiếu answer_page_2/3: thanh mẫu \"s\" kết hợp thành âm tiết \"sì\" (sì (四)). Audio 02-3.mp3.",
+          "score": 1,
+          "sourcePage": 11,
+          "sourceAudio": "02-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-INITIALS-Q12",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的声母并朗读 (Nghe bài ghi âm, viết các thanh mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 12,
+            "promptText": "12. ____án"
+          },
+          "answer": {
+            "value": "z"
+          },
+          "explanation": "Đáp án 12 đối chiếu answer_page_2/3: thanh mẫu \"z\" kết hợp thành âm tiết \"zán\" (zán (咱)). Audio 02-3.mp3.",
+          "score": 1,
+          "sourcePage": 11,
+          "sourceAudio": "02-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-INITIALS-Q13",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的声母并朗读 (Nghe bài ghi âm, viết các thanh mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 13,
+            "promptText": "13. ____á"
+          },
+          "answer": {
+            "value": "ch"
+          },
+          "explanation": "Đáp án 13 đối chiếu answer_page_2/3: thanh mẫu \"ch\" kết hợp thành âm tiết \"chá\" (chá (茶)). Audio 02-3.mp3.",
+          "score": 1,
+          "sourcePage": 11,
+          "sourceAudio": "02-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-INITIALS-Q14",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的声母并朗读 (Nghe bài ghi âm, viết các thanh mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 14,
+            "promptText": "14. ____áng"
+          },
+          "answer": {
+            "value": "ch"
+          },
+          "explanation": "Đáp án 14 đối chiếu answer_page_2/3: thanh mẫu \"ch\" kết hợp thành âm tiết \"cháng\" (cháng (常)). Audio 02-3.mp3.",
+          "score": 1,
+          "sourcePage": 11,
+          "sourceAudio": "02-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-INITIALS-Q15",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的声母并朗读 (Nghe bài ghi âm, viết các thanh mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 15,
+            "promptText": "15. ____ǒu"
+          },
+          "answer": {
+            "value": "z"
+          },
+          "explanation": "Đáp án 15 đối chiếu answer_page_2/3: thanh mẫu \"z\" kết hợp thành âm tiết \"zǒu\" (zǒu (走)). Audio 02-3.mp3.",
+          "score": 1,
+          "sourcePage": 11,
+          "sourceAudio": "02-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-INITIALS-Q16",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的声母并朗读 (Nghe bài ghi âm, viết các thanh mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 16,
+            "promptText": "16. ____ōu"
+          },
+          "answer": {
+            "value": "zh"
+          },
+          "explanation": "Đáp án 16 đối chiếu answer_page_2/3: thanh mẫu \"zh\" kết hợp thành âm tiết \"zhōu\" (zhōu (周)). Audio 02-3.mp3.",
+          "score": 1,
+          "sourcePage": 11,
+          "sourceAudio": "02-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-INITIALS-Q17",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的声母并朗读 (Nghe bài ghi âm, viết các thanh mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 17,
+            "promptText": "17. ____ōng"
+          },
+          "answer": {
+            "value": "zh"
+          },
+          "explanation": "Đáp án 17 đối chiếu answer_page_2/3: thanh mẫu \"zh\" kết hợp thành âm tiết \"zhōng\" (zhōng (中)). Audio 02-3.mp3.",
+          "score": 1,
+          "sourcePage": 11,
+          "sourceAudio": "02-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-INITIALS-Q18",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的声母并朗读 (Nghe bài ghi âm, viết các thanh mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 18,
+            "promptText": "18. ____ài"
+          },
+          "answer": {
+            "value": "c"
+          },
+          "explanation": "Đáp án 18 đối chiếu answer_page_2/3: thanh mẫu \"c\" kết hợp thành âm tiết \"cài\" (cài (菜)). Audio 02-3.mp3.",
+          "score": 1,
+          "sourcePage": 11,
+          "sourceAudio": "02-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-INITIALS-Q19",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的声母并朗读 (Nghe bài ghi âm, viết các thanh mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 19,
+            "promptText": "19. ____è"
+          },
+          "answer": {
+            "value": "r"
+          },
+          "explanation": "Đáp án 19 đối chiếu answer_page_2/3: thanh mẫu \"r\" kết hợp thành âm tiết \"rè\" (rè (热)). Audio 02-3.mp3.",
+          "score": 1,
+          "sourcePage": 11,
+          "sourceAudio": "02-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-INITIALS-Q20",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的声母并朗读 (Nghe bài ghi âm, viết các thanh mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 20,
+            "promptText": "20. ____ē"
+          },
+          "answer": {
+            "value": "ch"
+          },
+          "explanation": "Đáp án 20 đối chiếu answer_page_2/3: thanh mẫu \"ch\" kết hợp thành âm tiết \"chē\" (chē (车)). Audio 02-3.mp3.",
+          "score": 1,
+          "sourcePage": 11,
+          "sourceAudio": "02-3.mp3",
+          "verificationStatus": "VERIFIED"
+        }
+      ]
+    },
+    {
+      "code": "HSK1-L02-FINALS",
+      "skill": "LISTENING",
+      "titleZh": "听韵母",
+      "titleVi": "Nghe vận mẫu",
+      "instructions": "听录音，写出听到的韵母并朗读 (Nghe bài ghi âm, viết các vận mẫu nghe được và đọc to các âm tiết).",
+      "estimatedMinutes": 10,
+      "audioUrl": "/media/practice/hsk1/audio/02-4.mp3",
+      "questions": [
+        {
+          "code": "HSK1-L02-FINALS-Q01",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的韵母并朗读 (Nghe bài ghi âm, viết các vận mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 1,
+            "promptText": "1. m____"
+          },
+          "answer": {
+            "value": "én"
+          },
+          "explanation": "Đáp án 1 đối chiếu answer_page_3: vận mẫu \"én\" kết hợp thành âm tiết \"mén\" (mén (门)). Audio 02-4.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-FINALS-Q02",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的韵母并朗读 (Nghe bài ghi âm, viết các vận mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 2,
+            "promptText": "2. sh____"
+          },
+          "answer": {
+            "value": "ān"
+          },
+          "explanation": "Đáp án 2 đối chiếu answer_page_3: vận mẫu \"ān\" kết hợp thành âm tiết \"shān\" (shān (山)). Audio 02-4.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-FINALS-Q03",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的韵母并朗读 (Nghe bài ghi âm, viết các vận mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 3,
+            "promptText": "3. x____"
+          },
+          "answer": {
+            "value": "ióng"
+          },
+          "explanation": "Đáp án 3 đối chiếu answer_page_3: vận mẫu \"ióng\" kết hợp thành âm tiết \"xióng\" (xióng (熊)). Audio 02-4.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-FINALS-Q04",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的韵母并朗读 (Nghe bài ghi âm, viết các vận mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 4,
+            "promptText": "4. y____"
+          },
+          "answer": {
+            "value": "òng"
+          },
+          "explanation": "Đáp án 4 đối chiếu answer_page_3: vận mẫu \"òng\" kết hợp thành âm tiết \"yòng\" (yòng (用)). Audio 02-4.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-FINALS-Q05",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的韵母并朗读 (Nghe bài ghi âm, viết các vận mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 5,
+            "promptText": "5. sh____"
+          },
+          "answer": {
+            "value": "uāng"
+          },
+          "explanation": "Đáp án 5 đối chiếu answer_page_3: vận mẫu \"uāng\" kết hợp thành âm tiết \"shuāng\" (shuāng (双)). Audio 02-4.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-FINALS-Q06",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的韵母并朗读 (Nghe bài ghi âm, viết các vận mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 6,
+            "promptText": "6. x____"
+          },
+          "answer": {
+            "value": "iǎng"
+          },
+          "explanation": "Đáp án 6 đối chiếu answer_page_3: vận mẫu \"iǎng\" kết hợp thành âm tiết \"xiǎng\" (xiǎng (想)). Audio 02-4.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-FINALS-Q07",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的韵母并朗读 (Nghe bài ghi âm, viết các vận mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 7,
+            "promptText": "7. x____"
+          },
+          "answer": {
+            "value": "īn"
+          },
+          "explanation": "Đáp án 7 đối chiếu answer_page_3: vận mẫu \"īn\" kết hợp thành âm tiết \"xīn\" (xīn (新)). Audio 02-4.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-FINALS-Q08",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的韵母并朗读 (Nghe bài ghi âm, viết các vận mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 8,
+            "promptText": "8. ch____"
+          },
+          "answer": {
+            "value": "àng"
+          },
+          "explanation": "Đáp án 8 đối chiếu answer_page_3: vận mẫu \"àng\" kết hợp thành âm tiết \"chàng\" (chàng (唱)). Audio 02-4.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-FINALS-Q09",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的韵母并朗读 (Nghe bài ghi âm, viết các vận mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 9,
+            "promptText": "9. n____"
+          },
+          "answer": {
+            "value": "éng"
+          },
+          "explanation": "Đáp án 9 đối chiếu answer_page_3: vận mẫu \"éng\" kết hợp thành âm tiết \"néng\" (néng (能)). Audio 02-4.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-FINALS-Q10",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的韵母并朗读 (Nghe bài ghi âm, viết các vận mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 10,
+            "promptText": "10. k____"
+          },
+          "answer": {
+            "value": "ùn"
+          },
+          "explanation": "Đáp án 10 đối chiếu answer_page_3: vận mẫu \"ùn\" kết hợp thành âm tiết \"kùn\" (kùn (困)). Audio 02-4.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-FINALS-Q11",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的韵母并朗读 (Nghe bài ghi âm, viết các vận mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 11,
+            "promptText": "11. f____"
+          },
+          "answer": {
+            "value": "ēng"
+          },
+          "explanation": "Đáp án 11 đối chiếu answer_page_3: vận mẫu \"ēng\" kết hợp thành âm tiết \"fēng\" (fēng (风)). Audio 02-4.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-FINALS-Q12",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的韵母并朗读 (Nghe bài ghi âm, viết các vận mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 12,
+            "promptText": "12. l____"
+          },
+          "answer": {
+            "value": "íng"
+          },
+          "explanation": "Đáp án 12 đối chiếu answer_page_3: vận mẫu \"íng\" kết hợp thành âm tiết \"líng\" (líng (零)). Audio 02-4.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-FINALS-Q13",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的韵母并朗读 (Nghe bài ghi âm, viết các vận mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 13,
+            "promptText": "13. g____"
+          },
+          "answer": {
+            "value": "uān"
+          },
+          "explanation": "Đáp án 13 đối chiếu answer_page_3: vận mẫu \"uān\" kết hợp thành âm tiết \"guān\" (guān (关)). Audio 02-4.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-FINALS-Q14",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的韵母并朗读 (Nghe bài ghi âm, viết các vận mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 14,
+            "promptText": "14. y____"
+          },
+          "answer": {
+            "value": "uǎn"
+          },
+          "explanation": "Đáp án 14 đối chiếu answer_page_3: vận mẫu \"uǎn\" kết hợp thành âm tiết \"yuǎn\" (yuǎn (远)). Audio 02-4.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-FINALS-Q15",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的韵母并朗读 (Nghe bài ghi âm, viết các vận mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 15,
+            "promptText": "15. h____"
+          },
+          "answer": {
+            "value": "uàn"
+          },
+          "explanation": "Đáp án 15 đối chiếu answer_page_3: vận mẫu \"uàn\" kết hợp thành âm tiết \"huàn\" (huàn (换)). Audio 02-4.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-FINALS-Q16",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的韵母并朗读 (Nghe bài ghi âm, viết các vận mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 16,
+            "promptText": "16. sh____"
+          },
+          "answer": {
+            "value": "ǒu"
+          },
+          "explanation": "Đáp án 16 đối chiếu answer_page_3: vận mẫu \"ǒu\" kết hợp thành âm tiết \"shǒu\" (shǒu (手)). Audio 02-4.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-FINALS-Q17",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的韵母并朗读 (Nghe bài ghi âm, viết các vận mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 17,
+            "promptText": "17. ch____"
+          },
+          "answer": {
+            "value": "uán"
+          },
+          "explanation": "Đáp án 17 đối chiếu answer_page_3: vận mẫu \"uán\" kết hợp thành âm tiết \"chuán\" (chuán (船)). Audio 02-4.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-FINALS-Q18",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的韵母并朗读 (Nghe bài ghi âm, viết các vận mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 18,
+            "promptText": "18. ch____"
+          },
+          "answer": {
+            "value": "uáng"
+          },
+          "explanation": "Đáp án 18 đối chiếu answer_page_3: vận mẫu \"uáng\" kết hợp thành âm tiết \"chuáng\" (chuáng (床)). Audio 02-4.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-FINALS-Q19",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的韵母并朗读 (Nghe bài ghi âm, viết các vận mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 19,
+            "promptText": "19. x____"
+          },
+          "answer": {
+            "value": "iān"
+          },
+          "explanation": "Đáp án 19 đối chiếu answer_page_3: vận mẫu \"iān\" kết hợp thành âm tiết \"xiān\" (xiān (先)). Audio 02-4.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-FINALS-Q20",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "听录音，写出听到的韵母并朗读 (Nghe bài ghi âm, viết các vận mẫu nghe được và đọc to các âm tiết)",
+            "itemNumber": 20,
+            "promptText": "20. j____"
+          },
+          "answer": {
+            "value": "iǔ"
+          },
+          "explanation": "Đáp án 20 đối chiếu answer_page_3: vận mẫu \"iǔ\" kết hợp thành âm tiết \"jiǔ\" (jiǔ (酒)). Audio 02-4.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-4.mp3",
+          "verificationStatus": "VERIFIED"
+        }
+      ]
+    },
+    {
+      "code": "HSK1-L02-TONES",
+      "skill": "LISTENING",
+      "titleZh": "听声调",
+      "titleVi": "Nghe thanh điệu",
+      "instructions": "听录音，写出听到的声调并朗读 (Nghe bài ghi âm, viết các thanh điệu nghe được và đọc to các âm tiết).",
+      "estimatedMinutes": 10,
+      "audioUrl": "/media/practice/hsk1/audio/02-5.mp3",
+      "questions": [
+        {
+          "code": "HSK1-L02-TONES-Q01",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "听录音，写出听到的声调并朗读 (Nghe bài ghi âm, viết các thanh điệu nghe được và đọc to các âm tiết)",
+            "questionText": "1. zhong",
+            "wordPinyinBase": "zhong",
+            "options": [
+              {
+                "key": "1",
+                "text": "第1声 (ˉ)"
+              },
+              {
+                "key": "2",
+                "text": "第2声 (ˊ)"
+              },
+              {
+                "key": "3",
+                "text": "第3声 (ˇ)"
+              },
+              {
+                "key": "4",
+                "text": "第4声 (ˋ)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "1"
+          },
+          "explanation": "Đáp án 1 đối chiếu answer_page_3: âm tiết mang thanh 1 là \"zhōng\" (中). Audio 02-5.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-TONES-Q02",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "听录音，写出听到的声调并朗读 (Nghe bài ghi âm, viết các thanh điệu nghe được và đọc to các âm tiết)",
+            "questionText": "2. mian",
+            "wordPinyinBase": "mian",
+            "options": [
+              {
+                "key": "1",
+                "text": "第1声 (ˉ)"
+              },
+              {
+                "key": "2",
+                "text": "第2声 (ˊ)"
+              },
+              {
+                "key": "3",
+                "text": "第3声 (ˇ)"
+              },
+              {
+                "key": "4",
+                "text": "第4声 (ˋ)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "4"
+          },
+          "explanation": "Đáp án 2 đối chiếu answer_page_3: âm tiết mang thanh 4 là \"miàn\" (面). Audio 02-5.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-TONES-Q03",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "听录音，写出听到的声调并朗读 (Nghe bài ghi âm, viết các thanh điệu nghe được và đọc to các âm tiết)",
+            "questionText": "3. fan",
+            "wordPinyinBase": "fan",
+            "options": [
+              {
+                "key": "1",
+                "text": "第1声 (ˉ)"
+              },
+              {
+                "key": "2",
+                "text": "第2声 (ˊ)"
+              },
+              {
+                "key": "3",
+                "text": "第3声 (ˇ)"
+              },
+              {
+                "key": "4",
+                "text": "第4声 (ˋ)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "4"
+          },
+          "explanation": "Đáp án 3 đối chiếu answer_page_3: âm tiết mang thanh 4 là \"fàn\" (饭). Audio 02-5.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-TONES-Q04",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "听录音，写出听到的声调并朗读 (Nghe bài ghi âm, viết các thanh điệu nghe được và đọc to các âm tiết)",
+            "questionText": "4. cai",
+            "wordPinyinBase": "cai",
+            "options": [
+              {
+                "key": "1",
+                "text": "第1声 (ˉ)"
+              },
+              {
+                "key": "2",
+                "text": "第2声 (ˊ)"
+              },
+              {
+                "key": "3",
+                "text": "第3声 (ˇ)"
+              },
+              {
+                "key": "4",
+                "text": "第4声 (ˋ)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "4"
+          },
+          "explanation": "Đáp án 4 đối chiếu answer_page_3: âm tiết mang thanh 4 là \"cài\" (菜). Audio 02-5.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-TONES-Q05",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "听录音，写出听到的声调并朗读 (Nghe bài ghi âm, viết các thanh điệu nghe được và đọc to các âm tiết)",
+            "questionText": "5. neng",
+            "wordPinyinBase": "neng",
+            "options": [
+              {
+                "key": "1",
+                "text": "第1声 (ˉ)"
+              },
+              {
+                "key": "2",
+                "text": "第2声 (ˊ)"
+              },
+              {
+                "key": "3",
+                "text": "第3声 (ˇ)"
+              },
+              {
+                "key": "4",
+                "text": "第4声 (ˋ)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "2"
+          },
+          "explanation": "Đáp án 5 đối chiếu answer_page_3: âm tiết mang thanh 2 là \"néng\" (能). Audio 02-5.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-TONES-Q06",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "听录音，写出听到的声调并朗读 (Nghe bài ghi âm, viết các thanh điệu nghe được và đọc to các âm tiết)",
+            "questionText": "6. zhan",
+            "wordPinyinBase": "zhan",
+            "options": [
+              {
+                "key": "1",
+                "text": "第1声 (ˉ)"
+              },
+              {
+                "key": "2",
+                "text": "第2声 (ˊ)"
+              },
+              {
+                "key": "3",
+                "text": "第3声 (ˇ)"
+              },
+              {
+                "key": "4",
+                "text": "第4声 (ˋ)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "4"
+          },
+          "explanation": "Đáp án 6 đối chiếu answer_page_3: âm tiết mang thanh 4 là \"zhàn\" (站). Audio 02-5.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-TONES-Q07",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "听录音，写出听到的声调并朗读 (Nghe bài ghi âm, viết các thanh điệu nghe được và đọc to các âm tiết)",
+            "questionText": "7. chang",
+            "wordPinyinBase": "chang",
+            "options": [
+              {
+                "key": "1",
+                "text": "第1声 (ˉ)"
+              },
+              {
+                "key": "2",
+                "text": "第2声 (ˊ)"
+              },
+              {
+                "key": "3",
+                "text": "第3声 (ˇ)"
+              },
+              {
+                "key": "4",
+                "text": "第4声 (ˋ)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "3"
+          },
+          "explanation": "Đáp án 7 đối chiếu answer_page_3: âm tiết mang thanh 3 là \"chǎng\" (场). Audio 02-5.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-TONES-Q08",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "听录音，写出听到的声调并朗读 (Nghe bài ghi âm, viết các thanh điệu nghe được và đọc to các âm tiết)",
+            "questionText": "8. shou",
+            "wordPinyinBase": "shou",
+            "options": [
+              {
+                "key": "1",
+                "text": "第1声 (ˉ)"
+              },
+              {
+                "key": "2",
+                "text": "第2声 (ˊ)"
+              },
+              {
+                "key": "3",
+                "text": "第3声 (ˇ)"
+              },
+              {
+                "key": "4",
+                "text": "第4声 (ˋ)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "3"
+          },
+          "explanation": "Đáp án 8 đối chiếu answer_page_3: âm tiết mang thanh 3 là \"shǒu\" (手). Audio 02-5.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-TONES-Q09",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "听录音，写出听到的声调并朗读 (Nghe bài ghi âm, viết các thanh điệu nghe được và đọc to các âm tiết)",
+            "questionText": "9. shui",
+            "wordPinyinBase": "shui",
+            "options": [
+              {
+                "key": "1",
+                "text": "第1声 (ˉ)"
+              },
+              {
+                "key": "2",
+                "text": "第2声 (ˊ)"
+              },
+              {
+                "key": "3",
+                "text": "第3声 (ˇ)"
+              },
+              {
+                "key": "4",
+                "text": "第4声 (ˋ)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "3"
+          },
+          "explanation": "Đáp án 9 đối chiếu answer_page_3: âm tiết mang thanh 3 là \"shuǐ\" (水). Audio 02-5.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-TONES-Q10",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "听录音，写出听到的声调并朗读 (Nghe bài ghi âm, viết các thanh điệu nghe được và đọc to các âm tiết)",
+            "questionText": "10. qing",
+            "wordPinyinBase": "qing",
+            "options": [
+              {
+                "key": "1",
+                "text": "第1声 (ˉ)"
+              },
+              {
+                "key": "2",
+                "text": "第2声 (ˊ)"
+              },
+              {
+                "key": "3",
+                "text": "第3声 (ˇ)"
+              },
+              {
+                "key": "4",
+                "text": "第4声 (ˋ)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "1"
+          },
+          "explanation": "Đáp án 10 đối chiếu answer_page_3: âm tiết mang thanh 1 là \"qīng\" (清). Audio 02-5.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-TONES-Q11",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "听录音，写出听到的声调并朗读 (Nghe bài ghi âm, viết các thanh điệu nghe được và đọc to các âm tiết)",
+            "questionText": "11. sheng",
+            "wordPinyinBase": "sheng",
+            "options": [
+              {
+                "key": "1",
+                "text": "第1声 (ˉ)"
+              },
+              {
+                "key": "2",
+                "text": "第2声 (ˊ)"
+              },
+              {
+                "key": "3",
+                "text": "第3声 (ˇ)"
+              },
+              {
+                "key": "4",
+                "text": "第4声 (ˋ)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "3"
+          },
+          "explanation": "Đáp án 11 đối chiếu answer_page_3: âm tiết mang thanh 3 là \"shěng\" (省). Audio 02-5.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-TONES-Q12",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "听录音，写出听到的声调并朗读 (Nghe bài ghi âm, viết các thanh điệu nghe được và đọc to các âm tiết)",
+            "questionText": "12. huang",
+            "wordPinyinBase": "huang",
+            "options": [
+              {
+                "key": "1",
+                "text": "第1声 (ˉ)"
+              },
+              {
+                "key": "2",
+                "text": "第2声 (ˊ)"
+              },
+              {
+                "key": "3",
+                "text": "第3声 (ˇ)"
+              },
+              {
+                "key": "4",
+                "text": "第4声 (ˋ)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "2"
+          },
+          "explanation": "Đáp án 12 đối chiếu answer_page_3: âm tiết mang thanh 2 là \"huáng\" (黄). Audio 02-5.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-TONES-Q13",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "听录音，写出听到的声调并朗读 (Nghe bài ghi âm, viết các thanh điệu nghe được và đọc to các âm tiết)",
+            "questionText": "13. hong",
+            "wordPinyinBase": "hong",
+            "options": [
+              {
+                "key": "1",
+                "text": "第1声 (ˉ)"
+              },
+              {
+                "key": "2",
+                "text": "第2声 (ˊ)"
+              },
+              {
+                "key": "3",
+                "text": "第3声 (ˇ)"
+              },
+              {
+                "key": "4",
+                "text": "第4声 (ˋ)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "2"
+          },
+          "explanation": "Đáp án 13 đối chiếu answer_page_3: âm tiết mang thanh 2 là \"hóng\" (红). Audio 02-5.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-TONES-Q14",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "听录音，写出听到的声调并朗读 (Nghe bài ghi âm, viết các thanh điệu nghe được và đọc to các âm tiết)",
+            "questionText": "14. lan",
+            "wordPinyinBase": "lan",
+            "options": [
+              {
+                "key": "1",
+                "text": "第1声 (ˉ)"
+              },
+              {
+                "key": "2",
+                "text": "第2声 (ˊ)"
+              },
+              {
+                "key": "3",
+                "text": "第3声 (ˇ)"
+              },
+              {
+                "key": "4",
+                "text": "第4声 (ˋ)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "2"
+          },
+          "explanation": "Đáp án 14 đối chiếu answer_page_3: âm tiết mang thanh 2 là \"lán\" (蓝). Audio 02-5.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-TONES-Q15",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "听录音，写出听到的声调并朗读 (Nghe bài ghi âm, viết các thanh điệu nghe được và đọc to các âm tiết)",
+            "questionText": "15. re",
+            "wordPinyinBase": "re",
+            "options": [
+              {
+                "key": "1",
+                "text": "第1声 (ˉ)"
+              },
+              {
+                "key": "2",
+                "text": "第2声 (ˊ)"
+              },
+              {
+                "key": "3",
+                "text": "第3声 (ˇ)"
+              },
+              {
+                "key": "4",
+                "text": "第4声 (ˋ)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "4"
+          },
+          "explanation": "Đáp án 15 đối chiếu answer_page_3: âm tiết mang thanh 4 là \"rè\" (热). Audio 02-5.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-TONES-Q16",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "听录音，写出听到的声调并朗读 (Nghe bài ghi âm, viết các thanh điệu nghe được và đọc to các âm tiết)",
+            "questionText": "16. rou",
+            "wordPinyinBase": "rou",
+            "options": [
+              {
+                "key": "1",
+                "text": "第1声 (ˉ)"
+              },
+              {
+                "key": "2",
+                "text": "第2声 (ˊ)"
+              },
+              {
+                "key": "3",
+                "text": "第3声 (ˇ)"
+              },
+              {
+                "key": "4",
+                "text": "第4声 (ˋ)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "4"
+          },
+          "explanation": "Đáp án 16 đối chiếu answer_page_3: âm tiết mang thanh 4 là \"ròu\" (肉). Audio 02-5.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-TONES-Q17",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "听录音，写出听到的声调并朗读 (Nghe bài ghi âm, viết các thanh điệu nghe được và đọc to các âm tiết)",
+            "questionText": "17. cha",
+            "wordPinyinBase": "cha",
+            "options": [
+              {
+                "key": "1",
+                "text": "第1声 (ˉ)"
+              },
+              {
+                "key": "2",
+                "text": "第2声 (ˊ)"
+              },
+              {
+                "key": "3",
+                "text": "第3声 (ˇ)"
+              },
+              {
+                "key": "4",
+                "text": "第4声 (ˋ)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "2"
+          },
+          "explanation": "Đáp án 17 đối chiếu answer_page_3: âm tiết mang thanh 2 là \"chá\" (茶). Audio 02-5.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-TONES-Q18",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "听录音，写出听到的声调并朗读 (Nghe bài ghi âm, viết các thanh điệu nghe được và đọc to các âm tiết)",
+            "questionText": "18. xiang",
+            "wordPinyinBase": "xiang",
+            "options": [
+              {
+                "key": "1",
+                "text": "第1声 (ˉ)"
+              },
+              {
+                "key": "2",
+                "text": "第2声 (ˊ)"
+              },
+              {
+                "key": "3",
+                "text": "第3声 (ˇ)"
+              },
+              {
+                "key": "4",
+                "text": "第4声 (ˋ)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "3"
+          },
+          "explanation": "Đáp án 18 đối chiếu answer_page_3: âm tiết mang thanh 3 là \"xiǎng\" (想). Audio 02-5.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-TONES-Q19",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "听录音，写出听到的声调并朗读 (Nghe bài ghi âm, viết các thanh điệu nghe được và đọc to các âm tiết)",
+            "questionText": "19. cao",
+            "wordPinyinBase": "cao",
+            "options": [
+              {
+                "key": "1",
+                "text": "第1声 (ˉ)"
+              },
+              {
+                "key": "2",
+                "text": "第2声 (ˊ)"
+              },
+              {
+                "key": "3",
+                "text": "第3声 (ˇ)"
+              },
+              {
+                "key": "4",
+                "text": "第4声 (ˋ)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "1"
+          },
+          "explanation": "Đáp án 19 đối chiếu answer_page_3: âm tiết mang thanh 1 là \"cāo\" (操). Audio 02-5.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-TONES-Q20",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "听录音，写出听到的声调并朗读 (Nghe bài ghi âm, viết các thanh điệu nghe được và đọc to các âm tiết)",
+            "questionText": "20. suan",
+            "wordPinyinBase": "suan",
+            "options": [
+              {
+                "key": "1",
+                "text": "第1声 (ˉ)"
+              },
+              {
+                "key": "2",
+                "text": "第2声 (ˊ)"
+              },
+              {
+                "key": "3",
+                "text": "第3声 (ˇ)"
+              },
+              {
+                "key": "4",
+                "text": "第4声 (ˋ)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "4"
+          },
+          "explanation": "Đáp án 20 đối chiếu answer_page_3: âm tiết mang thanh 4 là \"suàn\" (算). Audio 02-5.mp3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": "02-5.mp3",
+          "verificationStatus": "VERIFIED"
+        }
+      ]
+    },
+    {
+      "code": "HSK1-L02-DIALOGUE",
+      "skill": "READING",
+      "titleZh": "看图选对话",
+      "titleVi": "Nhìn tranh chọn hội thoại",
+      "instructions": "看图片，选择正确的对话 (Chọn mẩu đối thoại phù hợp với mỗi hình).",
+      "estimatedMinutes": 8,
+      "audioUrl": null,
+      "questions": [
+        {
+          "code": "HSK1-L02-DIALOGUE-Q01",
+          "type": "IMAGE_CHOICE",
+          "prompt": {
+            "instruction": "看对话，选择相符的图片 (Choose the picture that matches the dialogue)",
+            "dialogue": "（1）Xièxie nǐ!\nA: 谢谢你！\nBú kèqi!\nB: 不客气！",
+            "options": [
+              {
+                "key": "1",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/dialogue-01.png"
+              },
+              {
+                "key": "2",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/dialogue-02.png"
+              },
+              {
+                "key": "3",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/dialogue-03.png"
+              },
+              {
+                "key": "4",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/dialogue-04.png"
+              }
+            ]
+          },
+          "answer": {
+            "value": "2"
+          },
+          "explanation": "Answer key (page 3): dialogue 1 matches picture 2.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-DIALOGUE-Q02",
+          "type": "IMAGE_CHOICE",
+          "prompt": {
+            "instruction": "看对话，选择相符的图片 (Choose the picture that matches the dialogue)",
+            "dialogue": "（2）Zàijiàn!\nA: 再见！\nZàijiàn!\nB: 再见！",
+            "options": [
+              {
+                "key": "1",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/dialogue-01.png"
+              },
+              {
+                "key": "2",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/dialogue-02.png"
+              },
+              {
+                "key": "3",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/dialogue-03.png"
+              },
+              {
+                "key": "4",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/dialogue-04.png"
+              }
+            ]
+          },
+          "answer": {
+            "value": "3"
+          },
+          "explanation": "Answer key (page 3): dialogue 2 matches picture 3.",
+          "score": 1,
+          "sourcePage": 12,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-DIALOGUE-Q03",
+          "type": "IMAGE_CHOICE",
+          "prompt": {
+            "instruction": "看对话，选择相符的图片 (Choose the picture that matches the dialogue)",
+            "dialogue": "（3）Duìbuqǐ!\nA: 对不起！\nMéi guānxi!\nB: 没关系！",
+            "options": [
+              {
+                "key": "1",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/dialogue-01.png"
+              },
+              {
+                "key": "2",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/dialogue-02.png"
+              },
+              {
+                "key": "3",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/dialogue-03.png"
+              },
+              {
+                "key": "4",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/dialogue-04.png"
+              }
+            ]
+          },
+          "answer": {
+            "value": "4"
+          },
+          "explanation": "Answer key (page 3): dialogue 3 matches picture 4.",
+          "score": 1,
+          "sourcePage": 13,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-DIALOGUE-Q04",
+          "type": "IMAGE_CHOICE",
+          "prompt": {
+            "instruction": "看对话，选择相符的图片 (Choose the picture that matches the dialogue)",
+            "dialogue": "（4）Nǐ hǎo!\nA: 你好！\nNǐ hǎo!\nB: 你好！",
+            "options": [
+              {
+                "key": "1",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/dialogue-01.png"
+              },
+              {
+                "key": "2",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/dialogue-02.png"
+              },
+              {
+                "key": "3",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/dialogue-03.png"
+              },
+              {
+                "key": "4",
+                "imageUrl": "/media/practice/hsk1/images/lesson-02/dialogue-04.png"
+              }
+            ]
+          },
+          "answer": {
+            "value": "1"
+          },
+          "explanation": "Answer key (page 3): dialogue 4 matches picture 1.",
+          "score": 1,
+          "sourcePage": 13,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        }
+      ]
+    },
+    {
+      "code": "HSK1-L02-HANZI",
+      "skill": "HANZI",
+      "titleZh": "汉字书写",
+      "titleVi": "Luyện viết chữ Hán",
+      "instructions": "描写每组汉字中相应的笔画并练习书写独体字。",
+      "estimatedMinutes": 15,
+      "audioUrl": null,
+      "questions": [
+        {
+          "code": "HSK1-L02-HANZI-Q01",
+          "type": "CHARACTER_WRITING",
+          "prompt": {
+            "instruction": "描摹第1组汉字中相应的笔画 (Đồ nét ngang gập trong chữ 口)",
+            "character": "口",
+            "strokeName": "横折",
+            "pinyin": "héngzhé"
+          },
+          "answer": {
+            "value": "口"
+          },
+          "explanation": "Đối chiếu chữ mẫu và tên nét in ở bài 1 trang 13: nét 横折 (héngzhé) trong chữ 口.",
+          "score": 1,
+          "sourcePage": 13,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-HANZI-Q02",
+          "type": "CHARACTER_WRITING",
+          "prompt": {
+            "instruction": "描摹第1组汉字中相应的笔画 (Đồ nét ngang gập trong chữ 日)",
+            "character": "日",
+            "strokeName": "横折",
+            "pinyin": "héngzhé"
+          },
+          "answer": {
+            "value": "日"
+          },
+          "explanation": "Đối chiếu chữ mẫu và tên nét in ở bài 1 trang 13: nét 横折 (héngzhé) trong chữ 日.",
+          "score": 1,
+          "sourcePage": 13,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-HANZI-Q03",
+          "type": "CHARACTER_WRITING",
+          "prompt": {
+            "instruction": "描摹第2组汉字中相应的笔画 (Đồ nét sổ gập trong chữ 山)",
+            "character": "山",
+            "strokeName": "竖折",
+            "pinyin": "shùzhé"
+          },
+          "answer": {
+            "value": "山"
+          },
+          "explanation": "Đối chiếu chữ mẫu và tên nét in ở bài 1 trang 13: nét 竖折 (shùzhé) trong chữ 山.",
+          "score": 1,
+          "sourcePage": 13,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-HANZI-Q04",
+          "type": "CHARACTER_WRITING",
+          "prompt": {
+            "instruction": "描摹第2组汉字中相应的笔画 (Đồ nét sổ gập trong chữ 出)",
+            "character": "出",
+            "strokeName": "竖折",
+            "pinyin": "shùzhé"
+          },
+          "answer": {
+            "value": "出"
+          },
+          "explanation": "Đối chiếu chữ mẫu và tên nét in ở bài 1 trang 13: nét 竖折 (shùzhé) trong chữ 出.",
+          "score": 1,
+          "sourcePage": 13,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-HANZI-Q05",
+          "type": "CHARACTER_WRITING",
+          "prompt": {
+            "instruction": "描摹第3组汉字中相应的笔画 (Đồ nét sổ móc trong chữ 丁)",
+            "character": "丁",
+            "strokeName": "竖钩",
+            "pinyin": "shùgōu"
+          },
+          "answer": {
+            "value": "丁"
+          },
+          "explanation": "Đối chiếu chữ mẫu và tên nét in ở bài 1 trang 13: nét 竖钩 (shùgōu) trong chữ 丁.",
+          "score": 1,
+          "sourcePage": 13,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-HANZI-Q06",
+          "type": "CHARACTER_WRITING",
+          "prompt": {
+            "instruction": "描摹第3组汉字中相应的笔画 (Đồ nét sổ móc trong chữ 小)",
+            "character": "小",
+            "strokeName": "竖钩",
+            "pinyin": "shùgōu"
+          },
+          "answer": {
+            "value": "小"
+          },
+          "explanation": "Đối chiếu chữ mẫu và tên nét in ở bài 1 trang 13: nét 竖钩 (shùgōu) trong chữ 小.",
+          "score": 1,
+          "sourcePage": 13,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-HANZI-Q07",
+          "type": "CHARACTER_WRITING",
+          "prompt": {
+            "instruction": "看笔顺，写独体字 (Luyện viết chữ Hán theo thứ tự nét)",
+            "character": "口",
+            "hanzi": "口",
+            "pinyin": "kǒu"
+          },
+          "answer": {
+            "value": "口"
+          },
+          "explanation": "Đối chiếu chữ mẫu và thứ tự nét minh họa trong bài 2 trang 13: chữ 口 (kǒu, 3 nét: 竖, 横折, 横).",
+          "score": 1,
+          "sourcePage": 13,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-HANZI-Q08",
+          "type": "CHARACTER_WRITING",
+          "prompt": {
+            "instruction": "看笔顺，写独体字 (Luyện viết chữ Hán theo thứ tự nét)",
+            "character": "见",
+            "hanzi": "见",
+            "pinyin": "jiàn"
+          },
+          "answer": {
+            "value": "见"
+          },
+          "explanation": "Đối chiếu chữ mẫu và thứ tự nét minh họa trong bài 2 trang 14: chữ 见 (jiàn, 4 nét: 竖, 横折, 撇, 竖弯钩).",
+          "score": 1,
+          "sourcePage": 14,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-HANZI-Q09",
+          "type": "CHARACTER_WRITING",
+          "prompt": {
+            "instruction": "看笔顺，写独体字 (Luyện viết chữ Hán theo thứ tự nét)",
+            "character": "山",
+            "hanzi": "山",
+            "pinyin": "shān"
+          },
+          "answer": {
+            "value": "山"
+          },
+          "explanation": "Đối chiếu chữ mẫu và thứ tự nét minh họa trong bài 2 trang 14: chữ 山 (shān, 3 nét: 竖, 竖折, 竖).",
+          "score": 1,
+          "sourcePage": 14,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-HANZI-Q10",
+          "type": "CHARACTER_WRITING",
+          "prompt": {
+            "instruction": "看笔顺，写独体字 (Luyện viết chữ Hán theo thứ tự nét)",
+            "character": "小",
+            "hanzi": "小",
+            "pinyin": "xiǎo"
+          },
+          "answer": {
+            "value": "小"
+          },
+          "explanation": "Đối chiếu chữ mẫu và thứ tự nét minh họa trong bài 2 trang 14: chữ 小 (xiǎo, 3 nét: 竖钩, 撇, 点).",
+          "score": 1,
+          "sourcePage": 14,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L02-HANZI-Q11",
+          "type": "CHARACTER_WRITING",
+          "prompt": {
+            "instruction": "看笔顺，写独体字 (Luyện viết chữ Hán theo thứ tự nét)",
+            "character": "不",
+            "hanzi": "不",
+            "pinyin": "bù"
+          },
+          "answer": {
+            "value": "不"
+          },
+          "explanation": "Đối chiếu chữ mẫu và thứ tự nét minh họa trong bài 2 trang 14: chữ 不 (bù, 4 nét: 横, 撇, 竖, 点).",
+          "score": 1,
+          "sourcePage": 14,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        }
+      ]
+    }
+  ]
+}

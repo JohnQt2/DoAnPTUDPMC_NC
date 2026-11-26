@@ -1,0 +1,31 @@
+{
+  "levelCode": "HSK1",
+  "levelName": "HSK Cấp độ 1 (HSK 1 Standard Course Workbook)",
+  "description": "Trọn bộ 15 bài luyện tập sách bài tập và đề thi mô phỏng HSK1 chuẩn Quốc tế",
+  "lessons": [
+    { "lessonNumber": 1, "titleZh": "你好", "titlePinyin": "Nǐ hǎo", "titleVi": "Chào anh!", "audio": ["01-1.mp3", "01-2.mp3", "01-3.mp3", "01-4.mp3", "01-5.mp3"], "status": "NEEDS_REVIEW" },
+    { "lessonNumber": 2, "titleZh": "谢谢你", "titlePinyin": "Xièxie nǐ", "titleVi": "Cảm ơn anh!", "audio": ["02-1.mp3", "02-2.mp3", "02-3.mp3", "02-4.mp3", "02-5.mp3"], "status": "NEEDS_REVIEW" },
+    { "lessonNumber": 3, "titleZh": "你叫什么名字？", "titlePinyin": "Nǐ jiào shénme míngzi?", "titleVi": "Cô tên gì?", "audio": ["03-1.mp3", "03-2.mp3"], "status": "VERIFIED_READY" },
+    { "lessonNumber": 4, "titleZh": "她是我的汉语老师", "titlePinyin": "Tā shì wǒ de Hànyǔ lǎoshī", "titleVi": "Cô ấy là cô giáo dạy tôi tiếng Trung Quốc", "audio": ["04-1.mp3", "04-2.mp3"], "status": "NEEDS_REVIEW" },
+    { "lessonNumber": 5, "titleZh": "她女儿今年二十岁", "titlePinyin": "Tā nǚ'ér jīnnián èrshí suì", "titleVi": "Con gái của cô ấy năm nay 20 tuổi", "audio": ["05-1.mp3", "05-2.mp3"], "status": "NEEDS_REVIEW" },
+    { "lessonNumber": 6, "titleZh": "我会说汉语", "titlePinyin": "Wǒ huì shuō Hànyǔ", "titleVi": "Tôi biết nói tiếng Trung Quốc", "audio": ["06-1.mp3", "06-2.mp3"], "status": "NEEDS_REVIEW" },
+    { "lessonNumber": 7, "titleZh": "今天几号？", "titlePinyin": "Jīntiān jǐ hào?", "titleVi": "Hôm nay là ngày mấy?", "audio": ["07-1.mp3", "07-2.mp3"], "status": "NEEDS_REVIEW" },
+    { "lessonNumber": 8, "titleZh": "我想喝茶", "titlePinyin": "Wǒ xiǎng hē chá", "titleVi": "Tôi muốn uống trà", "audio": ["08-1.mp3", "08-2.mp3"], "status": "NEEDS_REVIEW" },
+    { "lessonNumber": 9, "titleZh": "你儿子在哪儿工作？", "titlePinyin": "Nǐ érzi zài nǎr gōngzuò?", "titleVi": "Con trai anh làm việc ở đâu?", "audio": ["09-1.mp3", "09-2.mp3"], "status": "NEEDS_REVIEW" },
+    { "lessonNumber": 10, "titleZh": "我能坐这儿吗？", "titlePinyin": "Wǒ néng zuò zhèr ma?", "titleVi": "Tôi có thể ngồi ở đây được không?", "audio": ["10-1.mp3", "10-2.mp3"], "status": "NEEDS_REVIEW" },
+    { "lessonNumber": 11, "titleZh": "现在几点？", "titlePinyin": "Xiànzài jǐ diǎn?", "titleVi": "Bây giờ là mấy giờ?", "audio": ["11-1.mp3", "11-2.mp3"], "status": "NEEDS_REVIEW" },
+    { "lessonNumber": 12, "titleZh": "明天天气怎么样？", "titlePinyin": "Míngtiān tiānqì zěnmeyàng?", "titleVi": "Ngày mai thời tiết thế nào?", "audio": ["12-1.mp3", "12-2.mp3"], "status": "NEEDS_REVIEW" },
+    { "lessonNumber": 13, "titleZh": "他在学做中国菜呢", "titlePinyin": "Tā zài xué zuò Zhōngguó cài ne", "titleVi": "Anh ấy đang học nấu món ăn Trung Quốc", "audio": ["13-1.mp3", "13-2.mp3"], "status": "NEEDS_REVIEW" },
+    { "lessonNumber": 14, "titleZh": "她买了不少衣服", "titlePinyin": "Tā mǎi le bù shǎo yīfu", "titleVi": "Cô ấy đã mua nhiều quần áo", "audio": ["14-1.mp3", "14-2.mp3"], "status": "NEEDS_REVIEW" },
+    { "lessonNumber": 15, "titleZh": "我是坐飞机来的", "titlePinyin": "Wǒ shì zuò fēijī lái de", "titleVi": "Tôi đáp máy bay đến đây", "audio": ["15-1.mp3", "15-2.mp3"], "status": "NEEDS_REVIEW" }
+  ],
+  "mockTests": [
+    {
+      "code": "HSK1-MOCK-TEST-01",
+      "titleZh": "HSK（一级）模拟试卷",
+      "titleVi": "Đề thi mô phỏng HSK cấp độ 1",
+      "audio": "16 HSK（一级）模拟试卷.mp3",
+      "status": "NEEDS_REVIEW"
+    }
+  ]
+}

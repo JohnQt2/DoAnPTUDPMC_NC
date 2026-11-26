@@ -1,0 +1,1625 @@
+{
+  "levelCode": "HSK1",
+  "lessonNumber": 4,
+  "category": "WORKBOOK_LESSON",
+  "titleZh": "她是我的汉语老师",
+  "titlePinyin": "Tā shì wǒ de Hànyǔ lǎoshī",
+  "titleVi": "Cô ấy là cô giáo dạy tôi tiếng Trung Quốc",
+  "sortOrder": 4,
+  "exerciseSets": [
+    {
+      "code": "HSK1-L04-LISTENING",
+      "skill": "LISTENING",
+      "titleZh": "一、听力",
+      "titleVi": "Phần 1: Nghe hiểu",
+      "instructions": "听录音，完成判断对错、看图选图和听句子回答问题练习。",
+      "estimatedMinutes": 15,
+      "audioUrl": "/media/practice/hsk1/audio/04-1.mp3",
+      "questions": [
+        {
+          "code": "HSK1-L04-LISTENING-P1-Q01",
+          "type": "TRUE_FALSE",
+          "prompt": {
+            "part": 1,
+            "instruction": "第1-4题：听词或短语，判断对错 (Nghe từ hoặc cụm từ, phán đoán đúng sai)",
+            "audioText": "老师 (lǎoshī)",
+            "imageUrl": "/media/practice/hsk1/images/lesson-04/HSK1-L04-L-P1-Q01.png"
+          },
+          "answer": {
+            "value": false
+          },
+          "explanation": "录音是'老师'（Giáo viên），但图片是一个正在写字的学生/小女孩（Học sinh），与录音不一致（×）。",
+          "score": 1,
+          "sourcePage": 23,
+          "sourceAudio": "04-1.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-LISTENING-P1-Q02",
+          "type": "TRUE_FALSE",
+          "prompt": {
+            "part": 1,
+            "instruction": "第1-4题：听词或短语，判断对错 (Nghe từ hoặc cụm từ, phán đoán đúng sai)",
+            "audioText": "美国 (Měiguó)",
+            "imageUrl": "/media/practice/hsk1/images/lesson-04/HSK1-L04-L-P1-Q02.png"
+          },
+          "answer": {
+            "value": false
+          },
+          "explanation": "录音是'美国'（Nước Mỹ），但图片是中国国旗（五星红旗），与录音不一致（×）。",
+          "score": 1,
+          "sourcePage": 23,
+          "sourceAudio": "04-1.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-LISTENING-P1-Q03",
+          "type": "TRUE_FALSE",
+          "prompt": {
+            "part": 1,
+            "instruction": "第1-4题：听词或短语，判断对错 (Nghe từ hoặc cụm từ, phán đoán đúng sai)",
+            "audioText": "同学 (tóngxué)",
+            "imageUrl": "/media/practice/hsk1/images/lesson-04/HSK1-L04-L-P1-Q03.png"
+          },
+          "answer": {
+            "value": true
+          },
+          "explanation": "录音是'同学'（Bạn học），图片是几个捧着书本的女学生/同学，与录音一致（√）。",
+          "score": 1,
+          "sourcePage": 23,
+          "sourceAudio": "04-1.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-LISTENING-P1-Q04",
+          "type": "TRUE_FALSE",
+          "prompt": {
+            "part": 1,
+            "instruction": "第1-4题：听词或短语，判断对错 (Nghe từ hoặc cụm từ, phán đoán đúng sai)",
+            "audioText": "朋友 (péngyou)",
+            "imageUrl": "/media/practice/hsk1/images/lesson-04/HSK1-L04-L-P1-Q04.png"
+          },
+          "answer": {
+            "value": true
+          },
+          "explanation": "录音是'朋友'（Bạn bè），图片是两位举杯微笑的女性好友，与录音一致（√）。",
+          "score": 1,
+          "sourcePage": 23,
+          "sourceAudio": "04-1.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-LISTENING-P2-Q05",
+          "type": "IMAGE_CHOICE",
+          "prompt": {
+            "part": 2,
+            "instruction": "第5-8题：听对话，选择与对话内容一致的图片 (Nghe đối thoại, chọn hình tương ứng)",
+            "dialogue": "男：她是谁？\n女：她是我的汉语老师。",
+            "options": [
+              {
+                "key": "A",
+                "imageUrl": "/media/practice/hsk1/images/lesson-04/HSK1-L04-L-P2-OptA.png"
+              },
+              {
+                "key": "B",
+                "imageUrl": "/media/practice/hsk1/images/lesson-04/HSK1-L04-L-P2-OptB.png"
+              },
+              {
+                "key": "C",
+                "imageUrl": "/media/practice/hsk1/images/lesson-04/HSK1-L04-L-P2-OptC.png"
+              },
+              {
+                "key": "D",
+                "imageUrl": "/media/practice/hsk1/images/lesson-04/HSK1-L04-L-P2-OptD.png"
+              },
+              {
+                "key": "E",
+                "imageUrl": "/media/practice/hsk1/images/lesson-04/HSK1-L04-L-P2-OptE.png"
+              }
+            ]
+          },
+          "answer": {
+            "value": "E"
+          },
+          "explanation": "对话提到'她是我的汉语老师'，图片E是一位站在白板前讲课的女老师，答案为E。",
+          "score": 1,
+          "sourcePage": 24,
+          "sourceAudio": "04-1.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-LISTENING-P2-Q06",
+          "type": "IMAGE_CHOICE",
+          "prompt": {
+            "part": 2,
+            "instruction": "第5-8题：听对话，选择与对话内容一致的图片 (Nghe đối thoại, chọn hình tương ứng)",
+            "dialogue": "男：他叫什么名字？\n女：他叫大卫，他是美国人。",
+            "options": [
+              {
+                "key": "A",
+                "imageUrl": "/media/practice/hsk1/images/lesson-04/HSK1-L04-L-P2-OptA.png"
+              },
+              {
+                "key": "B",
+                "imageUrl": "/media/practice/hsk1/images/lesson-04/HSK1-L04-L-P2-OptB.png"
+              },
+              {
+                "key": "C",
+                "imageUrl": "/media/practice/hsk1/images/lesson-04/HSK1-L04-L-P2-OptC.png"
+              },
+              {
+                "key": "D",
+                "imageUrl": "/media/practice/hsk1/images/lesson-04/HSK1-L04-L-P2-OptD.png"
+              },
+              {
+                "key": "E",
+                "imageUrl": "/media/practice/hsk1/images/lesson-04/HSK1-L04-L-P2-OptE.png"
+              }
+            ]
+          },
+          "answer": {
+            "value": "A"
+          },
+          "explanation": "对话提到'他叫大卫，他是美国人'，图片A是一位外国青年男士，答案为A。",
+          "score": 1,
+          "sourcePage": 24,
+          "sourceAudio": "04-1.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-LISTENING-P2-Q07",
+          "type": "IMAGE_CHOICE",
+          "prompt": {
+            "part": 2,
+            "instruction": "第5-8题：听对话，选择与对话内容一致的图片 (Nghe đối thoại, chọn hình tương ứng)",
+            "dialogue": "男：她是哪国人？\n女：她是中国人。",
+            "options": [
+              {
+                "key": "A",
+                "imageUrl": "/media/practice/hsk1/images/lesson-04/HSK1-L04-L-P2-OptA.png"
+              },
+              {
+                "key": "B",
+                "imageUrl": "/media/practice/hsk1/images/lesson-04/HSK1-L04-L-P2-OptB.png"
+              },
+              {
+                "key": "C",
+                "imageUrl": "/media/practice/hsk1/images/lesson-04/HSK1-L04-L-P2-OptC.png"
+              },
+              {
+                "key": "D",
+                "imageUrl": "/media/practice/hsk1/images/lesson-04/HSK1-L04-L-P2-OptD.png"
+              },
+              {
+                "key": "E",
+                "imageUrl": "/media/practice/hsk1/images/lesson-04/HSK1-L04-L-P2-OptE.png"
+              }
+            ]
+          },
+          "answer": {
+            "value": "D"
+          },
+          "explanation": "对话提到'她是哪国人？她是中国人'，图片D是一位穿旗袍招手的小女孩，答案为D。",
+          "score": 1,
+          "sourcePage": 24,
+          "sourceAudio": "04-1.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-LISTENING-P2-Q08",
+          "type": "IMAGE_CHOICE",
+          "prompt": {
+            "part": 2,
+            "instruction": "第5-8题：听对话，选择与对话内容一致的图片 (Nghe đối thoại, chọn hình tương ứng)",
+            "dialogue": "女：她是谁？\n男：她是我同学，她叫玛丽。",
+            "options": [
+              {
+                "key": "A",
+                "imageUrl": "/media/practice/hsk1/images/lesson-04/HSK1-L04-L-P2-OptA.png"
+              },
+              {
+                "key": "B",
+                "imageUrl": "/media/practice/hsk1/images/lesson-04/HSK1-L04-L-P2-OptB.png"
+              },
+              {
+                "key": "C",
+                "imageUrl": "/media/practice/hsk1/images/lesson-04/HSK1-L04-L-P2-OptC.png"
+              },
+              {
+                "key": "D",
+                "imageUrl": "/media/practice/hsk1/images/lesson-04/HSK1-L04-L-P2-OptD.png"
+              },
+              {
+                "key": "E",
+                "imageUrl": "/media/practice/hsk1/images/lesson-04/HSK1-L04-L-P2-OptE.png"
+              }
+            ]
+          },
+          "answer": {
+            "value": "B"
+          },
+          "explanation": "对话提到'她是我同学，她叫玛丽'，图片B是一对同学男女在一起看电脑学习，答案为B。",
+          "score": 1,
+          "sourcePage": 24,
+          "sourceAudio": "04-1.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-LISTENING-P3-Q09",
+          "type": "SINGLE_CHOICE",
+          "prompt": {
+            "part": 3,
+            "instruction": "第9-12题：听句子，回答问题 (Nghe câu mô tả tình huống và trả lời câu hỏi)",
+            "dialogue": "他叫李朋，他是中国人。\n问：他是哪国人？",
+            "questionText": "9. 他是哪国人？",
+            "options": [
+              {
+                "key": "A",
+                "text": "美国人 (Měiguórén)"
+              },
+              {
+                "key": "B",
+                "text": "法国人 (Fǎguórén)"
+              },
+              {
+                "key": "C",
+                "text": "中国人 (Zhōngguórén)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "C"
+          },
+          "explanation": "听力原文明确说明'他是中国人'，因此问题'他是哪国人？'选C。",
+          "score": 1,
+          "sourcePage": 25,
+          "sourceAudio": "04-1.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-LISTENING-P3-Q10",
+          "type": "SINGLE_CHOICE",
+          "prompt": {
+            "part": 3,
+            "instruction": "第9-12题：听句子，回答问题 (Nghe câu mô tả tình huống và trả lời câu hỏi)",
+            "dialogue": "她是中国人，她是我的汉语老师。\n问：她是谁？",
+            "questionText": "10. 她是谁？",
+            "options": [
+              {
+                "key": "A",
+                "text": "我的朋友 (wǒ de péngyou)"
+              },
+              {
+                "key": "B",
+                "text": "我的同学 (wǒ de tóngxué)"
+              },
+              {
+                "key": "C",
+                "text": "我的老师 (wǒ de lǎoshī)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "C"
+          },
+          "explanation": "听力原文明确说明'她是我的汉语老师'，因此问题'她是谁？'选C。",
+          "score": 1,
+          "sourcePage": 25,
+          "sourceAudio": "04-1.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-LISTENING-P3-Q11",
+          "type": "SINGLE_CHOICE",
+          "prompt": {
+            "part": 3,
+            "instruction": "第9-12题：听句子，回答问题 (Nghe câu mô tả tình huống và trả lời câu hỏi)",
+            "dialogue": "她叫安妮，她不是我同学，她是我朋友。\n问：她是谁？",
+            "questionText": "11. 她是谁？",
+            "options": [
+              {
+                "key": "A",
+                "text": "我的朋友 (wǒ de péngyou)"
+              },
+              {
+                "key": "B",
+                "text": "我的同学 (wǒ de tóngxué)"
+              },
+              {
+                "key": "C",
+                "text": "我的老师 (wǒ de lǎoshī)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "A"
+          },
+          "explanation": "听力原文明确说明'她不是我同学，她是我朋友'，因此问题'她是谁？'选A。",
+          "score": 1,
+          "sourcePage": 25,
+          "sourceAudio": "04-1.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-LISTENING-P3-Q12",
+          "type": "SINGLE_CHOICE",
+          "prompt": {
+            "part": 3,
+            "instruction": "第9-12题：听句子，回答问题 (Nghe câu mô tả tình huống và trả lời câu hỏi)",
+            "dialogue": "她叫李心，是我的中国朋友。\n问：她叫什么名字？",
+            "questionText": "12. 她叫什么名字？",
+            "options": [
+              {
+                "key": "A",
+                "text": "王方 (Wáng Fāng)"
+              },
+              {
+                "key": "B",
+                "text": "李心 (Lǐ Xīn)"
+              },
+              {
+                "key": "C",
+                "text": "安妮 (Ānní)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "B"
+          },
+          "explanation": "听力原文明确说明'她叫李心'，因此问题'她叫什么名字？'选B。",
+          "score": 1,
+          "sourcePage": 25,
+          "sourceAudio": "04-1.mp3",
+          "verificationStatus": "VERIFIED"
+        }
+      ]
+    },
+    {
+      "code": "HSK1-L04-READING",
+      "skill": "READING",
+      "titleZh": "二、阅读",
+      "titleVi": "Phần 2: Đọc hiểu",
+      "instructions": "看图片判断对错、问答配对和选词填空练习。",
+      "estimatedMinutes": 15,
+      "audioUrl": null,
+      "questions": [
+        {
+          "code": "HSK1-L04-READING-P1-Q13",
+          "type": "TRUE_FALSE",
+          "prompt": {
+            "part": 1,
+            "instruction": "第13-17题：看图片，判断图片内容是否与提示词一致 (Xem hình và cho biết hình có phù hợp với từ ngữ cho sẵn không)",
+            "wordZh": "对不起",
+            "wordPinyin": "duìbuqǐ",
+            "imageUrl": "/media/practice/hsk1/images/lesson-04/HSK1-L04-R-P1-Q13.png"
+          },
+          "answer": {
+            "value": false
+          },
+          "explanation": "词语是'对不起'，图片是一位正在拉行李箱告别/挥手的女孩（再见），不一致（×）。",
+          "score": 1,
+          "sourcePage": 26,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-READING-P1-Q14",
+          "type": "TRUE_FALSE",
+          "prompt": {
+            "part": 1,
+            "instruction": "第13-17题：看图片，判断图片内容是否与提示词一致 (Xem hình và cho biết hình có phù hợp với từ ngữ cho sẵn không)",
+            "wordZh": "她",
+            "wordPinyin": "tā",
+            "imageUrl": "/media/practice/hsk1/images/lesson-04/HSK1-L04-R-P1-Q14.png"
+          },
+          "answer": {
+            "value": true
+          },
+          "explanation": "词语是'她'（tā, chỉ nữ giới），图片是一位穿西装微笑的女士，内容一致（√）。",
+          "score": 1,
+          "sourcePage": 26,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-READING-P1-Q15",
+          "type": "TRUE_FALSE",
+          "prompt": {
+            "part": 1,
+            "instruction": "第13-17题：看图片，判断图片内容是否与提示词一致 (Xem hình và cho biết hình có phù hợp với từ ngữ cho sẵn không)",
+            "wordZh": "美国",
+            "wordPinyin": "Měiguó",
+            "imageUrl": "/media/practice/hsk1/images/lesson-04/HSK1-L04-R-P1-Q15.png"
+          },
+          "answer": {
+            "value": false
+          },
+          "explanation": "词语是'美国'，图片是蓝白红三色旗（法国国旗），不一致（×）。",
+          "score": 1,
+          "sourcePage": 26,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-READING-P1-Q16",
+          "type": "TRUE_FALSE",
+          "prompt": {
+            "part": 1,
+            "instruction": "第13-17题：看图片，判断图片内容是否与提示词一致 (Xem hình và cho biết hình có phù hợp với từ ngữ cho sẵn không)",
+            "wordZh": "同学",
+            "wordPinyin": "tóngxué",
+            "imageUrl": "/media/practice/hsk1/images/lesson-04/HSK1-L04-R-P1-Q16.png"
+          },
+          "answer": {
+            "value": false
+          },
+          "explanation": "词语是'同学'，图片是一个包含老人、小孩的大家庭全家福合照（家人），不一致（×）。",
+          "score": 1,
+          "sourcePage": 26,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-READING-P1-Q17",
+          "type": "TRUE_FALSE",
+          "prompt": {
+            "part": 1,
+            "instruction": "第13-17题：看图片，判断图片内容是否与提示词一致 (Xem hình và cho biết hình có phù hợp với từ ngữ cho sẵn không)",
+            "wordZh": "他们",
+            "wordPinyin": "tāmen",
+            "imageUrl": "/media/practice/hsk1/images/lesson-04/HSK1-L04-R-P1-Q17.png"
+          },
+          "answer": {
+            "value": false
+          },
+          "explanation": "词语是'他们'（tāmen, ngôi thứ ba nam hoặc chung），图片全部是女性/女孩（她们），参考答案定为不一致（×）。",
+          "score": 1,
+          "sourcePage": 26,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-READING-P2-Q18",
+          "type": "SINGLE_CHOICE",
+          "prompt": {
+            "part": 2,
+            "instruction": "第18-22题：看问题，选择正确的回答 (Đọc câu hỏi và chọn câu trả lời đúng)",
+            "questionText": "18. 你是哪国人？ (Nǐ shì nǎ guó rén?)",
+            "options": [
+              {
+                "key": "A",
+                "text": "A: 是，他是我的美国朋友。"
+              },
+              {
+                "key": "B",
+                "text": "B: 她是李月，她是我的中国朋友。"
+              },
+              {
+                "key": "C",
+                "text": "C: 他是我同学，他叫大卫。"
+              },
+              {
+                "key": "D",
+                "text": "D: 不是，她是我的汉语老师。"
+              },
+              {
+                "key": "E",
+                "text": "E: 我是美国人。"
+              }
+            ]
+          },
+          "answer": {
+            "value": "E"
+          },
+          "explanation": "问题问国籍'你是哪国人？'，回答'我是美国人。'，选E。",
+          "score": 1,
+          "sourcePage": 27,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-READING-P2-Q19",
+          "type": "SINGLE_CHOICE",
+          "prompt": {
+            "part": 2,
+            "instruction": "第18-22题：看问题，选择正确的回答 (Đọc câu hỏi và chọn câu trả lời đúng)",
+            "questionText": "19. 他是谁？ (Tā shì shéi?)",
+            "options": [
+              {
+                "key": "A",
+                "text": "A: 是，他是我的美国朋友。"
+              },
+              {
+                "key": "B",
+                "text": "B: 她是李月，她是我的中国朋友。"
+              },
+              {
+                "key": "C",
+                "text": "C: 他是我同学，他叫大卫。"
+              },
+              {
+                "key": "D",
+                "text": "D: 不是，她是我的汉语老师。"
+              },
+              {
+                "key": "E",
+                "text": "E: 我是美国人。"
+              }
+            ]
+          },
+          "answer": {
+            "value": "C"
+          },
+          "explanation": "问题问男性'他是谁？'，对应回答'他是我同学，他叫大卫。'，选C。",
+          "score": 1,
+          "sourcePage": 27,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-READING-P2-Q20",
+          "type": "SINGLE_CHOICE",
+          "prompt": {
+            "part": 2,
+            "instruction": "第18-22题：看问题，选择正确的回答 (Đọc câu hỏi và chọn câu trả lời đúng)",
+            "questionText": "20. 她是你同学吗？ (Tā shì nǐ tóngxué ma?)",
+            "options": [
+              {
+                "key": "A",
+                "text": "A: 是，他是我的美国朋友。"
+              },
+              {
+                "key": "B",
+                "text": "B: 她是李月，她是我的中国朋友。"
+              },
+              {
+                "key": "C",
+                "text": "C: 他是我同学，他叫大卫。"
+              },
+              {
+                "key": "D",
+                "text": "D: 不是，她是我的汉语老师。"
+              },
+              {
+                "key": "E",
+                "text": "E: 我是美国人。"
+              }
+            ]
+          },
+          "answer": {
+            "value": "D"
+          },
+          "explanation": "问题问'她是你同学吗？'，回答'不是，她是我的汉语老师。'，选D。",
+          "score": 1,
+          "sourcePage": 27,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-READING-P2-Q21",
+          "type": "SINGLE_CHOICE",
+          "prompt": {
+            "part": 2,
+            "instruction": "第18-22题：看问题，选择正确的回答 (Đọc câu hỏi và chọn câu trả lời đúng)",
+            "questionText": "21. 谁是李月？ (Shéi shì Lǐ Yuè?)",
+            "options": [
+              {
+                "key": "A",
+                "text": "A: 是，他是我的美国朋友。"
+              },
+              {
+                "key": "B",
+                "text": "B: 她是李月，她是我的中国朋友。"
+              },
+              {
+                "key": "C",
+                "text": "C: 他是我同学，他叫大卫。"
+              },
+              {
+                "key": "D",
+                "text": "D: 不是，她是我的汉语老师。"
+              },
+              {
+                "key": "E",
+                "text": "E: 我是美国人。"
+              }
+            ]
+          },
+          "answer": {
+            "value": "B"
+          },
+          "explanation": "问题问'谁是李月？'，回答介绍'她是李月，她是我的中国朋友。'，选B。",
+          "score": 1,
+          "sourcePage": 27,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-READING-P2-Q22",
+          "type": "SINGLE_CHOICE",
+          "prompt": {
+            "part": 2,
+            "instruction": "第18-22题：看问题，选择正确的回答 (Đọc câu hỏi và chọn câu trả lời đúng)",
+            "questionText": "22. 他是你的朋友吗？ (Tā shì nǐ de péngyou ma?)",
+            "options": [
+              {
+                "key": "A",
+                "text": "A: 是，他是我的美国朋友。"
+              },
+              {
+                "key": "B",
+                "text": "B: 她是李月，她是我的中国朋友。"
+              },
+              {
+                "key": "C",
+                "text": "C: 他是我同学，他叫大卫。"
+              },
+              {
+                "key": "D",
+                "text": "D: 不是，她是我的汉语老师。"
+              },
+              {
+                "key": "E",
+                "text": "E: 我是美国人。"
+              }
+            ]
+          },
+          "answer": {
+            "value": "A"
+          },
+          "explanation": "问题问'他是你的朋友吗？'，回答'是，他是我的美国朋友。'，选A。",
+          "score": 1,
+          "sourcePage": 27,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-READING-P3-Q23",
+          "type": "SINGLE_CHOICE",
+          "prompt": {
+            "part": 3,
+            "instruction": "第23-30题：看句子，选择正确的词语填空 (Điền từ ngữ thích hợp vào chỗ trống)",
+            "sentence": "你妈妈（   ）什么？",
+            "wordPinyin": "Nǐ māma (   ) shénme?",
+            "options": [
+              {
+                "key": "A",
+                "text": "A: 哪 (nǎ)"
+              },
+              {
+                "key": "B",
+                "text": "B: 叫 (jiào)"
+              },
+              {
+                "key": "C",
+                "text": "C: 的 (de)"
+              },
+              {
+                "key": "D",
+                "text": "D: 名字 (míngzi)"
+              },
+              {
+                "key": "E",
+                "text": "E: 呢 (ne)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "B"
+          },
+          "explanation": "问姓名用动词'叫'：'你妈妈叫什么？'，选B。",
+          "score": 1,
+          "sourcePage": 28,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-READING-P3-Q24",
+          "type": "SINGLE_CHOICE",
+          "prompt": {
+            "part": 3,
+            "instruction": "第23-30题：看句子，选择正确的词语填空 (Điền từ ngữ thích hợp vào chỗ trống)",
+            "sentence": "您是（   ）国人？",
+            "wordPinyin": "Nín shì (   ) guó rén?",
+            "options": [
+              {
+                "key": "A",
+                "text": "A: 哪 (nǎ)"
+              },
+              {
+                "key": "B",
+                "text": "B: 叫 (jiào)"
+              },
+              {
+                "key": "C",
+                "text": "C: 的 (de)"
+              },
+              {
+                "key": "D",
+                "text": "D: 名字 (míngzi)"
+              },
+              {
+                "key": "E",
+                "text": "E: 呢 (ne)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "A"
+          },
+          "explanation": "问哪国人使用疑问代词'哪'：'您是哪国人？'，选A。",
+          "score": 1,
+          "sourcePage": 28,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-READING-P3-Q25",
+          "type": "SINGLE_CHOICE",
+          "prompt": {
+            "part": 3,
+            "instruction": "第23-30题：看句子，选择正确的词语填空 (Điền từ ngữ thích hợp vào chỗ trống)",
+            "sentence": "他不是我同学，他是我（   ）中国朋友。",
+            "wordPinyin": "Tā bú shì wǒ tóngxué, tā shì wǒ (   ) Zhōngguó péngyou.",
+            "options": [
+              {
+                "key": "A",
+                "text": "A: 哪 (nǎ)"
+              },
+              {
+                "key": "B",
+                "text": "B: 叫 (jiào)"
+              },
+              {
+                "key": "C",
+                "text": "C: 的 (de)"
+              },
+              {
+                "key": "D",
+                "text": "D: 名字 (míngzi)"
+              },
+              {
+                "key": "E",
+                "text": "E: 呢 (ne)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "C"
+          },
+          "explanation": "定语标记助词'的'：'他是我[的]中国朋友'，选C。",
+          "score": 1,
+          "sourcePage": 28,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-READING-P3-Q26",
+          "type": "SINGLE_CHOICE",
+          "prompt": {
+            "part": 3,
+            "instruction": "第23-30题：看句子，选择正确的词语填空 (Điền từ ngữ thích hợp vào chỗ trống)",
+            "sentence": "我是美国人。你（   ）？",
+            "wordPinyin": "Wǒ shì Měiguó rén. Nǐ (   )?",
+            "options": [
+              {
+                "key": "A",
+                "text": "A: 哪 (nǎ)"
+              },
+              {
+                "key": "B",
+                "text": "B: 叫 (jiào)"
+              },
+              {
+                "key": "C",
+                "text": "C: 的 (de)"
+              },
+              {
+                "key": "D",
+                "text": "D: 名字 (míngzi)"
+              },
+              {
+                "key": "E",
+                "text": "E: 呢 (ne)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "E"
+          },
+          "explanation": "回问对方情况使用语气助词'呢'：'我是美国人。你[呢]？'，选E。",
+          "score": 1,
+          "sourcePage": 28,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-READING-P3-Q27",
+          "type": "SINGLE_CHOICE",
+          "prompt": {
+            "part": 3,
+            "instruction": "第23-30题：看句子，选择正确的词语填空 (Điền từ ngữ thích hợp vào chỗ trống)",
+            "sentence": "他是（   ）？",
+            "wordPinyin": "Tā shì (   )?",
+            "options": [
+              {
+                "key": "F",
+                "text": "F: 是 (shì)"
+              },
+              {
+                "key": "G",
+                "text": "G: 不 (bù)"
+              },
+              {
+                "key": "H",
+                "text": "H: 吗 (ma)"
+              },
+              {
+                "key": "I",
+                "text": "I: 谁 (shéi)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "I"
+          },
+          "explanation": "询问人使用疑问代词'谁'：'他是[谁]？'，选I。",
+          "score": 1,
+          "sourcePage": 28,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-READING-P3-Q28",
+          "type": "SINGLE_CHOICE",
+          "prompt": {
+            "part": 3,
+            "instruction": "第23-30题：看句子，选择正确的词语填空 (Điền từ ngữ thích hợp vào chỗ trống)",
+            "sentence": "我（   ）是中国人，我是美国人。",
+            "wordPinyin": "Wǒ (   ) shì Zhōngguó rén, wǒ shì Měiguó rén.",
+            "options": [
+              {
+                "key": "F",
+                "text": "F: 是 (shì)"
+              },
+              {
+                "key": "G",
+                "text": "G: 不 (bù)"
+              },
+              {
+                "key": "H",
+                "text": "H: 吗 (ma)"
+              },
+              {
+                "key": "I",
+                "text": "I: 谁 (shéi)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "G"
+          },
+          "explanation": "否定副词'不'：'我[不]是中国人，我是美国人。'，选G。",
+          "score": 1,
+          "sourcePage": 28,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-READING-P3-Q29",
+          "type": "SINGLE_CHOICE",
+          "prompt": {
+            "part": 3,
+            "instruction": "第23-30题：看句子，选择正确的词语填空 (Điền từ ngữ thích hợp vào chỗ trống)",
+            "sentence": "他是你的汉语老师（   ）？",
+            "wordPinyin": "Tā shì nǐ de Hànyǔ lǎoshī (   )?",
+            "options": [
+              {
+                "key": "F",
+                "text": "F: 是 (shì)"
+              },
+              {
+                "key": "G",
+                "text": "G: 不 (bù)"
+              },
+              {
+                "key": "H",
+                "text": "H: 吗 (ma)"
+              },
+              {
+                "key": "I",
+                "text": "I: 谁 (shéi)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "H"
+          },
+          "explanation": "是非问句末尾使用疑问语气助词'吗'：'他是你的汉语老师[吗]？'，选H。",
+          "score": 1,
+          "sourcePage": 28,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-READING-P3-Q30",
+          "type": "SINGLE_CHOICE",
+          "prompt": {
+            "part": 3,
+            "instruction": "第23-30题：看句子，选择正确的词语填空 (Điền từ ngữ thích hợp vào chỗ trống)",
+            "sentence": "他不是我同学，他（   ）我的好朋友。",
+            "wordPinyin": "Tā bú shì wǒ tóngxué, tā (   ) wǒ de hǎo péngyou.",
+            "options": [
+              {
+                "key": "F",
+                "text": "F: 是 (shì)"
+              },
+              {
+                "key": "G",
+                "text": "G: 不 (bù)"
+              },
+              {
+                "key": "H",
+                "text": "H: 吗 (ma)"
+              },
+              {
+                "key": "I",
+                "text": "I: 谁 (shéi)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "F"
+          },
+          "explanation": "肯定判断动词'是'：'他不是我同学，他[是]我的好朋友。'，选F。",
+          "score": 1,
+          "sourcePage": 28,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        }
+      ]
+    },
+    {
+      "code": "HSK1-L04-PHONETICS",
+      "skill": "PHONETICS",
+      "titleZh": "三、语音",
+      "titleVi": "Phần 3: Ngữ âm",
+      "instructions": "听录音，完成听辩音节和标注“一”的变调练习。",
+      "estimatedMinutes": 10,
+      "audioUrl": "/media/practice/hsk1/audio/04-2.mp3",
+      "questions": [
+        {
+          "code": "HSK1-L04-PHONETICS-P1-Q01",
+          "type": "LISTEN_AND_CHOOSE",
+          "prompt": {
+            "part": 1,
+            "instruction": "第1-8题：听录音，选择听到的音节 (Nghe bài ghi âm và chọn âm tiết nghe được)",
+            "audioText": "zhuānjiā (专家)",
+            "options": [
+              {
+                "key": "A",
+                "text": "A: zhuāngjiā"
+              },
+              {
+                "key": "B",
+                "text": "B: zhuānjiā"
+              }
+            ]
+          },
+          "answer": {
+            "value": "B"
+          },
+          "explanation": "听力录音为'zhuānjiā'（专家），选B。",
+          "score": 1,
+          "sourcePage": 29,
+          "sourceAudio": "04-2.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-PHONETICS-P1-Q02",
+          "type": "LISTEN_AND_CHOOSE",
+          "prompt": {
+            "part": 1,
+            "instruction": "第1-8题：听录音，选择听到的音节 (Nghe bài ghi âm và chọn âm tiết nghe được)",
+            "audioText": "xīnnián (新年)",
+            "options": [
+              {
+                "key": "A",
+                "text": "A: xīnnián"
+              },
+              {
+                "key": "B",
+                "text": "B: xīnniáng"
+              }
+            ]
+          },
+          "answer": {
+            "value": "A"
+          },
+          "explanation": "听力录音为'xīnnián'（新年），选A。",
+          "score": 1,
+          "sourcePage": 29,
+          "sourceAudio": "04-2.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-PHONETICS-P1-Q03",
+          "type": "LISTEN_AND_CHOOSE",
+          "prompt": {
+            "part": 1,
+            "instruction": "第1-8题：听录音，选择听到的音节 (Nghe bài ghi âm và chọn âm tiết nghe được)",
+            "audioText": "chéngjì (成绩)",
+            "options": [
+              {
+                "key": "A",
+                "text": "A: chènjī"
+              },
+              {
+                "key": "B",
+                "text": "B: chéngjì"
+              }
+            ]
+          },
+          "answer": {
+            "value": "B"
+          },
+          "explanation": "听力录音为'chéngjì'（成绩），选B。",
+          "score": 1,
+          "sourcePage": 29,
+          "sourceAudio": "04-2.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-PHONETICS-P1-Q04",
+          "type": "LISTEN_AND_CHOOSE",
+          "prompt": {
+            "part": 1,
+            "instruction": "第1-8题：听录音，选择听到的音节 (Nghe bài ghi âm và chọn âm tiết nghe được)",
+            "audioText": "fāyán (发言)",
+            "options": [
+              {
+                "key": "A",
+                "text": "A: fāyán"
+              },
+              {
+                "key": "B",
+                "text": "B: fāyáng"
+              }
+            ]
+          },
+          "answer": {
+            "value": "A"
+          },
+          "explanation": "听力录音为'fāyán'（发言），选A。",
+          "score": 1,
+          "sourcePage": 29,
+          "sourceAudio": "04-2.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-PHONETICS-P1-Q05",
+          "type": "LISTEN_AND_CHOOSE",
+          "prompt": {
+            "part": 1,
+            "instruction": "第1-8题：听录音，选择听到的音节 (Nghe bài ghi âm và chọn âm tiết nghe được)",
+            "audioText": "zhīdào (知道)",
+            "options": [
+              {
+                "key": "A",
+                "text": "A: zhīdào"
+              },
+              {
+                "key": "B",
+                "text": "B: chídào"
+              }
+            ]
+          },
+          "answer": {
+            "value": "A"
+          },
+          "explanation": "听力录音为'zhīdào'（知道），选A。",
+          "score": 1,
+          "sourcePage": 29,
+          "sourceAudio": "04-2.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-PHONETICS-P1-Q06",
+          "type": "LISTEN_AND_CHOOSE",
+          "prompt": {
+            "part": 1,
+            "instruction": "第1-8题：听录音，选择听到的音节 (Nghe bài ghi âm và chọn âm tiết nghe được)",
+            "audioText": "zhījǐ (知己)",
+            "options": [
+              {
+                "key": "A",
+                "text": "A: zhījǐ"
+              },
+              {
+                "key": "B",
+                "text": "B: chūjí"
+              }
+            ]
+          },
+          "answer": {
+            "value": "A"
+          },
+          "explanation": "听力录音为'zhījǐ'（知己），选A。",
+          "score": 1,
+          "sourcePage": 29,
+          "sourceAudio": "04-2.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-PHONETICS-P1-Q07",
+          "type": "LISTEN_AND_CHOOSE",
+          "prompt": {
+            "part": 1,
+            "instruction": "第1-8题：听录音，选择听到的音节 (Nghe bài ghi âm và chọn âm tiết nghe được)",
+            "audioText": "shǐyòng (使用)",
+            "options": [
+              {
+                "key": "A",
+                "text": "A: shǐyòng"
+              },
+              {
+                "key": "B",
+                "text": "B: zhǐyào"
+              }
+            ]
+          },
+          "answer": {
+            "value": "A"
+          },
+          "explanation": "听力录音为'shǐyòng'（使用），选A。",
+          "score": 1,
+          "sourcePage": 29,
+          "sourceAudio": "04-2.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-PHONETICS-P1-Q08",
+          "type": "LISTEN_AND_CHOOSE",
+          "prompt": {
+            "part": 1,
+            "instruction": "第1-8题：听录音，选择听到的音节 (Nghe bài ghi âm và chọn âm tiết nghe được)",
+            "audioText": "rìqī (日期)",
+            "options": [
+              {
+                "key": "A",
+                "text": "A: rìqī"
+              },
+              {
+                "key": "B",
+                "text": "B: zhìqì"
+              }
+            ]
+          },
+          "answer": {
+            "value": "A"
+          },
+          "explanation": "听力录音为'rìqī'（日期），选A。",
+          "score": 1,
+          "sourcePage": 29,
+          "sourceAudio": "04-2.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-PHONETICS-P2-Q09",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "part": 2,
+            "instruction": "第9-16题：听录音，给下列词语中的“一”标注声调 (Nghe bài ghi âm và đánh dấu thanh điệu cho “一”)",
+            "wordZh": "一天",
+            "wordPinyinBase": "yi tiān",
+            "questionText": "9. yi tiān (一天)",
+            "options": [
+              {
+                "key": "1",
+                "text": "第1声 (yī)"
+              },
+              {
+                "key": "2",
+                "text": "第2声 (yí)"
+              },
+              {
+                "key": "4",
+                "text": "第4声 (yì)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "4"
+          },
+          "explanation": "“天”是第1声，前字“一”变调读第4声（yì tiān）。",
+          "score": 1,
+          "sourcePage": 29,
+          "sourceAudio": "04-2.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-PHONETICS-P2-Q10",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "part": 2,
+            "instruction": "第9-16题：听录音，给下列词语中的“一”标注声调 (Nghe bài ghi âm và đánh dấu thanh điệu cho “一”)",
+            "wordZh": "一年",
+            "wordPinyinBase": "yi nián",
+            "questionText": "10. yi nián (一年)",
+            "options": [
+              {
+                "key": "1",
+                "text": "第1声 (yī)"
+              },
+              {
+                "key": "2",
+                "text": "第2声 (yí)"
+              },
+              {
+                "key": "4",
+                "text": "第4声 (yì)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "4"
+          },
+          "explanation": "“年”是第2声，前字“一”变调读第4声（yì nián）。",
+          "score": 1,
+          "sourcePage": 29,
+          "sourceAudio": "04-2.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-PHONETICS-P2-Q11",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "part": 2,
+            "instruction": "第9-16题：听录音，给下列词语中的“一”标注声调 (Nghe bài ghi âm và đánh dấu thanh điệu cho “一”)",
+            "wordZh": "一本",
+            "wordPinyinBase": "yi běn",
+            "questionText": "11. yi běn (一本)",
+            "options": [
+              {
+                "key": "1",
+                "text": "第1声 (yī)"
+              },
+              {
+                "key": "2",
+                "text": "第2声 (yí)"
+              },
+              {
+                "key": "4",
+                "text": "第4声 (yì)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "4"
+          },
+          "explanation": "“本”是第3声，前字“一”变调读第4声（yì běn）。",
+          "score": 1,
+          "sourcePage": 29,
+          "sourceAudio": "04-2.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-PHONETICS-P2-Q12",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "part": 2,
+            "instruction": "第9-16题：听录音，给下列词语中的“一”标注声调 (Nghe bài ghi âm và đánh dấu thanh điệu cho “一”)",
+            "wordZh": "一位",
+            "wordPinyinBase": "yi wèi",
+            "questionText": "12. yi wèi (一位)",
+            "options": [
+              {
+                "key": "1",
+                "text": "第1声 (yī)"
+              },
+              {
+                "key": "2",
+                "text": "第2声 (yí)"
+              },
+              {
+                "key": "4",
+                "text": "第4声 (yì)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "2"
+          },
+          "explanation": "“位”是第4声，前字“一”在去声前变调读第2声（yí wèi）。",
+          "score": 1,
+          "sourcePage": 29,
+          "sourceAudio": "04-2.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-PHONETICS-P2-Q13",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "part": 2,
+            "instruction": "第9-16题：听录音，给下列词语中的“一”标注声调 (Nghe bài ghi âm và đánh dấu thanh điệu cho “一”)",
+            "wordZh": "一张",
+            "wordPinyinBase": "yi zhāng",
+            "questionText": "13. yi zhāng (一张)",
+            "options": [
+              {
+                "key": "1",
+                "text": "第1声 (yī)"
+              },
+              {
+                "key": "2",
+                "text": "第2声 (yí)"
+              },
+              {
+                "key": "4",
+                "text": "第4声 (yì)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "4"
+          },
+          "explanation": "“张”是第1声，前字“一”变调读第4声（yì zhāng）。",
+          "score": 1,
+          "sourcePage": 29,
+          "sourceAudio": "04-2.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-PHONETICS-P2-Q14",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "part": 2,
+            "instruction": "第9-16题：听录音，给下列词语中的“一”标注声调 (Nghe bài ghi âm và đánh dấu thanh điệu cho “一”)",
+            "wordZh": "一瓶",
+            "wordPinyinBase": "yi píng",
+            "questionText": "14. yi píng (一瓶)",
+            "options": [
+              {
+                "key": "1",
+                "text": "第1声 (yī)"
+              },
+              {
+                "key": "2",
+                "text": "第2声 (yí)"
+              },
+              {
+                "key": "4",
+                "text": "第4声 (yì)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "4"
+          },
+          "explanation": "“瓶”是第2声，前字“一”变调读第4声（yì píng）。",
+          "score": 1,
+          "sourcePage": 29,
+          "sourceAudio": "04-2.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-PHONETICS-P2-Q15",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "part": 2,
+            "instruction": "第9-16题：听录音，给下列词语中的“一”标注声调 (Nghe bài ghi âm và đánh dấu thanh điệu cho “一”)",
+            "wordZh": "一碗",
+            "wordPinyinBase": "yi wǎn",
+            "questionText": "15. yi wǎn (一碗)",
+            "options": [
+              {
+                "key": "1",
+                "text": "第1声 (yī)"
+              },
+              {
+                "key": "2",
+                "text": "第2声 (yí)"
+              },
+              {
+                "key": "4",
+                "text": "第4声 (yì)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "4"
+          },
+          "explanation": "“碗”是第3声，前字“一”变调读第4声（yì wǎn）。",
+          "score": 1,
+          "sourcePage": 29,
+          "sourceAudio": "04-2.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-PHONETICS-P2-Q16",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "part": 2,
+            "instruction": "第9-16题：听录音，给下列词语中的“一”标注声调 (Nghe bài ghi âm và đánh dấu thanh điệu cho “一”)",
+            "wordZh": "一下",
+            "wordPinyinBase": "yi xià",
+            "questionText": "16. yi xià (一下)",
+            "options": [
+              {
+                "key": "1",
+                "text": "第1声 (yī)"
+              },
+              {
+                "key": "2",
+                "text": "第2声 (yí)"
+              },
+              {
+                "key": "4",
+                "text": "第4声 (yì)"
+              }
+            ]
+          },
+          "answer": {
+            "value": "2"
+          },
+          "explanation": "“下”是第4声，前字“一”在去声前变调读第2声（yí xià）。",
+          "score": 1,
+          "sourcePage": 29,
+          "sourceAudio": "04-2.mp3",
+          "verificationStatus": "VERIFIED"
+        }
+      ]
+    },
+    {
+      "code": "HSK1-L04-HANZI",
+      "skill": "HANZI",
+      "titleZh": "四、汉字",
+      "titleVi": "Phần 4: Chữ Hán",
+      "instructions": "描写每组汉字中相应的笔画并练习书写独体字。",
+      "estimatedMinutes": 10,
+      "audioUrl": null,
+      "questions": [
+        {
+          "code": "HSK1-L04-HANZI-P1-Q01",
+          "type": "CHARACTER_WRITING",
+          "prompt": {
+            "part": 1,
+            "instruction": "描写每组汉字中相应的笔画：竖弯钩 (shùwāngōu) trong chữ '七' và '儿'",
+            "character": "七",
+            "strokeName": "竖弯钩 (shùwāngōu)",
+            "strokes": [
+              "一",
+              "乚"
+            ],
+            "meaning": "Số bảy / Thất",
+            "pinyin": "qī"
+          },
+          "answer": {
+            "completed": true
+          },
+          "explanation": "Luyện viết nét 竖弯钩 (shùwāngōu, 乚) trong chữ 七 (qī, 2 nét).",
+          "score": 1,
+          "sourcePage": 30,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-HANZI-P1-Q02",
+          "type": "CHARACTER_WRITING",
+          "prompt": {
+            "part": 1,
+            "instruction": "描写每组汉字中相应的笔画：横折弯钩 (héngzhéwāngōu) trong chữ '九' và '几'",
+            "character": "九",
+            "strokeName": "横折弯钩 (héngzhéwāngōu)",
+            "strokes": [
+              "丿",
+              "乙"
+            ],
+            "meaning": "Số chín / Cửu",
+            "pinyin": "jiǔ"
+          },
+          "answer": {
+            "completed": true
+          },
+          "explanation": "Luyện viết nét 横折弯钩 (héngzhéwāngōu, 乙) trong chữ 九 (jiǔ, 2 nét).",
+          "score": 1,
+          "sourcePage": 30,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-HANZI-P2-Q03",
+          "type": "CHARACTER_WRITING",
+          "prompt": {
+            "part": 2,
+            "instruction": "看笔顺，写独体字：七 (qī)",
+            "character": "七",
+            "pinyin": "qī",
+            "meaning": "Số 7",
+            "strokes": [
+              "一",
+              "乚"
+            ]
+          },
+          "answer": {
+            "completed": true
+          },
+          "explanation": "Xem thứ tự nét và luyện viết chữ độc thể: 七 (qī, 2 nét: 横, 竖弯钩).",
+          "score": 1,
+          "sourcePage": 30,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-HANZI-P2-Q04",
+          "type": "CHARACTER_WRITING",
+          "prompt": {
+            "part": 2,
+            "instruction": "看笔顺，写独体字：儿 (ér)",
+            "character": "儿",
+            "pinyin": "ér",
+            "meaning": "Trẻ con / Nhi",
+            "strokes": [
+              "丿",
+              "乚"
+            ]
+          },
+          "answer": {
+            "completed": true
+          },
+          "explanation": "Xem thứ tự nét và luyện viết chữ độc thể: 儿 (ér, 2 nét: 撇, 竖弯钩).",
+          "score": 1,
+          "sourcePage": 30,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-HANZI-P2-Q05",
+          "type": "CHARACTER_WRITING",
+          "prompt": {
+            "part": 2,
+            "instruction": "看笔顺，写独体字：几 (jǐ)",
+            "character": "几",
+            "pinyin": "jǐ",
+            "meaning": "Mấy / Kỷ",
+            "strokes": [
+              "丿",
+              "乙"
+            ]
+          },
+          "answer": {
+            "completed": true
+          },
+          "explanation": "Xem thứ tự nét và luyện viết chữ độc thể: 几 (jǐ, 2 nét: 撇, 横折弯钩).",
+          "score": 1,
+          "sourcePage": 30,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L04-HANZI-P2-Q06",
+          "type": "CHARACTER_WRITING",
+          "prompt": {
+            "part": 2,
+            "instruction": "看笔顺，写独体字：九 (jiǔ)",
+            "character": "九",
+            "pinyin": "jiǔ",
+            "meaning": "Số 9",
+            "strokes": [
+              "丿",
+              "乙"
+            ]
+          },
+          "answer": {
+            "completed": true
+          },
+          "explanation": "Xem thứ tự nét và luyện viết chữ độc thể: 九 (jiǔ, 2 nét: 撇, 横折弯钩).",
+          "score": 1,
+          "sourcePage": 30,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        }
+      ]
+    }
+  ]
+}

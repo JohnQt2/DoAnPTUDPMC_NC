@@ -10,6 +10,31 @@ import { webPushService } from '../../shared/push/web-push.service';
 import { studyReminderJob } from '../../jobs/study-reminder.job';
 import { srsService } from '../srs/srs.service';
 
+function redactPracticeQuestionAuditValue(value: string | null) {
+  if (!value) return null;
+
+  try {
+    const parsedValue: unknown = JSON.parse(value);
+    if (
+      !parsedValue ||
+      typeof parsedValue !== 'object' ||
+      Array.isArray(parsedValue)
+    ) {
+      return null;
+    }
+    const parsed = parsedValue as Record<string, unknown>;
+
+    delete parsed.answer;
+    delete parsed.acceptedValues;
+    delete parsed.correctAnswer;
+    delete parsed.explanation;
+    delete parsed.snapshotData;
+    return JSON.stringify(parsed);
+  } catch {
+    return null;
+  }
+}
+
 export class UserService {
   async getProfile(userId: number) {
     const user = await prisma.users.findUnique({
@@ -1617,8 +1642,14 @@ export class UserService {
       actionType: log.action_type,
       targetEntity: log.target_entity,
       targetId: log.target_id,
-      oldValue: log.old_value,
-      newValue: log.new_value,
+      oldValue:
+        log.target_entity === 'PracticeQuestion'
+          ? redactPracticeQuestionAuditValue(log.old_value)
+          : log.old_value,
+      newValue:
+        log.target_entity === 'PracticeQuestion'
+          ? redactPracticeQuestionAuditValue(log.new_value)
+          : log.new_value,
       ipAddress: log.ip_address,
       createdAt: log.created_at,
       actor: log.user

@@ -95,8 +95,13 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const getRedirectTarget = (isNewUser?: boolean): string => {
-    return isNewUser ? '#/onboarding' : '#/today';
+  const getRedirectTarget = (roleOrIsNew?: string | boolean, isNewUser?: boolean): string => {
+    const role = typeof roleOrIsNew === 'string' ? roleOrIsNew : undefined;
+    const isNew = typeof roleOrIsNew === 'boolean' ? roleOrIsNew : isNewUser;
+    if (role === 'ADMIN' || role === 'CONTENT_EDITOR') {
+      return '#/admin/courses';
+    }
+    return isNew ? '#/onboarding' : '#/today';
   };
 
   // Sync authTab whenever URL hash changes (handles clicking Navbar links while on #/login)
@@ -292,7 +297,7 @@ export const LoginPage: React.FC = () => {
         password,
       });
       login(res.accessToken, res.user);
-      window.location.hash = getRedirectTarget();
+      window.location.hash = getRedirectTarget(res.user?.role);
     } catch (err: any) {
       const code = err.data?.error?.code || null;
       setErrorCode(code);

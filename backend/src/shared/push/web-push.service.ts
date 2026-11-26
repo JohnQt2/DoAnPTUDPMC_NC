@@ -1,4 +1,4 @@
-import webpush from 'web-push';
+import * as webpush from 'web-push';
 import { prisma } from '../database/prisma.client';
 import { env } from '../../config/env';
 

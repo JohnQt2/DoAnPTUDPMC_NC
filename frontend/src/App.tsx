@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { lazy, Suspense, useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { saveInProgressLessonId } from './lib/resumeLesson';
@@ -15,7 +15,6 @@ import {
   CustomCursor,
   DialogOverlay,
 } from './components/ui';
-
 // Pages
 import { LandingPage } from './pages/landing/LandingPage';
 import { LoginPage } from './pages/auth/LoginPage';
@@ -34,10 +33,36 @@ import { TestPage } from './pages/test/TestPage';
 import { TestResultPage } from './pages/test/TestResultPage';
 import { LeaderboardPage } from './pages/leaderboard/LeaderboardPage';
 import { AdminCMSPage } from './pages/admin/AdminCMSPage';
+// Mock Exam Module
 import { MockExamListPage } from './pages/exam/MockExamListPage';
 import { StudentExamSplitScreen } from './pages/exam/StudentExamSplitScreen';
 import { TeacherExamManager } from './pages/exam/TeacherExamManager';
+
+// Practice Module Pages
+import { PracticeLessonsPage } from './pages/practice/PracticeLessonsPage';
+import { PracticeLessonDetailPage } from './pages/practice/PracticeLessonDetailPage';
+import { PracticeCollectionStudentDetailPage } from './pages/practice/PracticeCollectionStudentDetailPage';
+import { PracticeExercisePage } from './pages/practice/PracticeExercisePage';
+import { PracticeResultPage } from './pages/practice/PracticeResultPage';
+import { PracticeProgressPage } from './pages/practice/PracticeProgressPage';
+
 import { Lock, ShieldAlert, ArrowRight, Home } from 'lucide-react';
+
+const PracticeAdminListPage = lazy(() => import('./pages/admin/practice/PracticeAdminListPage').then((module) => ({ default: module.PracticeAdminListPage })));
+const PracticeCollectionCreatePage = lazy(() => import('./pages/admin/practice/PracticeCollectionCreatePage').then((module) => ({ default: module.PracticeCollectionCreatePage })));
+const PracticeCollectionDetailPage = lazy(() => import('./pages/admin/practice/PracticeCollectionDetailPage').then((module) => ({ default: module.PracticeCollectionDetailPage })));
+const PracticeVersionEditorPage = lazy(() => import('./pages/admin/practice/PracticeVersionEditorPage').then((module) => ({ default: module.PracticeVersionEditorPage })));
+const PracticePreviewPage = lazy(() => import('./pages/admin/practice/PracticePreviewPage').then((module) => ({ default: module.PracticePreviewPage })));
+const PracticeReviewPage = lazy(() => import('./pages/admin/practice/PracticeReviewPage').then((module) => ({ default: module.PracticeReviewPage })));
+
+const PracticeAdminLoading: React.FC = () => (
+  <div className="mx-auto w-full max-w-5xl space-y-4 px-4 py-10" role="status" aria-live="polite">
+    <span className="sr-only">Đang tải giao diện quản lý bài luyện tập…</span>
+    <div className="h-10 animate-pulse rounded-2xl bg-slate-200/70 dark:bg-slate-800" />
+    <div className="h-28 animate-pulse rounded-2xl bg-slate-200/70 dark:bg-slate-800" />
+    <div className="h-64 animate-pulse rounded-2xl bg-slate-200/70 dark:bg-slate-800" />
+  </div>
+);
 
 const AppContent: React.FC = () => {
   const { user, isLoading, hasCompletedOnboarding } = useAuth();
@@ -87,21 +112,33 @@ const AppContent: React.FC = () => {
   }, []);
 
   const isStudent = user?.role === 'STUDENT';
+  const isAdminRole = user?.role === 'ADMIN' || user?.role === 'CONTENT_EDITOR';
   const basePath = currentHash.split('?')[0] || '#/';
 
-  // Normalize root / login / landing routes to #/today for authenticated students
   useEffect(() => {
-    if (!user || !isStudent || hasCompletedOnboarding !== true) return;
+    if (basePath !== '#/practice') return;
+
+    const workbookRoute = '#/exams/workbook';
+    window.history.replaceState(window.history.state, '', workbookRoute);
+    setCurrentHash(workbookRoute);
+  }, [basePath]);
+
+  // Normalize root / login / landing routes to #/today (or #/admin/courses for Admin)
+  useEffect(() => {
+    if (!user) return;
     if (
       basePath === '#/' ||
       basePath === '' ||
       basePath === '#/landing' ||
       basePath === '#/login'
     ) {
-      window.history.replaceState(null, '', '#/today');
-      setCurrentHash('#/today');
+      const defaultRoute = isAdminRole ? '#/admin/courses' : '#/today';
+      if (!isStudent || hasCompletedOnboarding === true) {
+        window.history.replaceState(null, '', defaultRoute);
+        setCurrentHash(defaultRoute);
+      }
     }
-  }, [user, isStudent, hasCompletedOnboarding, basePath]);
+  }, [user, isStudent, isAdminRole, hasCompletedOnboarding, basePath]);
 
   if (isLoading || (isStudent && hasCompletedOnboarding === null)) {
     return <HanziLoadingScreen visible={true} progress={82} />;
@@ -173,71 +210,11 @@ const AppContent: React.FC = () => {
     );
   }
 
-  const isAdminRole = user.role === 'ADMIN' || user.role === 'CONTENT_EDITOR';
-
-  // ──────────────────────────────────────────────────────────────────────────
-  // 2. ADMIN / CONTENT_EDITOR: DEDICATED ADMIN-ONLY WORKSPACE (LIGHT GLASS)
-  // ──────────────────────────────────────────────────────────────────────────
-  if (isAdminRole) {
-    const isAdminProfile = basePath.startsWith('#/profile');
-    const isAdminLessonPreview = basePath.startsWith('#/lessons/');
-    const isTeacherExams = basePath.startsWith('#/teacher/exams') || basePath.startsWith('#/admin/exams');
-    const isMockExamList = basePath === '#/mock-exams' || basePath === '#/exams';
-    const adminTab: 'courses' | 'questions' | 'rbac' = basePath.startsWith('#/admin/questions')
-      ? 'questions'
-      : basePath.startsWith('#/admin/users') && user.role === 'ADMIN'
-        ? 'rbac'
-        : 'courses';
-
-    return (
-      <MeshBackground variant="light" showHanzi={false} className="text-[#1C1917] font-sans">
-        <Sidebar
-          currentPath={currentHash}
-          collapsed={sidebarCollapsed}
-          onToggleCollapse={toggleSidebarCollapsed}
-        />
-        <div
-          style={{ ['--sidebar-offset' as any]: sidebarCollapsed ? '6.25rem' : '17.25rem' }}
-          className={`${
-            sidebarCollapsed ? 'lg:pl-[6.25rem]' : 'lg:pl-[17.25rem]'
-          } min-h-screen flex flex-col transition-[padding] duration-300 ease-out`}
-        >
-          <main className="flex-1 pb-16">
-            <PageTransition
-              routeKey={
-                isAdminProfile
-                  ? 'admin-profile'
-                  : isAdminLessonPreview
-                    ? basePath
-                    : isTeacherExams
-                      ? 'admin-exams'
-                      : isMockExamList
-                        ? 'admin-mock-exams'
-                        : adminTab
-              }
-            >
-              {isAdminProfile ? (
-                <ProfilePage />
-              ) : isAdminLessonPreview ? (
-                <LessonPage lessonId={parseInt(basePath.replace('#/lessons/', ''), 10) || 1} />
-              ) : isTeacherExams ? (
-                <TeacherExamManager onBack={() => { window.location.hash = '#/mock-exams'; }} />
-              ) : isMockExamList ? (
-                <MockExamListPage />
-              ) : (
-                <AdminCMSPage initialTab={adminTab} />
-              )}
-            </PageTransition>
-          </main>
-        </div>
-      </MeshBackground>
-    );
-  }
-
   // ──────────────────────────────────────────────────────────────────────────
   // 3. FIRST-TIME LOGIN ONLY (STUDENTS): ROADMAP ONBOARDING (LIGHT GLASS)
   // ──────────────────────────────────────────────────────────────────────────
-  if (hasCompletedOnboarding === false) {
+  if (!isAdminRole && hasCompletedOnboarding === false) {
+
     return (
       <MeshBackground variant="light" showHanzi={false} className="flex flex-col text-[#1C1917]">
         <header className="sticky top-0 z-40 bg-[#FCFBF8]/88 dark:bg-[#0f151f]/90 backdrop-blur-xl border-b border-[#1C1917]/10 dark:border-white/10 h-16 px-4 sm:px-6 flex items-center justify-center shadow-sm shadow-[#1C1917]/[0.03]">
@@ -300,7 +277,8 @@ const AppContent: React.FC = () => {
       return <SpeakingPracticePage />;
     }
 
-    if (basePath === '#/mock-exams' || basePath === '#/exams') {
+    // Mock Exam Module — Thi thử HSK bằng PDF và Audio
+    if (basePath === '#/mock-exams') {
       return <MockExamListPage />;
     }
 
@@ -326,9 +304,19 @@ const AppContent: React.FC = () => {
       );
     }
 
+    // ExamListPage — danh sách đề thi và bài luyện tập
+    if (basePath === '#/exams') {
+      return <ExamListPage initialTab="MOCK_EXAM" />;
+    }
+
+    if (basePath === '#/exams/workbook') {
+      return <ExamListPage initialTab="WORKBOOK" />;
+    }
+
     if (basePath === '#/quizzes' || basePath === '#/old-exams') {
       return <ExamListPage />;
     }
+
 
     if (basePath.startsWith('#/test-result/')) {
       const id = parseInt(basePath.replace('#/test-result/', ''), 10);
@@ -348,6 +336,48 @@ const AppContent: React.FC = () => {
       return <ProgressPage />;
     }
 
+    // ─── Practice Workbook Module Routes (Supports old bookmarks -> redirect to #/exams/workbook) ───
+    if (basePath === '#/practice') {
+      return <ExamListPage initialTab="WORKBOOK" />;
+    }
+
+    if (basePath === '#/practice/progress') {
+      return <PracticeProgressPage />;
+    }
+
+    if (basePath.startsWith('#/practice/exercise/')) {
+      const setId = parseInt(basePath.replace('#/practice/exercise/', ''), 10);
+      return <PracticeExercisePage exerciseSetId={setId} />;
+    }
+
+    if (basePath.startsWith('#/practice/results/') || basePath.startsWith('#/practice/result/')) {
+      const cleanPath = basePath.replace('#/practice/results/', '').replace('#/practice/result/', '');
+      const attemptId = parseInt(cleanPath, 10);
+      return <PracticeResultPage attemptId={attemptId} />;
+    }
+
+    // Match #/practice/collections/:collectionId (Must be BEFORE #/practice/:levelCode)
+    const collectionMatch = basePath.match(/^#\/practice\/collections\/(\d+)/);
+    if (collectionMatch) {
+      const collectionId = parseInt(collectionMatch[1], 10);
+      return <PracticeCollectionStudentDetailPage collectionId={collectionId} />;
+    }
+
+    // Match #/practice/:levelCode/lessons/:lessonId
+    const lessonMatch = basePath.match(/^#\/practice\/([A-Za-z0-9_-]+)\/lessons\/(\d+)/);
+    if (lessonMatch) {
+      const levelCode = lessonMatch[1];
+      const lessonId = parseInt(lessonMatch[2], 10);
+      return <PracticeLessonDetailPage levelCode={levelCode} lessonId={lessonId} />;
+    }
+
+    // Match #/practice/:levelCode
+    const levelMatch = basePath.match(/^#\/practice\/([A-Za-z0-9_-]+)/);
+    if (levelMatch) {
+      const levelCode = levelMatch[1];
+      return <PracticeLessonsPage levelCode={levelCode} />;
+    }
+
     if (basePath.startsWith('#/profile')) {
       return <ProfilePage />;
     }
@@ -356,22 +386,65 @@ const AppContent: React.FC = () => {
       return <OnboardingRoadmapPage />;
     }
 
-    if (basePath.startsWith('#/admin')) {
-      const canAccessCMS = user.role === 'ADMIN' || user.role === 'CONTENT_EDITOR';
-      if (!canAccessCMS) {
-        return (
-          <div className="max-w-lg mx-auto my-20 px-4">
-            <GlassCard className="p-8 text-center space-y-5">
-              <div className="w-16 h-16 rounded-3xl bg-red-50 text-red-600 mx-auto flex items-center justify-center">
-                <ShieldAlert className="w-8 h-8" />
-              </div>
-              <h2 className="text-2xl font-black text-gray-900">403 - Không Có Quyền Truy Cập</h2>
-              <ShimmerButton href="#/today">Về trang Hôm nay</ShimmerButton>
-            </GlassCard>
-          </div>
-        );
+    // ─── ADMIN & STAFF WORKSPACE ───
+    if (isAdminRole) {
+      if (basePath.startsWith('#/profile')) {
+        return <ProfilePage />;
       }
-      return <AdminCMSPage />;
+      if (basePath.startsWith('#/lessons/')) {
+        const lid = parseInt(basePath.replace('#/lessons/', ''), 10);
+        return <LessonPage lessonId={lid || 1} />;
+      }
+
+      // Priority 1: Practice CMS Routes (Exact & Regex matches)
+      const versionPreviewMatch = basePath.match(/^#\/admin\/practice\/versions\/(\d+)\/preview$/);
+      if (versionPreviewMatch) {
+        return <Suspense fallback={<PracticeAdminLoading />}><PracticePreviewPage versionId={parseInt(versionPreviewMatch[1], 10)} /></Suspense>;
+      }
+
+      const versionReviewMatch = basePath.match(/^#\/admin\/practice\/versions\/(\d+)\/review$/);
+      if (versionReviewMatch) {
+        return <Suspense fallback={<PracticeAdminLoading />}><PracticeReviewPage versionId={parseInt(versionReviewMatch[1], 10)} /></Suspense>;
+      }
+
+      const versionEditMatch = basePath.match(/^#\/admin\/practice\/versions\/(\d+)\/edit$/);
+      if (versionEditMatch) {
+        return <Suspense fallback={<PracticeAdminLoading />}><PracticeVersionEditorPage versionId={parseInt(versionEditMatch[1], 10)} /></Suspense>;
+      }
+
+      if (basePath === '#/admin/practice/new') {
+        return <Suspense fallback={<PracticeAdminLoading />}><PracticeCollectionCreatePage /></Suspense>;
+      }
+
+      const collectionDetailMatch = basePath.match(/^#\/admin\/practice\/(\d+)$/);
+      if (collectionDetailMatch) {
+        return <Suspense fallback={<PracticeAdminLoading />}><PracticeCollectionDetailPage collectionId={parseInt(collectionDetailMatch[1], 10)} /></Suspense>;
+      }
+
+      if (basePath === '#/admin/practice' || basePath.startsWith('#/admin/practice/')) {
+        return <Suspense fallback={<PracticeAdminLoading />}><PracticeAdminListPage /></Suspense>;
+      }
+
+      // Priority 2: Admin Courses, Questions, Users
+      if (basePath.startsWith('#/admin/questions')) {
+        return <AdminCMSPage initialTab="questions" />;
+      }
+
+      if (basePath.startsWith('#/admin/users')) {
+        if (user.role === 'ADMIN') {
+          return <AdminCMSPage initialTab="rbac" />;
+        }
+        return <AdminCMSPage initialTab="courses" />;
+      }
+
+      if (basePath.startsWith('#/admin/courses')) {
+        return <AdminCMSPage initialTab="courses" />;
+      }
+
+      // Fallback for #/admin
+      if (basePath === '#/admin' || basePath === '#/admin/') {
+        return <AdminCMSPage initialTab="courses" />;
+      }
     }
 
     return <TodayPage />;
@@ -385,13 +458,13 @@ const AppContent: React.FC = () => {
         onToggleCollapse={toggleSidebarCollapsed}
       />
       <div
-        style={{ ['--sidebar-offset' as any]: sidebarCollapsed ? '6.25rem' : '17.25rem' }}
-        className={`${
-          sidebarCollapsed ? 'lg:pl-[6.25rem]' : 'lg:pl-[17.25rem]'
-        } min-h-screen flex flex-col transition-[padding] duration-300 ease-out`}
+        className={`${sidebarCollapsed ? 'lg:pl-[90px]' : 'lg:pl-[269px]'
+          } min-h-screen flex flex-col flex-1 min-w-0 transition-[padding] duration-300 ease-out`}
       >
-        <main className="flex-1 pb-8">
-          <PageTransition routeKey={basePath}>{renderCurrentPage()}</PageTransition>
+        <main className="flex-1 min-w-0 flex flex-col overflow-x-hidden">
+          <div className="mx-auto w-full max-w-[1600px] flex-1 flex flex-col min-w-0">
+            <PageTransition routeKey={basePath}>{renderCurrentPage()}</PageTransition>
+          </div>
         </main>
       </div>
     </MeshBackground>

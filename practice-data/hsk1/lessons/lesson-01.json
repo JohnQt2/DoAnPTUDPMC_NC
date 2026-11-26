@@ -1,0 +1,2067 @@
+{
+  "levelCode": "HSK1",
+  "lessonNumber": 1,
+  "category": "WORKBOOK_LESSON",
+  "titleZh": "???",
+  "titlePinyin": "N? h?o!",
+  "titleVi": "B?i 1: Xin ch?o!",
+  "sortOrder": 1,
+  "exerciseSets": [
+    {
+      "code": "HSK1-L01-PRONUNCIATION",
+      "skill": "PHONETICS",
+      "titleZh": "????",
+      "titleVi": "Luy?n ph?t ?m",
+      "instructions": "???????????????????????",
+      "estimatedMinutes": 15,
+      "audioUrl": "/media/practice/hsk1/audio/01-1.mp3",
+      "questions": [
+        {
+          "code": "HSK1-L01-PRONUNCIATION-Q01",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "??????????",
+            "items": [
+              "m?",
+              "m?",
+              "m?",
+              "m?",
+              "b?",
+              "b?",
+              "b?",
+              "b?",
+              "f?i",
+              "f?i",
+              "f?i",
+              "f?i",
+              "qi?",
+              "qi?",
+              "qi?",
+              "qi?",
+              "xu?",
+              "xu?",
+              "xu?",
+              "xu?",
+              "ti?o",
+              "ti?o",
+              "ti?o",
+              "ti?o",
+              "hu?",
+              "hu?",
+              "hu?",
+              "hu?",
+              "m?o",
+              "m?o",
+              "m?o",
+              "m?o"
+            ]
+          },
+          "answer": {
+            "value": "m?\nm?\nm?\nm?\nb?\nb?\nb?\nb?\nf?i\nf?i\nf?i\nf?i\nqi?\nqi?\nqi?\nqi?\nxu?\nxu?\nxu?\nxu?\nti?o\nti?o\nti?o\nti?o\nhu?\nhu?\nhu?\nhu?\nm?o\nm?o\nm?o\nm?o"
+          },
+          "explanation": "??i chi?u tr?c ti?p danh s?ch ?m ti?t in ? b?i t?p 1, trang 7. Audio g?n theo bi?u t??ng 01-1.",
+          "score": 1,
+          "sourcePage": 7,
+          "sourceAudio": "01-1.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-PRONUNCIATION-Q02",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "??????????",
+            "items": [
+              "xi?y?",
+              "xi?w?",
+              "t?bi?",
+              "d?y?",
+              "y?xu?",
+              "p?ob?",
+              "hu?d?",
+              "ti?ow?",
+              "y?q?",
+              "ku?il?",
+              "q?t?",
+              "bi?od?",
+              "l?w?",
+              "j?hu?",
+              "l?k?i",
+              "f?x?",
+              "d?t?",
+              "d?ti?",
+              "?ih?o",
+              "ji?d?o"
+            ]
+          },
+          "answer": {
+            "value": "xi?y?\nxi?w?\nt?bi?\nd?y?\ny?xu?\np?ob?\nhu?d?\nti?ow?\ny?q?\nku?il?\nq?t?\nbi?od?\nl?w?\nj?hu?\nl?k?i\nf?x?\nd?t?\nd?ti?\n?ih?o\nji?d?o"
+          },
+          "explanation": "??i chi?u tr?c ti?p danh s?ch t? in ? b?i t?p 2, trang 7. Audio g?n theo bi?u t??ng 01-2.",
+          "score": 1,
+          "sourcePage": 7,
+          "sourceAudio": "01-2.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-PRONUNCIATION-Q03",
+          "type": "IMAGE_CHOICE",
+          "prompt": {
+            "instruction": "???????????????????",
+            "dialogue": "?? (k?f?i)",
+            "options": [
+              {
+                "key": "1",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/vocab-pie.png"
+              },
+              {
+                "key": "2",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/vocab-ballet.png"
+              },
+              {
+                "key": "3",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/vocab-coffee.png"
+              },
+              {
+                "key": "4",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/vocab-guitar.png"
+              },
+              {
+                "key": "5",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/vocab-cola.png"
+              }
+            ]
+          },
+          "answer": {
+            "value": "3"
+          },
+          "explanation": "??p ?n trang 1 c?a HSK-1-BT.pdf: l?a ch?n A; ??i chi?u h?nh v? t? in trang 7.",
+          "score": 1,
+          "sourcePage": 7,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-PRONUNCIATION-Q04",
+          "type": "IMAGE_CHOICE",
+          "prompt": {
+            "instruction": "???????????????????",
+            "dialogue": "?? (k?l?)",
+            "options": [
+              {
+                "key": "1",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/vocab-pie.png"
+              },
+              {
+                "key": "2",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/vocab-ballet.png"
+              },
+              {
+                "key": "3",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/vocab-coffee.png"
+              },
+              {
+                "key": "4",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/vocab-guitar.png"
+              },
+              {
+                "key": "5",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/vocab-cola.png"
+              }
+            ]
+          },
+          "answer": {
+            "value": "5"
+          },
+          "explanation": "??p ?n trang 1 c?a HSK-1-BT.pdf: l?a ch?n B; ??i chi?u h?nh v? t? in trang 7.",
+          "score": 1,
+          "sourcePage": 7,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-PRONUNCIATION-Q05",
+          "type": "IMAGE_CHOICE",
+          "prompt": {
+            "instruction": "???????????????????",
+            "dialogue": "?? (b?l?i)",
+            "options": [
+              {
+                "key": "1",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/vocab-pie.png"
+              },
+              {
+                "key": "2",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/vocab-ballet.png"
+              },
+              {
+                "key": "3",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/vocab-coffee.png"
+              },
+              {
+                "key": "4",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/vocab-guitar.png"
+              },
+              {
+                "key": "5",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/vocab-cola.png"
+              }
+            ]
+          },
+          "answer": {
+            "value": "2"
+          },
+          "explanation": "??p ?n trang 1 c?a HSK-1-BT.pdf: l?a ch?n C; ??i chi?u h?nh v? t? in trang 7.",
+          "score": 1,
+          "sourcePage": 7,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-PRONUNCIATION-Q06",
+          "type": "IMAGE_CHOICE",
+          "prompt": {
+            "instruction": "???????????????????",
+            "dialogue": "? (p?i)",
+            "options": [
+              {
+                "key": "1",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/vocab-pie.png"
+              },
+              {
+                "key": "2",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/vocab-ballet.png"
+              },
+              {
+                "key": "3",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/vocab-coffee.png"
+              },
+              {
+                "key": "4",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/vocab-guitar.png"
+              },
+              {
+                "key": "5",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/vocab-cola.png"
+              }
+            ]
+          },
+          "answer": {
+            "value": "1"
+          },
+          "explanation": "??p ?n trang 1 c?a HSK-1-BT.pdf: l?a ch?n D; ??i chi?u h?nh v? t? in trang 7.",
+          "score": 1,
+          "sourcePage": 7,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-PRONUNCIATION-Q07",
+          "type": "IMAGE_CHOICE",
+          "prompt": {
+            "instruction": "???????????????????",
+            "dialogue": "?? (j?t?)",
+            "options": [
+              {
+                "key": "1",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/vocab-pie.png"
+              },
+              {
+                "key": "2",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/vocab-ballet.png"
+              },
+              {
+                "key": "3",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/vocab-coffee.png"
+              },
+              {
+                "key": "4",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/vocab-guitar.png"
+              },
+              {
+                "key": "5",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/vocab-cola.png"
+              }
+            ]
+          },
+          "answer": {
+            "value": "4"
+          },
+          "explanation": "??p ?n trang 1 c?a HSK-1-BT.pdf: l?a ch?n E; ??i chi?u h?nh v? t? in trang 7.",
+          "score": 1,
+          "sourcePage": 7,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        }
+      ]
+    },
+    {
+      "code": "HSK1-L01-INITIALS",
+      "skill": "LISTENING",
+      "titleZh": "????????",
+      "titleVi": "Nghe v? ?i?n thanh m?u",
+      "instructions": "???????????????",
+      "estimatedMinutes": 10,
+      "audioUrl": "/media/practice/hsk1/audio/01-3.mp3",
+      "questions": [
+        {
+          "code": "HSK1-L01-INITIALS-Q01",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "1. ___?i",
+            "itemNumber": 1
+          },
+          "answer": {
+            "value": "b"
+          },
+          "explanation": "??p ?n 1 ??i chi?u HSK-1-BT.pdf, trang 1; ph?n thanh m?u trang 8, audio theo k? hi?u 01-3.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-INITIALS-Q02",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "2. ___u?i",
+            "itemNumber": 2
+          },
+          "answer": {
+            "value": "h"
+          },
+          "explanation": "??p ?n 2 ??i chi?u HSK-1-BT.pdf, trang 1; ph?n thanh m?u trang 8, audio theo k? hi?u 01-3.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-INITIALS-Q03",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "3. ___i?o",
+            "itemNumber": 3
+          },
+          "answer": {
+            "value": "j"
+          },
+          "explanation": "??p ?n 3 ??i chi?u HSK-1-BT.pdf, trang 1; ph?n thanh m?u trang 8, audio theo k? hi?u 01-3.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-INITIALS-Q04",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "4. ___?",
+            "itemNumber": 4
+          },
+          "answer": {
+            "value": "p"
+          },
+          "explanation": "??p ?n 4 ??i chi?u HSK-1-BT.pdf, trang 1; ph?n thanh m?u trang 8, audio theo k? hi?u 01-3.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-INITIALS-Q05",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "5. ___?n",
+            "itemNumber": 5
+          },
+          "answer": {
+            "value": "m"
+          },
+          "explanation": "??p ?n 5 ??i chi?u HSK-1-BT.pdf, trang 1; ph?n thanh m?u trang 8, audio theo k? hi?u 01-3.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-INITIALS-Q06",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "6. ___u?",
+            "itemNumber": 6
+          },
+          "answer": {
+            "value": "h"
+          },
+          "explanation": "??p ?n 6 ??i chi?u HSK-1-BT.pdf, trang 1; ph?n thanh m?u trang 8, audio theo k? hi?u 01-3.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-INITIALS-Q07",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "7. ___?",
+            "itemNumber": 7
+          },
+          "answer": {
+            "value": "q"
+          },
+          "explanation": "??p ?n 7 ??i chi?u HSK-1-BT.pdf, trang 1; ph?n thanh m?u trang 8, audio theo k? hi?u 01-3.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-INITIALS-Q08",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "8. ___i?o",
+            "itemNumber": 8
+          },
+          "answer": {
+            "value": "x"
+          },
+          "explanation": "??p ?n 8 ??i chi?u HSK-1-BT.pdf, trang 1; ph?n thanh m?u trang 8, audio theo k? hi?u 01-3.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-INITIALS-Q09",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "9. ___u?",
+            "itemNumber": 9
+          },
+          "answer": {
+            "value": "q"
+          },
+          "explanation": "??p ?n 9 ??i chi?u HSK-1-BT.pdf, trang 1; ph?n thanh m?u trang 8, audio theo k? hi?u 01-3.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-INITIALS-Q10",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "10. ___i?",
+            "itemNumber": 10
+          },
+          "answer": {
+            "value": "x"
+          },
+          "explanation": "??p ?n 10 ??i chi?u HSK-1-BT.pdf, trang 1; ph?n thanh m?u trang 8, audio theo k? hi?u 01-3.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-INITIALS-Q11",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "11. ___?o",
+            "itemNumber": 11
+          },
+          "answer": {
+            "value": "k"
+          },
+          "explanation": "??p ?n 11 ??i chi?u HSK-1-BT.pdf, trang 1; ph?n thanh m?u trang 8, audio theo k? hi?u 01-3.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-INITIALS-Q12",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "12. ___?o",
+            "itemNumber": 12
+          },
+          "answer": {
+            "value": "d"
+          },
+          "explanation": "??p ?n 12 ??i chi?u HSK-1-BT.pdf, trang 1; ph?n thanh m?u trang 8, audio theo k? hi?u 01-3.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-INITIALS-Q13",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "13. ___?i",
+            "itemNumber": 13
+          },
+          "answer": {
+            "value": "n"
+          },
+          "explanation": "??p ?n 13 ??i chi?u HSK-1-BT.pdf, trang 1; ph?n thanh m?u trang 8, audio theo k? hi?u 01-3.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-INITIALS-Q14",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "14. ___?i",
+            "itemNumber": 14
+          },
+          "answer": {
+            "value": "m"
+          },
+          "explanation": "??p ?n 14 ??i chi?u HSK-1-BT.pdf, trang 1; ph?n thanh m?u trang 8, audio theo k? hi?u 01-3.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-INITIALS-Q15",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "15. ___?",
+            "itemNumber": 15
+          },
+          "answer": {
+            "value": "g"
+          },
+          "explanation": "??p ?n 15 ??i chi?u HSK-1-BT.pdf, trang 1; ph?n thanh m?u trang 8, audio theo k? hi?u 01-3.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-INITIALS-Q16",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "16. ___?o",
+            "itemNumber": 16
+          },
+          "answer": {
+            "value": "k"
+          },
+          "explanation": "??p ?n 16 ??i chi?u HSK-1-BT.pdf, trang 1; ph?n thanh m?u trang 8, audio theo k? hi?u 01-3.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-INITIALS-Q17",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "17. ___?i",
+            "itemNumber": 17
+          },
+          "answer": {
+            "value": "l"
+          },
+          "explanation": "??p ?n 17 ??i chi?u HSK-1-BT.pdf, trang 1; ph?n thanh m?u trang 8, audio theo k? hi?u 01-3.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-INITIALS-Q18",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "18. ___?i",
+            "itemNumber": 18
+          },
+          "answer": {
+            "value": "h"
+          },
+          "explanation": "??p ?n 18 ??i chi?u HSK-1-BT.pdf, trang 1; ph?n thanh m?u trang 8, audio theo k? hi?u 01-3.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-INITIALS-Q19",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "19. ___?o",
+            "itemNumber": 19
+          },
+          "answer": {
+            "value": "p"
+          },
+          "explanation": "??p ?n 19 ??i chi?u HSK-1-BT.pdf, trang 1; ph?n thanh m?u trang 8, audio theo k? hi?u 01-3.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-3.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-INITIALS-Q20",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "20. ___?i",
+            "itemNumber": 20
+          },
+          "answer": {
+            "value": "f"
+          },
+          "explanation": "??p ?n 20 ??i chi?u HSK-1-BT.pdf, trang 1; ph?n thanh m?u trang 8, audio theo k? hi?u 01-3.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-3.mp3",
+          "verificationStatus": "VERIFIED"
+        }
+      ]
+    },
+    {
+      "code": "HSK1-L01-FINALS",
+      "skill": "LISTENING",
+      "titleZh": "????????",
+      "titleVi": "Nghe v? ?i?n v?n m?u",
+      "instructions": "???????????????",
+      "estimatedMinutes": 10,
+      "audioUrl": "/media/practice/hsk1/audio/01-4.mp3",
+      "questions": [
+        {
+          "code": "HSK1-L01-FINALS-Q01",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "1. h___",
+            "itemNumber": 1
+          },
+          "answer": {
+            "value": "u?"
+          },
+          "explanation": "??p ?n 1 ??i chi?u HSK-1-BT.pdf, trang 2; ph?n v?n m?u trang 8, audio theo k? hi?u 01-4.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-FINALS-Q02",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "2. h___",
+            "itemNumber": 2
+          },
+          "answer": {
+            "value": "u?"
+          },
+          "explanation": "??p ?n 2 ??i chi?u HSK-1-BT.pdf, trang 2; ph?n v?n m?u trang 8, audio theo k? hi?u 01-4.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-FINALS-Q03",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "3. h___",
+            "itemNumber": 3
+          },
+          "answer": {
+            "value": "u?"
+          },
+          "explanation": "??p ?n 3 ??i chi?u HSK-1-BT.pdf, trang 2; ph?n v?n m?u trang 8, audio theo k? hi?u 01-4.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-FINALS-Q04",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "4. m___",
+            "itemNumber": 4
+          },
+          "answer": {
+            "value": "?i"
+          },
+          "explanation": "??p ?n 4 ??i chi?u HSK-1-BT.pdf, trang 2; ph?n v?n m?u trang 8, audio theo k? hi?u 01-4.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-FINALS-Q05",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "5. f___",
+            "itemNumber": 5
+          },
+          "answer": {
+            "value": "?"
+          },
+          "explanation": "??p ?n 5 ??i chi?u HSK-1-BT.pdf, trang 2; ph?n v?n m?u trang 8, audio theo k? hi?u 01-4.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-FINALS-Q06",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "6. h___",
+            "itemNumber": 6
+          },
+          "answer": {
+            "value": "?o"
+          },
+          "explanation": "??p ?n 6 ??i chi?u HSK-1-BT.pdf, trang 2; ph?n v?n m?u trang 8, audio theo k? hi?u 01-4.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-FINALS-Q07",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "7. n___",
+            "itemNumber": 7
+          },
+          "answer": {
+            "value": "?"
+          },
+          "explanation": "??p ?n 7 ??i chi?u HSK-1-BT.pdf, trang 2; ph?n v?n m?u trang 8, audio theo k? hi?u 01-4.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-FINALS-Q08",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "8. w___",
+            "itemNumber": 8
+          },
+          "answer": {
+            "value": "?i"
+          },
+          "explanation": "??p ?n 8 ??i chi?u HSK-1-BT.pdf, trang 2; ph?n v?n m?u trang 8, audio theo k? hi?u 01-4.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-FINALS-Q09",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "9. b___",
+            "itemNumber": 9
+          },
+          "answer": {
+            "value": "?o"
+          },
+          "explanation": "??p ?n 9 ??i chi?u HSK-1-BT.pdf, trang 2; ph?n v?n m?u trang 8, audio theo k? hi?u 01-4.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-FINALS-Q10",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "10. j___",
+            "itemNumber": 10
+          },
+          "answer": {
+            "value": "i?o"
+          },
+          "explanation": "??p ?n 10 ??i chi?u HSK-1-BT.pdf, trang 2; ph?n v?n m?u trang 8, audio theo k? hi?u 01-4.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-FINALS-Q11",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "11. j___",
+            "itemNumber": 11
+          },
+          "answer": {
+            "value": "i?"
+          },
+          "explanation": "??p ?n 11 ??i chi?u HSK-1-BT.pdf, trang 2; ph?n v?n m?u trang 8, audio theo k? hi?u 01-4.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-FINALS-Q12",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "12. d___",
+            "itemNumber": 12
+          },
+          "answer": {
+            "value": "?"
+          },
+          "explanation": "??p ?n 12 ??i chi?u HSK-1-BT.pdf, trang 2; ph?n v?n m?u trang 8, audio theo k? hi?u 01-4.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-FINALS-Q13",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "13. g___",
+            "itemNumber": 13
+          },
+          "answer": {
+            "value": "?"
+          },
+          "explanation": "??p ?n 13 ??i chi?u HSK-1-BT.pdf, trang 2; ph?n v?n m?u trang 8, audio theo k? hi?u 01-4.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-FINALS-Q14",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "14. g___",
+            "itemNumber": 14
+          },
+          "answer": {
+            "value": "?i"
+          },
+          "explanation": "??p ?n 14 ??i chi?u HSK-1-BT.pdf, trang 2; ph?n v?n m?u trang 8, audio theo k? hi?u 01-4.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-FINALS-Q15",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "15. p___",
+            "itemNumber": 15
+          },
+          "answer": {
+            "value": "i?"
+          },
+          "explanation": "??p ?n 15 ??i chi?u HSK-1-BT.pdf, trang 2; ph?n v?n m?u trang 8, audio theo k? hi?u 01-4.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-FINALS-Q16",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "16. h___",
+            "itemNumber": 16
+          },
+          "answer": {
+            "value": "u?i"
+          },
+          "explanation": "??p ?n 16 ??i chi?u HSK-1-BT.pdf, trang 2; ph?n v?n m?u trang 8, audio theo k? hi?u 01-4.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-FINALS-Q17",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "17. y___",
+            "itemNumber": 17
+          },
+          "answer": {
+            "value": "u?"
+          },
+          "explanation": "??p ?n 17 ??i chi?u HSK-1-BT.pdf, trang 2; ph?n v?n m?u trang 8, audio theo k? hi?u 01-4.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-FINALS-Q18",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "18. h___",
+            "itemNumber": 18
+          },
+          "answer": {
+            "value": "?i"
+          },
+          "explanation": "??p ?n 18 ??i chi?u HSK-1-BT.pdf, trang 2; ph?n v?n m?u trang 8, audio theo k? hi?u 01-4.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-FINALS-Q19",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "19. g___",
+            "itemNumber": 19
+          },
+          "answer": {
+            "value": "u?"
+          },
+          "explanation": "??p ?n 19 ??i chi?u HSK-1-BT.pdf, trang 2; ph?n v?n m?u trang 8, audio theo k? hi?u 01-4.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-4.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-FINALS-Q20",
+          "type": "TEXT_INPUT",
+          "prompt": {
+            "instruction": "????????????",
+            "questionText": "20. l___",
+            "itemNumber": 20
+          },
+          "answer": {
+            "value": "?"
+          },
+          "explanation": "??p ?n 20 ??i chi?u HSK-1-BT.pdf, trang 2; ph?n v?n m?u trang 8, audio theo k? hi?u 01-4.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-4.mp3",
+          "verificationStatus": "VERIFIED"
+        }
+      ]
+    },
+    {
+      "code": "HSK1-L01-TONES",
+      "skill": "LISTENING",
+      "titleZh": "????????",
+      "titleVi": "Nghe v? ch?n thanh ?i?u",
+      "instructions": "????????????",
+      "estimatedMinutes": 10,
+      "audioUrl": "/media/practice/hsk1/audio/01-5.mp3",
+      "questions": [
+        {
+          "code": "HSK1-L01-TONES-Q01",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "?????????",
+            "questionText": "1. bu",
+            "wordPinyinBase": "bu",
+            "options": [
+              {
+                "key": "1",
+                "text": "?1?"
+              },
+              {
+                "key": "2",
+                "text": "?2?"
+              },
+              {
+                "key": "3",
+                "text": "?3?"
+              },
+              {
+                "key": "4",
+                "text": "?4?"
+              }
+            ]
+          },
+          "answer": {
+            "value": "4"
+          },
+          "explanation": "??p ?n 1 ??i chi?u HSK-1-BT.pdf, trang 2; t? m?c thanh ?i?u trang 8 ???c ghi l? b?. Audio theo k? hi?u 01-5.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-TONES-Q02",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "?????????",
+            "questionText": "2. hao",
+            "wordPinyinBase": "hao",
+            "options": [
+              {
+                "key": "1",
+                "text": "?1?"
+              },
+              {
+                "key": "2",
+                "text": "?2?"
+              },
+              {
+                "key": "3",
+                "text": "?3?"
+              },
+              {
+                "key": "4",
+                "text": "?4?"
+              }
+            ]
+          },
+          "answer": {
+            "value": "3"
+          },
+          "explanation": "??p ?n 2 ??i chi?u HSK-1-BT.pdf, trang 2; t? m?c thanh ?i?u trang 8 ???c ghi l? h?o. Audio theo k? hi?u 01-5.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-TONES-Q03",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "?????????",
+            "questionText": "3. ke",
+            "wordPinyinBase": "ke",
+            "options": [
+              {
+                "key": "1",
+                "text": "?1?"
+              },
+              {
+                "key": "2",
+                "text": "?2?"
+              },
+              {
+                "key": "3",
+                "text": "?3?"
+              },
+              {
+                "key": "4",
+                "text": "?4?"
+              }
+            ]
+          },
+          "answer": {
+            "value": "4"
+          },
+          "explanation": "??p ?n 3 ??i chi?u HSK-1-BT.pdf, trang 2; t? m?c thanh ?i?u trang 8 ???c ghi l? k?. Audio theo k? hi?u 01-5.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-TONES-Q04",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "?????????",
+            "questionText": "4. qi",
+            "wordPinyinBase": "qi",
+            "options": [
+              {
+                "key": "1",
+                "text": "?1?"
+              },
+              {
+                "key": "2",
+                "text": "?2?"
+              },
+              {
+                "key": "3",
+                "text": "?3?"
+              },
+              {
+                "key": "4",
+                "text": "?4?"
+              }
+            ]
+          },
+          "answer": {
+            "value": "1"
+          },
+          "explanation": "??p ?n 4 ??i chi?u HSK-1-BT.pdf, trang 2; t? m?c thanh ?i?u trang 8 ???c ghi l? q?. Audio theo k? hi?u 01-5.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-TONES-Q05",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "?????????",
+            "questionText": "5. mei",
+            "wordPinyinBase": "mei",
+            "options": [
+              {
+                "key": "1",
+                "text": "?1?"
+              },
+              {
+                "key": "2",
+                "text": "?2?"
+              },
+              {
+                "key": "3",
+                "text": "?3?"
+              },
+              {
+                "key": "4",
+                "text": "?4?"
+              }
+            ]
+          },
+          "answer": {
+            "value": "2"
+          },
+          "explanation": "??p ?n 5 ??i chi?u HSK-1-BT.pdf, trang 2; t? m?c thanh ?i?u trang 8 ???c ghi l? m?i. Audio theo k? hi?u 01-5.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-TONES-Q06",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "?????????",
+            "questionText": "6. you",
+            "wordPinyinBase": "you",
+            "options": [
+              {
+                "key": "1",
+                "text": "?1?"
+              },
+              {
+                "key": "2",
+                "text": "?2?"
+              },
+              {
+                "key": "3",
+                "text": "?3?"
+              },
+              {
+                "key": "4",
+                "text": "?4?"
+              }
+            ]
+          },
+          "answer": {
+            "value": "3"
+          },
+          "explanation": "??p ?n 6 ??i chi?u HSK-1-BT.pdf, trang 2; t? m?c thanh ?i?u trang 8 ???c ghi l? y?u. Audio theo k? hi?u 01-5.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-TONES-Q07",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "?????????",
+            "questionText": "7. ma",
+            "wordPinyinBase": "ma",
+            "options": [
+              {
+                "key": "1",
+                "text": "?1?"
+              },
+              {
+                "key": "2",
+                "text": "?2?"
+              },
+              {
+                "key": "3",
+                "text": "?3?"
+              },
+              {
+                "key": "4",
+                "text": "?4?"
+              }
+            ]
+          },
+          "answer": {
+            "value": "1"
+          },
+          "explanation": "??p ?n 7 ??i chi?u HSK-1-BT.pdf, trang 2; t? m?c thanh ?i?u trang 8 ???c ghi l? m?. Audio theo k? hi?u 01-5.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-TONES-Q08",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "?????????",
+            "questionText": "8. jie",
+            "wordPinyinBase": "jie",
+            "options": [
+              {
+                "key": "1",
+                "text": "?1?"
+              },
+              {
+                "key": "2",
+                "text": "?2?"
+              },
+              {
+                "key": "3",
+                "text": "?3?"
+              },
+              {
+                "key": "4",
+                "text": "?4?"
+              }
+            ]
+          },
+          "answer": {
+            "value": "3"
+          },
+          "explanation": "??p ?n 8 ??i chi?u HSK-1-BT.pdf, trang 2; t? m?c thanh ?i?u trang 8 ???c ghi l? ji?. Audio theo k? hi?u 01-5.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-TONES-Q09",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "?????????",
+            "questionText": "9. ge",
+            "wordPinyinBase": "ge",
+            "options": [
+              {
+                "key": "1",
+                "text": "?1?"
+              },
+              {
+                "key": "2",
+                "text": "?2?"
+              },
+              {
+                "key": "3",
+                "text": "?3?"
+              },
+              {
+                "key": "4",
+                "text": "?4?"
+              }
+            ]
+          },
+          "answer": {
+            "value": "4"
+          },
+          "explanation": "??p ?n 9 ??i chi?u HSK-1-BT.pdf, trang 2; t? m?c thanh ?i?u trang 8 ???c ghi l? g?. Audio theo k? hi?u 01-5.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-TONES-Q10",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "?????????",
+            "questionText": "10. ge",
+            "wordPinyinBase": "ge",
+            "options": [
+              {
+                "key": "1",
+                "text": "?1?"
+              },
+              {
+                "key": "2",
+                "text": "?2?"
+              },
+              {
+                "key": "3",
+                "text": "?3?"
+              },
+              {
+                "key": "4",
+                "text": "?4?"
+              }
+            ]
+          },
+          "answer": {
+            "value": "1"
+          },
+          "explanation": "??p ?n 10 ??i chi?u HSK-1-BT.pdf, trang 2; t? m?c thanh ?i?u trang 8 ???c ghi l? g?. Audio theo k? hi?u 01-5.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-TONES-Q11",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "?????????",
+            "questionText": "11. di",
+            "wordPinyinBase": "di",
+            "options": [
+              {
+                "key": "1",
+                "text": "?1?"
+              },
+              {
+                "key": "2",
+                "text": "?2?"
+              },
+              {
+                "key": "3",
+                "text": "?3?"
+              },
+              {
+                "key": "4",
+                "text": "?4?"
+              }
+            ]
+          },
+          "answer": {
+            "value": "4"
+          },
+          "explanation": "??p ?n 11 ??i chi?u HSK-1-BT.pdf, trang 2; t? m?c thanh ?i?u trang 8 ???c ghi l? d?. Audio theo k? hi?u 01-5.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-TONES-Q12",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "?????????",
+            "questionText": "12. n?",
+            "wordPinyinBase": "n?",
+            "options": [
+              {
+                "key": "1",
+                "text": "?1?"
+              },
+              {
+                "key": "2",
+                "text": "?2?"
+              },
+              {
+                "key": "3",
+                "text": "?3?"
+              },
+              {
+                "key": "4",
+                "text": "?4?"
+              }
+            ]
+          },
+          "answer": {
+            "value": "3"
+          },
+          "explanation": "??p ?n 12 ??i chi?u HSK-1-BT.pdf, trang 2; t? m?c thanh ?i?u trang 8 ???c ghi l? n?. Audio theo k? hi?u 01-5.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-TONES-Q13",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "?????????",
+            "questionText": "13. tiao",
+            "wordPinyinBase": "tiao",
+            "options": [
+              {
+                "key": "1",
+                "text": "?1?"
+              },
+              {
+                "key": "2",
+                "text": "?2?"
+              },
+              {
+                "key": "3",
+                "text": "?3?"
+              },
+              {
+                "key": "4",
+                "text": "?4?"
+              }
+            ]
+          },
+          "answer": {
+            "value": "2"
+          },
+          "explanation": "??p ?n 13 ??i chi?u HSK-1-BT.pdf, trang 2; t? m?c thanh ?i?u trang 8 ???c ghi l? ti?o. Audio theo k? hi?u 01-5.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-TONES-Q14",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "?????????",
+            "questionText": "14. mai",
+            "wordPinyinBase": "mai",
+            "options": [
+              {
+                "key": "1",
+                "text": "?1?"
+              },
+              {
+                "key": "2",
+                "text": "?2?"
+              },
+              {
+                "key": "3",
+                "text": "?3?"
+              },
+              {
+                "key": "4",
+                "text": "?4?"
+              }
+            ]
+          },
+          "answer": {
+            "value": "3"
+          },
+          "explanation": "??p ?n 14 ??i chi?u HSK-1-BT.pdf, trang 2; t? m?c thanh ?i?u trang 8 ???c ghi l? m?i. Audio theo k? hi?u 01-5.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-TONES-Q15",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "?????????",
+            "questionText": "15. hui",
+            "wordPinyinBase": "hui",
+            "options": [
+              {
+                "key": "1",
+                "text": "?1?"
+              },
+              {
+                "key": "2",
+                "text": "?2?"
+              },
+              {
+                "key": "3",
+                "text": "?3?"
+              },
+              {
+                "key": "4",
+                "text": "?4?"
+              }
+            ]
+          },
+          "answer": {
+            "value": "1"
+          },
+          "explanation": "??p ?n 15 ??i chi?u HSK-1-BT.pdf, trang 2; t? m?c thanh ?i?u trang 8 ???c ghi l? hu?. Audio theo k? hi?u 01-5.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-TONES-Q16",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "?????????",
+            "questionText": "16. hua",
+            "wordPinyinBase": "hua",
+            "options": [
+              {
+                "key": "1",
+                "text": "?1?"
+              },
+              {
+                "key": "2",
+                "text": "?2?"
+              },
+              {
+                "key": "3",
+                "text": "?3?"
+              },
+              {
+                "key": "4",
+                "text": "?4?"
+              }
+            ]
+          },
+          "answer": {
+            "value": "4"
+          },
+          "explanation": "??p ?n 16 ??i chi?u HSK-1-BT.pdf, trang 2; t? m?c thanh ?i?u trang 8 ???c ghi l? hu?. Audio theo k? hi?u 01-5.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-TONES-Q17",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "?????????",
+            "questionText": "17. na",
+            "wordPinyinBase": "na",
+            "options": [
+              {
+                "key": "1",
+                "text": "?1?"
+              },
+              {
+                "key": "2",
+                "text": "?2?"
+              },
+              {
+                "key": "3",
+                "text": "?3?"
+              },
+              {
+                "key": "4",
+                "text": "?4?"
+              }
+            ]
+          },
+          "answer": {
+            "value": "3"
+          },
+          "explanation": "??p ?n 17 ??i chi?u HSK-1-BT.pdf, trang 2; t? m?c thanh ?i?u trang 8 ???c ghi l? n?. Audio theo k? hi?u 01-5.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-TONES-Q18",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "?????????",
+            "questionText": "18. guo",
+            "wordPinyinBase": "guo",
+            "options": [
+              {
+                "key": "1",
+                "text": "?1?"
+              },
+              {
+                "key": "2",
+                "text": "?2?"
+              },
+              {
+                "key": "3",
+                "text": "?3?"
+              },
+              {
+                "key": "4",
+                "text": "?4?"
+              }
+            ]
+          },
+          "answer": {
+            "value": "2"
+          },
+          "explanation": "??p ?n 18 ??i chi?u HSK-1-BT.pdf, trang 2; t? m?c thanh ?i?u trang 8 ???c ghi l? gu?. Audio theo k? hi?u 01-5.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-TONES-Q19",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "?????????",
+            "questionText": "19. jiao",
+            "wordPinyinBase": "jiao",
+            "options": [
+              {
+                "key": "1",
+                "text": "?1?"
+              },
+              {
+                "key": "2",
+                "text": "?2?"
+              },
+              {
+                "key": "3",
+                "text": "?3?"
+              },
+              {
+                "key": "4",
+                "text": "?4?"
+              }
+            ]
+          },
+          "answer": {
+            "value": "4"
+          },
+          "explanation": "??p ?n 19 ??i chi?u HSK-1-BT.pdf, trang 2; t? m?c thanh ?i?u trang 8 ???c ghi l? ji?o. Audio theo k? hi?u 01-5.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-5.mp3",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-TONES-Q20",
+          "type": "TONE_SELECTION",
+          "prompt": {
+            "instruction": "?????????",
+            "questionText": "20. er",
+            "wordPinyinBase": "er",
+            "options": [
+              {
+                "key": "1",
+                "text": "?1?"
+              },
+              {
+                "key": "2",
+                "text": "?2?"
+              },
+              {
+                "key": "3",
+                "text": "?3?"
+              },
+              {
+                "key": "4",
+                "text": "?4?"
+              }
+            ]
+          },
+          "answer": {
+            "value": "2"
+          },
+          "explanation": "??p ?n 20 ??i chi?u HSK-1-BT.pdf, trang 2; t? m?c thanh ?i?u trang 8 ???c ghi l? ?r. Audio theo k? hi?u 01-5.",
+          "score": 1,
+          "sourcePage": 8,
+          "sourceAudio": "01-5.mp3",
+          "verificationStatus": "VERIFIED"
+        }
+      ]
+    },
+    {
+      "code": "HSK1-L01-DIALOGUE",
+      "skill": "READING",
+      "titleZh": "????",
+      "titleVi": "Nh?n h?nh v? ch?n h?i tho?i",
+      "instructions": "???????????? Kh?ng c? bi?u t??ng audio tr?n m?c n?y; kh?ng g?n audio.",
+      "estimatedMinutes": 10,
+      "audioUrl": null,
+      "questions": [
+        {
+          "code": "HSK1-L01-DIALOGUE-Q01",
+          "type": "IMAGE_CHOICE",
+          "prompt": {
+            "instruction": "???????????????",
+            "dialogue": "?1?N? h?o?\nA????\nB????",
+            "options": [
+              {
+                "key": "1",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/dialogue-01.png"
+              },
+              {
+                "key": "2",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/dialogue-02.png"
+              },
+              {
+                "key": "3",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/dialogue-03.png"
+              },
+              {
+                "key": "4",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/dialogue-04.png"
+              }
+            ]
+          },
+          "answer": {
+            "value": "3"
+          },
+          "explanation": "??p ?n HSK-1-BT.pdf trang 2: ?nh 1-4 l?n l??t gh?p h?i tho?i 4,2,1,3; ?? ??o ?nh x? ?? c?u h?i ch?n ?nh theo h?i tho?i.",
+          "score": 1,
+          "sourcePage": 9,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-DIALOGUE-Q02",
+          "type": "IMAGE_CHOICE",
+          "prompt": {
+            "instruction": "???????????????",
+            "dialogue": "?2?N?n h?o?\nA????\nN? h?o?\nB????",
+            "options": [
+              {
+                "key": "1",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/dialogue-01.png"
+              },
+              {
+                "key": "2",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/dialogue-02.png"
+              },
+              {
+                "key": "3",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/dialogue-03.png"
+              },
+              {
+                "key": "4",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/dialogue-04.png"
+              }
+            ]
+          },
+          "answer": {
+            "value": "2"
+          },
+          "explanation": "??p ?n HSK-1-BT.pdf trang 2: ?nh 1-4 l?n l??t gh?p h?i tho?i 4,2,1,3; ?? ??o ?nh x? ?? c?u h?i ch?n ?nh theo h?i tho?i.",
+          "score": 1,
+          "sourcePage": 9,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-DIALOGUE-Q03",
+          "type": "IMAGE_CHOICE",
+          "prompt": {
+            "instruction": "???????????????",
+            "dialogue": "?3?N?n h?o?\nA????\nN?men h?o?\nB?????",
+            "options": [
+              {
+                "key": "1",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/dialogue-01.png"
+              },
+              {
+                "key": "2",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/dialogue-02.png"
+              },
+              {
+                "key": "3",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/dialogue-03.png"
+              },
+              {
+                "key": "4",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/dialogue-04.png"
+              }
+            ]
+          },
+          "answer": {
+            "value": "4"
+          },
+          "explanation": "??p ?n HSK-1-BT.pdf trang 2: ?nh 1-4 l?n l??t gh?p h?i tho?i 4,2,1,3; ?? ??o ?nh x? ?? c?u h?i ch?n ?nh theo h?i tho?i.",
+          "score": 1,
+          "sourcePage": 9,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-DIALOGUE-Q04",
+          "type": "IMAGE_CHOICE",
+          "prompt": {
+            "instruction": "???????????????",
+            "dialogue": "?4?Du?buq??\nA?????\nM?i gu?nxi?\nB?????",
+            "options": [
+              {
+                "key": "1",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/dialogue-01.png"
+              },
+              {
+                "key": "2",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/dialogue-02.png"
+              },
+              {
+                "key": "3",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/dialogue-03.png"
+              },
+              {
+                "key": "4",
+                "imageUrl": "/media/practice/hsk1/images/lesson-01/dialogue-04.png"
+              }
+            ]
+          },
+          "answer": {
+            "value": "1"
+          },
+          "explanation": "??p ?n HSK-1-BT.pdf trang 2: ?nh 1-4 l?n l??t gh?p h?i tho?i 4,2,1,3; ?? ??o ?nh x? ?? c?u h?i ch?n ?nh theo h?i tho?i.",
+          "score": 1,
+          "sourcePage": 9,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        }
+      ]
+    },
+    {
+      "code": "HSK1-L01-HANZI",
+      "skill": "HANZI",
+      "titleZh": "????",
+      "titleVi": "Luy?n vi?t ch? H?n",
+      "instructions": "??????????????",
+      "estimatedMinutes": 15,
+      "audioUrl": null,
+      "questions": [
+        {
+          "code": "HSK1-L01-HANZI-Q01",
+          "type": "CHARACTER_WRITING",
+          "prompt": {
+            "instruction": "???1??????",
+            "character": "?",
+            "strokeName": "?",
+            "pinyin": "h?ng"
+          },
+          "answer": {
+            "value": "?"
+          },
+          "explanation": "??i chi?u ch? m?u v? t?n n?t in ? b?i 1, trang 9-10.",
+          "score": 1,
+          "sourcePage": 9,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-HANZI-Q02",
+          "type": "CHARACTER_WRITING",
+          "prompt": {
+            "instruction": "???2??????",
+            "character": "?",
+            "strokeName": "?",
+            "pinyin": "sh?"
+          },
+          "answer": {
+            "value": "?"
+          },
+          "explanation": "??i chi?u ch? m?u v? t?n n?t in ? b?i 1, trang 9-10.",
+          "score": 1,
+          "sourcePage": 10,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-HANZI-Q03",
+          "type": "CHARACTER_WRITING",
+          "prompt": {
+            "instruction": "???3??????",
+            "character": "?",
+            "strokeName": "?",
+            "pinyin": "pi?"
+          },
+          "answer": {
+            "value": "?"
+          },
+          "explanation": "??i chi?u ch? m?u v? t?n n?t in ? b?i 1, trang 9-10.",
+          "score": 1,
+          "sourcePage": 10,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-HANZI-Q04",
+          "type": "CHARACTER_WRITING",
+          "prompt": {
+            "instruction": "???4??????",
+            "character": "?",
+            "strokeName": "?",
+            "pinyin": "di?n"
+          },
+          "answer": {
+            "value": "?"
+          },
+          "explanation": "??i chi?u ch? m?u v? t?n n?t in ? b?i 1, trang 9-10.",
+          "score": 1,
+          "sourcePage": 10,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-HANZI-Q05",
+          "type": "CHARACTER_WRITING",
+          "prompt": {
+            "instruction": "???5??????",
+            "character": "?",
+            "strokeName": "?",
+            "pinyin": "n?"
+          },
+          "answer": {
+            "value": "?"
+          },
+          "explanation": "??i chi?u ch? m?u v? t?n n?t in ? b?i 1, trang 9-10.",
+          "score": 1,
+          "sourcePage": 10,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-HANZI-Q06",
+          "type": "CHARACTER_WRITING",
+          "prompt": {
+            "instruction": "?????????",
+            "character": "?",
+            "hanzi": "?",
+            "pinyin": "y?"
+          },
+          "answer": {
+            "value": "?"
+          },
+          "explanation": "??i chi?u ch? m?u v? th? t? n?t minh h?a trong b?i 2, trang 10.",
+          "score": 1,
+          "sourcePage": 10,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-HANZI-Q07",
+          "type": "CHARACTER_WRITING",
+          "prompt": {
+            "instruction": "?????????",
+            "character": "?",
+            "hanzi": "?",
+            "pinyin": "?r"
+          },
+          "answer": {
+            "value": "?"
+          },
+          "explanation": "??i chi?u ch? m?u v? th? t? n?t minh h?a trong b?i 2, trang 10.",
+          "score": 1,
+          "sourcePage": 10,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-HANZI-Q08",
+          "type": "CHARACTER_WRITING",
+          "prompt": {
+            "instruction": "?????????",
+            "character": "?",
+            "hanzi": "?",
+            "pinyin": "s?n"
+          },
+          "answer": {
+            "value": "?"
+          },
+          "explanation": "??i chi?u ch? m?u v? th? t? n?t minh h?a trong b?i 2, trang 10.",
+          "score": 1,
+          "sourcePage": 10,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-HANZI-Q09",
+          "type": "CHARACTER_WRITING",
+          "prompt": {
+            "instruction": "?????????",
+            "character": "?",
+            "hanzi": "?",
+            "pinyin": "sh?"
+          },
+          "answer": {
+            "value": "?"
+          },
+          "explanation": "??i chi?u ch? m?u v? th? t? n?t minh h?a trong b?i 2, trang 10.",
+          "score": 1,
+          "sourcePage": 10,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-HANZI-Q10",
+          "type": "CHARACTER_WRITING",
+          "prompt": {
+            "instruction": "?????????",
+            "character": "?",
+            "hanzi": "?",
+            "pinyin": "b?"
+          },
+          "answer": {
+            "value": "?"
+          },
+          "explanation": "??i chi?u ch? m?u v? th? t? n?t minh h?a trong b?i 2, trang 10.",
+          "score": 1,
+          "sourcePage": 10,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HSK1-L01-HANZI-Q11",
+          "type": "CHARACTER_WRITING",
+          "prompt": {
+            "instruction": "?????????",
+            "character": "?",
+            "hanzi": "?",
+            "pinyin": "li?"
+          },
+          "answer": {
+            "value": "?"
+          },
+          "explanation": "??i chi?u ch? m?u v? th? t? n?t minh h?a trong b?i 2, trang 10.",
+          "score": 1,
+          "sourcePage": 10,
+          "sourceAudio": null,
+          "verificationStatus": "VERIFIED"
+        }
+      ]
+    }
+  ]
+}

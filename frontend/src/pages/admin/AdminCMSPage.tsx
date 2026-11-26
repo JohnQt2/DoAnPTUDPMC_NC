@@ -51,12 +51,12 @@ const SKILL_CATEGORIES = ['READING', 'LISTENING', 'GRAMMAR', 'VOCABULARY', 'PINY
 const BLOCK_TYPES = ['THEORY', 'AUDIO', 'PINYIN', 'HANZI', 'VOCABULARY', 'EXAMPLE'] as const;
 
 const LEVEL_BADGE: Record<string, string> = {
-  HSK1: 'from-[#D97706] to-[#B45309]',
-  HSK2: 'from-[#157A57] to-[#116145]',
-  HSK3: 'from-[#D95B18] to-[#B4460E]',
-  HSK4: 'from-[#C41E3A] to-[#9E162E]',
-  HSK5: 'from-[#184375] to-[#12325A]',
-  HSK6: 'from-[#5A1063] to-[#430B4A]',
+  HSK1: 'bg-[#d97706]',
+  HSK2: 'bg-[#15803d]',
+  HSK3: 'bg-[#ea580c]',
+  HSK4: 'bg-[#dc2626]',
+  HSK5: 'bg-[#1d4ed8]',
+  HSK6: 'bg-[#7e22ce]',
 };
 
 function parseOptionsForEditor(raw: string): OptionItem[] {
@@ -656,8 +656,9 @@ export const AdminCMSPage: React.FC<{ initialTab?: 'courses' | 'questions' | 'rb
     const chapters = courseDetailTree?.chapters || [];
 
     return (
-      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-6">
+      <div className="flex h-full min-h-0 flex-col overflow-hidden">
         {/* Pastel Studio Header */}
+        <div className="shrink-0 px-4 pt-4 sm:px-6 lg:px-8 mx-auto w-full max-w-[1600px]">
         <div className="relative overflow-hidden rounded-[28px] p-6 bg-gradient-to-r from-sky-100/92 via-indigo-50/90 to-rose-100/90 border border-white/95 backdrop-blur-2xl shadow-[0_14px_36px_-14px_rgba(148,163,184,0.25),inset_0_1.5px_1px_rgba(255,255,255,0.96)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <button
@@ -694,6 +695,7 @@ export const AdminCMSPage: React.FC<{ initialTab?: 'courses' | 'questions' | 'rb
             <span>Thêm chương mới</span>
           </ShimmerButton>
         </div>
+        </div>
 
         {statusMessage && (
           <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-2">
@@ -703,14 +705,17 @@ export const AdminCMSPage: React.FC<{ initialTab?: 'courses' | 'questions' | 'rb
         )}
 
         {/* 2-Column Studio Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-hidden px-4 pb-4 sm:px-6 lg:flex-row lg:px-8 mx-auto w-full max-w-[1600px]">
           {/* LEFT: Chapters & Lessons Tree */}
-          <GlassCard className="lg:col-span-5 p-5 space-y-4">
+          <GlassCard className="flex min-h-0 w-full flex-col overflow-hidden p-5 lg:flex-[0_0_35%]">
+            <div className="shrink-0">
             <h2 className="text-sm font-black text-gray-900 uppercase tracking-wider flex items-center gap-2">
               <Layers className="w-4 h-4 text-primary-600 dark:text-primary-300" />
               Cấu trúc Chương & Bài học ({chapters.length} chương)
             </h2>
+            </div>
 
+            <div className="min-h-0 flex-1 overflow-y-auto pt-5 pr-2">
             {loadingTree ? (
               <div className="space-y-3">
                 {[1, 2].map((i) => (
@@ -861,10 +866,11 @@ export const AdminCMSPage: React.FC<{ initialTab?: 'courses' | 'questions' | 'rb
                 ))}
               </div>
             )}
+            </div>
           </GlassCard>
 
           {/* RIGHT: Direct Lesson Content Blocks Editor */}
-          <GlassCard className="lg:col-span-7 p-6 space-y-5">
+          <GlassCard className="flex min-h-0 w-full flex-1 flex-col overflow-hidden p-6">
             {!selectedLessonId ? (
               <div className="py-16 text-center space-y-3">
                 <div className="w-14 h-14 rounded-2xl bg-primary-50 text-primary-500 mx-auto flex items-center justify-center">
@@ -881,7 +887,7 @@ export const AdminCMSPage: React.FC<{ initialTab?: 'courses' | 'questions' | 'rb
               <div className="h-48 rounded-2xl bg-white/60 animate-pulse" />
             ) : (
               <>
-                <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-gray-200/70">
+                <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-gray-200/70 pb-4">
                   <div>
                     <span className="text-[11px] font-black uppercase text-primary-600 dark:text-primary-300">
                       Đang can thiệp bài học #{lessonDetail?.lessonId}
@@ -911,7 +917,7 @@ export const AdminCMSPage: React.FC<{ initialTab?: 'courses' | 'questions' | 'rb
                 </div>
 
                 {/* Blocks List */}
-                <div className="space-y-3">
+                <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pt-5 pr-2">
                   {(lessonDetail?.blocks || []).length === 0 ? (
                     <p className="text-xs text-gray-500 text-center py-8">
                       Bài học này chưa có khối nội dung nào. Bấm “Thêm khối nội dung” để tạo mới.
@@ -1256,23 +1262,23 @@ export const AdminCMSPage: React.FC<{ initialTab?: 'courses' | 'questions' | 'rb
   // RENDER: MAIN ADMIN DASHBOARD (VIBRANT GLASSMORPHISM)
   // ═══════════════════════════════════════════════════════════════════════
   return (
-    <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-7">
-      {/* Pastel Admin Hero Header */}
-      <div className="relative overflow-hidden rounded-[28px] p-6 sm:p-8 bg-gradient-to-br from-sky-100/92 via-indigo-50/88 to-rose-100/90 border border-white/95 backdrop-blur-2xl shadow-[0_14px_38px_-14px_rgba(148,163,184,0.25),inset_0_1.5px_1px_rgba(255,255,255,0.96)]">
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+    <div className="mx-auto w-full max-w-[1600px] py-6 px-4 sm:px-6 lg:px-8 space-y-6">
+      {/* Admin Hero Header */}
+      <div className="relative overflow-hidden rounded-[28px] p-6 sm:p-7 bg-[#fbf8f3] border border-[#ece7e2] shadow-[0_2px_8px_-2px_rgba(28,25,23,0.03)]">
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/75 border border-white text-xs font-bold text-indigo-700">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-[#ece7e2] text-xs font-semibold text-[#6366f1] shadow-2xs">
               <Shield className="w-3.5 h-3.5" />
               <span>
                 {isSuperAdmin ? 'Quản trị hệ thống Hanzi4U' : 'Không gian biên tập nội dung Hanzi4U'}
               </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-slate-900 tracking-tight">
+            <h1 className="text-[26px] font-bold text-slate-900 tracking-tight">
               {isSuperAdmin
                 ? 'Quản lý Khóa học, Bài giảng & Tài khoản'
                 : 'Biên tập Khóa học, Bài giảng & Ngân hàng câu hỏi'}
             </h1>
-            <p className="text-sm text-slate-600 max-w-2xl">
+            <p className="text-[13px] text-slate-500 max-w-[580px] leading-relaxed">
               {isSuperAdmin
                 ? 'Thêm, chỉnh sửa khóa học, can thiệp trực tiếp nội dung từng bài học, quản lý ngân hàng câu hỏi HSK 1–6 và phân quyền tài khoản.'
                 : 'Biên soạn khóa học, cập nhật trực tiếp nội dung từng bài giảng và quản lý ngân hàng câu hỏi HSK 1–6.'}
@@ -1281,16 +1287,24 @@ export const AdminCMSPage: React.FC<{ initialTab?: 'courses' | 'questions' | 'rb
 
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
             {tab === 'courses' && (
-              <ShimmerButton type="button" onClick={openCreateCourse}>
+              <button
+                type="button"
+                onClick={openCreateCourse}
+                className="h-10 px-5 rounded-xl bg-[#c5283d] hover:bg-[#a51730] text-white text-xs font-bold inline-flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
+              >
                 <Plus className="w-4 h-4" />
                 <span>Thêm khóa học mới</span>
-              </ShimmerButton>
+              </button>
             )}
             {tab === 'questions' && (
-              <ShimmerButton type="button" onClick={openCreateQuestion}>
+              <button
+                type="button"
+                onClick={openCreateQuestion}
+                className="h-10 px-5 rounded-xl bg-[#c5283d] hover:bg-[#a51730] text-white text-xs font-bold inline-flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
+              >
                 <Plus className="w-4 h-4" />
                 <span>Thêm câu hỏi mới</span>
-              </ShimmerButton>
+              </button>
             )}
           </div>
         </div>
@@ -1317,7 +1331,7 @@ export const AdminCMSPage: React.FC<{ initialTab?: 'courses' | 'questions' | 'rb
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           >
             {isLoading ? (
               [1, 2, 3].map((i) => (
@@ -1329,60 +1343,59 @@ export const AdminCMSPage: React.FC<{ initialTab?: 'courses' | 'questions' | 'rb
                 const published = Boolean(c.isPublished ?? c.is_published);
                 const lvl = (c.level || 'HSK1').toUpperCase();
                 return (
-                  <SpotlightCard
+                  <div
                     key={cid}
-                    className="p-6 flex flex-col justify-between gap-5"
+                    className="p-5 flex flex-col justify-between gap-4 rounded-[22px] bg-white border border-[#ece7e2] shadow-[0_2px_10px_-2px_rgba(28,25,23,0.04)] hover:shadow-md transition-all duration-200"
                   >
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                       <div className="flex items-center justify-between gap-2">
                         <span
-                          className={`px-3 py-1 rounded-full text-[11px] font-black text-white bg-gradient-to-r ${
+                          className={`px-3 py-1 rounded-full text-[11px] font-bold text-white tracking-wide ${
                             LEVEL_BADGE[lvl] || LEVEL_BADGE.HSK1
                           }`}
                         >
                           {lvl} • {c.code}
                         </span>
                         <span
-                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-black ${
+                          className={`px-2.5 py-0.5 rounded-full text-[11px] font-medium ${
                             published
-                              ? 'bg-emerald-100 text-emerald-800'
-                              : 'bg-gray-200 text-gray-600'
+                              ? 'bg-[#dcfce7] text-[#15803d]'
+                              : 'bg-gray-100 text-gray-600'
                           }`}
                         >
                           {published ? 'Đang xuất bản' : 'Bản nháp'}
                         </span>
                       </div>
 
-                      <div>
-                        <h3 className="text-lg font-black text-gray-900">{c.title}</h3>
-                        <p className="text-xs text-gray-500 line-clamp-2 mt-1 leading-relaxed">
+                      <div className="pt-1">
+                        <h3 className="text-[17px] font-bold text-gray-900 line-clamp-1 leading-snug">{c.title}</h3>
+                        <p className="text-[12px] text-gray-400 line-clamp-1 mt-0.5">
                           {c.description || 'Chưa có mô tả cho khóa học này.'}
                         </p>
                       </div>
 
-                      <div className="flex items-center gap-3 text-xs font-bold text-gray-600">
+                      <div className="flex items-center gap-2 text-[12px] text-gray-500 font-medium">
                         <span>{c.chaptersCount ?? 0} chương</span>
                         <span>•</span>
                         <span>{c.lessonsCount ?? 0} bài giảng</span>
                       </div>
                     </div>
 
-                    <div className="space-y-2.5 pt-4 border-t border-gray-200/70">
-                      <ShimmerButton
+                    <div className="space-y-2.5 pt-2">
+                      <button
                         type="button"
-                        size="sm"
                         onClick={() => openCourseStudio(c)}
-                        className="w-full rounded-xl"
+                        className="w-full h-[38px] rounded-xl bg-[#c5283d] hover:bg-[#a51730] text-white text-[13px] font-bold inline-flex items-center justify-center gap-2 shadow-sm transition-colors cursor-pointer"
                       >
                         <Sliders className="w-3.5 h-3.5" />
                         <span>Quản lý & Can thiệp Bài giảng</span>
-                      </ShimmerButton>
+                      </button>
 
                       <div className="grid grid-cols-3 gap-2">
                         <button
                           type="button"
                           onClick={() => openEditCourse(c)}
-                          className="py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-bold flex items-center justify-center gap-1 cursor-pointer"
+                          className="py-1.5 rounded-lg bg-amber-50/80 hover:bg-amber-100 text-[#b45309] text-[12px] font-semibold flex items-center justify-center gap-1 cursor-pointer transition-colors"
                         >
                           <Pencil className="w-3.5 h-3.5" />
                           Sửa
@@ -1390,7 +1403,7 @@ export const AdminCMSPage: React.FC<{ initialTab?: 'courses' | 'questions' | 'rb
                         <button
                           type="button"
                           onClick={() => handleTogglePublishCourse(cid)}
-                          className="py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold flex items-center justify-center gap-1 cursor-pointer"
+                          className="py-1.5 rounded-lg bg-indigo-50/80 hover:bg-indigo-100 text-[#4338ca] text-[12px] font-semibold flex items-center justify-center gap-1 cursor-pointer transition-colors"
                         >
                           {published ? <XCircle className="w-3.5 h-3.5" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
                           {published ? 'Ẩn' : 'Đăng'}
@@ -1398,14 +1411,14 @@ export const AdminCMSPage: React.FC<{ initialTab?: 'courses' | 'questions' | 'rb
                         <button
                           type="button"
                           onClick={() => handleDeleteCourse(cid, c.title)}
-                          className="py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold flex items-center justify-center gap-1 cursor-pointer"
+                          className="py-1.5 rounded-lg bg-red-50/80 hover:bg-red-100 text-[#dc2626] text-[12px] font-semibold flex items-center justify-center gap-1 cursor-pointer transition-colors"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                           Xóa
                         </button>
                       </div>
                     </div>
-                  </SpotlightCard>
+                  </div>
                 );
               })
             )}

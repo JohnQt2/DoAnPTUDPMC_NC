@@ -13,7 +13,8 @@ interface PageTransitionProps {
  */
 export const PageTransition: React.FC<PageTransitionProps> = ({ routeKey, children }) => {
   return (
-    <>
+    <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+      {/* Top shimmer bar */}
       <motion.div
         key={`bar-${routeKey}`}
         aria-hidden="true"
@@ -25,12 +26,13 @@ export const PageTransition: React.FC<PageTransitionProps> = ({ routeKey, childr
       />
       <motion.div
         key={routeKey}
+        className="flex-1 flex flex-col min-h-0 overflow-hidden"
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
       >
         {children}
       </motion.div>
-    </>
+    </div>
   );
 };

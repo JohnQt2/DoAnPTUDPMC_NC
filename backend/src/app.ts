@@ -1,4 +1,5 @@
 import express from 'express';
+import path from 'path';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { env } from './config/env';
@@ -14,8 +15,12 @@ import { learningRoutes } from './modules/learning/learning.routes';
 import { assessmentRoutes } from './modules/assessment/assessment.routes';
 import { srsRoutes } from './modules/srs/srs.routes';
 import { contentRoutes } from './modules/content/content.routes';
+import { examRoutes } from './modules/exam/exam.routes';
 import { userController } from './modules/user/user.controller';
 import { authenticate } from './shared/middleware/auth.middleware';
+
+import { practiceRoutes } from './modules/practice/practice.routes';
+import { practiceAdminRoutes } from './modules/practice-admin/practice-admin.routes';
 
 export const app = express();
 
@@ -25,7 +30,13 @@ app.set('trust proxy', 1);
 
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
+  // Allow framing for uploads (PDF split screen preview across different dev ports)
+  if (req.path.startsWith('/uploads')) {
+    res.removeHeader('X-Frame-Options');
+    res.setHeader('Content-Security-Policy', 'frame-ancestors *');
+  } else {
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  }
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('Permissions-Policy', 'camera=(), geolocation=()');
   if (env.NODE_ENV === 'production') {
@@ -47,6 +58,10 @@ app.use(
 app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Static Media Serving for Workbook Practice & Assets
+app.use('/media', express.static(path.join(__dirname, '../public/media')));
+app.use('/public', express.static(path.join(__dirname, '../public')));
 
 // Health Check Endpoint (UC16)
 app.get('/api/v1/health', async (req, res) => {
@@ -86,5 +101,30 @@ app.use('/api/v1/content', contentRoutes);
 // Shorthand aliases (/api/courses, /api/units, /api/materials) for frontend convenience
 app.use('/api', contentRoutes);
 
+// Static file serving for uploads (PDFs, Audio MP3s with Accept-Ranges support)
+app.use(
+  '/uploads',
+  (req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Accept-Ranges', 'bytes');
+    res.removeHeader('X-Frame-Options');
+    next();
+  },
+  express.static(path.join(process.cwd(), 'uploads'), {
+    acceptRanges: true,
+  })
+);
+
+// Mock Exam Module — Phân hệ Luyện thi thử HSK 1–6 (PDF + Audio)
+app.use('/api/v1/exams', examRoutes);
+app.use('/api/exams', examRoutes);
+app.use('/exams', examRoutes);
+
+// Workbook Practice CMS Admin Module (Must be mounted before dynamic /practice routes)
+app.use('/api/v1/practice/admin', practiceAdminRoutes);
+
+// Workbook Practice Module (HSK1-HSK6)
+app.use('/api/v1/practice', practiceRoutes);
+app.use('/practice', practiceRoutes);
 // Global Error Handler
 app.use(errorHandler);

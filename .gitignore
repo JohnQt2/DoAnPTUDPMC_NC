@@ -9,3 +9,6 @@ dist/
 backend/.env
 backend/prisma/dev.db
 backend/prisma/dev.db-journal
+
+# Vite cache
+.vite/

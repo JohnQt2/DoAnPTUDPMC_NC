@@ -25,15 +25,18 @@ export const MeshBackground: React.FC<MeshBackgroundProps> = ({
 }) => {
   if (variant === 'light') {
     return (
-      <div className={cn('relative min-h-screen workspace-mesh-bg overflow-x-clip', className)}>
-        <div className="relative z-10">{children}</div>
+      <div className={cn('relative h-full min-h-0 overflow-hidden workspace-mesh-bg', className)}>
+        <div className="relative z-10 flex h-full min-h-0 w-full overflow-hidden">
+          {children}
+        </div>
       </div>
     );
   }
 
+  // Dark variant – keep same height‑chain logic as light.
   return (
-    <div className={cn('relative overflow-hidden bg-[#120714] text-white', className)}>
-      {/* Vibrant Static Multi-Hue Asian Aurora Backdrop (120fps smooth behind Liquid Glass!) */}
+    <div className={cn('relative h-full min-h-0 overflow-hidden bg-[#120714] text-white', className)}>
+      {/* Vibrant Static Multi‑Hue Asian Aurora Backdrop (120fps smooth behind Liquid Glass!) */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0"
@@ -73,7 +76,9 @@ export const MeshBackground: React.FC<MeshBackgroundProps> = ({
         </div>
       )}
 
-      <div className="relative z-10">{children}</div>
+      <div className="relative z-10 flex h-full min-h-0 w-full overflow-hidden">
+        {children}
+      </div>
     </div>
   );
 };

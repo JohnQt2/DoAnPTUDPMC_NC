@@ -17,6 +17,107 @@ import {
 import { OnboardingSurveyForm } from './OnboardingSurveyForm';
 import { OnboardingPreviewModal } from './OnboardingPreviewModal';
 
+export const normalizeLevel = (raw?: string | null): StartingLevel => {
+  if (!raw) return 'ZERO';
+  const s = String(raw).trim().toUpperCase();
+  if (
+    ['ZERO', 'BEGINNER', 'MOI_BAT_DAU', 'CHUA_BIET_GI', 'NOVICE', 'MỚI BẮT ĐẦU'].includes(s) ||
+    s.includes('BẮT ĐẦU') ||
+    s.includes('BEGINNER')
+  ) {
+    return 'ZERO';
+  }
+  if (['PINYIN_KNOWN', 'PINYIN'].includes(s) || s.includes('PINYIN')) {
+    return 'PINYIN_KNOWN';
+  }
+  if (s === 'ELEMENTARY') {
+    return 'ELEMENTARY';
+  }
+  const match = s.match(/HSK\s*([1-6])/i);
+  if (match) {
+    return `HSK${match[1]}` as StartingLevel;
+  }
+  return 'ZERO';
+};
+
+export const normalizeGoal = (raw?: string | null): TargetGoal => {
+  if (!raw) return 'HSK1';
+  const s = String(raw).trim().toUpperCase();
+  if (s.includes('COMMUNICATION') || s.includes('GIAO TIẾP') || s.includes('GIAO_TIEP')) {
+    return 'COMMUNICATION';
+  }
+  if (s.includes('HOBBY') || s.includes('SỞ THÍCH') || s.includes('SO_THICH')) {
+    return 'HOBBY';
+  }
+  const match = s.match(/HSK\s*([1-6])/i);
+  if (match) {
+    return `HSK${match[1]}` as TargetGoal;
+  }
+  return 'HSK1';
+};
+
+export const normalizeWeeks = (rawWeeks?: any, rawDuration?: any, estimatedDays?: number): number => {
+  if (rawWeeks !== undefined && rawWeeks !== null) {
+    const parsed = parseInt(String(rawWeeks), 10);
+    if (!isNaN(parsed) && parsed > 0) {
+      if (parsed === 4 || parsed === 8 || parsed === 12 || parsed === 24) return parsed;
+      if (parsed <= 5) return 4;
+      if (parsed <= 9) return 8;
+      if (parsed <= 15) return 12;
+      return 24;
+    }
+  }
+  if (rawDuration) {
+    const str = String(rawDuration).toLowerCase();
+    if (str.includes('24') || str.includes('6 tháng') || str.includes('6 thang')) return 24;
+    if (str.includes('12') || str.includes('3 tháng') || str.includes('3 thang')) return 12;
+    if (str.includes('8') || str.includes('2 tháng') || str.includes('2 thang')) return 8;
+    if (str.includes('4') || str.includes('1 tháng') || str.includes('1 thang')) return 4;
+    const match = str.match(/(\d+)\s*(tuần|tháng|tuan|thang|weeks|months)/i);
+    if (match) {
+      const num = parseInt(match[1], 10);
+      const isMonth = match[2].includes('tháng') || match[2].includes('month') || match[2].includes('thang');
+      const weeks = isMonth ? num * 4 : num;
+      if (weeks === 4 || weeks === 8 || weeks === 12 || weeks === 24) return weeks;
+      if (weeks <= 5) return 4;
+      if (weeks <= 9) return 8;
+      if (weeks <= 15) return 12;
+      return 24;
+    }
+  }
+  if (estimatedDays && estimatedDays > 0) {
+    const weeks = Math.round(estimatedDays / 7);
+    if (weeks <= 5) return 4;
+    if (weeks <= 9) return 8;
+    if (weeks <= 15) return 12;
+    return 24;
+  }
+  return 8;
+};
+
+export const normalizeDailyMins = (rawMins?: any): number => {
+  if (rawMins !== undefined && rawMins !== null) {
+    const parsed = parseInt(String(rawMins), 10);
+    if (!isNaN(parsed) && parsed > 0) {
+      if (parsed <= 20) return 15;
+      if (parsed <= 35) return 30;
+      if (parsed <= 50) return 45;
+      if (parsed <= 75) return 60;
+      if (parsed <= 105) return 90;
+      return 120;
+    }
+  }
+  return 30;
+};
+
+export const normalizeReminderTime = (rawTime?: string | null): string => {
+  if (!rawTime || typeof rawTime !== 'string') return '20:00';
+  const trimmed = rawTime.trim();
+  if (/^([01]\d|2[0-3]):[0-5]\d$/.test(trimmed)) return trimmed;
+  if (/^\d:[0-5]\d$/.test(trimmed)) return `0${trimmed}`;
+  return '20:00';
+};
+
 export const OnboardingRoadmapPage: React.FC = () => {
   const { markOnboardingCompleted } = useAuth();
   const [mode, setMode] = useState<'survey' | 'preview' | 'active_roadmap'>('survey');
@@ -46,17 +147,98 @@ export const OnboardingRoadmapPage: React.FC = () => {
       const rawHash = window.location.hash || '';
       const forceSurvey = rawHash.includes('mode=survey');
 
-      const [roadmapRes, progressRes] = await Promise.all([
+      const [roadmapRes, progressRes, profileRes] = await Promise.all([
         api.get<any>('/users/roadmap').catch(() => null),
         api.get<any>('/users/me/progress').catch(() => null),
+        api.get<any>('/users/me').catch(() => null),
       ]);
 
-      if (roadmapRes && roadmapRes.roadmap && !forceSurvey) {
+      const rmData = roadmapRes?.roadmap || roadmapRes;
+      const userProfile = profileRes?.profile || profileRes;
+
+      // Extract saved level
+      const savedLevel =
+        rmData?.startingLevel ||
+        rmData?.starting_level ||
+        profileRes?.startingLevel ||
+        profileRes?.starting_level ||
+        userProfile?.current_level ||
+        profileRes?.current_level;
+      if (savedLevel) {
+        setStartingLevel(normalizeLevel(savedLevel));
+      }
+
+      // Extract saved goal
+      const savedGoal =
+        rmData?.targetGoal ||
+        rmData?.target_goal ||
+        profileRes?.targetGoal ||
+        profileRes?.target_goal ||
+        userProfile?.goal ||
+        profileRes?.goal;
+      if (savedGoal) {
+        setTargetGoal(normalizeGoal(savedGoal));
+      }
+
+      // Extract saved weeks / duration
+      const savedWeeks =
+        rmData?.expectedWeeks ||
+        rmData?.expected_weeks ||
+        rmData?.targetWeeks ||
+        rmData?.target_weeks ||
+        profileRes?.expectedWeeks ||
+        profileRes?.expected_weeks ||
+        profileRes?.targetWeeks ||
+        profileRes?.target_weeks ||
+        userProfile?.expected_weeks;
+      const savedDuration =
+        rmData?.expectedDuration ||
+        rmData?.expected_duration ||
+        userProfile?.expected_duration ||
+        profileRes?.expected_duration;
+      const estimatedDays = rmData?.estimatedDays;
+      if (savedWeeks !== undefined && savedWeeks !== null) {
+        setTargetWeeks(normalizeWeeks(savedWeeks));
+      } else if (savedDuration) {
+        setTargetWeeks(normalizeWeeks(undefined, savedDuration));
+      } else if (estimatedDays) {
+        setTargetWeeks(normalizeWeeks(undefined, undefined, estimatedDays));
+      }
+
+      // Extract saved daily minutes
+      const savedMins =
+        rmData?.dailyCommitmentMins ||
+        rmData?.daily_commitment_mins ||
+        rmData?.daily_study_minutes ||
+        userProfile?.daily_study_minutes ||
+        profileRes?.daily_study_minutes;
+      if (savedMins) {
+        setDailyCommitmentMins(normalizeDailyMins(savedMins));
+      }
+
+      // Extract saved reminder time
+      const savedReminder =
+        rmData?.reminderTime ||
+        rmData?.reminder_time ||
+        rmData?.notificationSettings?.reminderTime ||
+        profileRes?.reminderTime ||
+        profileRes?.reminder_time ||
+        profileRes?.notificationSettings?.reminderTime;
+      if (savedReminder) {
+        setReminderTime(normalizeReminderTime(savedReminder));
+      }
+
+      const hasActiveRoadmap = Boolean(
+        roadmapRes &&
+          (roadmapRes.roadmapId ||
+            roadmapRes.courseId ||
+            roadmapRes.roadmap?.roadmapId ||
+            roadmapRes.roadmap?.courseId)
+      );
+
+      if (hasActiveRoadmap && !forceSurvey) {
         setActiveRoadmapData(roadmapRes);
         setProgressData(progressRes);
-        setStartingLevel((roadmapRes.roadmap.starting_level as StartingLevel) || 'ZERO');
-        setTargetGoal((roadmapRes.roadmap.target_goal as TargetGoal) || 'HSK1');
-        setDailyCommitmentMins(roadmapRes.roadmap.daily_commitment_mins || 30);
         setMode('active_roadmap');
       } else {
         setMode('survey');
@@ -78,6 +260,11 @@ export const OnboardingRoadmapPage: React.FC = () => {
         target_goal: targetGoal,
         daily_commitment_mins: dailyCommitmentMins,
         target_weeks: targetWeeks,
+        targetWeeks: targetWeeks,
+        expected_weeks: targetWeeks,
+        expectedWeeks: targetWeeks,
+        expected_duration: `${targetWeeks} tuần`,
+        expectedDuration: `${targetWeeks} tuần`,
         reminder_time: reminderTime,
       });
       markOnboardingCompleted();
@@ -212,10 +399,10 @@ export const OnboardingRoadmapPage: React.FC = () => {
                     Đang theo học
                   </span>
                   <span className="px-2.5 py-0.5 rounded-md bg-gray-100 text-gray-700 text-xs font-semibold">
-                    Mục tiêu: {activeRoadmapData.roadmap.target_goal}
+                    Mục tiêu: {activeRoadmapData.roadmap?.target_goal || activeRoadmapData.targetGoal || activeRoadmapData.target_goal}
                   </span>
                   <span className="px-2.5 py-0.5 rounded-md bg-gray-100 text-gray-700 text-xs font-semibold">
-                    {activeRoadmapData.roadmap.daily_commitment_mins} phút/ngày
+                    {activeRoadmapData.roadmap?.daily_commitment_mins || activeRoadmapData.dailyCommitmentMins || activeRoadmapData.daily_commitment_mins} phút/ngày
                   </span>
                 </div>
 

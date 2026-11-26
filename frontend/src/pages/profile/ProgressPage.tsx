@@ -17,7 +17,7 @@ export const ProgressPage: React.FC = () => {
           api.get<any>('/users/roadmap').catch(() => null),
         ]);
         setProgress(prog);
-        setRoadmap(rm?.roadmap || null);
+        setRoadmap(rm?.roadmap || rm || null);
       } finally {
         setLoading(false);
       }

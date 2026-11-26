@@ -132,7 +132,7 @@ export const DialogOverlay: React.FC = () => {
               transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
               role="dialog"
               aria-modal="true"
-              className="relative z-10 w-full max-w-md rounded-[28px] liquid-modal p-6 sm:p-7 space-y-5"
+              className="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto rounded-[28px] liquid-modal p-6 sm:p-7 space-y-5"
             >
               <div className="flex items-start gap-3.5">
                 <div
@@ -152,7 +152,7 @@ export const DialogOverlay: React.FC = () => {
                   <h3 className="text-base font-display font-extrabold text-gray-900 dark:text-slate-100">
                     {confirmReq.title}
                   </h3>
-                  <p className="text-sm text-gray-600 dark:text-slate-300 leading-relaxed">{confirmReq.message}</p>
+                  <p className="whitespace-pre-line break-words text-sm text-gray-600 dark:text-slate-300 leading-relaxed">{confirmReq.message}</p>
                 </div>
               </div>
 

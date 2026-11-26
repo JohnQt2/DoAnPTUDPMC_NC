@@ -189,8 +189,12 @@ export const OnboardingSurveyForm: React.FC<OnboardingSurveyFormProps> = ({
                   key={goal.id}
                   type="button"
                   onClick={() => {
-                    setTargetGoal(goal.id);
-                    setTargetWeeks(goal.recommendedWeeks);
+                    if (targetGoal !== goal.id) {
+                      setTargetGoal(goal.id);
+                      const rec = goal.recommendedWeeks;
+                      const mappedWeeks = rec <= 5 ? 4 : rec <= 9 ? 8 : rec <= 15 ? 12 : 24;
+                      setTargetWeeks(mappedWeeks);
+                    }
                   }}
                   className={`${OPTION_CARD_BASE} min-h-[114px] ${optionCardStyle(isSelected)}`}
                 >
@@ -223,7 +227,7 @@ export const OnboardingSurveyForm: React.FC<OnboardingSurveyFormProps> = ({
         {surveyStep === 3 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             {TARGET_TIMELINE_OPTIONS.map((option) => {
-              const isSelected = targetWeeks === option.weeks;
+              const isSelected = Number(targetWeeks) === Number(option.weeks);
               return (
                 <button
                   key={option.weeks}
@@ -254,7 +258,7 @@ export const OnboardingSurveyForm: React.FC<OnboardingSurveyFormProps> = ({
           <div className="space-y-4">
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5">
               {DAILY_COMMITMENT_OPTIONS.map((item) => {
-                const isSelected = dailyCommitmentMins === item.mins;
+                const isSelected = Number(dailyCommitmentMins) === Number(item.mins);
                 return (
                   <button
                     key={item.mins}

@@ -11,3 +11,4 @@ export { CelebrationOverlay } from './CelebrationOverlay';
 export { CustomCursor } from './CustomCursor';
 export { UserAvatar } from './UserAvatar';
 export { DialogOverlay } from './DialogOverlay';
+export { JsonEditorField } from './JsonEditorField';

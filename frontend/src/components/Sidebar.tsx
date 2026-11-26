@@ -34,7 +34,7 @@ export const STUDENT_SIDEBAR_ITEMS = [
   { label: 'Từ vựng', hash: '#/vocab', icon: BookOpen },
   { label: 'Bảng chữ cái', hash: '#/speak-learn', icon: Languages },
   { label: 'Luyện nói', hash: '#/speak-practice', icon: MessagesSquare },
-  { label: 'Đề thi HSK', hash: '#/mock-exams', icon: FileText },
+  { label: 'Đề thi', hash: '#/exams', icon: FileText },
   { label: 'Xếp hạng', hash: '#/leaderboard', icon: Trophy },
   { label: 'Tiến độ', hash: '#/progress', icon: TrendingUp },
 ];
@@ -390,10 +390,12 @@ export const Sidebar: React.FC<{
     if (basePath.startsWith('#/speak-practice')) return '#/speak-practice';
     if (
       basePath.startsWith('#/mock-exams') ||
+      basePath.startsWith('#/mock-exam/') ||
       basePath.startsWith('#/exams') ||
+      basePath.startsWith('#/quizzes') ||
       basePath.startsWith('#/test')
     ) {
-      return '#/mock-exams';
+      return '#/exams';
     }
     if (basePath.startsWith('#/leaderboard')) return '#/leaderboard';
     if (basePath.startsWith('#/progress')) return '#/progress';

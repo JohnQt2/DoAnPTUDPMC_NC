@@ -34,7 +34,6 @@ import { TestPage } from './pages/test/TestPage';
 import { TestResultPage } from './pages/test/TestResultPage';
 import { LeaderboardPage } from './pages/leaderboard/LeaderboardPage';
 import { AdminCMSPage } from './pages/admin/AdminCMSPage';
-import { MockExamListPage } from './pages/exam/MockExamListPage';
 import { StudentExamSplitScreen } from './pages/exam/StudentExamSplitScreen';
 import { TeacherExamManager } from './pages/exam/TeacherExamManager';
 import { Lock, ShieldAlert, ArrowRight, Home } from 'lucide-react';
@@ -167,7 +166,7 @@ const AppContent: React.FC = () => {
       <StudentExamSplitScreen
         examId={id || 1}
         onBack={() => {
-          window.location.hash = '#/mock-exams';
+          window.location.hash = '#/exams?mode=mock';
         }}
       />
     );
@@ -221,9 +220,9 @@ const AppContent: React.FC = () => {
               ) : isAdminLessonPreview ? (
                 <LessonPage lessonId={parseInt(basePath.replace('#/lessons/', ''), 10) || 1} />
               ) : isTeacherExams ? (
-                <TeacherExamManager onBack={() => { window.location.hash = '#/mock-exams'; }} />
+                <TeacherExamManager onBack={() => { window.location.hash = '#/exams'; }} />
               ) : isMockExamList ? (
-                <MockExamListPage />
+                <ExamListPage />
               ) : (
                 <AdminCMSPage initialTab={adminTab} />
               )}
@@ -300,8 +299,12 @@ const AppContent: React.FC = () => {
       return <SpeakingPracticePage />;
     }
 
-    if (basePath === '#/mock-exams' || basePath === '#/exams') {
-      return <MockExamListPage />;
+    if (basePath === '#/exams' || basePath === '#/quizzes' || basePath === '#/old-exams') {
+      return <ExamListPage />;
+    }
+
+    if (basePath === '#/mock-exams') {
+      return <ExamListPage initialMode="MOCK_EXAM" />;
     }
 
     if (basePath.startsWith('#/mock-exam/')) {
@@ -310,7 +313,7 @@ const AppContent: React.FC = () => {
         <StudentExamSplitScreen
           examId={id || 1}
           onBack={() => {
-            window.location.hash = '#/mock-exams';
+            window.location.hash = '#/exams?mode=mock';
           }}
         />
       );
@@ -320,14 +323,10 @@ const AppContent: React.FC = () => {
       return (
         <TeacherExamManager
           onBack={() => {
-            window.location.hash = '#/mock-exams';
+            window.location.hash = '#/exams';
           }}
         />
       );
-    }
-
-    if (basePath === '#/quizzes' || basePath === '#/old-exams') {
-      return <ExamListPage />;
     }
 
     if (basePath.startsWith('#/test-result/')) {

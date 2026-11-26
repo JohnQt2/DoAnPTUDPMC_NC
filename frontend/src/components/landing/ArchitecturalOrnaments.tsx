@@ -112,7 +112,7 @@ export const HanziLoadingScreen: React.FC<{
 }) => (
   <div
     aria-hidden={!visible}
-    className={`fixed inset-0 z-[80] flex flex-col items-center justify-center bg-[#F5F2EC] text-[#1C1917] select-none transition-all duration-[460ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
+    className={`fixed inset-0 z-[80] flex flex-col items-center justify-center bg-[#F5F2EC] dark:bg-[#0c111b] text-[#1C1917] dark:text-slate-100 select-none transition-all duration-[460ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
       visible
         ? 'opacity-100 scale-100 pointer-events-auto'
         : 'opacity-0 scale-[1.045] pointer-events-none'
@@ -121,13 +121,13 @@ export const HanziLoadingScreen: React.FC<{
     {/* Warm afternoon radial glow */}
     <div
       aria-hidden="true"
-      className="pointer-events-none absolute inset-0"
+      className="pointer-events-none absolute inset-0 dark:opacity-45"
       style={{
         background:
           'radial-gradient(circle at 50% 44%, rgba(212, 160, 23, 0.14) 0%, rgba(196, 30, 58, 0.05) 36%, rgba(245, 242, 236, 0) 70%)',
       }}
     />
-    <ArchitecturalBlueprintGrid className="opacity-70" />
+    <ArchitecturalBlueprintGrid className="opacity-70 dark:opacity-20" />
 
     <div className="relative z-10 flex flex-col items-center px-5 text-center">
       {/* Animated Golden-Crimson Astrolabe & Seal Ring */}
@@ -141,8 +141,8 @@ export const HanziLoadingScreen: React.FC<{
             cy="60"
             r="54"
             fill="none"
-            stroke="#1C1917"
-            strokeOpacity="0.12"
+            stroke="currentColor"
+            strokeOpacity="0.14"
             strokeWidth="1"
             strokeDasharray="4 6"
           />
@@ -152,7 +152,7 @@ export const HanziLoadingScreen: React.FC<{
             r="46"
             fill="none"
             stroke="#C41E3A"
-            strokeOpacity="0.45"
+            strokeOpacity="0.5"
             strokeWidth="1.4"
             strokeDasharray="72 24"
             strokeLinecap="round"
@@ -161,34 +161,36 @@ export const HanziLoadingScreen: React.FC<{
           <circle cx="60" cy="114" r="2.2" fill="#D4A017" />
         </svg>
 
-        <div className="relative p-2 sm:p-2.5 rounded-2xl bg-white/85 border border-[#1C1917]/12 shadow-[0_16px_36px_-12px_rgba(196,30,58,0.28)]">
+        <div className="relative p-2 sm:p-2.5 rounded-2xl bg-white/85 dark:bg-[#141c2b]/90 border border-[#1C1917]/12 dark:border-white/12 shadow-[0_16px_36px_-12px_rgba(196,30,58,0.28)]">
           <HanziLogoMark variant="light" className="w-12 h-12 sm:w-14 sm:h-14" />
         </div>
       </div>
 
       {/* Brand Title & Academic Kicker */}
       <div className="space-y-1 sm:space-y-1.5">
-        <div className="font-display font-extrabold text-xl sm:text-[26px] tracking-[-0.03em] text-[#1C1917]">
-          Hanzi<span className="text-[#C41E3A]">4U</span>
+        <div className="font-display font-extrabold text-xl sm:text-[26px] tracking-[-0.03em] text-[#1C1917] dark:text-white">
+          Hanzi<span className="text-[#C41E3A] dark:text-rose-400">4U</span>
         </div>
-        <p className="font-mono text-[9.5px] sm:text-[10.5px] font-semibold uppercase tracking-[0.2em] sm:tracking-[0.24em] text-[#C41E3A]">
+        <p className="font-mono text-[9.5px] sm:text-[10.5px] font-semibold uppercase tracking-[0.2em] sm:tracking-[0.24em] text-[#C41E3A] dark:text-rose-400">
           HỌC TIẾNG TRUNG CHUẨN HSK 1 — 6
         </p>
       </div>
 
-      {/* Delicate Diamond-Tipped Progress Line */}
+      {/* Delicate Diamond-Tipped Progress Line with Live Shimmer */}
       <div className="mt-5 mb-2.5 sm:mt-6 sm:mb-3 flex items-center gap-2.5 w-48 sm:w-60">
         <span className="text-[8px] text-[#C41E3A]">◆</span>
-        <div className="relative flex-1 h-[2px] bg-[#1C1917]/12 overflow-hidden rounded-full">
+        <div className="relative flex-1 h-[2.5px] bg-[#1C1917]/12 dark:bg-white/12 overflow-hidden rounded-full">
           <div
-            className="h-full bg-gradient-to-r from-[#C41E3A] via-[#D4A017] to-[#C41E3A] transition-all duration-300 ease-out"
-            style={{ width: `${Math.min(100, Math.max(15, progress))}%` }}
-          />
+            className="relative h-full bg-gradient-to-r from-[#C41E3A] via-[#D4A017] to-[#C41E3A] transition-all duration-300 ease-out overflow-hidden"
+            style={{ width: `${Math.min(100, Math.max(25, progress))}%` }}
+          >
+            <span className="absolute inset-0 -translate-x-full animate-shimmer-sweep bg-gradient-to-r from-transparent via-white/70 to-transparent" />
+          </div>
         </div>
         <span className="text-[8px] text-[#D4A017]">◆</span>
       </div>
 
-      <p className="text-[10.5px] sm:text-xs font-hanzi-serif text-[#57534E] tracking-wide max-w-[280px] sm:max-w-sm leading-relaxed">
+      <p className="text-[10.5px] sm:text-xs font-hanzi-serif text-[#57534E] dark:text-slate-400 tracking-wide max-w-[280px] sm:max-w-sm leading-relaxed">
         {subtitle}
       </p>
     </div>
